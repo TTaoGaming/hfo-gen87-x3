@@ -1,10 +1,10 @@
 #!/usr/bin/env tsx
 /**
  * Test Bucket Status Reporter
- * 
+ *
  * Shows RED/GREEN test status organized by functional buckets
  * for easier AI agent workflow and prioritization.
- * 
+ *
  * @source HIVE/8 TDD Workflow - Interlock Phase
  * @see https://vitest.dev/guide/cli.html
  */
@@ -93,9 +93,9 @@ function runBucketTests(path: string): { passed: number; failed: number; skipped
 		const skipMatch = result.match(/(\d+) skipped/);
 
 		return {
-			passed: passMatch ? parseInt(passMatch[1], 10) : 0,
-			failed: failMatch ? parseInt(failMatch[1], 10) : 0,
-			skipped: skipMatch ? parseInt(skipMatch[1], 10) : 0,
+			passed: passMatch ? Number.parseInt(passMatch[1], 10) : 0,
+			failed: failMatch ? Number.parseInt(failMatch[1], 10) : 0,
+			skipped: skipMatch ? Number.parseInt(skipMatch[1], 10) : 0,
 		};
 	} catch (error: unknown) {
 		// Tests failed - parse output anyway
@@ -105,9 +105,9 @@ function runBucketTests(path: string): { passed: number; failed: number; skipped
 		const skipMatch = output.match(/(\d+) skipped/);
 
 		return {
-			passed: passMatch ? parseInt(passMatch[1], 10) : 0,
-			failed: failMatch ? parseInt(failMatch[1], 10) : 0,
-			skipped: skipMatch ? parseInt(skipMatch[1], 10) : 0,
+			passed: passMatch ? Number.parseInt(passMatch[1], 10) : 0,
+			failed: failMatch ? Number.parseInt(failMatch[1], 10) : 0,
+			skipped: skipMatch ? Number.parseInt(skipMatch[1], 10) : 0,
 		};
 	}
 }

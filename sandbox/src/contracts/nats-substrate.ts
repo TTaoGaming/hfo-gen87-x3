@@ -11,7 +11,7 @@
  */
 
 import { z } from 'zod';
-import type { SensorFrame, SmoothedFrame, FSMAction, GestureLabel } from './schemas.js';
+import type { FSMAction, SensorFrame, SmoothedFrame } from './schemas.js';
 
 // ============================================================================
 // NATS SUBJECT HIERARCHY
@@ -68,14 +68,7 @@ export const CursorPositionSchema = z.object({
 export type CursorPosition = z.infer<typeof CursorPositionSchema>;
 
 export const FSMStateKVSchema = z.object({
-	state: z.enum([
-		'DISARMED',
-		'ARMING',
-		'ARMED',
-		'DOWN_COMMIT',
-		'DOWN_NAV',
-		'ZOOM',
-	]),
+	state: z.enum(['DISARMED', 'ARMING', 'ARMED', 'DOWN_COMMIT', 'DOWN_NAV', 'ZOOM']),
 	since: z.number().nonnegative(),
 	confidence: z.number().min(0).max(1),
 	label: z.enum([
@@ -213,7 +206,7 @@ export const RecordingMetadataSchema = z.object({
 			'Closed_Fist',
 			'ILoveYou',
 			'None',
-		] as const)
+		] as const),
 	),
 	smootherConfig: SmootherConfigSchema,
 	avgLatencyMs: z.number().nonnegative().optional(),

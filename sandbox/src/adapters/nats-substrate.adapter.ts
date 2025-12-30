@@ -13,22 +13,20 @@
  * - Hard gate validation at every boundary
  */
 
-import { z } from 'zod';
-import type { NatsConnection, JetStreamClient, KV, ObjectStore } from '@nats-io/jetstream';
+import type { JetStreamClient, KV, NatsConnection, ObjectStore } from '@nats-io/jetstream';
+import type { z } from 'zod';
 import {
-	NatsSubjects,
-	DefaultStreamConfig,
-	type StageGateConfig,
-	CursorPositionSchema,
-	FSMStateKVSchema,
-	SmootherConfigSchema,
-	PipelineConfigSchema,
-	SwarmSignalSchema,
 	type CursorPosition,
+	CursorPositionSchema,
+	DefaultStreamConfig,
 	type FSMStateKV,
+	FSMStateKVSchema,
+	NatsSubjects,
 	type SmootherConfig,
-	type PipelineConfig,
+	SmootherConfigSchema,
+	type StageGateConfig,
 	type SwarmSignal,
+	SwarmSignalSchema,
 } from '../contracts/nats-substrate.js';
 
 // ============================================================================
@@ -311,7 +309,7 @@ export class NatsSubstrateAdapter {
 	 */
 	async watchKV(
 		keyPattern: string,
-		callback: (key: string, value: unknown, operation: string) => void
+		callback: (key: string, value: unknown, operation: string) => void,
 	): Promise<() => void> {
 		if (!this.kv) throw new Error('Not connected to NATS');
 
@@ -342,13 +340,16 @@ export class NatsSubstrateAdapter {
 		sessionId: string,
 		frames: unknown[],
 		events: unknown[],
-		metadata: unknown
+		metadata: unknown,
 	): Promise<void> {
 		if (!this.obj) throw new Error('Not connected to NATS');
 
 		// Save metadata
 		const metadataPath = NatsSubjects.recordings.metadata(sessionId);
-		await this.obj.putBlob({ name: metadataPath }, new TextEncoder().encode(JSON.stringify(metadata)));
+		await this.obj.putBlob(
+			{ name: metadataPath },
+			new TextEncoder().encode(JSON.stringify(metadata)),
+		);
 
 		// Save frames as JSONL
 		const framesPath = NatsSubjects.recordings.frames(sessionId);
@@ -416,7 +417,14 @@ export class NatsSubstrateAdapter {
 		if (!this.js) throw new Error('Not connected to NATS');
 
 		const validated = SwarmSignalSchema.parse(signal);
-		const phase = signal.phase === 'H' ? 'hunt' : signal.phase === 'I' ? 'interlock' : signal.phase === 'V' ? 'validate' : 'evolve';
+		const phase =
+			signal.phase === 'H'
+				? 'hunt'
+				: signal.phase === 'I'
+					? 'interlock'
+					: signal.phase === 'V'
+						? 'validate'
+						: 'evolve';
 
 		await this.js.publish(NatsSubjects.swarm.signal(phase), JSON.stringify(validated));
 		this.log(`Swarm signal emitted: ${signal.phase} - ${signal.msg}`);
@@ -445,7 +453,7 @@ export class NatsSubstrateAdapter {
  * Create and connect to NATS substrate
  */
 export async function createNatsSubstrate(
-	options: NatsSubstrateOptions
+	options: NatsSubstrateOptions,
 ): Promise<NatsSubstrateAdapter> {
 	const adapter = new NatsSubstrateAdapter(options);
 	await adapter.connect();

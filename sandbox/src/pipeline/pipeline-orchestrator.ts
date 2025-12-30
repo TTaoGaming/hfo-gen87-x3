@@ -11,7 +11,10 @@
  */
 
 import { z } from 'zod';
-import { NatsSubstrateAdapter, type NatsSubstrateOptions } from '../adapters/nats-substrate.adapter.js';
+import {
+	NatsSubstrateAdapter,
+	type NatsSubstrateOptions,
+} from '../adapters/nats-substrate.adapter.js';
 import { NatsSubjects, type StageGateConfig } from '../contracts/nats-substrate.js';
 
 // ============================================================================
@@ -31,7 +34,7 @@ export const SensorInputSchema = z.object({
 			y: z.number().min(0).max(1),
 			z: z.number(),
 			visibility: z.number().optional(),
-		})
+		}),
 	),
 	/** Index fingertip (landmark 8) in normalized coords */
 	fingertip: z.object({
@@ -241,7 +244,11 @@ export class PipelineOrchestrator {
 	async feedSensor(input: SensorInput): Promise<void> {
 		// Validate at boundary
 		const validated = SensorInputSchema.parse(input);
-		await this.substrate.publish(NatsSubjects.pipeline.sensor(validated.handId), validated, SensorInputSchema);
+		await this.substrate.publish(
+			NatsSubjects.pipeline.sensor(validated.handId),
+			validated,
+			SensorInputSchema,
+		);
 	}
 
 	// ============================================================================
@@ -437,7 +444,9 @@ export class PipelineOrchestrator {
 /**
  * Create and start the complete gesture pipeline
  */
-export async function createPipeline(options: PipelineOrchestratorOptions): Promise<PipelineOrchestrator> {
+export async function createPipeline(
+	options: PipelineOrchestratorOptions,
+): Promise<PipelineOrchestrator> {
 	const orchestrator = new PipelineOrchestrator(options);
 	await orchestrator.start();
 	return orchestrator;

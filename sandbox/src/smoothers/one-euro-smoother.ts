@@ -17,16 +17,16 @@
  * VALIDATE: Re-exports the working adapter from one-euro.adapter.ts
  */
 
-import { OneEuroAdapter, PassthroughSmootherAdapter } from "../adapters/one-euro.adapter.js";
+import { OneEuroAdapter, PassthroughSmootherAdapter } from '../adapters/one-euro.adapter.js';
 
 // Re-export config type for consumers
 export interface OneEuroConfig {
-  /** Minimum cutoff frequency (Hz) - lower = smoother when slow */
-  mincutoff: number;
-  /** Speed coefficient - higher = snappier response to fast movement */
-  beta: number;
-  /** Derivative cutoff frequency (Hz) - smooths velocity estimate */
-  dcutoff?: number;
+	/** Minimum cutoff frequency (Hz) - lower = smoother when slow */
+	mincutoff: number;
+	/** Speed coefficient - higher = snappier response to fast movement */
+	beta: number;
+	/** Derivative cutoff frequency (Hz) - smooths velocity estimate */
+	dcutoff?: number;
 }
 
 /**
@@ -35,11 +35,10 @@ export interface OneEuroConfig {
  * WIRED: Wraps OneEuroAdapter with config-based construction
  */
 export class OneEuroSmoother extends OneEuroAdapter {
-  constructor(config: OneEuroConfig) {
-    super(config.mincutoff, config.beta, config.dcutoff ?? 1.0);
-  }
+	constructor(config: OneEuroConfig) {
+		super(config.mincutoff, config.beta, config.dcutoff ?? 1.0);
+	}
 }
 
 // Re-export for consumers
 export { OneEuroAdapter, PassthroughSmootherAdapter };
-

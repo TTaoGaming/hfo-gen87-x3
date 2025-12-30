@@ -10,6 +10,18 @@
 	"github.copilot.chat.runCommand.enabled": true,
 
 	// ═══════════════════════════════════════════════════════════════
+	// OBSIDIAN LEGENDARY COMMANDERS - MULTI-AGENT ORCHESTRATION
+	// ═══════════════════════════════════════════════════════════════
+	// Enables the 8-port HIVE/8 agent swarm from .github/agents/
+	// Spider Sovereign (Port 7) orchestrates via handoffs to:
+	//   - Lidless Legion (Port 0) + Spider Sovereign (Port 7) = HUNT phase
+	//   - Web Weaver (Port 1) + Kraken Keeper (Port 6) = INTERLOCK phase
+	//   - Mirror Magus (Port 2) + Pyre Praetorian (Port 5) = VALIDATE phase
+	//   - Spore Storm (Port 3) + Red Regnant (Port 4) = EVOLVE phase
+	"chat.customAgentInSubagent.enabled": true,
+	"chat.useNestedAgentsMdFiles": true,
+
+	// ═══════════════════════════════════════════════════════════════
 	// VIRTUAL TOOLS - PERFORMANCE OPTIMIZATION
 	// ═══════════════════════════════════════════════════════════════
 	// Fixes "160+ tools may be degraded" warning by lazy-loading tools.

@@ -310,10 +310,12 @@ export const PuterShellConfigSchema = z.object({
 	autoArrange: z.boolean().default(true),
 	showInTaskbar: z.boolean().default(true),
 	enableSnapping: z.boolean().default(true),
-	defaultWindowSize: z.object({
-		width: z.number().positive().default(800),
-		height: z.number().positive().default(600),
-	}).optional(),
+	defaultWindowSize: z
+		.object({
+			width: z.number().positive().default(800),
+			height: z.number().positive().default(600),
+		})
+		.optional(),
 });
 export type PuterShellConfig = z.infer<typeof PuterShellConfigSchema>;
 
