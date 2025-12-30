@@ -1,0 +1,13 @@
+{
+  "recommendations": [
+    "biomejs.biome",
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "ms-playwright.playwright",
+    "GitHub.copilot",
+    "GitHub.copilot-chat",
+    "stately.xstate-vscode",
+    "ryanrosello-og.playwright-vscode-trace-viewer"
+  ],
+  "unwantedRecommendations": []
+}

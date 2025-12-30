@@ -10,26 +10,21 @@
 	"github.copilot.chat.runCommand.enabled": true,
 
 	// ═══════════════════════════════════════════════════════════════
-	// MCP SERVERS (WORKSPACE-ONLY ADDITIONS)
+	// VIRTUAL TOOLS - PERFORMANCE OPTIMIZATION
 	// ═══════════════════════════════════════════════════════════════
-	// 
-	// Global servers (from %APPDATA%\Code\User\mcp.json):
-	// - github: Repository management via api.githubcopilot.com
-	// - playwright: Browser automation
-	// - context7: Library documentation
-	// - sequentialthinking: Chain-of-thought reasoning
-	// - memory: Knowledge graph persistence
-	//
-	// Workspace-specific additions below:
-	//
-	"mcp": {
-		"servers": {
-			"filesystem": {
-				"command": "npx",
-				"args": ["-y", "@modelcontextprotocol/server-filesystem", "C:/Dev/active"]
-			}
-		}
-	},
+	// Fixes "160+ tools may be degraded" warning by lazy-loading tools.
+	// Only top N most relevant tools are fully loaded per request.
+	// Others are "virtualized" - AI sees descriptions but loads on-demand.
+	"github.copilot.chat.virtualTools.threshold": 25,
+
+	// ═══════════════════════════════════════════════════════════════
+	// MCP SERVERS
+	// ═══════════════════════════════════════════════════════════════
+	// Workspace-specific MCP servers are in .vscode/mcp.json
+	// User-level servers (github, playwright, context7, etc.) come from:
+	//   %APPDATA%\Code\User\mcp.json (Windows)
+	//   ~/Library/Application Support/Code/User/mcp.json (macOS)
+	//   ~/.config/Code/User/mcp.json (Linux)
 
 	// ═══════════════════════════════════════════════════════════════
 	// EDITOR
