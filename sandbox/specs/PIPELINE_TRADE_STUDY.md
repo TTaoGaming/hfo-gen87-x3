@@ -799,6 +799,105 @@ export type GestureEvent = z.infer<typeof GestureEventSchema>;
 
 | Stage | Choice | Rationale | Alternatives Considered |
 |-------|--------|-----------|------------------------|
+| **1. Input** | MediaPipe Tasks Vision | Built-in gestures, WASM, well-documented | TF.js Handpose, fingerpose |
+| **2. Smooth** | Rapier + 1€ Filter hybrid | Physics prediction + noise filtering | Kalman (complex), EMA (simple) |
+| **3. FSM** | XState v5 | TypeScript native, visualizer, actors | Robot.js, SCXML |
+| **4. Output** | W3C PointerEvent | Standard, pressure/tilt, universal | MouseEvent (subset) |
+| **5. Target** | Polymorphic Adapters | Plug any target via contract | Hardcoded integrations |
+
+---
+
+## 🔖 HUNT PHASE NOTES & HANDOFF STATUS
+
+### Session Summary (2025-12-30)
+
+**Hunt Phase Status**: ✅ COMPLETE - Ready for I (Interlock) phase
+
+#### What Was Accomplished
+1. **Memory Bank Mining**: Found Gen83 Gold Baton Quine, W3C Gesture Control Plane spec, Gestural Gateway card
+2. **Tavily Grounding**: 15+ web searches validating technical choices
+3. **Trade Study**: 838+ lines of documented options, tradeoffs, code examples
+4. **Architecture**: 5-stage hexagonal pipeline with Zod port contracts
+5. **Orchestration**: OpenRouter, LangGraph HIVE/8, CrewAI 8 commanders tested
+6. **Documentation**: Swarm guides, handoff protocol, AGENTS.md instructions
+
+#### Key Technical Decisions (Grounded, Not Hallucinated)
+
+| Decision | Source | Confidence |
+|----------|--------|------------|
+| MediaPipe Tasks Vision for input | ai.google.dev, Tavily | ⭐⭐⭐⭐⭐ |
+| Rapier WASM for physics smoothing | dimforge.com, Tavily | ⭐⭐⭐⭐ |
+| 1€ Filter for denoising | gery.casiez.net, academic papers | ⭐⭐⭐⭐⭐ |
+| XState v5 for FSM | stately.ai, 27K GitHub stars | ⭐⭐⭐⭐⭐ |
+| W3C PointerEvent for output | w3.org/TR/pointerevents | ⭐⭐⭐⭐⭐ |
+| Hexagonal CDD architecture | Martin Fowler, HFO Gen85 | ⭐⭐⭐⭐⭐ |
+
+#### Artifacts Created This Session
+
+```
+sandbox/
+├── specs/
+│   ├── PIPELINE_TRADE_STUDY.md       # 838 lines - THIS FILE
+│   ├── PIPELINE_TRADE_STUDY_V2.md    # Hexagonal CDD version
+│   ├── HEXAGONAL_CDD_EARS_SPEC.md    # 25 EARS requirements
+│   ├── SWARM_ORCHESTRATION_GUIDE.md  # 8-section guide
+│   ├── HANDOFF_PROTOCOL.md           # Formal handoff schema
+│   └── TOOLING_RECOMMENDATIONS.md    # VS Code + MCP setup
+├── src/
+│   ├── swarm/index.ts                # askLLM, emitSignal, emitHandoff
+│   └── contracts/ports.ts            # Zod port contracts (draft)
+└── obsidianblackboard.jsonl          # Stigmergy signals (growing)
+```
+
+### Next Phase: INTERLOCK (I)
+
+**Entry Criteria Met**: 
+- ✅ All 5 pipeline stages have recommended tech + alternatives
+- ✅ Zod schemas designed (need implementation)
+- ✅ Target adapters identified (DOM, Excalidraw, tldraw, v86, js-dos)
+- ✅ Orchestration tested (OpenRouter, LangGraph, CrewAI)
+
+**I Phase Tasks** (TDD RED):
+1. `src/contracts/gesture-frame.contract.ts` - GestureFrame Zod schema
+2. `src/contracts/pointer-stream.contract.ts` - PointerStream Zod schema
+3. `src/contracts/target-adapter.contract.ts` - TargetAdapter interface
+4. `tests/contracts/*.test.ts` - Failing contract tests
+5. `src/adapters/dom.adapter.ts` - First adapter skeleton
+
+**I Phase Test Commands**:
+```bash
+# Run contract tests (should fail initially)
+npm test -- --grep "contract"
+
+# Validate Zod schemas parse correctly
+npx tsx src/contracts/validate.ts
+```
+
+### Handoff to Next Agent
+
+**READ FIRST**: `sandbox/llms.txt` (quick context), then `AGENTS.md` (full instructions)
+
+**Signal to Emit on I Phase Start**:
+```json
+{
+  "ts": "<ISO8601>",
+  "mark": 1.0,
+  "pull": "downstream",
+  "msg": "INTERLOCK: Starting TDD RED phase - writing failing contract tests",
+  "type": "signal",
+  "hive": "I",
+  "gen": 87,
+  "port": 1
+}
+```
+
+**Blackboard Location**: `sandbox/obsidianblackboard.jsonl`
+
+---
+
+*Hunt phase complete. The spider weaves the web that weaves the spider.*
+*Gen87.X3 | 2025-12-30 | Source: PIPELINE_TRADE_STUDY.md*
+|-------|--------|-----------|------------------------|
 | **1. Input** | MediaPipe Tasks Vision | Built-in gestures, WASM, TRL 9 | TensorFlow.js, OpenCV.js, WebHID |
 | **2. Smooth** | Rapier Physics | Spring-damper + prediction | 1€ Filter, Kalman, EMA |
 | **3. FSM** | XState v5 | TypeScript native, visualizer | Robot.js, Zag.js, Behavior Trees |

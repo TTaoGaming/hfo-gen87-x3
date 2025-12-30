@@ -1,101 +1,284 @@
-# AGENTS.md — HFO Gen87.X3 Workspace
+# AGENTS.md — HFO Gen87.X3 AI Agent Instructions
 
 > **Generation**: 87.X3  
-> **Date**: 2025-12-29  
+> **Date**: 2025-12-30  
 > **Model**: Any (auto-approve enabled)  
-> **Purpose**: Pre-configured AI workspace with all tools ready
+> **Purpose**: Pre-configured AI workspace with HIVE/8 workflow enforcement
+
+---
+
+## 🔴 CURRENT PHASE: HUNT (H) — STILL EXPLORING
+
+**You are in Hunt phase. DO NOT finalize architecture decisions yet.**
+
+| What to DO in Hunt | What NOT to do |
+|--------------------|----------------|
+| ✅ Search Memory Bank for exemplars | ❌ Write production code |
+| ✅ Use Tavily to ground new findings | ❌ Create final contracts |
+| ✅ Explore options, trade-offs | ❌ Skip to implementation |
+| ✅ Read existing specs/research | ❌ Commit to tech choices |
+| ✅ Emit HUNT signals to blackboard | ❌ Emit I/V/E signals |
+
+**Hunt Outputs**: Exemplars found, options explored, trade study extended.
 
 ---
 
 ## 🎯 CURRENT MISSION: W3C Gesture Control Plane
 
-**ACTIVE WORK IS IN `sandbox/`** — See [sandbox/AGENTS.md](sandbox/AGENTS.md) for detailed instructions.
+**User Vision: Total Tool Virtualization**
+```
+MediaPipe → Physics (Rapier/1€) → FSM (XState) → W3C Pointer → TargetAdapter → ANY TARGET
+                                                                     ↓
+                                      ┌──────────────────────────────┴───────────────────────────┐
+                                      │                                                          │
+                                 DOM/Canvas                                               Emulators
+                                 Excalidraw (54K⭐)                                       v86 (x86)
+                                 tldraw (15K⭐)                                           js-dos
+                                 Any element                                              EmulatorJS
+                                                                                          daedalOS (12K⭐)
+                                                                                          Puter (38K⭐)
+```
 
-| Document | Purpose |
-|----------|---------|
-| [sandbox/AGENTS.md](sandbox/AGENTS.md) | Sandbox-specific agent instructions |
-| [sandbox/llms.txt](sandbox/llms.txt) | Quick LLM context for sandbox |
-| [sandbox/specs/W3C_GESTURE_CONTROL_PLANE_SPEC.md](sandbox/specs/W3C_GESTURE_CONTROL_PLANE_SPEC.md) | **MAIN SPEC** - Grounded with Tavily |
-
-**Phase**: INTERLOCK (I) - Creating contracts and interfaces
+**Hexagonal CDD Goal**: Ports define contracts (Zod), Adapters implement. AI swarms can combine/evolve primitives.
 
 ---
 
 ## 🚨 Critical Rules (MUST FOLLOW)
 
-1. **NEVER hallucinate content** — If you can't find it, say "I don't know"
-2. **ALWAYS cite sources** — Include generation and filename OR Tavily URL
+1. **NEVER hallucinate content** — If you can't find it, search first
+2. **ALWAYS cite sources** — `Source: Gen X, filename.md` OR `Tavily: URL`
 3. **NEVER delete files** without explicit human authorization
-4. **ALWAYS use sandbox/** for new work — Never write outside this folder
+4. **ALWAYS work in `sandbox/`** — Never write outside this folder
 5. **VERIFY claims** with tool output, not assumptions
-6. **USE TAVILY** for web grounding — API key in .env
+6. **USE TAVILY** for web grounding — API key configured
+7. **EMIT signals** to `sandbox/obsidianblackboard.jsonl`
+8. **RESPECT HIVE phase** — H means explore, not decide
 
 ---
 
 ## 🧰 Pre-Configured Tools (Auto-Approved)
 
-| Tool | Purpose | Status |
-|------|---------|--------|
-| GitHub MCP | Repo management, issues, PRs, code search | ✅ Auto |
-| Memory MCP | Knowledge graph persistence | ✅ Auto |
-| Playwright MCP | Browser automation & screenshots | ✅ Auto |
-| Context7 MCP | Library documentation lookup | ✅ Auto |
-| Sequential Thinking | Chain-of-thought reasoning | ✅ Auto |
-| Filesystem MCP | Direct file access to C:/Dev/active | ✅ Auto |
+### Primary Tools - USE THESE
+
+| Tool | Purpose | When to Use |
+|------|---------|-------------|
+| **Tavily Search** | Web grounding, find exemplars | `mcp_tavily_tavily-search` for ANY claim you can't verify |
+| **Memory Bank** | HFO history (6,423 artifacts) | DuckDB FTS query for past designs/patterns |
+| **Context7** | Library documentation | `mcp_context7_query-docs` for XState, Zod, Rapier, etc. |
+| **Sequential Thinking** | Complex reasoning | `mcp_sequentialthi_sequentialthinking` for trade-offs |
+| **GitHub MCP** | Repo/issue/PR management | Creating issues, searching code |
+| **Playwright MCP** | Browser automation | Screenshots, testing |
+| **Filesystem MCP** | Direct file access | Reading/writing in sandbox |
+
+### Memory Bank Query Pattern
+```python
+import duckdb
+con = duckdb.connect('../portable_hfo_memory_pre_hfo_to_gen84_2025-12-27T21-46-52/hfo_memory.duckdb', read_only=True)
+con.execute('LOAD fts')
+# Search for exemplars
+results = con.execute("""
+    SELECT filename, generation, content,
+           fts_main_artifacts.match_bm25(id, 'gesture control pointer') as score
+    FROM artifacts WHERE score IS NOT NULL
+    ORDER BY score DESC LIMIT 10
+""").fetchall()
+for r in results:
+    print(f"Gen {r[1]}: {r[0]} (score: {r[3]:.2f})")
+```
+
+### Tavily Search Pattern
+```
+Use mcp_tavily_tavily-search with:
+- query: "XState v5 setup pattern TypeScript"
+- search_depth: "advanced" for thorough results
+- include_raw_content: true if you need full page text
+```
 
 ---
 
-## 📁 Workspace Folders
+## 📁 Workspace Structure
 
-| Folder | Purpose |
-|--------|---------|
-| `.` (Gen87.X3) | Active development workspace |
-| `📚 Memory Bank` | 6,423 artifacts from Pre-HFO to Gen84 (READ-ONLY) |
-| `🏗️ Gen85 Codebase` | 687 tests, 8/8 ports - reference implementation |
-| `📋 Context Payloads` | Architecture docs and injection packages |
+| Folder | Purpose | Access |
+|--------|---------|--------|
+| **`sandbox/`** | YOUR WRITE ZONE - all new work | ✅ Read/Write |
+| **`sandbox/specs/`** | Specifications and research | ✅ Read/Write |
+| **`sandbox/src/`** | Source code (when in I/V/E phases) | ✅ Read/Write |
+| **`sandbox/obsidianblackboard.jsonl`** | Stigmergy signals | ✅ APPEND ONLY |
+| `📚 Memory Bank` | 6,423 artifacts Pre-HFO to Gen84 | 🔒 READ-ONLY |
+| `🏗️ Gen85 Codebase` | Reference implementation (687 tests) | 🔒 READ-ONLY |
+| `📋 Context Payloads` | Architecture docs | 🔒 READ-ONLY |
 
 ---
 
-## 🔑 Quick Start
+## 📊 Hunt Phase Research Completed
 
-### 1. Verify Memory Access
+### Key Documents (READ THESE)
+| Document | Lines | Purpose |
+|----------|-------|---------|
+| `sandbox/specs/PIPELINE_TRADE_STUDY.md` | 838 | 5-stage pipeline analysis, ALL options |
+| `sandbox/specs/HEXAGONAL_CDD_EARS_SPEC.md` | 206 | Contract requirements (EARS format) |
+| `sandbox/specs/W3C_GESTURE_CONTROL_PLANE_SPEC.md` | - | Main spec with Tavily sources |
+| `sandbox/specs/TOOLING_RECOMMENDATIONS.md` | 226 | VS Code extensions, MCP servers |
+
+### Exemplars Found (Tavily-Grounded)
+
+**Stage 1 - Input Sensing:**
+| Option | Source | Decision |
+|--------|--------|----------|
+| MediaPipe Tasks Vision | ai.google.dev/edge/mediapipe | ✅ Recommended (built-in gestures) |
+| TensorFlow.js Handpose | blog.tensorflow.org | Alternative (manual gestures) |
+| WebHID API | wicg.github.io/webhid | ⚠️ Not W3C standard |
+
+**Stage 2 - Smoothing/Physics:**
+| Option | Source | Decision |
+|--------|--------|----------|
+| Rapier Physics | dimforge.com | ✅ Recommended (prediction!) |
+| 1€ Filter | gery.casiez.net/1euro | ✅ Recommended (denoise) |
+| Kalman Filter | - | Alternative (complex) |
+
+**Stage 3 - FSM:**
+| Option | Source | Decision |
+|--------|--------|----------|
+| XState v5 | stately.ai/docs | ✅ Recommended (TypeScript native) |
+| Robot.js | - | Alternative (tiny) |
+| Behavior Trees | arxiv.org | Alternative (complex AI) |
+
+**Stage 4 - Output:**
+| Option | Source | Decision |
+|--------|--------|----------|
+| W3C Pointer Events | w3.org/TR/pointerevents | ✅ ONLY option (standard) |
+| Pointer Lock API | w3.org/TR/pointerlock-2 | Different purpose (capture) |
+
+**Stage 5 - Target Adapters:**
+| Target | Stars | Input API | Complexity |
+|--------|-------|-----------|------------|
+| DOM dispatchEvent | - | Standard | Very Low |
+| tldraw | 15K | DOM renderer | Very Low |
+| Excalidraw | 54K | onPointerDown/Up callbacks | Low |
+| daedalOS | 12K | Window manager routing | Medium |
+| v86 | 19K | bus.send('mouse-delta') | Medium |
+| js-dos | - | setMouseSensitivity() | Medium |
+| EmulatorJS | - | EJS_defaultControls | Medium |
+| Puter | 38K | Cloud OS APIs | Medium |
+
+---
+
+## 🏗️ HIVE/8 Architecture (The Obsidian Hourglass)
+
+### Phase Mapping
+```
+HIVE/8 = Hindsight/Insight/Validated_Foresight/Evolution
+       = Hunt/Interlock/Validate/Evolve
+       = Research/RED/GREEN/REFACTOR (TDD)
+       = Plan/Do/Check/Act (PDCA)
+```
+
+### Port Pairs (Anti-Diagonal Sum = 7)
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ HIVE Phase │ TDD Phase  │ Ports │ Commander            │ Verb    │ Domain   │
+├────────────┼────────────┼───────┼──────────────────────┼─────────┼──────────┤
+│ H (Hunt)   │ Research   │ 0+7   │ Lidless + Spider     │ SENSE+  │ Past     │
+│            │            │       │                      │ DECIDE  │ (memory) │
+├────────────┼────────────┼───────┼──────────────────────┼─────────┼──────────┤
+│ I (Interlock)│ RED      │ 1+6   │ Weaver + Kraken      │ FUSE+   │ Present  │
+│            │            │       │                      │ STORE   │ (connect)│
+├────────────┼────────────┼───────┼──────────────────────┼─────────┼──────────┤
+│ V (Validate)│ GREEN     │ 2+5   │ Magus + Pyre         │ SHAPE+  │ Future   │
+│            │            │       │                      │ DEFEND  │ (verify) │
+├────────────┼────────────┼───────┼──────────────────────┼─────────┼──────────┤
+│ E (Evolve) │ REFACTOR   │ 3+4   │ Storm + Regnant      │ DELIVER+│ Iterate  │
+│            │            │       │                      │ TEST    │ (N+1)    │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Strange Loop
+```
+E → H(N+1): After REFACTOR, start new HUNT cycle with accumulated knowledge
+```
+
+### Powers of 8 Vision (User Note)
+> "The HIVE/8 workflow was never designed to be sequential, that's only bootstrap. It should be powers of 8: 1010 at minimum"
+
+**Interpretation**: Multiple agents can work in parallel across ports. Bootstrap is sequential (1 agent). Production is concurrent (8+ agents swarming).
+
+---
+
+## 📡 Signal Emission Protocol
+
+### Stigmergy Schema (8 Fields)
+```json
+{
+  "ts": "2025-12-30T00:00:00Z",
+  "mark": 1.0,
+  "pull": "downstream",
+  "msg": "HUNT: [what you found or did]",
+  "type": "signal",
+  "hive": "H",
+  "gen": 87,
+  "port": 0
+}
+```
+
+### When to Emit (HUNT Phase)
+| Action | Signal Example |
+|--------|----------------|
+| Start searching | `"HUNT: Searching Memory Bank for MediaPipe exemplars"` |
+| Found exemplar | `"HUNT: Found Gen83 Gold Baton gesture spec - complete architecture"` |
+| Tavily result | `"HUNT: Tavily grounded Rapier physics spring-damper API"` |
+| Trade-off analysis | `"HUNT: Comparing 1€ vs Rapier - Rapier has prediction"` |
+| Options explored | `"HUNT: 5 target adapters documented in PIPELINE_TRADE_STUDY.md"` |
+
+### Emit Command
 ```bash
-# Run task: "🔍 Query Memory"
-# Or manually:
-python -c "import duckdb; con = duckdb.connect('../portable_hfo_memory_pre_hfo_to_gen84_2025-12-27T21-46-52/hfo_memory.duckdb', read_only=True); print(con.execute('SELECT COUNT(*) FROM artifacts').fetchone())"
+echo '{"ts":"2025-12-30T12:00:00Z","mark":1.0,"pull":"downstream","msg":"HUNT: [your message]","type":"signal","hive":"H","gen":87,"port":0}' >> sandbox/obsidianblackboard.jsonl
 ```
-
-### 2. Key Documents
-1. **[../GEN87_X1_GOLD_BATON_QUINE.md](../GEN87_X1_GOLD_BATON_QUINE.md)** - Full architecture (1,136 lines)
-2. **[../FORENSIC_ANALYSIS_AI_FAILURES_2025.md](../FORENSIC_ANALYSIS_AI_FAILURES_2025.md)** - Know the failure modes
-3. **[../context_payload_gen85/RAW_PAIN_GENESIS_WHY_HFO_EXISTS.md](../context_payload_gen85/RAW_PAIN_GENESIS_WHY_HFO_EXISTS.md)** - Why this exists
-
-### 3. Work in Sandbox
-All new work goes in `sandbox/`. This is your safe write zone.
 
 ---
 
-## 🏗️ HFO Architecture Quick Reference
+## 🔑 Key Documents to Read
 
-### The 8 Legendary Commanders
-```
-Port │ Commander        │ Verb    │ HIVE Phase
-─────┼──────────────────┼─────────┼────────────
-  0  │ Lidless Legion   │ SENSE   │ H (Hunt)
-  1  │ Web Weaver       │ FUSE    │ I (Interlock)
-  2  │ Mirror Magus     │ SHAPE   │ V (Validate)
-  3  │ Spore Storm      │ DELIVER │ E (Evolve)
-  4  │ Red Regnant      │ TEST    │ E (Evolve)
-  5  │ Pyre Praetorian  │ DEFEND  │ V (Validate)
-  6  │ Kraken Keeper    │ STORE   │ I (Interlock)
-  7  │ Spider Sovereign │ DECIDE  │ H (Hunt)
-```
+| Priority | File | Purpose |
+|----------|------|---------|
+| 1 | `sandbox/specs/PIPELINE_TRADE_STUDY.md` | ALL your Hunt findings |
+| 2 | `sandbox/specs/HEXAGONAL_CDD_EARS_SPEC.md` | Contract requirements |
+| 3 | `sandbox/AGENTS.md` | Sandbox-specific instructions |
+| 4 | `../GEN87_X1_GOLD_BATON_QUINE.md` | Full HFO architecture |
+| 5 | Memory Bank: Gen83 Gold Baton | Original gesture spec |
 
-### HIVE/8 Phases
-- **H** (Hunt): Research, plan → Ports 0+7
-- **I** (Interlock): TDD RED, failing tests → Ports 1+6
-- **V** (Validate): TDD GREEN, make tests pass → Ports 2+5
-- **E** (Evolve): TDD REFACTOR, prepare N+1 → Ports 3+4
+---
+
+## ✅ Do (HUNT Phase)
+
+- ✅ Search Memory Bank for prior art
+- ✅ Use Tavily to ground web claims
+- ✅ Read existing specs before writing new ones
+- ✅ Document trade-offs in PIPELINE_TRADE_STUDY.md
+- ✅ Emit HUNT signals to blackboard
+- ✅ Use Sequential Thinking for complex decisions
+- ✅ Use Context7 for library documentation
+
+## ❌ Do NOT (HUNT Phase)
+
+- ❌ Write production code (save for I phase)
+- ❌ Finalize contracts (save for I phase)
+- ❌ Run tests (nothing to test yet)
+- ❌ Emit I/V/E signals (wrong phase)
+- ❌ Hallucinate - if unsure, SEARCH
+- ❌ Delete files without permission
+- ❌ Write outside sandbox/
+
+---
+
+## 🎯 Next Phase (INTERLOCK)
+
+When Hunt is complete, transition to I phase:
+1. Define Zod contracts for all ports
+2. Write failing tests (TDD RED)
+3. Create adapter interfaces
+4. Emit `"hive": "I"` signals
+
+**Hunt → Interlock Trigger**: User says "ready for I phase" or all exemplars documented.
 
 ---
 
@@ -105,4 +288,4 @@ Port │ Commander        │ Verb    │ HIVE Phase
 
 ---
 
-*Gen87.X3 | Pre-configured | Auto-approve enabled | 2025-12-29*
+*Gen87.X3 | HUNT Phase Active | Auto-approve enabled | 2025-12-30*

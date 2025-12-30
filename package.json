@@ -17,7 +17,11 @@
 		"lint:fix": "biome check --write .",
 		"format": "biome format --write .",
 		"typecheck": "tsc --noEmit",
-		"prepare": "husky"
+		"prepare": "husky",
+		"orchestration:test": "tsx src/orchestration/test-orchestration.ts",
+		"temporal:worker": "tsx src/orchestration/temporal.worker.ts",
+		"temporal:client": "tsx src/orchestration/temporal.client.ts",
+		"crewai:test": "python src/orchestration/crewai_hive.py"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^1.9.0",
@@ -26,13 +30,24 @@
 		"@playwright/test": "^1.57.0",
 		"@types/node": "^22.0.0",
 		"@vitest/coverage-v8": "^2.1.0",
-		"fast-check": "^3.23.0",
+		"fast-check": "^3.23.2",
 		"husky": "^9.0.0",
 		"tsx": "^4.19.0",
 		"typescript": "^5.6.0",
 		"vitest": "^2.1.0"
 	},
 	"dependencies": {
-		"zod": "^3.23.0"
+		"@langchain/core": "^1.1.8",
+		"@langchain/langgraph": "^1.0.7",
+		"@langchain/openai": "^1.2.0",
+		"@mediapipe/tasks-vision": "^0.10.22-rc.20250304",
+		"@temporalio/activity": "^1.14.0",
+		"@temporalio/client": "^1.14.0",
+		"@temporalio/worker": "^1.14.0",
+		"@temporalio/workflow": "^1.14.0",
+		"dotenv": "^17.2.3",
+		"openai": "^6.15.0",
+		"xstate": "^5.25.0",
+		"zod": "^3.25.76"
 	}
 }

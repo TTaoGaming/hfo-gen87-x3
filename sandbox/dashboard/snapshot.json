@@ -1,45 +1,45 @@
 {
-  "generated_at": "2025-12-30T08:42:20Z",
-  "workspace": "C:\\Dev\\active\\hfo_gen87_x3",
-  "git": {
-    "total_commits": "10",
-    "commits_since_main": "4",
-    "latest_commit_hash": "01e4000",
-    "latest_commit_message": "chore(hunt): tooling recommendations + EARS spec",
-    "branch": "gen87-x3/develop",
-    "uncommitted_changes": 3
-  },
-  "tests": {
-    "tests_passed": 10,
-    "tests_failed": 0,
-    "tests_total": 10,
-    "test_success_rate": "100%"
-  },
-  "specs": {
-    "HEXAGONAL_CDD_EARS_SPEC.md": { "exists": true, "lines": 205 },
-    "PIPELINE_TRADE_STUDY.md": { "exists": true, "lines": 837 },
-    "TOOLING_RECOMMENDATIONS.md": { "exists": true, "lines": 225 },
-    "W3C_GESTURE_CONTROL_PLANE_SPEC.md": { "exists": true, "lines": 635 }
-  },
-  "blackboard": {
-    "exists": true,
-    "total_signals": 30,
-    "by_phase": { "H": 29, "I": 1, "V": 0, "E": 0 },
-    "latest_timestamp": "2025-12-29T22:40:00Z"
-  },
-  "implementation": {
-    "contracts/gesture-frame.ts": false,
-    "contracts/pointer-event.ts": false,
-    "smoothing/one-euro.ts": false,
-    "fsm/gesture-machine.ts": false,
-    "adapters/dom-adapter.ts": false,
-    "adapters/v86-adapter.ts": false,
-    "adapters/excalidraw-adapter.ts": false
-  },
-  "progress": {
-    "milestones_completed": 3,
-    "milestones_total": 8,
-    "percentage": "38%",
-    "current_phase": "I (INTERLOCK)"
-  }
+	"generated_at": "2025-12-30T08:42:20Z",
+	"workspace": "C:\\Dev\\active\\hfo_gen87_x3",
+	"git": {
+		"total_commits": "10",
+		"commits_since_main": "4",
+		"latest_commit_hash": "01e4000",
+		"latest_commit_message": "chore(hunt): tooling recommendations + EARS spec",
+		"branch": "gen87-x3/develop",
+		"uncommitted_changes": 3
+	},
+	"tests": {
+		"tests_passed": 10,
+		"tests_failed": 0,
+		"tests_total": 10,
+		"test_success_rate": "100%"
+	},
+	"specs": {
+		"HEXAGONAL_CDD_EARS_SPEC.md": { "exists": true, "lines": 205 },
+		"PIPELINE_TRADE_STUDY.md": { "exists": true, "lines": 837 },
+		"TOOLING_RECOMMENDATIONS.md": { "exists": true, "lines": 225 },
+		"W3C_GESTURE_CONTROL_PLANE_SPEC.md": { "exists": true, "lines": 635 }
+	},
+	"blackboard": {
+		"exists": true,
+		"total_signals": 30,
+		"by_phase": { "H": 29, "I": 1, "V": 0, "E": 0 },
+		"latest_timestamp": "2025-12-29T22:40:00Z"
+	},
+	"implementation": {
+		"contracts/gesture-frame.ts": false,
+		"contracts/pointer-event.ts": false,
+		"smoothing/one-euro.ts": false,
+		"fsm/gesture-machine.ts": false,
+		"adapters/dom-adapter.ts": false,
+		"adapters/v86-adapter.ts": false,
+		"adapters/excalidraw-adapter.ts": false
+	},
+	"progress": {
+		"milestones_completed": 3,
+		"milestones_total": 8,
+		"percentage": "38%",
+		"current_phase": "I (INTERLOCK)"
+	}
 }

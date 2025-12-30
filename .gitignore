@@ -9,3 +9,6 @@ test-results/
 Thumbs.db
 .history/
 .cursor/
+
+# MCP config with secrets
+.vscode/mcp.json

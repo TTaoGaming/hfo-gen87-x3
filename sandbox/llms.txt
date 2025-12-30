@@ -1,28 +1,69 @@
 # Gen87.X3 Sandbox - W3C Gesture Control Plane
 # Quick context for LLMs - READ THIS FIRST
 
-## STATUS: HUNT PHASE ACTIVE (H)
-- Finding exemplars, exploring options
-- NOT deciding on final architecture yet
-- Blackboard: sandbox/obsidianblackboard.jsonl
+## STATUS: ✅ HUNT COMPLETE → READY FOR INTERLOCK
+- **Phase**: H (Hunt) → 100% COMPLETE
+- **Next**: I (Interlock) - TDD RED phase
+- **Signals**: 61 signals in blackboard
+- **Last updated**: 2025-12-30T03:10Z
 
-## USER VISION
-MediaPipe -> Physics (1E) -> FSM (XState) -> W3C Pointer -> TargetAdapter -> ANY TARGET
+## HOW TO CONTINUE (Next Agent)
 
-## TARGET ADAPTERS DISCOVERED
-- DOM: dispatchEvent()
-- Excalidraw: onPointerDown/Up callbacks
-- tldraw: DOM renderer
-- v86: keyboard_send_scancodes()
-- js-dos: setMouseSensitivity()
-- EmulatorJS: EJS_defaultControls
-- daedalOS: Full web OS (12.2K stars)
-- Puter: Cloud OS (38K stars)
-- WinBox.js: 4KB window manager
+### Step 1: Read Last Handoff
+```powershell
+Get-Content sandbox/obsidianblackboard.jsonl | Select-Object -Last 1 | ConvertFrom-Json
+```
 
-## KEY DOCS
-- sandbox/specs/W3C_GESTURE_CONTROL_PLANE_SPEC.md
-- Memory Bank: Gen83 Gold Baton
+### Step 2: Understand Context
+- **Mission**: W3C Gesture Control Plane - Total Tool Virtualization
+- **Pipeline**: MediaPipe → Rapier/1€ → XState → W3C Pointer → TargetAdapter
+- **Targets**: DOM, Excalidraw (54K⭐), tldraw (15K⭐), v86 (19K⭐), js-dos
+
+### Step 3: Start I Phase Work
+```bash
+# First task: Create Zod contracts
+mkdir -p sandbox/src/contracts
+# Write failing tests FIRST (TDD RED)
+# Then implement contracts to make tests pass (TDD GREEN)
+```
+
+### Step 4: Emit I Phase Signal
+```json
+{"ts":"...","mark":1,"pull":"downstream","msg":"INTERLOCK: Starting TDD RED - writing failing contract tests","type":"signal","hive":"I","gen":87,"port":1}
+```
+
+## PENDING TASKS (I-PHASE)
+1. ⏳ `src/contracts/gesture-frame.contract.ts` - GestureFrame Zod schema
+2. ⏳ `src/contracts/pointer-stream.contract.ts` - PointerStream Zod schema  
+3. ⏳ `src/contracts/target-adapter.contract.ts` - TargetAdapter interface
+4. ⏳ `tests/contracts/*.test.ts` - Failing contract tests (TDD RED)
+5. ⏳ `src/adapters/dom.adapter.ts` - First adapter skeleton
+
+## COMPLETED (H-PHASE)
+- ✅ Memory Bank searched (6,423 artifacts, Gen83 Gold Baton found)
+- ✅ 15+ Tavily searches for tech grounding
+- ✅ PIPELINE_TRADE_STUDY.md (900+ lines)
+- ✅ PIPELINE_TRADE_STUDY_V2.md (Hexagonal CDD)
+- ✅ HEXAGONAL_CDD_EARS_SPEC.md (25 requirements)
+- ✅ SWARM_ORCHESTRATION_GUIDE.md (8 sections)
+- ✅ HANDOFF_PROTOCOL.md (formal schema)
+- ✅ Orchestration tested (OpenRouter, LangGraph, CrewAI)
+- ✅ Swarm utilities exposed (index.ts)
+
+## ORCHESTRATION (SMOKE TESTED ✅)
+- OpenRouter: LLM gateway (Llama 3.3 70B free)
+- LangGraph: HIVE/8 state machine (H→I→V→E)
+- CrewAI: 8 commander agents ready
+- Memory Bank: 6,423 artifacts searchable
+- Test: `npx tsx src/orchestration/test-orchestration.ts`
+
+## KEY DOCS (Priority Order)
+1. `sandbox/llms.txt` - THIS FILE (quick start)
+2. `AGENTS.md` - Full HIVE/8 workflow rules
+3. `sandbox/specs/HANDOFF_PROTOCOL.md` - Handoff schema
+4. `sandbox/specs/PIPELINE_TRADE_STUDY.md` - Hunt findings (900+ lines)
+5. `sandbox/specs/SWARM_ORCHESTRATION_GUIDE.md` - Orchestration docs
 
 ## The Mantra
 The spider weaves the web that weaves the spider.
+Gen87.X3 | HUNT→INTERLOCK | 2025-12-30
