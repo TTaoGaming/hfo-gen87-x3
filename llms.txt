@@ -1,0 +1,55 @@
+# HFO Gen87.X3 — Pre-Configured AI Workspace
+
+> Generation: 87.X3
+> Date: 2025-12-29
+> Status: AUTO-APPROVE ENABLED - All tools ready
+
+## What Is This?
+
+Pre-configured workspace for HFO development with:
+- All MCP tools auto-approved (GitHub, Memory, Playwright, Context7)
+- Memory bank mounted (6,423 artifacts)
+- Gen85 codebase reference (687 tests)
+- Context payloads available
+
+## Tools Ready
+
+✅ GitHub MCP - Repo/issue/PR management
+✅ Memory MCP - Knowledge graph persistence
+✅ Playwright MCP - Browser automation
+✅ Context7 MCP - Library docs
+✅ Sequential Thinking - Chain-of-thought
+✅ Filesystem MCP - Direct file access
+
+## Key Files
+
+1. ../GEN87_X1_GOLD_BATON_QUINE.md - Full architecture (READ THIS)
+2. ../FORENSIC_ANALYSIS_AI_FAILURES_2025.md - Failure modes
+3. sandbox/ - YOUR WRITE ZONE
+
+## Architecture
+
+HIVE/8 = H(Hunt) → I(Interlock) → V(Validate) → E(Evolve)
+       = Research → RED → GREEN → REFACTOR
+
+8 Ports: 0=SENSE, 1=FUSE, 2=SHAPE, 3=DELIVER, 4=TEST, 5=DEFEND, 6=STORE, 7=DECIDE
+
+## Memory Query
+
+```python
+import duckdb
+con = duckdb.connect('../portable_hfo_memory_pre_hfo_to_gen84_2025-12-27T21-46-52/hfo_memory.duckdb', read_only=True)
+con.execute('LOAD fts')
+results = con.execute("SELECT filename, generation, fts_main_artifacts.match_bm25(id, 'your query') as score FROM artifacts WHERE score IS NOT NULL ORDER BY score DESC LIMIT 10").fetchall()
+```
+
+## Rules
+
+1. NEVER hallucinate - cite sources
+2. ALWAYS work in sandbox/
+3. NEVER delete without permission
+4. VERIFY with tools, not assumptions
+
+## The Mantra
+
+> "The spider weaves the web that weaves the spider."

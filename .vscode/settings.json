@@ -1,0 +1,65 @@
+{
+	// ═══════════════════════════════════════════════════════════════
+	// GITHUB COPILOT - AUTO APPROVE ALL TOOLS
+	// ═══════════════════════════════════════════════════════════════
+	"chat.tools.autoApprove": true,
+	"github.copilot.chat.agent.autoApprove": true,
+	"github.copilot.chat.tools.autoApprove": true,
+	"chat.agent.autoApprove": true,
+	"chat.mcp.autoApprove": true,
+	"github.copilot.chat.runCommand.enabled": true,
+
+	// ═══════════════════════════════════════════════════════════════
+	// MCP SERVERS
+	// ═══════════════════════════════════════════════════════════════
+	"mcp": {
+		"servers": {
+			"github": {
+				"command": "npx",
+				"args": ["-y", "@modelcontextprotocol/server-github"],
+				"env": {
+					"GITHUB_PERSONAL_ACCESS_TOKEN": "${env:GITHUB_TOKEN}"
+				}
+			},
+			"memory": {
+				"command": "npx",
+				"args": ["-y", "@modelcontextprotocol/server-memory"]
+			},
+			"playwright": {
+				"command": "npx",
+				"args": ["-y", "@playwright/mcp@latest"]
+			},
+			"context7": {
+				"command": "npx",
+				"args": ["-y", "@context7/mcp-server"]
+			},
+			"sequential-thinking": {
+				"command": "npx",
+				"args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
+			},
+			"filesystem": {
+				"command": "npx",
+				"args": ["-y", "@modelcontextprotocol/server-filesystem", "C:/Dev/active"]
+			}
+		}
+	},
+
+	// ═══════════════════════════════════════════════════════════════
+	// EDITOR
+	// ═══════════════════════════════════════════════════════════════
+	"editor.formatOnSave": true,
+	"editor.defaultFormatter": "biomejs.biome",
+	"files.associations": {
+		"*.jsonl": "json",
+		"llms.txt": "markdown"
+	},
+
+	// ═══════════════════════════════════════════════════════════════
+	// SEARCH
+	// ═══════════════════════════════════════════════════════════════
+	"search.exclude": {
+		"**/node_modules": true,
+		"**/dist": true,
+		"**/.history": true
+	}
+}

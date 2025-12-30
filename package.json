@@ -1,0 +1,38 @@
+{
+	"name": "hfo-gen87-x3",
+	"version": "87.3.0",
+	"description": "HFO Gen87.X3 - Pre-configured AI Workspace with Enforcement",
+	"type": "module",
+	"main": "dist/index.js",
+	"scripts": {
+		"build": "tsc",
+		"dev": "tsx watch src/index.ts",
+		"test": "vitest run",
+		"test:watch": "vitest",
+		"test:coverage": "vitest run --coverage",
+		"test:e2e": "playwright test",
+		"test:e2e:ui": "playwright test --ui",
+		"test:changed": "vitest run --changed",
+		"lint": "biome check .",
+		"lint:fix": "biome check --write .",
+		"format": "biome format --write .",
+		"typecheck": "tsc --noEmit",
+		"prepare": "husky"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^1.9.0",
+		"@commitlint/cli": "^19.0.0",
+		"@commitlint/config-conventional": "^19.0.0",
+		"@playwright/test": "^1.57.0",
+		"@types/node": "^22.0.0",
+		"@vitest/coverage-v8": "^2.1.0",
+		"fast-check": "^3.23.0",
+		"husky": "^9.0.0",
+		"tsx": "^4.19.0",
+		"typescript": "^5.6.0",
+		"vitest": "^2.1.0"
+	},
+	"dependencies": {
+		"zod": "^3.23.0"
+	}
+}

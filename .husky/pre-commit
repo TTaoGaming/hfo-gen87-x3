@@ -1,0 +1,27 @@
+#!/bin/sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🔍 Pre-commit: Running enforcement gates..."
+
+# Gate 1: TypeScript type check
+echo "📋 Gate 1: TypeCheck..."
+npm run typecheck || {
+  echo "❌ TypeCheck failed. Fix type errors before committing."
+  exit 1
+}
+
+# Gate 2: Lint
+echo "📋 Gate 2: Lint..."
+npm run lint || {
+  echo "❌ Lint failed. Fix lint errors before committing."
+  exit 1
+}
+
+# Gate 3: Tests (only changed files for speed)
+echo "📋 Gate 3: Tests..."
+npm run test:changed || {
+  echo "❌ Tests failed. Fix failing tests before committing."
+  exit 1
+}
+
+echo "✅ All gates passed!"
