@@ -150,12 +150,38 @@ type PointerEventOut =
 
 ---
 
+## 📊 REAL PROGRESS DASHBOARD (ANTI-HALLUCINATION)
+
+**ALWAYS check the dashboard before claiming progress:**
+
+| Resource | Purpose |
+|----------|---------|
+| [dashboard/DASHBOARD.md](dashboard/DASHBOARD.md) | Human-readable progress with verification commands |
+| [dashboard/llms.txt](dashboard/llms.txt) | Quick LLM context (what's REAL vs claimed) |
+| [dashboard/snapshot.json](dashboard/snapshot.json) | Machine-readable metrics |
+| [dashboard/index.html](dashboard/index.html) | Visual dashboard (open in browser) |
+
+**Generate fresh metrics:**
+```bash
+python sandbox/dashboard/generate_dashboard.py --json
+```
+
+**Current Status (2025-12-30):**
+- ✅ 38% complete (3/8 milestones)
+- ✅ HUNT phase DONE (4 specs, 29 signals)
+- 🔄 INTERLOCK phase STARTING (1 signal)
+- ❌ NO implementation code exists yet
+
+---
+
 ## Do NOT
 
 - ❌ Write code outside sandbox/
 - ❌ Skip TDD - always write tests first
 - ❌ Invent new patterns - compose existing exemplars only
 - ❌ Hallucinate APIs - verify with Tavily or Context7
+- ❌ Claim progress without verifiable evidence
+- ❌ Trust handoff documents blindly - run verification commands
 
 ## Do
 
@@ -164,8 +190,10 @@ type PointerEventOut =
 - ✅ Use Zod for all contracts
 - ✅ Follow Gen83 Gold Baton spec exactly
 - ✅ Ground claims with Tavily searches
+- ✅ Update dashboard after completing milestones
+- ✅ Run `python sandbox/dashboard/generate_dashboard.py` before starting work
 
 ---
 
-*The spider weaves the web that weaves the spider.*
-*Gen87.X3 Sandbox | 2025-12-29*
+*"Trust, but verify." — All progress must be machine-verifiable.*
+*Gen87.X3 Sandbox | Updated 2025-12-30*
