@@ -16,3 +16,9 @@
 {"ts":"2025-12-29T11:40:00Z","mark":1.0,"pull":"downstream","msg":"HUNT: EXEMPLAR Puter (38K stars) - cloud OS, AGPL-3.0, full desktop in browser, launched March 2024","type":"signal","hive":"H","gen":87,"port":0}
 {"ts":"2025-12-29T11:45:00Z","mark":1.0,"pull":"downstream","msg":"HUNT: KEY INSIGHT - iframe injection via element.dispatchEvent() same-origin, postMessage() cross-origin","type":"signal","hive":"H","gen":87,"port":7}
 {"ts":"2025-12-29T11:50:00Z","mark":1.0,"pull":"downstream","msg":"HUNT: USER VISION CONFIRMED - MediaPipe → Physics (1€) → FSM (XState) → W3C Pointer → TargetAdapter → ANY TARGET","type":"signal","hive":"H","gen":87,"port":7}
+{"ts":"2025-12-29T12:00:00Z","mark":1.0,"pull":"downstream","msg":"HUNT: Created PIPELINE_TRADE_STUDY.md - 5-stage matrix analysis with Mermaid diagrams","type":"event","hive":"H","gen":87,"port":0}
+{"ts":"2025-12-29T12:30:00Z","mark":1.0,"pull":"downstream","msg":"HUNT: Added Rapier physics engine - spring-damper smoothing + predictive lookahead for latency compensation","type":"signal","hive":"H","gen":87,"port":0}
+{"ts":"2025-12-29T22:01:36Z","mark":1.0,"pull":"downstream","msg":"HUNT: Extended trade study with WebHID, Kalman, Behavior Trees, Pointer Lock API options","type":"event","hive":"H","gen":87,"port":0}
+{"ts":"2025-12-29T22:01:36Z","mark":1.0,"pull":"downstream","msg":"HUNT: Added OS-level targets - nut.js, robotjs, Tauri, Electron, Puter.js cloud OS","type":"event","hive":"H","gen":87,"port":0}
+{"ts":"2025-12-29T22:01:36Z","mark":1.0,"pull":"downstream","msg":"HUNT: Created STANDARDIZED OUTPUT CONTRACT - GestureEvent Zod schema with position/velocity/prediction/pointer fields","type":"event","hive":"H","gen":87,"port":0}
+

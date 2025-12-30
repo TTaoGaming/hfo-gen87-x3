@@ -49,6 +49,14 @@
 	// ═══════════════════════════════════════════════════════════════
 	"editor.formatOnSave": true,
 	"editor.defaultFormatter": "biomejs.biome",
+
+	// Reduce code action overhead (fixes stuck Biome LSP)
+	"editor.codeActionsOnSave": {
+		"quickfix.biome": "explicit",
+		"source.organizeImports.biome": "explicit"
+	},
+	"editor.lightbulb.enabled": "off",
+	"typescript.suggest.autoImports": false,
 	"files.associations": {
 		"*.jsonl": "json",
 		"llms.txt": "markdown"
