@@ -406,7 +406,7 @@ class DaedalOSAdapter implements TargetPort {
 
 ## 9. Notes from User (ttao-notes-2025-12-29)
 
-> "need to note a few things. we need to visualize the state machine in a diagram to confirm. what I want is a tighter cone for palm gating and a longer arming to gesture sequence since open palm will transition to none and then to the gesture. so it's not a open palm to pointer for commit it's open palm to none to pointer, we need to have a evolutionary tuning algorithm for the smoothed and prediction pointer cursor, the idea is that it gets better with more data like a ring buffer or something to compare prediction with truth and then adjust to get better tracking, it's evolutionary one euro and physics tuning"
+> "need to note a few things. we need to visualize the state machine in a diagram to confirm. what I want is a tighter cone for palm gating and a longer arming to gesture sequence since open palm will transition to none and then to the gesture. so it's not a open palm to pointer for commit it's open pal to none to pointer, we need to have a evolutionary tuning algorithm for the smoothed and prediction pointer cursor, the idea is that it gets better with more data like a ring buffer or something to compare prediction with truth and then adjust to get better tracking, it's evolutionary one euro and physics tuning"
 
 **Interpreted Requirements**:
 1. ✅ FSM visualization (Mermaid in Section 5.2)
@@ -416,7 +416,166 @@ class DaedalOSAdapter implements TargetPort {
 
 ---
 
-## 10. References
+## 10. Hexagonal Polymorphic Adapter Architecture
+
+### 10.1 Architecture Rating: 9.5/10
+
+The architecture now supports **full UI layer polymorphism** via two new ports:
+
+| Port | Purpose | Adapters | Status |
+|------|---------|----------|--------|
+| **OverlayPort** | Cursor/skeleton visualization | PixiOverlay, Canvas2DOverlay, DOMOverlay | ✅ Defined |
+| **UIShellPort** | Window manager/tiling | MosaicShell, GoldenLayoutShell, PuterShell, RawHTMLShell | ✅ Defined |
+
+### 10.2 Complete Port Inventory
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                       GESTURE CONTROL PLANE PORTS                            │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  INPUT PORTS (Driven)                OUTPUT PORTS (Driving)                 │
+│  ─────────────────────               ──────────────────────                 │
+│  SensorPort ← MediaPipe              EmitterPort → W3C Pointer              │
+│  SmootherPort ← 1€/Rapier            AdapterPort → DOM/Canvas/iframe        │
+│  FSMPort ← XState                    OverlayPort → PixiJS/Canvas2D/DOM      │
+│                                      UIShellPort → Mosaic/Golden/Puter      │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 10.3 Full Pipeline Flow
+
+```
+Camera → [SensorPort] → [SmootherPort] → [FSMPort] → [EmitterPort]
+              ↓               ↓              ↓             ↓
+         MediaPipe         1€ Filter      XState      PointerEvent
+                               ↓              ↓             ↓
+                          [OverlayPort]       ↓      [AdapterPort]
+                               ↓              ↓             ↓
+                          PixiJS/Canvas   State Viz    Target Element
+                               ↓                           ↓
+                          ─────────────[UIShellPort]───────────
+                                           ↓
+                               Mosaic/GoldenLayout/Puter/Raw
+```
+
+### 10.4 Config-Driven Adapter Swap
+
+```typescript
+// sandbox/src/contracts/schemas.ts defines these enums
+const gestureConfig = {
+  // Core pipeline
+  sensor: 'mediapipe',      // 'mediapipe' | 'tensorflowjs'
+  smoother: 'one-euro',     // 'one-euro' | 'rapier' | 'kalman'
+  fsm: 'xstate',            // 'xstate' | 'robot' | 'custom'
+  
+  // UI Layer (NEW - swappable)
+  overlay: 'pixi',          // 'pixi' | 'canvas' | 'dom'
+  shell: 'golden',          // 'mosaic' | 'golden' | 'puter' | 'daedalos' | 'raw'
+  
+  // Targets within shell
+  tiles: [
+    { id: 'canvas', type: 'pixi', title: 'Visualization' },
+    { id: 'whiteboard', type: 'excalidraw', title: 'Excalidraw' },
+    { id: 'emulator', type: 'v86', title: 'FreeDOS', config: { os: 'freedos' } },
+    { id: 'cloud', type: 'puter', title: 'Puter Cloud' },
+  ],
+};
+```
+
+---
+
+## 11. UI Shell Adapters
+
+### 11.1 Available Shell Types
+
+| Shell | Package | Stars | Features | Complexity |
+|-------|---------|-------|----------|------------|
+| **react-mosaic** | `react-mosaic-component` | 4K | Tiling, Blueprint | Low |
+| **golden-layout** | `golden-layout` | 6.6K | Tabs, popouts, themes | Medium |
+| **Puter** | `@puter/puter-js` | 38K | Cloud OS, AI, storage | Medium |
+| **daedalOS** | N/A (embed) | 12K | Full desktop | High |
+| **Raw HTML** | None | - | Simple divs | Very Low |
+
+### 11.2 Shell Port Interface
+
+```typescript
+// sandbox/src/contracts/ports.ts - UIShellPort
+interface UIShellPort {
+  initialize(container: HTMLElement, config: UIShellConfig): Promise<void>;
+  getTileTarget(tileId: string): AdapterTarget | null;
+  getTileIds(): string[];
+  addTile(config: TileConfig): void;
+  removeTile(tileId: string): void;
+  splitTile(tileId: string, direction: 'horizontal' | 'vertical', newTile: TileConfig): void;
+  getLayout(): LayoutState;
+  setLayout(state: LayoutState): void;
+  onLayoutChange(callback: (layout: LayoutState) => void): () => void;
+  dispose(): void;
+}
+```
+
+### 11.3 Tile Types
+
+| Type | Description | Adapter Required |
+|------|-------------|------------------|
+| `pixi` | PixiJS canvas | PixiAdapter |
+| `canvas` | Raw Canvas2D | Canvas2DAdapter |
+| `dom` | DOM element | DOMAdapter |
+| `iframe` | Sandboxed iframe | IframeAdapter |
+| `excalidraw` | Excalidraw whiteboard | ExcalidrawAdapter |
+| `tldraw` | tldraw canvas | TldrawAdapter |
+| `v86` | x86 emulator | V86Adapter |
+| `jsdos` | DOSBox WASM | JsDosAdapter |
+| `puter` | Puter cloud terminal | PuterAdapter |
+| `custom` | Custom implementation | CustomAdapter |
+
+---
+
+## 12. Overlay Port
+
+### 12.1 Overlay Types
+
+| Type | Renderer | Performance | Dependencies |
+|------|----------|-------------|--------------|
+| `pixi` | PixiJS WebGL | ⚡ Fastest | `pixi.js`, `@pixi/react` |
+| `canvas` | Canvas2D | Good | None |
+| `dom` | DOM elements | Slowest | None |
+
+### 12.2 Overlay Port Interface
+
+```typescript
+// sandbox/src/contracts/ports.ts - OverlayPort
+interface OverlayPort {
+  initialize(container: HTMLElement): Promise<void>;
+  setCursor(
+    raw: { x: number; y: number } | null,
+    smoothed: { x: number; y: number } | null,
+    predicted: { x: number; y: number } | null,
+    state: CursorState,
+  ): void;
+  setLandmarks(landmarks: NormalizedLandmark[] | null): void;
+  setVisible(visible: boolean): void;
+  setConfig(config: Partial<OverlayConfig>): void;
+  getBounds(): { width: number; height: number };
+  dispose(): void;
+}
+```
+
+### 12.3 Cursor States
+
+| State | Visual | Meaning |
+|-------|--------|---------|
+| `hidden` | No cursor | System inactive |
+| `tracking` | Gray cursor | Hand detected, not armed |
+| `armed` | Green cursor | Ready to commit gesture |
+| `active` | Blue cursor | Gesture in progress |
+| `error` | Red cursor | Tracking lost |
+
+---
+
+## 13. References
 
 | Source | URL | Purpose |
 |--------|-----|---------|
@@ -425,6 +584,11 @@ class DaedalOSAdapter implements TargetPort {
 | Rapier Physics | dimforge.com/rapier | Prediction via physics |
 | XState v5 | stately.ai/docs | FSM implementation |
 | W3C Pointer Events | w3.org/TR/pointerevents | Output standard |
+| react-mosaic | github.com/nomcopter/react-mosaic | Tiling window manager |
+| golden-layout | github.com/golden-layout/golden-layout | Multi-window layout |
+| Puter | github.com/HeyPuter/puter | Cloud OS platform |
+| PixiJS | pixijs.com | 2D WebGL renderer |
+| @pixi/react | github.com/pixijs/pixi-react | React bindings |
 | Excalidraw | github.com/excalidraw/excalidraw | Target: whiteboard |
 | tldraw | github.com/tldraw/tldraw | Target: canvas |
 | v86 | github.com/copy/v86 | Target: x86 emulator |
@@ -432,4 +596,4 @@ class DaedalOSAdapter implements TargetPort {
 
 ---
 
-*Gen87.X3 | W3C Pointer Gesture Control Plane | 2025-12-30*
+*Gen87.X3 | W3C Pointer Gesture Control Plane | 2025-12-30 | Updated with OverlayPort + UIShellPort*

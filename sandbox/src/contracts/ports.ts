@@ -190,6 +190,130 @@ export interface PipelinePort {
 }
 
 // ============================================================================
+// OVERLAY PORT (Cursor Visualization)
+// Ref: specs/W3C_POINTER_GESTURE_CONTROL_PLANE_20251230.md Section 8
+// Implemented by: PixiOverlay, Canvas2DOverlay, DOMOverlay
+// ============================================================================
+
+export interface OverlayPort {
+	/**
+	 * Initialize the overlay (create canvas, load assets)
+	 */
+	initialize(container: HTMLElement): Promise<void>;
+
+	/**
+	 * Update cursor position and state
+	 * @param raw - Raw (unfiltered) position (normalized 0-1)
+	 * @param smoothed - Smoothed position (normalized 0-1)
+	 * @param predicted - Predicted position (normalized 0-1, optional)
+	 * @param state - Current cursor state
+	 */
+	setCursor(
+		raw: { x: number; y: number } | null,
+		smoothed: { x: number; y: number } | null,
+		predicted: { x: number; y: number } | null,
+		state: import('./schemas.js').CursorState,
+	): void;
+
+	/**
+	 * Update hand skeleton visualization
+	 * @param landmarks - 21 hand landmarks (normalized 0-1) or null to hide
+	 */
+	setLandmarks(landmarks: import('./schemas.js').NormalizedLandmark[] | null): void;
+
+	/**
+	 * Show/hide the overlay
+	 */
+	setVisible(visible: boolean): void;
+
+	/**
+	 * Update overlay configuration
+	 */
+	setConfig(config: Partial<import('./schemas.js').OverlayConfig>): void;
+
+	/**
+	 * Get overlay bounds (for coordinate mapping)
+	 */
+	getBounds(): { width: number; height: number };
+
+	/**
+	 * Dispose resources
+	 */
+	dispose(): void;
+}
+
+// ============================================================================
+// UI SHELL PORT (Window Manager / Tiling Layout)
+// Ref: specs/W3C_POINTER_GESTURE_CONTROL_PLANE_20251230.md Section 11
+// Implemented by: MosaicShell, GoldenLayoutShell, DaedalOSShell, RawHTMLShell
+// ============================================================================
+
+export interface UIShellPort {
+	/**
+	 * Initialize the shell with configuration
+	 */
+	initialize(
+		container: HTMLElement,
+		config: import('./schemas.js').UIShellConfig,
+	): Promise<void>;
+
+	/**
+	 * Get the target element/canvas for a tile
+	 * Used to wire up AdapterPort for each tile
+	 */
+	getTileTarget(tileId: string): AdapterTarget | null;
+
+	/**
+	 * Get all tile IDs
+	 */
+	getTileIds(): string[];
+
+	/**
+	 * Add a new tile
+	 */
+	addTile(config: import('./schemas.js').TileConfig): void;
+
+	/**
+	 * Remove a tile
+	 */
+	removeTile(tileId: string): void;
+
+	/**
+	 * Split a tile
+	 */
+	splitTile(
+		tileId: string,
+		direction: 'horizontal' | 'vertical',
+		newTile: import('./schemas.js').TileConfig,
+	): void;
+
+	/**
+	 * Get current layout state (for serialization)
+	 */
+	getLayout(): import('./schemas.js').LayoutState;
+
+	/**
+	 * Set layout state (for deserialization)
+	 */
+	setLayout(state: import('./schemas.js').LayoutState): void;
+
+	/**
+	 * Subscribe to layout changes
+	 */
+	onLayoutChange(callback: (layout: import('./schemas.js').LayoutState) => void): () => void;
+
+	/**
+	 * Subscribe to tile focus changes
+	 */
+	onTileFocus(callback: (tileId: string) => void): () => void;
+
+	/**
+	 * Dispose resources
+	 */
+	dispose(): void;
+}
+
+// ============================================================================
 // FACTORY TYPES
 // For dependency injection
 // ============================================================================
@@ -200,4 +324,6 @@ export interface PortFactory {
 	createFSM(): FSMPort;
 	createEmitter(): EmitterPort;
 	createAdapter(target: AdapterTarget): AdapterPort;
+	createOverlay(type: import('./schemas.js').OverlayConfig): OverlayPort;
+	createShell(type: import('./schemas.js').ShellType): UIShellPort;
 }

@@ -255,3 +255,113 @@ export const PipelineConfigSchema = z.object({
 	pointerType: z.enum(['mouse', 'pen', 'touch']).default('touch'),
 });
 export type PipelineConfig = z.infer<typeof PipelineConfigSchema>;
+
+// ============================================================================
+// OVERLAY PORT SCHEMAS (Cursor Visualization Layer)
+// Ref: specs/W3C_POINTER_GESTURE_CONTROL_PLANE_20251230.md Section 8
+// ============================================================================
+
+export const CursorStateSchema = z.enum([
+	'hidden', // No cursor
+	'tracking', // Hand detected, not armed
+	'armed', // Ready to commit gesture
+	'active', // Gesture in progress
+	'error', // Tracking lost
+]);
+export type CursorState = z.infer<typeof CursorStateSchema>;
+
+export const OverlayConfigSchema = z.object({
+	/** Show raw (unfiltered) cursor */
+	showRaw: z.boolean().default(false),
+	/** Show smoothed cursor */
+	showSmoothed: z.boolean().default(true),
+	/** Show predicted cursor */
+	showPredicted: z.boolean().default(false),
+	/** Show hand skeleton */
+	showSkeleton: z.boolean().default(true),
+	/** Cursor size in pixels */
+	cursorSize: z.number().positive().default(20),
+	/** Colors for cursor states */
+	colors: z
+		.object({
+			raw: z.string().default('#ff0000'),
+			smoothed: z.string().default('#00ff00'),
+			predicted: z.string().default('#0000ff'),
+			skeleton: z.string().default('#ffff00'),
+		})
+		.default({}),
+});
+export type OverlayConfig = z.infer<typeof OverlayConfigSchema>;
+
+// ============================================================================
+// UI SHELL PORT SCHEMAS (Window Manager Layer)
+// Ref: specs/W3C_POINTER_GESTURE_CONTROL_PLANE_20251230.md Section 11
+// ============================================================================
+
+export const TileTypeSchema = z.enum([
+	'pixi', // PixiJS canvas
+	'canvas', // Raw Canvas2D
+	'dom', // DOM element
+	'iframe', // Iframe (for emulators)
+	'excalidraw', // Excalidraw whiteboard
+	'tldraw', // tldraw whiteboard
+	'v86', // v86 x86 emulator
+	'jsdos', // js-dos emulator
+	'puter', // Puter cloud OS
+	'custom', // Custom adapter
+]);
+export type TileType = z.infer<typeof TileTypeSchema>;
+
+export const TileConfigSchema = z.object({
+	id: z.string(),
+	type: TileTypeSchema,
+	title: z.string().optional(),
+	/** Adapter-specific configuration */
+	config: z.record(z.unknown()).default({}),
+});
+export type TileConfig = z.infer<typeof TileConfigSchema>;
+
+export const ShellTypeSchema = z.enum([
+	'mosaic', // react-mosaic tiling
+	'golden', // golden-layout
+	'daedalos', // daedalOS desktop
+	'raw', // Raw HTML divs
+]);
+export type ShellType = z.infer<typeof ShellTypeSchema>;
+
+export const LayoutNodeSchema: z.ZodType<LayoutNode> = z.lazy(() =>
+	z.union([
+		z.string(), // Leaf node (tile ID)
+		z.object({
+			direction: z.enum(['row', 'column']),
+			first: LayoutNodeSchema,
+			second: LayoutNodeSchema,
+			splitPercentage: z.number().min(0).max(100).default(50),
+		}),
+	]),
+);
+export type LayoutNode = string | {
+	direction: 'row' | 'column';
+	first: LayoutNode;
+	second: LayoutNode;
+	splitPercentage?: number;
+};
+
+export const LayoutStateSchema = z.object({
+	tiles: z.array(TileConfigSchema),
+	arrangement: LayoutNodeSchema,
+	shell: ShellTypeSchema,
+});
+export type LayoutState = z.infer<typeof LayoutStateSchema>;
+
+export const UIShellConfigSchema = z.object({
+	shell: ShellTypeSchema.default('raw'),
+	initialLayout: LayoutStateSchema.optional(),
+	/** Enable drag-drop tile rearrangement */
+	allowDragDrop: z.boolean().default(true),
+	/** Enable tile splitting */
+	allowSplit: z.boolean().default(true),
+	/** Enable tile closing */
+	allowClose: z.boolean().default(true),
+});
+export type UIShellConfig = z.infer<typeof UIShellConfigSchema>;
