@@ -46,6 +46,7 @@
 		"@temporalio/worker": "^1.14.0",
 		"@temporalio/workflow": "^1.14.0",
 		"dotenv": "^17.2.3",
+		"golden-layout": "^2.6.0",
 		"openai": "^6.15.0",
 		"xstate": "^5.25.0",
 		"zod": "^3.25.76"
