@@ -11,7 +11,6 @@ export default defineConfig({
 		['json', { outputFile: 'test-results/e2e-results.json' }],
 	],
 	use: {
-		baseURL: 'http://localhost:5173',
 		trace: 'on-first-retry',
 		screenshot: 'only-on-failure',
 	},
@@ -21,9 +20,10 @@ export default defineConfig({
 			use: { ...devices['Desktop Chrome'] },
 		},
 	],
-	webServer: {
-		command: 'npm run dev',
-		url: 'http://localhost:5173',
-		reuseExistingServer: !process.env.CI,
-	},
+	// WebServer disabled until we have an app to test
+	// webServer: {
+	// 	command: 'npm run dev',
+	// 	url: 'http://localhost:5173',
+	// 	reuseExistingServer: !process.env.CI,
+	// },
 });
