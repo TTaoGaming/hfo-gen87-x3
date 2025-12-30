@@ -29,9 +29,16 @@ export type GestureLabel = (typeof GestureLabels)[number];
 // ============================================================================
 // SENSOR PORT SCHEMAS (Port 0 - SENSE)
 // Input: VideoFrame metadata | Output: SensorFrame
+// @source HTMLVideoElement - https://html.spec.whatwg.org/multipage/media.html#htmlvideoelement
+// @source Performance.now() - https://www.w3.org/TR/hr-time-3/
+// TRL 9: W3C HTML Living Standard, W3C High Resolution Time L3
 // ============================================================================
 
-/** Video frame metadata - what the sensor receives */
+/**
+ * Video frame metadata - what the sensor receives
+ * @source https://html.spec.whatwg.org/multipage/media.html#htmlvideoelement
+ * @see W3C HTML Living Standard
+ */
 export const VideoFrameSchema = z.object({
 	timestamp: z.number().nonnegative().describe('Performance.now() in ms'),
 	width: z.number().int().positive(),
@@ -39,7 +46,12 @@ export const VideoFrameSchema = z.object({
 });
 export type VideoFrame = z.infer<typeof VideoFrameSchema>;
 
-/** Normalized 2D landmark (0-1 range) */
+/**
+ * Normalized 2D landmark (0-1 range)
+ * @source https://ai.google.dev/edge/mediapipe/solutions/vision/hand_landmarker#models
+ * @see MediaPipe Hand Landmarker - 21 landmarks per hand
+ * TRL 9: Google Production (used in Google Meet, Android)
+ */
 export const NormalizedLandmarkSchema = z.object({
 	x: z.number().min(0).max(1),
 	y: z.number().min(0).max(1),
@@ -48,7 +60,12 @@ export const NormalizedLandmarkSchema = z.object({
 });
 export type NormalizedLandmark = z.infer<typeof NormalizedLandmarkSchema>;
 
-/** Sensor output - raw gesture detection result */
+/**
+ * Sensor output - raw gesture detection result
+ * @source https://ai.google.dev/edge/mediapipe/solutions/vision/gesture_recognizer
+ * @see MediaPipe GestureRecognizerResult
+ * TRL 9: Google Production ML pipeline
+ */
 export const SensorFrameSchema = z.object({
 	ts: z.number().nonnegative().describe('Timestamp in ms'),
 	handId: z.enum(['left', 'right', 'none']),
@@ -67,7 +84,12 @@ export type SensorFrame = z.infer<typeof SensorFrameSchema>;
 // Source: 1€ Filter - https://gery.casiez.net/1euro/
 // ============================================================================
 
-/** Smoothed frame with filtered position and velocity estimate */
+/**
+ * Smoothed frame with filtered position and velocity estimate
+ * @source https://gery.casiez.net/1euro/ (1€ Filter - CHI 2012)
+ * @source https://dl.acm.org/doi/10.1145/2207676.2208639 (Casiez et al.)
+ * TRL 9: Peer-reviewed CHI publication, widely deployed
+ */
 export const SmoothedFrameSchema = z.object({
 	ts: z.number().nonnegative(),
 	handId: z.enum(['left', 'right', 'none']),
@@ -217,8 +239,14 @@ export type PointerEventOut = z.infer<typeof PointerEventOutSchema>;
 // Input: PointerEventOut | Output: void (side effect)
 // ============================================================================
 
+/**
+ * Adapter target configuration for polymorphic injection
+ * @source https://dom.spec.whatwg.org/#interface-eventtarget
+ * @see W3C DOM EventTarget interface
+ * TRL 9: W3C DOM Living Standard
+ */
 export const AdapterTargetSchema = z.object({
-	type: z.enum(['canvas', 'element', 'iframe', 'document']),
+	type: z.enum(['canvas', 'element', 'iframe', 'document', 'puter']),
 	selector: z.string().optional(),
 	bounds: z.object({
 		width: z.number().positive(),
@@ -230,9 +258,76 @@ export const AdapterTargetSchema = z.object({
 export type AdapterTarget = z.infer<typeof AdapterTargetSchema>;
 
 // ============================================================================
-// PIPELINE CONFIG
+// PUTER.JS WINDOW SCHEMAS (Responsive windowing layer)
+// Source: https://docs.puter.com/UI/createWindow - Tavily grounded 2025-12-30
 // ============================================================================
 
+/**
+ * Puter.js window creation options
+ * @source https://docs.puter.com/UI/createWindow
+ * @see Puter.js OSS documentation (38K⭐ GitHub)
+ * TRL 8: Production OSS with documented API
+ */
+export const PuterWindowOptionsSchema = z.object({
+	title: z.string().optional(),
+	content: z.string().optional(),
+	width: z.number().positive().optional(),
+	height: z.number().positive().optional(),
+	x: z.number().optional(),
+	y: z.number().optional(),
+	is_resizable: z.boolean().default(true),
+	has_head: z.boolean().default(true),
+	center: z.boolean().default(false),
+	show_in_taskbar: z.boolean().default(true),
+	disable_parent_window: z.boolean().default(false),
+});
+export type PuterWindowOptions = z.infer<typeof PuterWindowOptionsSchema>;
+
+/**
+ * Puter window instance state
+ * @source https://docs.puter.com/UI/WindowInterface
+ * @see Puter.js OSS window API
+ * TRL 8: Production OSS with documented API
+ */
+export const PuterWindowStateSchema = z.object({
+	id: z.string(),
+	title: z.string(),
+	bounds: z.object({
+		width: z.number().positive(),
+		height: z.number().positive(),
+		x: z.number(),
+		y: z.number(),
+	}),
+	isMinimized: z.boolean(),
+	isMaximized: z.boolean(),
+	isFocused: z.boolean(),
+});
+export type PuterWindowState = z.infer<typeof PuterWindowStateSchema>;
+
+/** Puter shell configuration (extends UIShellConfig) */
+export const PuterShellConfigSchema = z.object({
+	shell: z.literal('puter'),
+	autoArrange: z.boolean().default(true),
+	showInTaskbar: z.boolean().default(true),
+	enableSnapping: z.boolean().default(true),
+	defaultWindowSize: z.object({
+		width: z.number().positive().default(800),
+		height: z.number().positive().default(600),
+	}).optional(),
+});
+export type PuterShellConfig = z.infer<typeof PuterShellConfigSchema>;
+
+// ============================================================================
+// PIPELINE CONFIG
+// @source 1€ Filter params: https://gery.casiez.net/1euro/ (mincutoff, beta, dcutoff)
+// @source XState timing: https://stately.ai/docs/delays
+// TRL 9: CHI 2012 + XState v5 patterns
+// ============================================================================
+
+/**
+ * Pipeline configuration - combines 1€ Filter and XState FSM params
+ * @see Section 5 of W3C_POINTER_GESTURE_CONTROL_PLANE_20251230.md
+ */
 export const PipelineConfigSchema = z.object({
 	/** 1€ Filter parameters */
 	filter: z.object({
@@ -258,9 +353,15 @@ export type PipelineConfig = z.infer<typeof PipelineConfigSchema>;
 
 // ============================================================================
 // OVERLAY PORT SCHEMAS (Cursor Visualization Layer)
-// Ref: specs/W3C_POINTER_GESTURE_CONTROL_PLANE_20251230.md Section 8
+// @source HFO Gen87 spec: Section 8 of W3C_POINTER_GESTURE_CONTROL_PLANE_20251230.md
+// @see Canvas2D API: https://html.spec.whatwg.org/multipage/canvas.html
+// TRL 7: HFO internal + W3C Canvas2D
 // ============================================================================
 
+/**
+ * Cursor state visualization enum
+ * @see Section 8.1 Cursor State Machine
+ */
 export const CursorStateSchema = z.enum([
 	'hidden', // No cursor
 	'tracking', // Hand detected, not armed
@@ -295,9 +396,16 @@ export type OverlayConfig = z.infer<typeof OverlayConfigSchema>;
 
 // ============================================================================
 // UI SHELL PORT SCHEMAS (Window Manager Layer)
-// Ref: specs/W3C_POINTER_GESTURE_CONTROL_PLANE_20251230.md Section 11
+// @source react-mosaic: https://github.com/nomcopter/react-mosaic
+// @source golden-layout: https://golden-layout.com/
+// @source daedalOS: https://github.com/DustinBrett/daedalOS (12K⭐)
+// TRL 8: Production OSS tiling window managers
 // ============================================================================
 
+/**
+ * Tile type for adapter routing
+ * @see Section 11.1 Multi-Target Tile Grid
+ */
 export const TileTypeSchema = z.enum([
 	'pixi', // PixiJS canvas
 	'canvas', // Raw Canvas2D
@@ -329,6 +437,12 @@ export const ShellTypeSchema = z.enum([
 ]);
 export type ShellType = z.infer<typeof ShellTypeSchema>;
 
+/**
+ * Layout tree node - recursive binary tree structure
+ * @source react-mosaic MosaicNode: https://github.com/nomcopter/react-mosaic#api
+ * @see Binary space partitioning pattern
+ * TRL 8: react-mosaic production pattern (1.5K⭐)
+ */
 export const LayoutNodeSchema: z.ZodType<LayoutNode> = z.lazy(() =>
 	z.union([
 		z.string(), // Leaf node (tile ID)
@@ -340,13 +454,21 @@ export const LayoutNodeSchema: z.ZodType<LayoutNode> = z.lazy(() =>
 		}),
 	]),
 );
-export type LayoutNode = string | {
-	direction: 'row' | 'column';
-	first: LayoutNode;
-	second: LayoutNode;
-	splitPercentage?: number;
-};
+export type LayoutNode =
+	| string
+	| {
+			direction: 'row' | 'column';
+			first: LayoutNode;
+			second: LayoutNode;
+			splitPercentage?: number;
+	  };
 
+/**
+ * Complete layout state - tiles + arrangement + shell type
+ * @source Section 11.2 of W3C_POINTER_GESTURE_CONTROL_PLANE_20251230.md
+ * @see react-mosaic + golden-layout state patterns
+ * TRL 7: HFO Gen87 internal + OSS patterns
+ */
 export const LayoutStateSchema = z.object({
 	tiles: z.array(TileConfigSchema),
 	arrangement: LayoutNodeSchema,
@@ -354,6 +476,8 @@ export const LayoutStateSchema = z.object({
 });
 export type LayoutState = z.infer<typeof LayoutStateSchema>;
 
+/**
+ * UI Shell configuration - window manager setup\n * @source golden-layout: https://golden-layout.com/docs\n * @see Section 11 of W3C_POINTER_GESTURE_CONTROL_PLANE_20251230.md\n * TRL 8: golden-layout production patterns\n */
 export const UIShellConfigSchema = z.object({
 	shell: ShellTypeSchema.default('raw'),
 	initialLayout: LayoutStateSchema.optional(),

@@ -25,3 +25,8 @@ we need to expose multiple hands and cursors, so our system should be able to ha
 PHASE DECISION (2025-12-30): Multi-hand is PHASE 1.5 - design interfaces NOW, implement after single cursor works. Key: W3C PointerEvent already supports multi-pointer via pointerId. Our architecture must handle HandFrame[] not just HandFrame. Each hand = separate CursorPipeline instance with unique pointerId. isPrimary=true for dominant hand only. 
 ---
 I actually need you to prioritize creating phases of tests, help me add more red tests to cover inputs and outputs. I want use to be in phase 1 with the goal of a w3c cursor, we can add other features later. the goal is a stateful reliable physics driven cursor
+---
+ok now do more research and sequential thinking and consider my sandbox specs and research, does this truly give me mosaic hexagonal ports and adapters polymorphic CDD? the idea is that if we use universal standards like w3c then the adapters become trivial since it's already SOP. look at my stack, are we composed of exemplars wrapped in polymorphic adapter contracts? or are we ad hoc? show me where my weakness is
+---
+check the root hfo daily specs, and help me update it with your research and show me the different phases and use sequential thinking, we are doing TDD what red tests are we missing to validate the architecture? I know that the ui output right now is messy and not standardized, what steps in my pipeline are standardized exemplar like w3c? are there intermediatery contracts that would be helpful and unlock mor epolymorphism?
+---

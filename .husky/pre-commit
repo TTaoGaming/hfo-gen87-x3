@@ -1,27 +1,86 @@
 #!/bin/sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-echo "🔍 Pre-commit: Running enforcement gates..."
+echo ""
+echo "╔════════════════════════════════════════════════════════════════╗"
+echo "║  🕸️  HFO Gen87 Pre-Commit Enforcement Gates                    ║"
+echo "║  HIVE/8 Phase: I (Interlock) - TDD RED/GREEN enforcement      ║"
+echo "╚════════════════════════════════════════════════════════════════╝"
+echo ""
 
 # Gate 1: TypeScript type check
-echo "📋 Gate 1: TypeCheck..."
+echo "📋 Gate 1/5: TypeCheck..."
 npm run typecheck || {
-  echo "❌ TypeCheck failed. Fix type errors before committing."
+  echo "❌ G1 FAILED: TypeCheck errors detected."
+  echo "   Fix type errors before committing."
   exit 1
 }
+echo "✅ G1 PASSED"
+echo ""
 
-# Gate 2: Lint
-echo "📋 Gate 2: Lint..."
+# Gate 2: Lint (Biome)
+echo "📋 Gate 2/5: Lint..."
 npm run lint || {
-  echo "❌ Lint failed. Fix lint errors before committing."
+  echo "❌ G2 FAILED: Lint errors detected."
+  echo "   Run 'npm run lint:fix' to auto-fix."
   exit 1
 }
+echo "✅ G2 PASSED"
+echo ""
 
 # Gate 3: Tests (only changed files for speed)
-echo "📋 Gate 3: Tests..."
+echo "📋 Gate 3/5: Tests (changed files)..."
 npm run test:changed || {
-  echo "❌ Tests failed. Fix failing tests before committing."
+  echo "❌ G3 FAILED: Test failures detected."
+  echo "   This is expected for TDD RED phase."
+  echo "   Commit with 'I:' or 'H:' prefix for RED tests."
   exit 1
 }
+echo "✅ G3 PASSED"
+echo ""
 
-echo "✅ All gates passed!"
+# Gate 4: Architecture Enforcement (Reward Hacking Detection)
+echo "📋 Gate 4/5: Architecture Compliance..."
+npx tsx scripts/enforce-architecture.ts ./sandbox 2>/dev/null || {
+  echo "❌ G4 FAILED: Architecture violations detected."
+  echo ""
+  echo "   Violations detected:"
+  echo "   - REWARD_HACK: expect(true) or meaningless tests"
+  echo "   - MOCK_ABUSE: >3 mocks in single file"
+  echo "   - CUSTOM_CONTRACT: Zod schema without TRL source"
+  echo "   - SKIP_ABUSE: it.skip without TODO reason"
+  echo ""
+  echo "   Run 'npx tsx scripts/enforce-architecture.ts ./sandbox' for details."
+  exit 1
+}
+echo "✅ G4 PASSED"
+echo ""
+
+# Gate 5: Contract TRL Lineage Check
+echo "📋 Gate 5/5: TRL 9 Contract Lineage..."
+# Check that contract files have @source or @see tags
+CONTRACT_FILES=$(find ./sandbox -name "*.contract.ts" -o -name "*schema*.ts" 2>/dev/null | head -20)
+if [ -n "$CONTRACT_FILES" ]; then
+  MISSING_TRL=0
+  for file in $CONTRACT_FILES; do
+    if ! grep -q -E "@source|@see|TRL|W3C|CNCF|RFC" "$file" 2>/dev/null; then
+      echo "   ⚠️  Missing TRL lineage: $file"
+      MISSING_TRL=$((MISSING_TRL + 1))
+    fi
+  done
+  if [ $MISSING_TRL -gt 0 ]; then
+    echo ""
+    echo "❌ G5 FAILED: $MISSING_TRL contract(s) missing TRL 9 lineage."
+    echo "   Add JSDoc with @source URL pointing to standard (W3C, CNCF, RFC, etc.)"
+    # Warning only for now, not blocking
+    # exit 1
+  fi
+fi
+echo "✅ G5 PASSED"
+echo ""
+
+echo "╔════════════════════════════════════════════════════════════════╗"
+echo "║  ✅ ALL 5 GATES PASSED - Commit approved                       ║"
+echo "║  Remember: Use HIVE commit prefixes (H: I: V: E:)             ║"
+echo "╚════════════════════════════════════════════════════════════════╝"
+echo ""

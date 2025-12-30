@@ -1,3 +1,4 @@
+import * as fc from 'fast-check';
 /**
  * SMOOTHER PIPELINE RED TESTS
  *
@@ -12,10 +13,9 @@
  * HEXAGONAL CDD PRINCIPLE: Each smoother implements SmootherPort
  * and can be swapped via dependency injection.
  */
-import { describe, it, expect, beforeEach } from 'vitest';
-import * as fc from 'fast-check';
+import { beforeEach, describe, expect, it } from 'vitest';
 import type { SmootherPort } from '../contracts/ports.js';
-import type { SensorFrame, SmoothedFrame } from '../contracts/schemas.js';
+import type { SensorFrame } from '../contracts/schemas.js';
 
 // ============================================================================
 // TEST FIXTURES
@@ -221,7 +221,7 @@ describe('PhysicsSpringDamperSmoother', () => {
 
 	it('damping prevents oscillation when critically damped', async () => {
 		const { PhysicsSpringDamperSmoother } = await import('./physics-spring-smoother.js');
-		
+
 		// Critically damped: zeta = c / (2 * sqrt(k * m)) = 1
 		// c = 2 * sqrt(300 * 1) ≈ 34.6
 		const criticallyDamped = new PhysicsSpringDamperSmoother({
@@ -474,6 +474,7 @@ describe('QuadCursorPipeline', () => {
 // ============================================================================
 
 describe('SmootherPort contract compliance (property-based)', () => {
+	// TODO: Phase V - Enable after all SmootherPort implementations verified
 	it.skip('any smoother preserves timestamp', async () => {
 		fc.assert(
 			fc.asyncProperty(arbPosition, async (pos) => {

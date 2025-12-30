@@ -11,9 +11,8 @@
  *
  * RATIONALE: Gesture recognition is brittle. Palm orientation is stable.
  */
-import { describe, it, expect, beforeEach } from 'vitest';
-import * as fc from 'fast-check';
-import type { SensorFrame, NormalizedLandmark } from '../contracts/schemas.js';
+import { beforeEach, describe, expect, it } from 'vitest';
+import type { NormalizedLandmark, SensorFrame } from '../contracts/schemas.js';
 
 // ============================================================================
 // TEST FIXTURES
@@ -239,9 +238,7 @@ describe('PalmPlaneCalculator', () => {
 		const landmarks = createPalmFacingCameraLandmarks();
 
 		const plane = calculator.calculate(landmarks);
-		const length = Math.sqrt(
-			plane!.normal.x ** 2 + plane!.normal.y ** 2 + plane!.normal.z ** 2,
-		);
+		const length = Math.sqrt(plane!.normal.x ** 2 + plane!.normal.y ** 2 + plane!.normal.z ** 2);
 
 		expect(length).toBeCloseTo(1.0, 4);
 	});
@@ -534,7 +531,10 @@ interface PalmOrientationResult {
 interface PalmPlaneCalculatorPort {
 	calculate(
 		landmarks: NormalizedLandmark[],
-	): { normal: { x: number; y: number; z: number }; center: { x: number; y: number; z: number } } | null;
+	): {
+		normal: { x: number; y: number; z: number };
+		center: { x: number; y: number; z: number };
+	} | null;
 }
 
 interface Quaternion {
@@ -551,9 +551,7 @@ interface PalmQuaternionPort {
 }
 
 interface DirectionalModifierPort {
-	evaluate(
-		landmarks: NormalizedLandmark[],
-	): { rollDegrees: number; knobNormalized: number } | null;
+	evaluate(landmarks: NormalizedLandmark[]): { rollDegrees: number; knobNormalized: number } | null;
 	getZone(landmarks: NormalizedLandmark[], numZones: number): string;
 }
 

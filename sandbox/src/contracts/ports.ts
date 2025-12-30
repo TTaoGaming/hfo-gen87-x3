@@ -252,10 +252,7 @@ export interface UIShellPort {
 	/**
 	 * Initialize the shell with configuration
 	 */
-	initialize(
-		container: HTMLElement,
-		config: import('./schemas.js').UIShellConfig,
-	): Promise<void>;
+	initialize(container: HTMLElement, config: import('./schemas.js').UIShellConfig): Promise<void>;
 
 	/**
 	 * Get the target element/canvas for a tile

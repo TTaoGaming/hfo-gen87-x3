@@ -8,12 +8,12 @@
  *
  * Blackboard Signal: VALIDATE-PIPELINE | Port: 2 | Owner: Claude-Opus
  */
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { AdapterPort, SensorPort } from '../contracts/ports.js';
 import type { AdapterTarget, PointerEventOut, SensorFrame } from '../contracts/schemas.js';
 import { OneEuroAdapter } from './one-euro.adapter.js';
 import { GesturePipeline } from './pipeline.js';
-import { DOMAdapter, PointerEventAdapter } from './pointer-event.adapter.js';
+import { PointerEventAdapter } from './pointer-event.adapter.js';
 import { XStateFSMAdapter } from './xstate-fsm.adapter.js';
 
 // ============================================================================
@@ -180,10 +180,7 @@ describe('GesturePipeline - Integration', () => {
 		});
 
 		it('should reach ARMED state after stable baseline', async () => {
-			mockSensor.queueFrames([
-				createSensorFrame({ ts: 0 }),
-				createSensorFrame({ ts: 250 }),
-			]);
+			mockSensor.queueFrames([createSensorFrame({ ts: 0 }), createSensorFrame({ ts: 250 })]);
 
 			await pipeline.processFrame(mockVideo, 0);
 			const action = await pipeline.processFrame(mockVideo, 250);
@@ -348,10 +345,7 @@ describe('GesturePipeline - Integration', () => {
 		});
 
 		it('should allow force disarm', async () => {
-			mockSensor.queueFrames([
-				createSensorFrame({ ts: 0 }),
-				createSensorFrame({ ts: 250 }),
-			]);
+			mockSensor.queueFrames([createSensorFrame({ ts: 0 }), createSensorFrame({ ts: 250 })]);
 
 			await pipeline.processFrame(mockVideo, 0);
 			await pipeline.processFrame(mockVideo, 250);
@@ -371,10 +365,7 @@ describe('GesturePipeline - Integration', () => {
 			const events: (PointerEventOut | null)[] = [];
 			pipeline.subscribe((event) => events.push(event));
 
-			mockSensor.queueFrames([
-				createSensorFrame({ ts: 0 }),
-				createSensorFrame({ ts: 250 }),
-			]);
+			mockSensor.queueFrames([createSensorFrame({ ts: 0 }), createSensorFrame({ ts: 250 })]);
 
 			await pipeline.processFrame(mockVideo, 0);
 			await pipeline.processFrame(mockVideo, 250);

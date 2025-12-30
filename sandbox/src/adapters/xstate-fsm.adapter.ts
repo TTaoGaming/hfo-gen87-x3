@@ -464,7 +464,11 @@ export class XStateFSMAdapter implements FSMPort {
 		return FSMActionSchema.parse(action);
 	}
 
-	private computeAction(newState: FSMState, context: GestureContext, currentFrame: SmoothedFrame): FSMAction {
+	private computeAction(
+		newState: FSMState,
+		context: GestureContext,
+		currentFrame: SmoothedFrame,
+	): FSMAction {
 		const position = context.lastPosition ?? { x: 0.5, y: 0.5 };
 		const previousState = this.previousState;
 
