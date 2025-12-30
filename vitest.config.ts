@@ -4,8 +4,8 @@ export default defineConfig({
 	test: {
 		globals: true,
 		environment: 'node',
-		include: ['**/*.{test,spec}.{ts,tsx}', 'src/**/*.{test,spec}.{ts,tsx}'],
-		exclude: ['**/node_modules/**', '**/dist/**', '**/sandbox/**'],
+		include: ['src/**/*.{test,spec}.{ts,tsx}'],
+		exclude: ['**/node_modules/**', '**/dist/**', '**/sandbox/**', '**/e2e/**'],
 		coverage: {
 			provider: 'v8',
 			reporter: ['text', 'json', 'html'],
@@ -20,6 +20,7 @@ export default defineConfig({
 				'node_modules/**',
 				'dist/**',
 				'sandbox/**',
+				'e2e/**',
 				'**/*.d.ts',
 				'**/*.config.*',
 				'**/types/**',
