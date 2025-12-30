@@ -2,8 +2,9 @@
 
 > **Generation**: 87.X3
 > **Date**: 2025-12-29
-> **Status**: HUNT Phase Complete → INTERLOCK Phase Active
+> **Status**: 🔍 HUNT Phase ACTIVE - Finding exemplars, NOT deciding yet
 > **Containment**: All work MUST stay in this sandbox folder
+> **Blackboard**: `sandbox/obsidianblackboard.jsonl`
 
 ---
 
@@ -66,11 +67,37 @@ sandbox/
 - `Gen 83, REF__W3C_GESTURE_LANGUAGE_SPEC.md` - FSM states, guards, actions
 - `Gen 84, HFO_TECH_STACK_GEN84.md` - Technology stack mapping
 
-### Tavily-Grounded Sources
-- **W3C Pointer Events**: https://www.w3.org/TR/pointerevents/
+### Tavily-Grounded Sources (Core Pipeline)
+- **W3C Pointer Events**: https://www.w3.org/TR/pointerevents/ (Level 3 CR 2025-03-13)
 - **One Euro Filter**: https://gery.casiez.net/1euro/ (Casiez CHI 2012)
 - **XState v5 Setup**: https://stately.ai/docs/setup
 - **MediaPipe Gesture**: https://ai.google.dev/edge/mediapipe/solutions/vision/gesture_recognizer
+
+### Tavily-Grounded Sources (Target Adapters - HUNT PHASE)
+| Exemplar | Stars | Key Insight | Input API |
+|----------|-------|-------------|-----------|
+| **daedalOS** | 12.2K | Full web OS, v86/js-dos/EmulatorJS built-in | Window manager handles routing |
+| **v86** | - | x86 emulator in browser | `keyboard_send_scancodes()`, `bus.send('mouse-delta')` |
+| **js-dos** | - | DOSBox WASM | `setMouseSensitivity(n)`, mouse follows cursor |
+| **EmulatorJS** | - | RetroArch libretro frontend | `EJS_defaultControls` mapping |
+| **Excalidraw** | 54.5K | Whiteboard, canvas renderer | `onPointerDown/Up/Update` callbacks |
+| **tldraw** | 15.1K | Whiteboard, DOM renderer (easier dispatch!) | Native DOM events |
+| **WinBox.js** | - | 4KB zero-dep window manager | Lightweight, wire up yourself |
+| **Puter** | 38K | Cloud OS, AGPL-3.0 | Full desktop abstraction |
+
+### User Vision (Captured 2025-12-29)
+```
+MediaPipe → Physics (1€) → FSM (XState) → W3C Pointer → TargetAdapter → ANY TARGET
+                                                              ↓
+                                         ┌────────────────────┴────────────────────┐
+                                         │                                         │
+                                    DOM/Canvas                              Emulators
+                                    Excalidraw                              v86, js-dos
+                                    tldraw                                  EmulatorJS
+                                    Any element                             BoxedWine
+```
+
+**Total Tool Virtualization**: One gesture primitive → route to ANY target via adapter pattern
 
 ---
 
@@ -78,8 +105,8 @@ sandbox/
 
 | Phase | Status | Description |
 |-------|--------|-------------|
-| **H (Hunt)** | ✅ COMPLETE | Memory bank searched, Tavily grounded, exemplars found |
-| **I (Interlock)** | 🔄 ACTIVE | Creating contracts and interfaces |
+| **H (Hunt)** | 🔄 ACTIVE | Finding exemplars, exploring options, NOT deciding |
+| **I (Interlock)** | ⏳ PENDING | Create TargetAdapter contract, then per-target adapters |
 | **V (Validate)** | ⏳ PENDING | TDD RED → GREEN |
 | **E (Evolve)** | ⏳ PENDING | Refactor and prepare N+1 |
 
