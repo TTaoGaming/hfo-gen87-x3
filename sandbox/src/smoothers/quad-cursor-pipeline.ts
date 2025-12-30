@@ -1,13 +1,13 @@
 /**
- * Quad Cursor Pipeline - 4-Stage Output - STUB (TDD RED Phase)
+ * Quad Cursor Pipeline - 4-Stage Output - IMPLEMENTED (TDD GREEN Phase)
  *
- * Gen87.X3 | Phase: INTERLOCK (I) | TDD RED
+ * Gen87.X3 | Phase: VALIDATE (V) | TDD GREEN
  *
  * Outputs 4 cursor positions simultaneously per frame:
  *
  * 1. Raw: Unprocessed MediaPipe fingertip position
- * 2. Smooth: 1€ Filter output (snappy/smooth adaptive)
- * 3. Physics: Spring-damper smoothed (natural inertia)
+ * 2. Euro: 1€ Filter output (snappy/smooth adaptive)
+ * 3. Spring: Spring-damper smoothed (natural inertia)
  * 4. Predictive: Motion-predicted position (reduced latency)
  *
  * This allows:
@@ -16,70 +16,95 @@
  * - A/B testing for user preference studies
  * - Debugging pipeline behavior
  *
- * Each stage can be independently enabled/disabled.
+ * Each stage can be independently enabled/disabled via null.
  */
 
-import type { SmoothedFrame, SmootherPort } from '../contracts/ports.js';
-import type { SensorFrame } from '../contracts/schemas.js';
+import type { SmootherPort, SmoothedFrame } from "../contracts/ports.js";
+import type { SensorFrame } from "../contracts/schemas.js";
+import { SmoothedFrameSchema } from "../contracts/schemas.js";
+import { PassthroughSmootherAdapter } from "../adapters/one-euro.adapter.js";
 
 export interface QuadCursorOutput {
-	/** Raw MediaPipe position (no smoothing) */
-	raw: SmoothedFrame;
-	/** 1€ Filter smoothed position */
-	smooth: SmoothedFrame;
-	/** Spring-damper physics position */
-	physics: SmoothedFrame;
-	/** Motion-predicted position */
-	predictive: SmoothedFrame;
-	/** Timestamp of this quad output */
-	ts: number;
+  /** Raw MediaPipe position (no smoothing) */
+  raw: { x: number; y: number } | null;
+  /** 1€ Filter smoothed position */
+  euro: { x: number; y: number } | null;
+  /** Spring-damper physics position */
+  spring: { x: number; y: number } | null;
+  /** Motion-predicted position */
+  predictive: { x: number; y: number } | null;
+  /** Timestamp of this quad output */
+  ts: number;
 }
 
 export interface QuadCursorConfig {
-	/** Enable raw output */
-	enableRaw: boolean;
-	/** Enable 1€ smooth output */
-	enableSmooth: boolean;
-	/** Enable physics output */
-	enablePhysics: boolean;
-	/** Enable predictive output */
-	enablePredictive: boolean;
+  /** 1€ smoother (null to disable) */
+  euro: SmootherPort | null;
+  /** Spring-damper smoother (null to disable) */
+  spring: SmootherPort | null;
+  /** Predictive smoother (null to disable) */
+  predictive: SmootherPort | null;
 }
 
 /**
  * QuadCursorPipeline - 4-Stage Cursor Output
  *
- * STUB: Throws "not implemented" - will be implemented in GREEN phase
+ * Runs frame through all 4 smoothers simultaneously.
  */
 export class QuadCursorPipeline {
-	constructor(
-		_smoothers: {
-			oneEuro: SmootherPort;
-			physics: SmootherPort;
-			predictive: SmootherPort;
-		},
-		_config?: Partial<QuadCursorConfig>,
-	) {
-		throw new Error('QuadCursorPipeline not implemented');
-	}
+  private passthrough: PassthroughSmootherAdapter;
+  private euro: SmootherPort | null;
+  private spring: SmootherPort | null;
+  private predictive: SmootherPort | null;
 
-	/** Process a frame and return all 4 cursor positions */
-	process(_frame: SensorFrame): QuadCursorOutput {
-		throw new Error('QuadCursorPipeline.process not implemented');
-	}
+  constructor(config: QuadCursorConfig) {
+    this.passthrough = new PassthroughSmootherAdapter();
+    this.euro = config.euro;
+    this.spring = config.spring;
+    this.predictive = config.predictive;
+  }
 
-	/** Reset all smoothers */
-	reset(): void {
-		throw new Error('QuadCursorPipeline.reset not implemented');
-	}
+  /** Process a frame and return all 4 cursor positions */
+  process(frame: SensorFrame): QuadCursorOutput {
+    // Raw is always available via passthrough
+    const rawFrame = this.passthrough.smooth(frame);
+    const raw = rawFrame.position ? { x: rawFrame.position.x, y: rawFrame.position.y } : null;
 
-	/** Update configuration */
-	setConfig(_config: Partial<QuadCursorConfig>): void {
-		throw new Error('QuadCursorPipeline.setConfig not implemented');
-	}
+    // Euro (1€ filter)
+    let euro: { x: number; y: number } | null = null;
+    if (this.euro) {
+      const euroFrame = this.euro.smooth(frame);
+      euro = euroFrame.position ? { x: euroFrame.position.x, y: euroFrame.position.y } : null;
+    }
 
-	/** Get current configuration */
-	getConfig(): QuadCursorConfig {
-		throw new Error('QuadCursorPipeline.getConfig not implemented');
-	}
+    // Spring-damper
+    let spring: { x: number; y: number } | null = null;
+    if (this.spring) {
+      const springFrame = this.spring.smooth(frame);
+      spring = springFrame.position ? { x: springFrame.position.x, y: springFrame.position.y } : null;
+    }
+
+    // Predictive
+    let predictive: { x: number; y: number } | null = null;
+    if (this.predictive) {
+      const predFrame = this.predictive.smooth(frame);
+      predictive = predFrame.prediction ? { x: predFrame.prediction.x, y: predFrame.prediction.y } : null;
+    }
+
+    return {
+      raw,
+      euro,
+      spring,
+      predictive,
+      ts: frame.ts,
+    };
+  }
+
+  /** Reset all smoothers */
+  reset(): void {
+    this.passthrough.reset();
+    this.euro?.reset();
+    this.spring?.reset();
+    this.predictive?.reset();
+  }
 }

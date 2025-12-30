@@ -1,7 +1,7 @@
 /**
- * 1€ Filter Smoother - STUB (TDD RED Phase)
+ * 1€ Filter Smoother - WIRED (TDD GREEN Phase)
  *
- * Gen87.X3 | Phase: INTERLOCK (I) | TDD RED
+ * Gen87.X3 | Phase: VALIDATE (V) | TDD GREEN
  *
  * Reference: Géry Casiez, Nicolas Roussel, Daniel Vogel.
  * "1€ Filter: A Simple Speed-based Low-pass Filter for Noisy Input in Interactive Systems"
@@ -13,39 +13,33 @@
  * - High cutoff (snappy) when fast-moving
  *
  * TRL 9: Peer-reviewed, widely deployed in production (MediaPipe, Unity, etc.)
+ *
+ * VALIDATE: Re-exports the working adapter from one-euro.adapter.ts
  */
 
-import type { SmoothedFrame, SmootherPort } from '../contracts/ports.js';
-import type { SensorFrame } from '../contracts/schemas.js';
+import { OneEuroAdapter, PassthroughSmootherAdapter } from "../adapters/one-euro.adapter.js";
 
+// Re-export config type for consumers
 export interface OneEuroConfig {
-	/** Minimum cutoff frequency (Hz) - lower = smoother when slow */
-	mincutoff: number;
-	/** Speed coefficient - higher = snappier response to fast movement */
-	beta: number;
-	/** Derivative cutoff frequency (Hz) - smooths velocity estimate */
-	dcutoff?: number;
+  /** Minimum cutoff frequency (Hz) - lower = smoother when slow */
+  mincutoff: number;
+  /** Speed coefficient - higher = snappier response to fast movement */
+  beta: number;
+  /** Derivative cutoff frequency (Hz) - smooths velocity estimate */
+  dcutoff?: number;
 }
 
 /**
  * OneEuroSmoother - 1€ Filter Implementation
  *
- * STUB: Throws "not implemented" - will be implemented in GREEN phase
+ * WIRED: Wraps OneEuroAdapter with config-based construction
  */
-export class OneEuroSmoother implements SmootherPort {
-	constructor(_config: OneEuroConfig) {
-		throw new Error('OneEuroSmoother not implemented');
-	}
-
-	smooth(_frame: SensorFrame): SmoothedFrame {
-		throw new Error('OneEuroSmoother.smooth not implemented');
-	}
-
-	reset(): void {
-		throw new Error('OneEuroSmoother.reset not implemented');
-	}
-
-	setParams(_params: Partial<OneEuroConfig>): void {
-		throw new Error('OneEuroSmoother.setParams not implemented');
-	}
+export class OneEuroSmoother extends OneEuroAdapter {
+  constructor(config: OneEuroConfig) {
+    super(config.mincutoff, config.beta, config.dcutoff ?? 1.0);
+  }
 }
+
+// Re-export for consumers
+export { OneEuroAdapter, PassthroughSmootherAdapter };
+
