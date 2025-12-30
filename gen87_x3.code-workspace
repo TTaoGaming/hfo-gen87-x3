@@ -33,54 +33,26 @@
 		"github.copilot.chat.terminalChatLocation": "terminal",
 
 		// ═══════════════════════════════════════════════════════════════
-		// MCP SERVERS - FULL TOOLKIT
+		// MCP SERVERS - WORKSPACE-SPECIFIC ONLY
 		// ═══════════════════════════════════════════════════════════════
+		// Global servers inherited from %APPDATA%\Code\User\mcp.json:
+		//   - github (HTTP via api.githubcopilot.com)
+		//   - playwright (browser automation)
+		//   - context7 (library docs)
+		//   - sequential-thinking (chain-of-thought)
+		//   - memory (knowledge graph)
+		//   - tavily (web search)
+		//
+		// Workspace-specific additions:
 		"mcp": {
 			"servers": {
-				"github": {
-					"command": "npx",
-					"args": ["-y", "@modelcontextprotocol/server-github"],
-					"env": {
-						"GITHUB_PERSONAL_ACCESS_TOKEN": "${env:GITHUB_TOKEN}"
-					}
-				},
-				"tavily": {
-					"command": "npx",
-					"args": ["-y", "tavily-mcp@latest"],
-					"env": {
-						"TAVILY_API_KEY": "${env:TAVILY_API_KEY}"
-					}
-				},
-				"memory": {
-					"command": "npx",
-					"args": ["-y", "@modelcontextprotocol/server-memory"]
-				},
-				"playwright": {
-					"command": "npx",
-					"args": ["-y", "@playwright/mcp@latest"]
-				},
-				"context7": {
-					"command": "npx",
-					"args": ["-y", "@upstash/context7-mcp"]
-				},
-				"sequential-thinking": {
-					"command": "npx",
-					"args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
-				},
 				"filesystem": {
 					"command": "npx",
 					"args": ["-y", "@modelcontextprotocol/server-filesystem", "C:/Dev/active"]
 				},
-				"fetch": {
+				"gitkraken": {
 					"command": "npx",
-					"args": ["-y", "@modelcontextprotocol/server-fetch"]
-				},
-				"brave-search": {
-					"command": "npx",
-					"args": ["-y", "@modelcontextprotocol/server-brave-search"],
-					"env": {
-						"BRAVE_API_KEY": "${env:BRAVE_API_KEY}"
-					}
+					"args": ["-y", "@anthropic/mcp-gitkraken-server"]
 				}
 			}
 		},
