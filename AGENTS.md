@@ -7,13 +7,28 @@
 
 ---
 
+## 🎯 CURRENT MISSION: W3C Gesture Control Plane
+
+**ACTIVE WORK IS IN `sandbox/`** — See [sandbox/AGENTS.md](sandbox/AGENTS.md) for detailed instructions.
+
+| Document | Purpose |
+|----------|---------|
+| [sandbox/AGENTS.md](sandbox/AGENTS.md) | Sandbox-specific agent instructions |
+| [sandbox/llms.txt](sandbox/llms.txt) | Quick LLM context for sandbox |
+| [sandbox/specs/W3C_GESTURE_CONTROL_PLANE_SPEC.md](sandbox/specs/W3C_GESTURE_CONTROL_PLANE_SPEC.md) | **MAIN SPEC** - Grounded with Tavily |
+
+**Phase**: INTERLOCK (I) - Creating contracts and interfaces
+
+---
+
 ## 🚨 Critical Rules (MUST FOLLOW)
 
 1. **NEVER hallucinate content** — If you can't find it, say "I don't know"
-2. **ALWAYS cite sources** — Include generation and filename
+2. **ALWAYS cite sources** — Include generation and filename OR Tavily URL
 3. **NEVER delete files** without explicit human authorization
 4. **ALWAYS use sandbox/** for new work — Never write outside this folder
 5. **VERIFY claims** with tool output, not assumptions
+6. **USE TAVILY** for web grounding — API key in .env
 
 ---
 

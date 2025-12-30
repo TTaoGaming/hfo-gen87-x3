@@ -1,0 +1,44 @@
+# Gen87.X3 Sandbox - W3C Gesture Control Plane
+# Quick context for LLMs - READ THIS FIRST
+
+## Mission
+Build universal gesture input adapter: MediaPipe → W3C Pointer Events
+No invention - exemplar composition only (Gen83 mandate)
+
+## Pipeline
+MediaPipe → GestureFrame → 1€ Filter → XState FSM → PointerStream → DOM
+
+## Key Sources (GROUNDED)
+- Gen83 Gold Baton: REF__W3C_GESTURE_CONTROL_PLANE_GOLD_BATON.md
+- W3C Pointer Events: https://www.w3.org/TR/pointerevents/
+- 1€ Filter: https://gery.casiez.net/1euro/ (Casiez CHI 2012)
+- XState v5: https://stately.ai/docs/setup
+- MediaPipe Gesture: https://ai.google.dev/edge/mediapipe
+
+## Tech Stack (ALL TRL 9)
+- @mediapipe/tasks-vision: Gesture recognition
+- xstate@5: State machine (setup pattern)
+- zod: Contract validation
+- 1€ Filter: Smoothing (implement from paper)
+
+## FSM States (from Gen83)
+DISARMED → ARMING → ARMED → DOWN_DRAW | DOWN_PAN | ZOOM
+Safety: Open_Palm baseline + delimiter enforcement
+
+## Contracts
+GestureFrame: { ts, handId, trackingOk, palmFacing, label, conf, indexTip }
+PointerEventOut: { t: 'move'|'down'|'up'|'cancel', pointerId, x, y, ... }
+
+## TDD Order
+1. contracts/ - Zod schemas
+2. smoothing/ - 1€ Filter
+3. fsm/ - XState machine
+4. adapters/ - MediaPipe in, DOM out
+
+## Rules
+- ALL code in sandbox/src/
+- TDD mandatory (RED → GREEN → REFACTOR)
+- Cite sources always
+- No hallucination - search Memory Bank first
+
+## Current Phase: INTERLOCK (I) - Creating contracts

@@ -4,6 +4,17 @@
 > Date: 2025-12-29
 > Status: AUTO-APPROVE ENABLED - All tools ready
 
+## 🎯 CURRENT MISSION: W3C Gesture Control Plane
+
+**→ GO TO sandbox/ FOR ACTIVE WORK ←**
+
+See sandbox/specs/W3C_GESTURE_CONTROL_PLANE_SPEC.md for the full grounded spec.
+See sandbox/AGENTS.md for sandbox-specific instructions.
+See sandbox/llms.txt for quick sandbox context.
+
+Pipeline: MediaPipe → GestureFrame → 1€ Filter → XState FSM → PointerStream → DOM
+Phase: INTERLOCK (I) - Creating contracts
+
 ## What Is This?
 
 Pre-configured workspace for HFO development with:
@@ -11,6 +22,7 @@ Pre-configured workspace for HFO development with:
 - Memory bank mounted (6,423 artifacts)
 - Gen85 codebase reference (687 tests)
 - Context payloads available
+- Tavily API for web grounding
 
 ## Tools Ready
 
