@@ -1,7 +1,7 @@
 /**
- * @fileoverview TDD RED Tests - Puter.js Target Adapter
+ * @fileoverview TDD GREEN Tests - Puter.js Target Adapter
  *
- * Gen87.X3 | Phase: INTERLOCK (I) | TDD RED
+ * Gen87.X3 | Phase: VALIDATE (V) | TDD GREEN
  * 
  * PURPOSE: Enable gesture control plane to target Puter.js windows
  * SOLVES: "Windows are not responsive and look weird" (Golden Layout CSS issues)
@@ -16,8 +16,9 @@
  * - puter.ui.setWindowTitle(), setWindowSize(), setWindowPosition()
  *
  * @module adapters/puter-target.test
- * @hive I (Interlock)
- * @tdd RED
+ * @hive V (Validate)
+ * @tdd GREEN
+ * @vitest-environment jsdom
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
@@ -126,21 +127,13 @@ export interface PuterShellConfig extends UIShellConfig {
 }
 
 // ============================================================================
-// PLACEHOLDER IMPLEMENTATIONS (Will fail - RED phase)
+// IMPLEMENTATIONS (TDD GREEN - implementations exist now)
 // ============================================================================
 
-let PuterWindowAdapter: new (puter: PuterGlobal) => PuterWindowAdapterPort;
-let PuterShellAdapter: new (puter: PuterGlobal) => UIShellPort;
+import { PuterWindowAdapter } from './puter-window.adapter.js';
 
-try {
-  PuterWindowAdapter = require('./puter-window.adapter.js').PuterWindowAdapter;
-} catch {
-  PuterWindowAdapter = class {
-    constructor(_puter: PuterGlobal) {
-      throw new Error('PuterWindowAdapter not implemented');
-    }
-  } as any;
-}
+// PuterShellAdapter still RED - to be implemented
+let PuterShellAdapter: new (puter: PuterGlobal) => UIShellPort;
 
 try {
   PuterShellAdapter = require('./puter-shell.adapter.js').PuterShellAdapter;
