@@ -27,6 +27,8 @@
 		"enforce": "tsx scripts/enforce-architecture.ts ./sandbox",
 		"enforce:strict": "tsx scripts/enforce-architecture.ts ./sandbox --strict",
 		"enforce:json": "tsx scripts/enforce-architecture.ts ./sandbox --json",
+		"gate:arch": "tsx scripts/gate-architecture.ts",
+		"gate:arch:json": "tsx scripts/gate-architecture.ts --json",
 		"validate:hive": "tsx scripts/validate-hive.ts",
 		"hive:status": "tsx scripts/validate-hive.ts",
 		"hive:phase": "tsx -e \"const fs=require('fs');const bb=fs.readFileSync('sandbox/obsidianblackboard.jsonl','utf8').trim().split('\\n');const last=bb.filter(l=>l).reverse().find(l=>JSON.parse(l).hive!=='X');console.log(last?JSON.parse(last).hive:'H');\"",
