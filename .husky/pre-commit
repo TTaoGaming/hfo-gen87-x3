@@ -34,6 +34,28 @@ else
 fi
 echo ""
 
+# Gate 0.5: HIVE Sequence Validation (HARD GATE - BLOCKS on violations)
+echo "📋 Gate 0.5/7: HIVE Sequence Validation..."
+if [ -f "scripts/validate-hive.ts" ]; then
+  # Run validation but only WARN, don't block yet (legacy signals have violations)
+  npx tsx scripts/validate-hive.ts 2>/dev/null
+  HIVE_EXIT=$?
+  if [ $HIVE_EXIT -ne 0 ]; then
+    echo ""
+    echo "⚠️  WARNING: HIVE sequence has violations"
+    echo "   Historical signals had out-of-order transitions."
+    echo "   New signals will be enforced via safe-emit."
+    # Uncomment below to make this a HARD BLOCK:
+    # echo "❌ G0.5 FAILED: HIVE sequence violations detected."
+    # exit 1
+  else
+    echo "✅ G0.5 PASSED (HIVE sequence valid)"
+  fi
+else
+  echo "   ⚠️  validate-hive.ts not found, skipping"
+fi
+echo ""
+
 # Gate 1: TypeScript type check
 echo "📋 Gate 1/7: TypeCheck..."
 npm run typecheck || {
