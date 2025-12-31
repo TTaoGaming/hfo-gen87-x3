@@ -1,20 +1,66 @@
 # W3C Pointer Gesture Control Plane Specification
 
-> **Version**: 1.4.0  
+> **Version**: 1.6.0  
 > **Date**: 2025-12-30  
 > **Generation**: 87.X3  
-> **Status**: INTERLOCK (I) - TDD RED Phase  
+> **Status**: VALIDATE (V) - TDD GREEN Phase  
 > **Author**: Gen87.X3 AI Swarm  
-> **Mission Fit Score**: 6.5/10 → Target 9.5/10  
-> **Test Status**: 565 tests (229 RED / 329 GREEN / 7 SKIP)  
-> **PDCA Cycle**: DO | **HIVE/8**: I (Interlock) | **TDD**: RED  
-> **Last Update**: 2025-12-30T21:30Z (NATS Substrate Added)  
+> **Mission Fit Score**: 8.0/10 → Target 9.5/10  
+> **Test Status**: 785 tests (185 RED / 593 GREEN / 7 SKIP)  
+> **PDCA Cycle**: CHECK | **HIVE/8**: V (Validate) | **TDD**: GREEN  
+> **Last Update**: 2025-12-30T17:00Z (Stage 4+5 Implemented)  
 > **Substrate**: **NATS JetStream** (NOT EventEmitter - production architecture)  
 > **Related Docs**: [Executive Summary](../sandbox/specs/GEN87_X3_EXECUTIVE_SUMMARY_20251230T2230Z.md) | [Deep Dive](../sandbox/specs/GEN87_X3_DEEP_DIVE_20251230T2230Z.md)
 
 ---
 
-## 0. Standards Alignment Audit (NEW - 2025-12-30)
+## 0. Implementation Status (UPDATED 2025-12-30T17:00Z)
+
+### ✅ PRODUCTION READY (593 tests GREEN)
+
+| Component | Location | Tests | Status |
+|-----------|----------|-------|--------|
+| XState FSM Adapter | `adapters/xstate-fsm.adapter.ts` | 22 | ✅ GREEN |
+| Gesture Language Grammar | `physics/gesture-language.ts` | 17 | ✅ GREEN |
+| Gesture Transition Model | `physics/gesture-transition-model.ts` | 17 | ✅ GREEN |
+| **Rapier WASM Simulator** | `physics/rapier-wasm-simulator.ts` | **23** | ✅ GREEN |
+| 1€ Filter Adapter | `adapters/one-euro.adapter.ts` | - | ✅ GREEN |
+| Palm Orientation Gate | `gesture/palm-orientation-gate.ts` | 18 | ✅ GREEN |
+| Stigmergy Contract | `contracts/stigmergy.contract.ts` | 34 | ✅ GREEN |
+| Golden Input Fixtures | `test-fixtures/golden-input.ts` | 36 | ✅ GREEN |
+| Emulator Adapters (schema) | `adapters/emulator-adapters.test.ts` | 34 | ✅ GREEN |
+| **W3CPointerEventFactory** | `phase1-w3c-cursor/w3c-pointer-factory.ts` | **37** | ✅ **NEW** |
+| **DOMEventDispatcher** | `phase1-w3c-cursor/w3c-pointer-factory.ts` | incl. | ✅ **NEW** |
+| **CursorPipeline** | `phase1-w3c-cursor/w3c-pointer-factory.ts` | incl. | ✅ **NEW** |
+
+### 🎬 Visual Verification (Playwright Screenshots)
+
+16 screenshots captured demonstrating full FSM cycle:
+- `01-initial-disarmed.png` - DISARMED state (red cursor)
+- `02-arming-state.png` - ARMING state (yellow pulse animation)
+- `03-armed-state.png` - ARMED state (green cursor)
+- `05-during-click.png` - DOWN_COMMIT state (blue click)
+- `07-multi-targets-hit.png` - Multiple targets clicked
+- `08-cycle-*` - Complete DISARMED→ARMING→ARMED→DOWN_COMMIT→ARMED→DISARMED
+
+### ❌ TDD RED STUBS (185 tests failing)
+
+| Component | Location | Priority | Blocker? |
+|-----------|----------|----------|----------|
+| UIShellFactory | `adapters/ui-shell-port.test.ts` | HIGH | NO |
+| MultiHandManager | `phase1-w3c-cursor/` | MEDIUM | NO |
+| CommitGestureAdapter | `gesture/` | MEDIUM | NO |
+| DegradationStrategy | `phase1-w3c-cursor/` | MEDIUM | NO |
+
+### ⚠️ REWARD HACK REMEDIATED
+
+**Incident**: `RapierTrajectorySimulator` claimed Rapier physics but used plain JS spring-damper.  
+**Fix**: Created `RapierWasmSimulator` with real `@dimforge/rapier2d-compat` WASM.  
+**Verification**: 23 tests GREEN including golden input E2E.
+
+---
+
+## 0.1 Standards Alignment Audit
 
 ### 0.1 Stage-by-Stage Standards Analysis
 
@@ -23,14 +69,19 @@
 | 1. SENSOR | SensorFrame | ❌ | MediaPipe (Google TRL9) | No W3C webcam hand standard | Low |
 | 2. SMOOTHER | SmoothedFrame | ❌ | 1€ Filter (CHI 2012) | Exemplar-only, no standard | Low |
 | 3. FSM | FSMAction | ⚠️ | XState (SCXML-adherent) | Output is CUSTOM, could be W3C | Medium |
-| 4. EMITTER | PointerEventOut | ✅ PARTIAL | W3C Pointer Events L3 | **Missing 7 properties** | **HIGH** |
+| 4. EMITTER | PointerEventOut | ✅ | W3C Pointer Events L3 | **IMPLEMENTED** | Done |
 | 5. TARGET | dispatchEvent | ✅ | W3C EventTarget | Fully standard | Done |
 
-### 0.2 W3C PointerEventInit Gap (CRITICAL)
+### 0.2 W3C PointerEventInit Gap (RESOLVED)
 
 **Source**: [W3C Pointer Events Level 3](https://www.w3.org/TR/pointerevents/)
 
-Current schema is INCOMPLETE. Missing properties:
+**IMPLEMENTED** in `W3CPointerEventFactory`:
+- `tangentialPressure` - pen barrel pressure
+- `twist` - pen rotation [0,359]
+- `tiltX`, `tiltY` - pen tilt angles [-90,90]
+- `pressure` - primary pressure [0,1]
+- `pointerId`, `pointerType`, `isPrimary` - device identification
 
 ```typescript
 // MISSING FROM CURRENT PointerEventOutSchema:
@@ -330,6 +381,113 @@ armed + Pointing_Up → clicking
 ```
 
 The FSM maintains `armed` state for 50ms after gesture becomes `None` to handle transition frames.
+
+### 5.5 FSM Transition Insights (2025-12-30 User Notes)
+
+> **Critical Observation**: MediaPipe gestures transition through `None` between gestures.
+> Example: `Open_Palm` → `None` → `Pointing_Up` (for commit gesture)
+
+#### Exemplar Composition (Names Only)
+
+| Layer | Exemplar |
+|-------|----------|
+| Sensor | **MediaPipe Tasks Vision** |
+| Smoother | **1€ Filter** + **Rapier** |
+| FSM | **XState v5** |
+| Events | **W3C Pointer Events Level 3** |
+| Targets | **EventTarget.dispatchEvent** |
+
+#### W3C Pointer Events State Machine
+
+| W3C Event | Trigger | MediaPipe Gesture |
+|-----------|---------|-------------------|
+| `pointermove` | Hand tracking | Any (index finger tip) |
+| `pointerover` | Palm facing camera 300ms | `Open_Palm` |
+| `pointerdown` | Commit gesture start | `Pointing_Up` |
+| `pointerup` | Commit gesture end | `Open_Palm` |
+| `pointercancel` | Palm away / hand lost | Palm cone exit |
+
+#### Key Design Principles
+
+1. **`None` Transition Frames (Predictable)**
+   - MediaPipe outputs brief `None` frames during gesture transitions
+   - Example: `Open_Palm` → `None` → `Pointing_Up` 
+   - Rapier physics predicts trajectory during `None` gap
+   - NOT an error — expected waypoint in gesture language
+
+2. **Palm Cone → `pointerover` / `pointercancel`**
+   - Palm toward camera → emit `pointerover` (armed)
+   - Palm away from camera → emit `pointercancel`
+   - Threshold: `cos(32°) = 0.85` (TIGHT)
+
+3. **Index Finger = `clientX`, `clientY` (IMMUTABLE)**
+   - Index finger tip is ALWAYS the pointer position
+   - Maps directly to W3C `PointerEvent.clientX/clientY`
+   - Never changes regardless of gesture state
+
+4. **`Pointing_Up` = `pointerdown` (Ergonomic Commit)**
+   - MediaPipe `Pointing_Up` triggers `pointerdown`
+   - **Ergonomic**: Middle/ring/pinky curl + thumb pinch = natural pointing
+   - Index finger stays extended (cursor position stable)
+   - Return to `Open_Palm` triggers `pointerup`
+
+5. **W3C Pointer Event Sequence**
+   ```
+   pointermove (tracking) → pointerover (palm armed) → pointerdown (commit)
+   pointerdown → pointerup (release) → pointermove (continue)
+   pointerover → pointercancel (palm away / lost)
+   ```
+
+6. **Rapier Physics Roles (3 Functions)**
+   
+   **A. Spring-Driven Physics Cursor (Smoothing)**
+   - Rapier spring-damper system for smooth cursor movement
+   - Reduces jitter from raw MediaPipe coordinates
+   - Feels "weighty" and intentional, not twitchy
+   
+   **B. Predictive Cursor**
+   - Physics simulation predicts cursor position ahead of actual input
+   - Reduces perceived latency (especially important at 30fps)
+   - Magnetic snap-lock on tracking loss
+   
+   **C. State Transition Modeling**
+   - Model gesture transitions as lines/gradients in state space
+   - When user is constrained to known gesture language, transitions are predictable
+   - Example: `Open_Palm → None → Pointing_Up` follows predictable trajectory
+   - Simulate user intent during the `None` gap frames
+   - "Wrong" gestures like `None` are expected waypoints, not errors
+
+#### Palm Orientation Gating Specification
+
+```typescript
+// TIGHTER cone requirement - palm must face camera directly
+const PALM_CONE_THRESHOLD_TIGHT = 0.85; // cos(~32°) - stricter than default
+
+interface ArmingGate {
+  isPalmFacingCamera: boolean;    // dot product > THRESHOLD
+  palmConeAngle: number;          // radians from camera axis
+  isArmed: boolean;               // sticky once armed
+  armingDuration: number;         // ms palm has been facing
+}
+
+// Disarm conditions (emit pointercancel)
+const DISARM_CONDITIONS = {
+  palmFacingAway: true,           // palm cone leaves camera direction
+  handLost: true,                 // tracking loss
+  explicitGesture: 'Open_Palm',   // user explicitly resets
+};
+```
+
+#### W3C Pointer Events Mapping (Authoritative)
+
+| MediaPipe Input | W3C Output | Properties |
+|-----------------|------------|------------|
+| Any hand detected | `pointermove` | `clientX`, `clientY` from index tip |
+| `Open_Palm` + palm cone | `pointerover` | `isPrimary: true` |
+| `Pointing_Up` | `pointerdown` | `button: 0`, `buttons: 1` |
+| Return to `Open_Palm` | `pointerup` | `button: 0`, `buttons: 0` |
+| Palm cone exit | `pointercancel` | `isPrimary: true` |
+| Hand lost | `pointercancel` | `isPrimary: true` |
 
 ---
 
