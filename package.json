@@ -36,6 +36,8 @@
 		"v-phase:staged": "tsx scripts/v-phase-gate.ts --staged",
 		"v-phase:demo": "tsx scripts/v-phase-gate.ts sandbox/demo-golden",
 		"v-phase:pipeline": "tsx scripts/v-phase-gate.ts sandbox/src/pipeline",
+		"detect:theater": "tsx scripts/theater-detector.ts",
+		"detect:theater:json": "tsx scripts/theater-detector.ts --json",
 		"validate:demo": "tsx scripts/validate-demo.ts",
 		"validate:demo:all": "tsx scripts/validate-demo.ts --all",
 		"regression:check": "tsx scripts/regression-detector.ts",
