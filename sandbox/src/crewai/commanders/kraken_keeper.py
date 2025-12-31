@@ -9,9 +9,10 @@ Secret: "Memory Mining Imperative."
 HIVE Phase: I (Interlock) - paired with Web Weaver (Port 1)
 """
 
-from crewai import Agent
+from crewai import Agent, LLM
 from crewai.tools import tool
-from typing import Dict, Any
+from typing import Dict, Any, Optional
+import os
 
 
 # === TOOLS ===
@@ -48,8 +49,17 @@ def emit_store_signal(message: str) -> str:
 
 # === AGENT ===
 
-def create_kraken_keeper(verbose: bool = True) -> Agent:
+def create_kraken_keeper(verbose: bool = True, llm: Optional[LLM] = None) -> Agent:
     """Create the Kraken Keeper agent (Port 6 - STORE)."""
+    if llm is None:
+        api_key = os.environ.get("OPENROUTER_API_KEY")
+        if api_key:
+            llm = LLM(
+                model="openrouter/deepseek/deepseek-chat",
+                api_key=api_key,
+                base_url="https://openrouter.ai/api/v1",
+                temperature=0.5,
+            )
     return Agent(
         role="Kraken Keeper - Port 6 Assimilator",
         goal="STORE knowledge persistently. Manage memory bank, persist contracts, recall artifacts.",
@@ -67,4 +77,5 @@ def create_kraken_keeper(verbose: bool = True) -> Agent:
         tools=[store_to_memory, recall_from_memory, persist_contract, query_artifacts, emit_store_signal],
         verbose=verbose,
         allow_delegation=False,
+        llm=llm,
     )

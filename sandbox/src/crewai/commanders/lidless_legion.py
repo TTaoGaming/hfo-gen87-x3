@@ -9,7 +9,7 @@ Secret: "Perception without interpretation."
 HIVE Phase: H (Hunt) - paired with Spider Sovereign (Port 7)
 """
 
-from crewai import Agent
+from crewai import Agent, LLM
 from crewai.tools import tool
 from typing import Optional
 import os
@@ -47,8 +47,17 @@ def emit_sense_signal(message: str) -> str:
 
 # === AGENT ===
 
-def create_lidless_legion(verbose: bool = True) -> Agent:
+def create_lidless_legion(verbose: bool = True, llm: Optional[LLM] = None) -> Agent:
     """Create the Lidless Legion agent (Port 0 - SENSE)."""
+    if llm is None:
+        api_key = os.environ.get("OPENROUTER_API_KEY")
+        if api_key:
+            llm = LLM(
+                model="openrouter/deepseek/deepseek-chat",
+                api_key=api_key,
+                base_url="https://openrouter.ai/api/v1",
+                temperature=0.5,
+            )
     return Agent(
         role="Lidless Legion - Port 0 Observer",
         goal="SENSE without interpretation. Perceive inputs, detect changes, find exemplars.",
@@ -66,4 +75,5 @@ def create_lidless_legion(verbose: bool = True) -> Agent:
         tools=[search_memory_bank, search_web, grep_codebase, emit_sense_signal],
         verbose=verbose,
         allow_delegation=False,
+        llm=llm,
     )

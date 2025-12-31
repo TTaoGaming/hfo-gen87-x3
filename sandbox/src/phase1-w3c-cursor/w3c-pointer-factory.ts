@@ -250,24 +250,25 @@ export class W3CPointerEventFactory {
 	fromFSMAction(action: FSMAction): PointerEvent[] {
 		const validated = FSMActionSchema.parse(action);
 		const events: PointerEvent[] = [];
+		const pos = validated.position as { x: number; y: number };
 
 		switch (validated.type) {
 			case 'MOVE':
-				events.push(this.createMoveEvent(validated.position));
+				events.push(this.createMoveEvent(pos));
 				break;
 
 			case 'DOWN':
-				events.push(this.createDownEvent(validated.position, validated.pressure ?? 0.5));
+				events.push(this.createDownEvent(pos, validated.pressure ?? 0.5));
 				break;
 
 			case 'UP':
-				events.push(this.createUpEvent(validated.position));
+				events.push(this.createUpEvent(pos));
 				break;
 
 			case 'CLICK':
 				// Click = down + up in sequence
-				events.push(this.createDownEvent(validated.position, validated.pressure ?? 0.5));
-				events.push(this.createUpEvent(validated.position));
+				events.push(this.createDownEvent(pos, validated.pressure ?? 0.5));
+				events.push(this.createUpEvent(pos));
 				break;
 
 			case 'CANCEL':

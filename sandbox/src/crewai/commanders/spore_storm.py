@@ -9,8 +9,10 @@ Secret: "HIVE/8 Obsidian Hourglass."
 HIVE Phase: E (Evolve) - paired with Red Regnant (Port 4)
 """
 
-from crewai import Agent
+from crewai import Agent, LLM
 from crewai.tools import tool
+from typing import Optional
+import os
 import json
 from datetime import datetime
 
@@ -59,8 +61,17 @@ def emit_deliver_signal(message: str) -> str:
 
 # === AGENT ===
 
-def create_spore_storm(verbose: bool = True) -> Agent:
+def create_spore_storm(verbose: bool = True, llm: Optional[LLM] = None) -> Agent:
     """Create the Spore Storm agent (Port 3 - DELIVER)."""
+    if llm is None:
+        api_key = os.environ.get("OPENROUTER_API_KEY")
+        if api_key:
+            llm = LLM(
+                model="openrouter/deepseek/deepseek-chat",
+                api_key=api_key,
+                base_url="https://openrouter.ai/api/v1",
+                temperature=0.5,
+            )
     return Agent(
         role="Spore Storm - Port 3 Injector",
         goal="DELIVER outputs to the world. Emit signals, execute workflows, prepare next cycle.",
@@ -78,4 +89,5 @@ def create_spore_storm(verbose: bool = True) -> Agent:
         tools=[emit_to_blackboard, execute_workflow, trigger_fsm_transition, prepare_next_cycle, emit_deliver_signal],
         verbose=verbose,
         allow_delegation=False,
+        llm=llm,
     )

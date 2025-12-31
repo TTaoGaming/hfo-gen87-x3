@@ -9,9 +9,10 @@ Secret: "Forgiveness Architecture."
 HIVE Phase: V (Validate) - paired with Mirror Magus (Port 2)
 """
 
-from crewai import Agent
+from crewai import Agent, LLM
 from crewai.tools import tool
-from typing import Dict
+from typing import Dict, Optional
+import os
 
 
 # === TOOLS ===
@@ -69,8 +70,17 @@ def emit_defend_signal(message: str) -> str:
 
 # === AGENT ===
 
-def create_pyre_praetorian(verbose: bool = True) -> Agent:
+def create_pyre_praetorian(verbose: bool = True, llm: Optional[LLM] = None) -> Agent:
     """Create the Pyre Praetorian agent (Port 5 - DEFEND)."""
+    if llm is None:
+        api_key = os.environ.get("OPENROUTER_API_KEY")
+        if api_key:
+            llm = LLM(
+                model="openrouter/deepseek/deepseek-chat",
+                api_key=api_key,
+                base_url="https://openrouter.ai/api/v1",
+                temperature=0.5,
+            )
     return Agent(
         role="Pyre Praetorian - Port 5 Immunizer",
         goal="DEFEND the system integrity. Validate gates, enforce sequences, quarantine violations.",
@@ -88,4 +98,5 @@ def create_pyre_praetorian(verbose: bool = True) -> Agent:
         tools=[validate_gate, enforce_hive_sequence, quarantine_signal, detect_reward_hack, emit_defend_signal],
         verbose=verbose,
         allow_delegation=False,
+        llm=llm,
     )

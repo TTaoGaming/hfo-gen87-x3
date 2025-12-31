@@ -4,137 +4,77 @@
  * Gen87.X3 | Port 2 (SHAPE) | Implements SmootherPort
  *
  * EXEMPLAR SOURCE: https://gery.casiez.net/1euro/
+ * NPM PACKAGE: 1eurofilter@1.2.2 (NO THEATER - uses real npm package)
+ *
  * Citation: Casiez, G., Roussel, N. and Vogel, D. (2012).
  *           1€ Filter: A Simple Speed-based Low-pass Filter for Noisy Input
  *           in Interactive Systems. CHI '12.
  *
  * Grounded: Tavily research 2025-12-29
+ * De-theatered: 2025-12-31 - replaced inline class with npm import
  */
+import { OneEuroFilter } from '1eurofilter';
 import type { SmootherPort } from '../contracts/ports.js';
 import { type SensorFrame, type SmoothedFrame, SmoothedFrameSchema } from '../contracts/schemas.js';
 
-/**
- * Low-pass filter component
- * Implements exponential smoothing with adaptive alpha
- */
-class LowPassFilter {
-	private y: number | undefined;
-	private alpha: number;
-
-	constructor(alpha: number) {
-		this.alpha = alpha;
-	}
-
-	filter(x: number, alpha?: number): number {
-		if (alpha !== undefined) {
-			this.alpha = alpha;
-		}
-
-		if (this.y === undefined) {
-			this.y = x;
-		} else {
-			this.y = this.alpha * x + (1 - this.alpha) * this.y;
-		}
-
-		return this.y;
-	}
-
-	hasLastValue(): boolean {
-		return this.y !== undefined;
-	}
-
-	lastValue(): number {
-		return this.y ?? 0;
-	}
-
-	reset(): void {
-		this.y = undefined;
-	}
-}
+// ============================================================================
+// NOTE: Using npm 1eurofilter package - NO INLINE THEATER
+// The package provides: filter(value, timestamp) with automatic dt calculation
+// ============================================================================
 
 /**
- * One Euro Filter
- *
- * A simple speed-based low-pass filter that:
- * - At low speeds: uses low cutoff frequency → reduces jitter
- * - At high speeds: uses high cutoff frequency → reduces lag
+ * Extended One Euro Filter with derivative access
+ * Wraps npm package to add velocity tracking
  */
-class OneEuroFilter {
-	private mincutoff: number;
-	private beta: number;
-	private dcutoff: number;
-	private xFilter: LowPassFilter;
-	private dxFilter: LowPassFilter;
+class OneEuroFilterWithVelocity {
+	private filter: OneEuroFilter;
+	private lastValue: number | undefined;
 	private lastTime: number | undefined;
-	private lastRawValue: number | undefined;
+	private derivative = 0;
 
-	constructor(frequency: number, mincutoff = 1.0, beta = 0.0, dcutoff = 1.0) {
-		this.mincutoff = mincutoff;
-		this.beta = beta;
-		this.dcutoff = dcutoff;
-		this.xFilter = new LowPassFilter(this.alpha(mincutoff, 1 / frequency));
-		this.dxFilter = new LowPassFilter(this.alpha(dcutoff, 1 / frequency));
+	constructor(frequency: number, mincutoff: number, beta: number, dcutoff: number) {
+		this.filter = new OneEuroFilter(frequency, mincutoff, beta, dcutoff);
 	}
 
-	private alpha(cutoff: number, dt: number): number {
-		const tau = 1.0 / (2 * Math.PI * cutoff);
-		return 1.0 / (1.0 + tau / dt);
-	}
-
-	filter(x: number, timestamp: number): number {
-		// Calculate time delta - clamp to avoid division by zero
-		let dt =
-			this.lastTime !== undefined
-				? (timestamp - this.lastTime) / 1000 // Convert ms to seconds
-				: 1.0 / 120; // Default 120Hz
-
-		// Prevent NaN from zero or negative dt
-		if (dt <= 0) dt = 1.0 / 120;
-
+	filterValue(x: number, timestamp: number): number {
+		// Track derivative manually since npm package doesn't expose it
+		if (this.lastValue !== undefined && this.lastTime !== undefined) {
+			const dt = (timestamp - this.lastTime) / 1000;
+			if (dt > 0) {
+				this.derivative = (x - this.lastValue) / dt;
+			}
+		}
+		this.lastValue = x;
 		this.lastTime = timestamp;
 
-		// Estimate derivative - guard against NaN
-		let dx = 0;
-		if (this.lastRawValue !== undefined && dt > 0) {
-			dx = (x - this.lastRawValue) / dt;
-			if (!Number.isFinite(dx)) dx = 0;
-		}
-		this.lastRawValue = x;
-
-		// Filter derivative
-		const edx = this.dxFilter.filter(dx, this.alpha(this.dcutoff, dt));
-
-		// Compute adaptive cutoff based on speed
-		const cutoff = this.mincutoff + this.beta * Math.abs(edx);
-
-		// Filter position with adaptive cutoff
-		return this.xFilter.filter(x, this.alpha(cutoff, dt));
+		return this.filter.filter(x, timestamp);
 	}
 
 	getDerivative(): number {
-		return this.dxFilter.lastValue();
+		return this.derivative;
 	}
 
 	setParams(mincutoff: number, beta: number): void {
-		this.mincutoff = mincutoff;
-		this.beta = beta;
+		this.filter.setMinCutoff(mincutoff);
+		this.filter.setBeta(beta);
 	}
 
 	reset(): void {
-		this.xFilter.reset();
-		this.dxFilter.reset();
+		this.filter.reset();
+		this.lastValue = undefined;
 		this.lastTime = undefined;
-		this.lastRawValue = undefined;
+		this.derivative = 0;
 	}
 }
 
 /**
  * One Euro Filter Adapter
  * Implements SmootherPort interface with CDD validation
+ * Uses npm 1eurofilter package (de-theatered)
  */
 export class OneEuroAdapter implements SmootherPort {
-	private filterX: OneEuroFilter;
-	private filterY: OneEuroFilter;
+	private filterX: OneEuroFilterWithVelocity;
+	private filterY: OneEuroFilterWithVelocity;
 	private readonly predictionMs: number;
 
 	constructor(
@@ -144,8 +84,8 @@ export class OneEuroAdapter implements SmootherPort {
 		private readonly frequency = 60, // Assumed frame rate
 		predictionMs = 16, // One frame ahead prediction
 	) {
-		this.filterX = new OneEuroFilter(frequency, mincutoff, beta, dcutoff);
-		this.filterY = new OneEuroFilter(frequency, mincutoff, beta, dcutoff);
+		this.filterX = new OneEuroFilterWithVelocity(frequency, mincutoff, beta, dcutoff);
+		this.filterY = new OneEuroFilterWithVelocity(frequency, mincutoff, beta, dcutoff);
 		this.predictionMs = predictionMs;
 	}
 
@@ -168,8 +108,8 @@ export class OneEuroAdapter implements SmootherPort {
 		}
 
 		// Apply 1€ filter to x and y coordinates
-		const smoothedX = this.filterX.filter(frame.indexTip.x, frame.ts);
-		const smoothedY = this.filterY.filter(frame.indexTip.y, frame.ts);
+		const smoothedX = this.filterX.filterValue(frame.indexTip.x, frame.ts);
+		const smoothedY = this.filterY.filterValue(frame.indexTip.y, frame.ts);
 
 		// Get velocity estimates from filter derivatives
 		const velocityX = this.filterX.getDerivative();

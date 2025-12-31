@@ -12,8 +12,10 @@ Note: "Red Regnant" refers to the Red Queen hypothesis (evolution),
 NOT the TDD RED phase. The name means "running just to stay in place."
 """
 
-from crewai import Agent
+from crewai import Agent, LLM
 from crewai.tools import tool
+from typing import Optional
+import os
 
 
 # === TOOLS ===
@@ -53,8 +55,17 @@ def emit_test_signal(message: str) -> str:
 
 # === AGENT ===
 
-def create_red_regnant(verbose: bool = True) -> Agent:
+def create_red_regnant(verbose: bool = True, llm: Optional[LLM] = None) -> Agent:
     """Create the Red Regnant agent (Port 4 - TEST)."""
+    if llm is None:
+        api_key = os.environ.get("OPENROUTER_API_KEY")
+        if api_key:
+            llm = LLM(
+                model="openrouter/deepseek/deepseek-chat",
+                api_key=api_key,
+                base_url="https://openrouter.ai/api/v1",
+                temperature=0.5,
+            )
     return Agent(
         role="Red Regnant - Port 4 Disruptor",
         goal="TEST everything, trust nothing. Run property tests, mutate code, verify evolution.",
@@ -72,4 +83,5 @@ def create_red_regnant(verbose: bool = True) -> Agent:
         tools=[run_property_tests, run_mutation_tests, evolve_code, red_queen_check, emit_test_signal],
         verbose=verbose,
         allow_delegation=False,
+        llm=llm,
     )

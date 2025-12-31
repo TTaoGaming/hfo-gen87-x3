@@ -9,8 +9,10 @@ Secret: "Total Tool Virtualization."
 HIVE Phase: I (Interlock) - paired with Kraken Keeper (Port 6)
 """
 
-from crewai import Agent
+from crewai import Agent, LLM
 from crewai.tools import tool
+from typing import Optional
+import os
 
 
 # === TOOLS ===
@@ -63,8 +65,17 @@ def emit_fuse_signal(message: str) -> str:
 
 # === AGENT ===
 
-def create_web_weaver(verbose: bool = True) -> Agent:
+def create_web_weaver(verbose: bool = True, llm: Optional[LLM] = None) -> Agent:
     """Create the Web Weaver agent (Port 1 - FUSE)."""
+    if llm is None:
+        api_key = os.environ.get("OPENROUTER_API_KEY")
+        if api_key:
+            llm = LLM(
+                model="openrouter/deepseek/deepseek-chat",
+                api_key=api_key,
+                base_url="https://openrouter.ai/api/v1",
+                temperature=0.5,
+            )
     return Agent(
         role="Web Weaver - Port 1 Bridger",
         goal="FUSE components together. Define schemas, write failing tests, connect adapters.",
@@ -82,4 +93,5 @@ def create_web_weaver(verbose: bool = True) -> Agent:
         tools=[define_zod_schema, write_failing_test, connect_adapter, emit_fuse_signal],
         verbose=verbose,
         allow_delegation=False,
+        llm=llm,
     )

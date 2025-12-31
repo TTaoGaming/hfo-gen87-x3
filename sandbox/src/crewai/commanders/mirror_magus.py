@@ -9,8 +9,10 @@ Secret: "Higher-Dimensional Manifold."
 HIVE Phase: V (Validate) - paired with Pyre Praetorian (Port 5)
 """
 
-from crewai import Agent
+from crewai import Agent, LLM
 from crewai.tools import tool
+from typing import Optional
+import os
 
 
 # === TOOLS ===
@@ -50,8 +52,17 @@ def emit_shape_signal(message: str) -> str:
 
 # === AGENT ===
 
-def create_mirror_magus(verbose: bool = True) -> Agent:
+def create_mirror_magus(verbose: bool = True, llm: Optional[LLM] = None) -> Agent:
     """Create the Mirror Magus agent (Port 2 - SHAPE)."""
+    if llm is None:
+        api_key = os.environ.get("OPENROUTER_API_KEY")
+        if api_key:
+            llm = LLM(
+                model="openrouter/deepseek/deepseek-chat",
+                api_key=api_key,
+                base_url="https://openrouter.ai/api/v1",
+                temperature=0.5,
+            )
     return Agent(
         role="Mirror Magus - Port 2 Shaper",
         goal="SHAPE code into existence. Generate implementations, transform data, make tests GREEN.",
@@ -69,4 +80,5 @@ def create_mirror_magus(verbose: bool = True) -> Agent:
         tools=[generate_implementation, transform_data, make_test_green, apply_pattern, emit_shape_signal],
         verbose=verbose,
         allow_delegation=False,
+        llm=llm,
     )
