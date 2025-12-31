@@ -8,7 +8,7 @@
  * 3. Click targets respond to synthetic events
  */
 
-import { test, expect, Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 // Serve the demo locally
 const DEMO_URL = "file:///C:/Dev/active/hfo_gen87_x3/sandbox/demo/gesture-cursor-demo.html";

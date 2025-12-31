@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pipeline Quad-Cursor Demo - Gen87.X3</title>
+  
+  <!-- Golden Layout CSS -->
+  <link rel="stylesheet" href="https://golden-layout.com/files/latest/css/goldenlayout-base.css">
+  <link rel="stylesheet" href="https://golden-layout.com/files/latest/css/goldenlayout-dark-theme.css">
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    html, body {
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0a0a1a;
+      color: #eee;
+    }
+    
+    #layout-container {
+      width: 100%;
+      height: 100%;
+    }
+    
+    /* Golden Layout overrides */
+    .lm_goldenlayout {
+      background: #0a0a1a;
+    }
+    
+    .lm_header {
+      background: #1a1a2e !important;
+    }
+    
+    .lm_tab {
+      background: #16213e !important;
+      color: #888 !important;
+    }
+    
+    .lm_tab.lm_active {
+      background: #0f3460 !important;
+      color: #fff !important;
+    }
+    
+    .lm_content {
+      background: #0f0f23 !important;
+      border: 1px solid #333 !important;
+    }
+    
+    /* Panel base styles */
+    .panel {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      background: #0f0f23;
+      overflow: hidden;
+    }
+    
+    .panel-header {
+      background: rgba(0, 0, 0, 0.4);
+      padding: 8px 12px;
+      border-bottom: 2px solid #333;
+      flex-shrink: 0;
+    }
+    
+    .panel-title {
+      font-weight: 600;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .panel-content {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    /* ================================================================
+       QUAD CURSOR PANEL - The main cursor visualization
+       Shows 4 cursors: Raw, 1€, Physics, Prediction
+       ================================================================ */
+    
+    .cursor-panel {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(circle at 50% 50%, rgba(15, 52, 96, 0.3) 0%, transparent 70%),
+        linear-gradient(0deg, rgba(0, 0, 0, 0.5) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.5) 1px, transparent 1px);
+      background-size: 100% 100%, 40px 40px, 40px 40px;
+      cursor: none;
+    }
+    
+    /* Cursor base */
+    .cursor {
+      position: absolute;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      transition: opacity 0.2s;
+    }
+    
+    /* 1. RAW CURSOR - Red, jittery, small dot */
+    .cursor-raw {
+      width: 8px;
+      height: 8px;
+      background: #ff4444;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #ff4444;
+      z-index: 10;
+    }
+    
+    /* 2. ONE EURO CURSOR - Yellow, smooth, medium ring */
+    .cursor-euro {
+      width: 20px;
+      height: 20px;
+      border: 3px solid #ffd700;
+      border-radius: 50%;
+      box-shadow: 0 0 12px rgba(255, 215, 0, 0.5);
+      z-index: 20;
+    }
+    
+    /* 3. PHYSICS SMOOTHED CURSOR - Green, very smooth, filled */
+    .cursor-physics {
+      width: 28px;
+      height: 28px;
+      background: radial-gradient(circle, rgba(0, 255, 136, 0.8) 0%, rgba(0, 255, 136, 0.2) 70%, transparent 100%);
+      border: 2px solid #00ff88;
+      border-radius: 50%;
+      box-shadow: 0 0 20px rgba(0, 255, 136, 0.6);
+      z-index: 30;
+    }
+    
+    /* 4. PHYSICS PREDICTION CURSOR - Blue, ahead of position */
+    .cursor-prediction {
+      width: 16px;
+      height: 16px;
+      background: transparent;
+      border: 2px dashed #4488ff;
+      border-radius: 50%;
+      box-shadow: 0 0 15px rgba(68, 136, 255, 0.5);
+      z-index: 40;
+    }
+    
+    .cursor-prediction::after {
+      content: '→';
+      position: absolute;
+      top: 50%;
+      left: 100%;
+      transform: translateY(-50%);
+      color: #4488ff;
+      font-size: 12px;
+      margin-left: 4px;
+    }
+    
+    /* Trail effect for each cursor */
+    .trail-dot {
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+    }
+    
+    .trail-dot.raw { background: rgba(255, 68, 68, 0.3); width: 4px; height: 4px; }
+    .trail-dot.euro { background: rgba(255, 215, 0, 0.3); width: 6px; height: 6px; }
+    .trail-dot.physics { background: rgba(0, 255, 136, 0.3); width: 8px; height: 8px; }
+    .trail-dot.prediction { background: rgba(68, 136, 255, 0.3); width: 5px; height: 5px; }
+    
+    /* Legend inside cursor panel */
+    .cursor-legend {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      background: rgba(0, 0, 0, 0.8);
+      padding: 10px 15px;
+      border-radius: 8px;
+      font-size: 11px;
+      z-index: 100;
+    }
+    
+    .cursor-legend .legend-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 4px 0;
+    }
+    
+    .cursor-legend .legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    
+    .cursor-legend .legend-dot.raw { background: #ff4444; }
+    .cursor-legend .legend-dot.euro { border: 2px solid #ffd700; background: transparent; }
+    .cursor-legend .legend-dot.physics { background: #00ff88; }
+    .cursor-legend .legend-dot.prediction { border: 2px dashed #4488ff; background: transparent; }
+    
+    /* ================================================================
+       FSM STATE PANEL
+       ================================================================ */
+    
+    .fsm-panel {
+      padding: 15px;
+    }
+    
+    .fsm-state-display {
+      text-align: center;
+      padding: 20px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      font-size: 24px;
+      font-weight: bold;
+      transition: all 0.3s ease;
+    }
+    
+    .fsm-state-display.DISARMED {
+      background: rgba(102, 102, 102, 0.2);
+      border: 2px solid #666;
+      color: #666;
+    }
+    
+    .fsm-state-display.ARMING {
+      background: rgba(255, 204, 0, 0.2);
+      border: 2px solid #ffcc00;
+      color: #ffcc00;
+      animation: pulse-arming 0.5s ease-in-out infinite;
+    }
+    
+    .fsm-state-display.ARMED {
+      background: rgba(0, 255, 136, 0.2);
+      border: 2px solid #00ff88;
+      color: #00ff88;
+    }
+    
+    .fsm-state-display.DOWN_COMMIT {
+      background: rgba(68, 136, 255, 0.2);
+      border: 2px solid #4488ff;
+      color: #4488ff;
+    }
+    
+    @keyframes pulse-arming {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+    
+    .fsm-transitions {
+      font-size: 12px;
+      color: #888;
+    }
+    
+    .fsm-transitions .transition {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      border-bottom: 1px solid #333;
+    }
+    
+    /* ================================================================
+       DATA PANEL - Shows raw numbers
+       ================================================================ */
+    
+    .data-panel {
+      padding: 15px;
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 12px;
+    }
+    
+    .data-section {
+      margin-bottom: 15px;
+    }
+    
+    .data-section-title {
+      font-weight: bold;
+      color: #888;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      font-size: 10px;
+      letter-spacing: 1px;
+    }
+    
+    .data-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 0;
+    }
+    
+    .data-row .label {
+      color: #666;
+    }
+    
+    .data-row .value {
+      color: #00ff88;
+    }
+    
+    .data-row .value.raw { color: #ff4444; }
+    .data-row .value.euro { color: #ffd700; }
+    .data-row .value.physics { color: #00ff88; }
+    .data-row .value.prediction { color: #4488ff; }
+    
+    /* ================================================================
+       FILTER PARAMS PANEL
+       ================================================================ */
+    
+    .params-panel {
+      padding: 15px;
+    }
+    
+    .param-group {
+      margin-bottom: 20px;
+    }
+    
+    .param-group-title {
+      font-weight: bold;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .param-group-title .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    
+    .param-slider {
+      margin: 8px 0;
+    }
+    
+    .param-slider label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #888;
+      margin-bottom: 4px;
+    }
+    
+    .param-slider input[type="range"] {
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: #333;
+      outline: none;
+      -webkit-appearance: none;
+    }
+    
+    .param-slider input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #00ff88;
+      cursor: pointer;
+    }
+    
+    /* ================================================================
+       EVENT LOG PANEL
+       ================================================================ */
+    
+    .log-panel {
+      padding: 10px;
+      font-family: 'Consolas', monospace;
+      font-size: 11px;
+      overflow-y: auto;
+      height: 100%;
+    }
+    
+    .log-entry {
+      padding: 3px 0;
+      border-bottom: 1px solid #222;
+      display: flex;
+      gap: 10px;
+    }
+    
+    .log-entry .timestamp {
+      color: #666;
+      flex-shrink: 0;
+    }
+    
+    .log-entry .event-type {
+      flex-shrink: 0;
+      padding: 1px 6px;
+      border-radius: 3px;
+      font-size: 10px;
+    }
+    
+    .log-entry .event-type.move { background: #333; color: #888; }
+    .log-entry .event-type.down { background: #4488ff; color: #fff; }
+    .log-entry .event-type.up { background: #00ff88; color: #000; }
+    .log-entry .event-type.click { background: #ff4444; color: #fff; }
+    
+    .log-entry .coords {
+      color: #00ff88;
+    }
+  </style>
+</head>
+<body>
+  <div id="layout-container"></div>
+
+  <!-- Golden Layout -->
+  <script src="https://cdn.jsdelivr.net/npm/golden-layout@1.5.9/dist/goldenlayout.min.js"></script>
+  
+  <script>
+    // ============================================================================
+    // PIPELINE SIMULATION
+    // ============================================================================
+    
+    class PipelineSimulator {
+      constructor() {
+        // Raw position (with simulated jitter)
+        this.rawPos = { x: 0.5, y: 0.5 };
+        
+        // 1€ Filter state
+        this.euroPos = { x: 0.5, y: 0.5 };
+        this.euroVel = { x: 0, y: 0 };
+        this.euroParams = {
+          minCutoff: 1.0,
+          beta: 0.007,
+          dCutoff: 1.0
+        };
+        this.lastEuroTime = performance.now();
+        
+        // Physics smoothed state (spring-damper)
+        this.physicsPos = { x: 0.5, y: 0.5 };
+        this.physicsVel = { x: 0, y: 0 };
+        this.physicsParams = {
+          stiffness: 300,
+          damping: 20,
+          mass: 1
+        };
+        
+        // Prediction state
+        this.predictionPos = { x: 0.5, y: 0.5 };
+        this.predictionMs = 50; // Look-ahead time
+        
+        // Trail history
+        this.trails = {
+          raw: [],
+          euro: [],
+          physics: [],
+          prediction: []
+        };
+        this.maxTrailLength = 30;
+        
+        // FSM state
+        this.fsmState = 'DISARMED';
+        this.armingProgress = 0;
+        
+        // Callbacks
+        this.onUpdate = null;
+      }
+      
+      // 1€ Filter implementation
+      oneEuroFilter(pos, dt) {
+        const { minCutoff, beta, dCutoff } = this.euroParams;
+        
+        // Calculate derivative
+        const dx = (pos.x - this.euroPos.x) / dt;
+        const dy = (pos.y - this.euroPos.y) / dt;
+        
+        // Smooth derivative
+        const alpha_d = this.smoothingFactor(dt, dCutoff);
+        this.euroVel.x = alpha_d * dx + (1 - alpha_d) * this.euroVel.x;
+        this.euroVel.y = alpha_d * dy + (1 - alpha_d) * this.euroVel.y;
+        
+        // Adaptive cutoff
+        const speed = Math.sqrt(this.euroVel.x ** 2 + this.euroVel.y ** 2);
+        const cutoff = minCutoff + beta * speed;
+        
+        // Smooth position
+        const alpha = this.smoothingFactor(dt, cutoff);
+        this.euroPos.x = alpha * pos.x + (1 - alpha) * this.euroPos.x;
+        this.euroPos.y = alpha * pos.y + (1 - alpha) * this.euroPos.y;
+        
+        return { ...this.euroPos };
+      }
+      
+      smoothingFactor(dt, cutoff) {
+        const tau = 1.0 / (2 * Math.PI * cutoff);
+        return 1.0 / (1.0 + tau / dt);
+      }
+      
+      // Physics spring-damper simulation
+      physicsSmooth(targetPos, dt) {
+        const { stiffness, damping, mass } = this.physicsParams;
+        
+        // Spring force toward target
+        const springX = stiffness * (targetPos.x - this.physicsPos.x);
+        const springY = stiffness * (targetPos.y - this.physicsPos.y);
+        
+        // Damping force
+        const dampX = -damping * this.physicsVel.x;
+        const dampY = -damping * this.physicsVel.y;
+        
+        // Acceleration
+        const accelX = (springX + dampX) / mass;
+        const accelY = (springY + dampY) / mass;
+        
+        // Integrate velocity
+        this.physicsVel.x += accelX * dt;
+        this.physicsVel.y += accelY * dt;
+        
+        // Integrate position
+        this.physicsPos.x += this.physicsVel.x * dt;
+        this.physicsPos.y += this.physicsVel.y * dt;
+        
+        return { ...this.physicsPos };
+      }
+      
+      // Prediction - extrapolate using velocity
+      predict(pos, vel, lookAheadMs) {
+        const dt = lookAheadMs / 1000;
+        return {
+          x: pos.x + vel.x * dt,
+          y: pos.y + vel.y * dt
+        };
+      }
+      
+      // Main update from raw input
+      update(rawX, rawY, addJitter = true) {
+        const now = performance.now();
+        const dt = Math.max(0.001, (now - this.lastEuroTime) / 1000);
+        this.lastEuroTime = now;
+        
+        // 1. RAW - Add simulated jitter if enabled
+        if (addJitter) {
+          const jitterAmount = 0.005;
+          this.rawPos.x = rawX + (Math.random() - 0.5) * jitterAmount;
+          this.rawPos.y = rawY + (Math.random() - 0.5) * jitterAmount;
+        } else {
+          this.rawPos.x = rawX;
+          this.rawPos.y = rawY;
+        }
+        
+        // 2. ONE EURO FILTER
+        this.oneEuroFilter(this.rawPos, dt);
+        
+        // 3. PHYSICS SMOOTHING (takes 1€ output as target)
+        this.physicsSmooth(this.euroPos, dt);
+        
+        // 4. PREDICTION (based on physics state)
+        this.predictionPos = this.predict(this.physicsPos, this.physicsVel, this.predictionMs);
+        
+        // Update trails
+        this.updateTrail('raw', this.rawPos);
+        this.updateTrail('euro', this.euroPos);
+        this.updateTrail('physics', this.physicsPos);
+        this.updateTrail('prediction', this.predictionPos);
+        
+        // Notify
+        if (this.onUpdate) {
+          this.onUpdate({
+            raw: { ...this.rawPos },
+            euro: { ...this.euroPos },
+            physics: { ...this.physicsPos },
+            prediction: { ...this.predictionPos },
+            physicsVel: { ...this.physicsVel },
+            trails: this.trails
+          });
+        }
+      }
+      
+      updateTrail(type, pos) {
+        this.trails[type].push({ x: pos.x, y: pos.y, time: performance.now() });
+        while (this.trails[type].length > this.maxTrailLength) {
+          this.trails[type].shift();
+        }
+      }
+      
+      setFSMState(state) {
+        this.fsmState = state;
+      }
+    }
+    
+    // ============================================================================
+    // PANEL COMPONENTS
+    // ============================================================================
+    
+    const pipeline = new PipelineSimulator();
+    let cursorPanelEl = null;
+    let dataPanelEl = null;
+    let fsmPanelEl = null;
+    let logPanelEl = null;
+    let paramsPanelEl = null;
+    
+    // Cursor panel - shows 4 cursors
+    function createCursorPanel(container) {
+      const panel = document.createElement('div');
+      panel.className = 'panel';
+      panel.innerHTML = `
+        <div class="panel-content">
+          <div class="cursor-panel" id="cursor-stage">
+            <!-- Cursors will be positioned here -->
+            <div class="cursor cursor-raw" id="cursor-raw"></div>
+            <div class="cursor cursor-euro" id="cursor-euro"></div>
+            <div class="cursor cursor-physics" id="cursor-physics"></div>
+            <div class="cursor cursor-prediction" id="cursor-prediction"></div>
+            
+            <!-- Trail containers -->
+            <div id="trails-container"></div>
+            
+            <!-- Legend -->
+            <div class="cursor-legend">
+              <div class="legend-row">
+                <span class="legend-dot raw"></span>
+                <span>Raw (MediaPipe)</span>
+              </div>
+              <div class="legend-row">
+                <span class="legend-dot euro"></span>
+                <span>1€ Filter</span>
+              </div>
+              <div class="legend-row">
+                <span class="legend-dot physics"></span>
+                <span>Physics Smoothed</span>
+              </div>
+              <div class="legend-row">
+                <span class="legend-dot prediction"></span>
+                <span>Prediction (${pipeline.predictionMs}ms)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      container.getElement()[0].appendChild(panel);
+      cursorPanelEl = panel.querySelector('#cursor-stage');
+      
+      // Track mouse on cursor panel
+      cursorPanelEl.addEventListener('mousemove', (e) => {
+        const rect = cursorPanelEl.getBoundingClientRect();
+        const x = (e.clientX - rect.left) / rect.width;
+        const y = (e.clientY - rect.top) / rect.height;
+        pipeline.update(x, y, true);
+      });
+    }
+    
+    // Data panel - raw numbers
+    function createDataPanel(container) {
+      const panel = document.createElement('div');
+      panel.className = 'panel';
+      panel.innerHTML = `
+        <div class="panel-header">
+          <div class="panel-title">📊 Pipeline Data</div>
+        </div>
+        <div class="panel-content">
+          <div class="data-panel" id="data-panel">
+            <div class="data-section">
+              <div class="data-section-title">🔴 Raw Input</div>
+              <div class="data-row"><span class="label">X:</span><span class="value raw" id="data-raw-x">0.500</span></div>
+              <div class="data-row"><span class="label">Y:</span><span class="value raw" id="data-raw-y">0.500</span></div>
+            </div>
+            <div class="data-section">
+              <div class="data-section-title">🟡 1€ Filtered</div>
+              <div class="data-row"><span class="label">X:</span><span class="value euro" id="data-euro-x">0.500</span></div>
+              <div class="data-row"><span class="label">Y:</span><span class="value euro" id="data-euro-y">0.500</span></div>
+            </div>
+            <div class="data-section">
+              <div class="data-section-title">🟢 Physics Smoothed</div>
+              <div class="data-row"><span class="label">X:</span><span class="value physics" id="data-physics-x">0.500</span></div>
+              <div class="data-row"><span class="label">Y:</span><span class="value physics" id="data-physics-y">0.500</span></div>
+            </div>
+            <div class="data-section">
+              <div class="data-section-title">🔵 Prediction</div>
+              <div class="data-row"><span class="label">X:</span><span class="value prediction" id="data-pred-x">0.500</span></div>
+              <div class="data-row"><span class="label">Y:</span><span class="value prediction" id="data-pred-y">0.500</span></div>
+              <div class="data-row"><span class="label">Vel X:</span><span class="value prediction" id="data-vel-x">0.000</span></div>
+              <div class="data-row"><span class="label">Vel Y:</span><span class="value prediction" id="data-vel-y">0.000</span></div>
+            </div>
+          </div>
+        </div>
+      `;
+      container.getElement()[0].appendChild(panel);
+      dataPanelEl = panel;
+    }
+    
+    // FSM State panel
+    function createFSMPanel(container) {
+      const panel = document.createElement('div');
+      panel.className = 'panel';
+      panel.innerHTML = `
+        <div class="panel-header">
+          <div class="panel-title">🔄 FSM State</div>
+        </div>
+        <div class="panel-content">
+          <div class="fsm-panel">
+            <div class="fsm-state-display DISARMED" id="fsm-display">DISARMED</div>
+            <div class="fsm-transitions">
+              <div class="transition">
+                <span>DISARMED → ARMING</span>
+                <span>palm_open</span>
+              </div>
+              <div class="transition">
+                <span>ARMING → ARMED</span>
+                <span>300ms hold</span>
+              </div>
+              <div class="transition">
+                <span>ARMED → DOWN_COMMIT</span>
+                <span>pinch</span>
+              </div>
+              <div class="transition">
+                <span>DOWN_COMMIT → ARMED</span>
+                <span>release</span>
+              </div>
+            </div>
+            <div style="margin-top: 20px;">
+              <button id="btn-arm" style="padding: 10px 20px; background: #00ff88; color: #000; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">
+                Toggle Arm State
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+      container.getElement()[0].appendChild(panel);
+      fsmPanelEl = panel;
+      
+      // Button handler
+      panel.querySelector('#btn-arm').addEventListener('click', () => {
+        const states = ['DISARMED', 'ARMING', 'ARMED', 'DOWN_COMMIT'];
+        const currentIdx = states.indexOf(pipeline.fsmState);
+        const nextState = states[(currentIdx + 1) % states.length];
+        pipeline.setFSMState(nextState);
+        updateFSMDisplay(nextState);
+      });
+    }
+    
+    // Filter params panel
+    function createParamsPanel(container) {
+      const panel = document.createElement('div');
+      panel.className = 'panel';
+      panel.innerHTML = `
+        <div class="panel-header">
+          <div class="panel-title">⚙️ Filter Parameters</div>
+        </div>
+        <div class="panel-content">
+          <div class="params-panel">
+            <div class="param-group">
+              <div class="param-group-title">
+                <span class="dot" style="background: #ffd700;"></span>
+                1€ Filter
+              </div>
+              <div class="param-slider">
+                <label>
+                  <span>Min Cutoff</span>
+                  <span id="val-mincutoff">1.0</span>
+                </label>
+                <input type="range" id="param-mincutoff" min="0.1" max="5" step="0.1" value="1.0">
+              </div>
+              <div class="param-slider">
+                <label>
+                  <span>Beta (speed coeff)</span>
+                  <span id="val-beta">0.007</span>
+                </label>
+                <input type="range" id="param-beta" min="0" max="0.05" step="0.001" value="0.007">
+              </div>
+            </div>
+            
+            <div class="param-group">
+              <div class="param-group-title">
+                <span class="dot" style="background: #00ff88;"></span>
+                Physics Spring-Damper
+              </div>
+              <div class="param-slider">
+                <label>
+                  <span>Stiffness</span>
+                  <span id="val-stiffness">300</span>
+                </label>
+                <input type="range" id="param-stiffness" min="50" max="1000" step="10" value="300">
+              </div>
+              <div class="param-slider">
+                <label>
+                  <span>Damping</span>
+                  <span id="val-damping">20</span>
+                </label>
+                <input type="range" id="param-damping" min="1" max="100" step="1" value="20">
+              </div>
+            </div>
+            
+            <div class="param-group">
+              <div class="param-group-title">
+                <span class="dot" style="background: #4488ff;"></span>
+                Prediction
+              </div>
+              <div class="param-slider">
+                <label>
+                  <span>Look-ahead (ms)</span>
+                  <span id="val-prediction">50</span>
+                </label>
+                <input type="range" id="param-prediction" min="10" max="200" step="5" value="50">
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      container.getElement()[0].appendChild(panel);
+      paramsPanelEl = panel;
+      
+      // Bind parameter controls
+      const bindParam = (id, valId, obj, key, isFloat = false) => {
+        const input = panel.querySelector(`#${id}`);
+        const valEl = panel.querySelector(`#${valId}`);
+        input.addEventListener('input', (e) => {
+          const val = isFloat ? parseFloat(e.target.value) : parseInt(e.target.value);
+          obj[key] = val;
+          valEl.textContent = isFloat ? val.toFixed(3) : val;
+        });
+      };
+      
+      bindParam('param-mincutoff', 'val-mincutoff', pipeline.euroParams, 'minCutoff', true);
+      bindParam('param-beta', 'val-beta', pipeline.euroParams, 'beta', true);
+      bindParam('param-stiffness', 'val-stiffness', pipeline.physicsParams, 'stiffness');
+      bindParam('param-damping', 'val-damping', pipeline.physicsParams, 'damping');
+      
+      // Prediction special case
+      panel.querySelector('#param-prediction').addEventListener('input', (e) => {
+        pipeline.predictionMs = parseInt(e.target.value);
+        panel.querySelector('#val-prediction').textContent = e.target.value;
+      });
+    }
+    
+    // Event log panel
+    function createLogPanel(container) {
+      const panel = document.createElement('div');
+      panel.className = 'panel';
+      panel.innerHTML = `
+        <div class="panel-header">
+          <div class="panel-title">📝 Event Log</div>
+        </div>
+        <div class="panel-content">
+          <div class="log-panel" id="log-panel"></div>
+        </div>
+      `;
+      container.getElement()[0].appendChild(panel);
+      logPanelEl = panel.querySelector('#log-panel');
+    }
+    
+    // ============================================================================
+    // UPDATE FUNCTIONS
+    // ============================================================================
+    
+    function updateCursors(data) {
+      if (!cursorPanelEl) return;
+      
+      const rect = cursorPanelEl.getBoundingClientRect();
+      
+      const setCursorPos = (id, pos) => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.style.left = `${pos.x * 100}%`;
+          el.style.top = `${pos.y * 100}%`;
+        }
+      };
+      
+      setCursorPos('cursor-raw', data.raw);
+      setCursorPos('cursor-euro', data.euro);
+      setCursorPos('cursor-physics', data.physics);
+      setCursorPos('cursor-prediction', data.prediction);
+      
+      // Update trails
+      updateTrails(data.trails);
+    }
+    
+    function updateTrails(trails) {
+      const container = document.getElementById('trails-container');
+      if (!container) return;
+      
+      container.innerHTML = '';
+      
+      const createTrailDots = (trail, className) => {
+        const now = performance.now();
+        trail.forEach((point, i) => {
+          const age = now - point.time;
+          const opacity = Math.max(0, 1 - age / 500);
+          if (opacity > 0.1) {
+            const dot = document.createElement('div');
+            dot.className = `trail-dot ${className}`;
+            dot.style.left = `${point.x * 100}%`;
+            dot.style.top = `${point.y * 100}%`;
+            dot.style.opacity = opacity;
+            container.appendChild(dot);
+          }
+        });
+      };
+      
+      createTrailDots(trails.raw, 'raw');
+      createTrailDots(trails.euro, 'euro');
+      createTrailDots(trails.physics, 'physics');
+      createTrailDots(trails.prediction, 'prediction');
+    }
+    
+    function updateDataPanel(data) {
+      if (!dataPanelEl) return;
+      
+      const fmt = (v) => v.toFixed(3);
+      
+      document.getElementById('data-raw-x').textContent = fmt(data.raw.x);
+      document.getElementById('data-raw-y').textContent = fmt(data.raw.y);
+      document.getElementById('data-euro-x').textContent = fmt(data.euro.x);
+      document.getElementById('data-euro-y').textContent = fmt(data.euro.y);
+      document.getElementById('data-physics-x').textContent = fmt(data.physics.x);
+      document.getElementById('data-physics-y').textContent = fmt(data.physics.y);
+      document.getElementById('data-pred-x').textContent = fmt(data.prediction.x);
+      document.getElementById('data-pred-y').textContent = fmt(data.prediction.y);
+      document.getElementById('data-vel-x').textContent = fmt(data.physicsVel.x);
+      document.getElementById('data-vel-y').textContent = fmt(data.physicsVel.y);
+    }
+    
+    function updateFSMDisplay(state) {
+      const el = document.getElementById('fsm-display');
+      if (el) {
+        el.textContent = state;
+        el.className = `fsm-state-display ${state}`;
+      }
+    }
+    
+    function addLogEntry(type, x, y) {
+      if (!logPanelEl) return;
+      
+      const entry = document.createElement('div');
+      entry.className = 'log-entry';
+      entry.innerHTML = `
+        <span class="timestamp">${new Date().toISOString().split('T')[1].slice(0, 12)}</span>
+        <span class="event-type ${type}">${type}</span>
+        <span class="coords">(${x.toFixed(3)}, ${y.toFixed(3)})</span>
+      `;
+      logPanelEl.insertBefore(entry, logPanelEl.firstChild);
+      
+      // Keep log manageable
+      while (logPanelEl.children.length > 100) {
+        logPanelEl.removeChild(logPanelEl.lastChild);
+      }
+    }
+    
+    // ============================================================================
+    // GOLDEN LAYOUT CONFIG
+    // ============================================================================
+    
+    const layoutConfig = {
+      settings: {
+        showPopoutIcon: false,
+        showMaximiseIcon: true,
+        showCloseIcon: false
+      },
+      dimensions: {
+        headerHeight: 30
+      },
+      content: [{
+        type: 'row',
+        content: [
+          {
+            type: 'column',
+            width: 70,
+            content: [
+              {
+                type: 'component',
+                componentName: 'cursorPanel',
+                title: '🎯 Quad Cursor View',
+                height: 70
+              },
+              {
+                type: 'row',
+                height: 30,
+                content: [
+                  {
+                    type: 'component',
+                    componentName: 'fsmPanel',
+                    title: '🔄 FSM State'
+                  },
+                  {
+                    type: 'component',
+                    componentName: 'logPanel',
+                    title: '📝 Event Log'
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            type: 'column',
+            width: 30,
+            content: [
+              {
+                type: 'component',
+                componentName: 'dataPanel',
+                title: '📊 Data'
+              },
+              {
+                type: 'component',
+                componentName: 'paramsPanel',
+                title: '⚙️ Parameters'
+              }
+            ]
+          }
+        ]
+      }]
+    };
+    
+    // ============================================================================
+    // INITIALIZE
+    // ============================================================================
+    
+    const layout = new GoldenLayout(layoutConfig, document.getElementById('layout-container'));
+    
+    layout.registerComponent('cursorPanel', createCursorPanel);
+    layout.registerComponent('dataPanel', createDataPanel);
+    layout.registerComponent('fsmPanel', createFSMPanel);
+    layout.registerComponent('paramsPanel', createParamsPanel);
+    layout.registerComponent('logPanel', createLogPanel);
+    
+    layout.init();
+    
+    // Connect pipeline updates
+    pipeline.onUpdate = (data) => {
+      updateCursors(data);
+      updateDataPanel(data);
+    };
+    
+    // Handle window resize
+    window.addEventListener('resize', () => {
+      layout.updateSize();
+    });
+    
+    console.log('🎯 Pipeline Quad-Cursor Demo initialized');
+    console.log('Move mouse over cursor panel to see all 4 pipeline stages');
+  </script>
+</body>
+</html>

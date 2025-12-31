@@ -20,6 +20,18 @@
 			"env": {
 				"RAG_MEMORY_DATA_DIR": "${workspaceFolder}/sandbox/.rag-memory"
 			}
+		},
+		"lidless-legion": {
+			"type": "stdio",
+			"command": "npx",
+			"args": ["tsx", "${workspaceFolder}/sandbox/src/mcp/lidless-legion/index.ts"],
+			"env": {
+				"TAVILY_API_KEY": "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",
+				"BLACKBOARD_PATH": "${workspaceFolder}/sandbox/obsidianblackboard.jsonl",
+				"MEMORY_DB_PATH": "${workspaceFolder}/../portable_hfo_memory_pre_hfo_to_gen84_2025-12-27T21-46-52/hfo_memory.duckdb",
+				"WORKSPACE_ROOT": "${workspaceFolder}",
+				"CURRENT_GEN": "87"
+			}
 		}
 	}
 }

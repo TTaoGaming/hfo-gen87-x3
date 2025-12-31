@@ -8,18 +8,18 @@
  * @tdd GREEN
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
 import * as fc from 'fast-check';
 import { JSDOM } from 'jsdom';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-	W3CPointerEventFactory,
-	DOMEventDispatcher,
-	CursorPipeline,
-	PointerEventTypeSchema,
-	PointerEventInitSchema,
-	FSMActionSchema,
-	type FSMAction,
-	type PointerEventInit,
+    CursorPipeline,
+    DOMEventDispatcher,
+    FSMActionSchema,
+    PointerEventInitSchema,
+    PointerEventTypeSchema,
+    W3CPointerEventFactory,
+    type FSMAction,
+    type PointerEventInit,
 } from './w3c-pointer-factory.js';
 
 // ============================================================================

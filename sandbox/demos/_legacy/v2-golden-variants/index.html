@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gesture Control Plane - Golden Layout Demo</title>
+  
+  <!-- Golden Layout CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/golden-layout@2.6.0/dist/css/goldenlayout-base.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/golden-layout@2.6.0/dist/css/themes/goldenlayout-dark-theme.css">
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    html, body {
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #1a1a2e;
+      color: #eee;
+    }
+    
+    #layout-container {
+      width: 100%;
+      height: 100%;
+    }
+    
+    /* Golden Layout Overrides - Fix scrollbar clipping */
+    .lm_content {
+      overflow: hidden !important;
+      display: flex !important;
+      flex-direction: column !important;
+    }
+    
+    .lm_item_container {
+      overflow: hidden !important;
+    }
+    
+    /* Fix header button clipping */
+    .lm_header {
+      overflow: visible !important;
+      flex-shrink: 0 !important;
+    }
+    
+    .lm_controls {
+      display: flex !important;
+      gap: 2px;
+    }
+    
+    .lm_tab {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    
+    /* Panel Styles - Responsive */
+    .panel {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      background: #16213e;
+      overflow: hidden;
+      min-height: 0; /* Critical for flex children */
+    }
+    
+    .panel-content {
+      flex: 1 1 auto;
+      overflow: hidden;
+      padding: 8px;
+      min-height: 0; /* Critical for nested flex */
+      display: flex;
+      flex-direction: column;
+    }
+    
+    /* Camera Panel */
+    #camera-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    #video {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      transform: scaleX(-1);
+    }
+    
+    #landmarks-canvas {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      transform: scaleX(-1);
+      pointer-events: none;
+    }
+    
+    /* Cursor Panel */
+    #cursor-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: #0f0f23;
+      border: 2px dashed #333;
+    }
+    
+    #cursor-canvas {
+      width: 100%;
+      height: 100%;
+    }
+    
+    .cursor-label {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      font-size: 12px;
+      color: #666;
+    }
+    
+    /* Status Panel */
+    /* Status Panel - Responsive Grid */
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      gap: 8px;
+      flex: 1;
+      min-height: 0;
+      align-content: start;
+    }
+    
+    .status-item {
+      background: #1a1a2e;
+      padding: clamp(6px, 1.5vw, 12px);
+      border-radius: 8px;
+      border: 1px solid #333;
+      min-width: 0; /* Allow shrinking */
+    }
+    
+    .status-label {
+      font-size: clamp(9px, 1.2vw, 11px);
+      color: #888;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+    
+    .status-value {
+      font-size: clamp(14px, 2vw, 18px);
+      font-weight: 600;
+      font-family: 'Monaco', monospace;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    
+    .status-value.green { color: #00ff88; }
+    .status-value.yellow { color: #ffcc00; }
+    .status-value.red { color: #ff4444; }
+    .status-value.blue { color: #4488ff; }
+    
+    /* FSM Panel - Responsive */
+    .fsm-state {
+      font-size: clamp(16px, 3vw, 24px);
+      font-weight: bold;
+      text-align: center;
+      padding: clamp(10px, 2vw, 20px);
+      border-radius: 8px;
+      margin-bottom: 10px;
+      flex-shrink: 0;
+    }
+    
+    .fsm-state.disarmed { background: #333; color: #888; }
+    .fsm-state.arming { background: #663300; color: #ffcc00; }
+    .fsm-state.armed { background: #006633; color: #00ff88; }
+    .fsm-state.active { background: #003366; color: #4488ff; }
+    
+    .fsm-history {
+      font-family: monospace;
+      font-size: 11px;
+      color: #666;
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+    }
+    
+    .fsm-history div {
+      padding: 2px 0;
+      border-bottom: 1px solid #222;
+    }
+    
+    /* Controls Panel */
+    .control-group {
+      margin-bottom: 15px;
+    }
+    
+    .control-label {
+      font-size: 12px;
+      color: #888;
+      margin-bottom: 5px;
+    }
+    
+    .control-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    input[type="range"] {
+      flex: 1;
+      accent-color: #00ff88;
+    }
+    
+    .control-value {
+      font-family: monospace;
+      min-width: 50px;
+      text-align: right;
+    }
+    
+    button {
+      background: #00ff88;
+      color: #000;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    
+    button:hover {
+      background: #00cc66;
+    }
+    
+    button:disabled {
+      background: #333;
+      color: #666;
+      cursor: not-allowed;
+    }
+    
+    /* Gesture Panel - Responsive */
+    .gesture-display {
+      text-align: center;
+      padding: clamp(8px, 2vw, 20px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      min-height: 0;
+    }
+    
+    .gesture-icon {
+      font-size: clamp(32px, 8vw, 64px);
+      margin-bottom: 8px;
+      line-height: 1;
+    }
+    
+    .gesture-name {
+      font-size: clamp(14px, 2.5vw, 20px);
+      font-weight: bold;
+      color: #00ff88;
+    }
+    
+    .gesture-confidence {
+      font-size: 14px;
+      color: #888;
+      margin-top: 5px;
+    }
+    
+    /* Loading */
+    .loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: #888;
+    }
+    
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid #333;
+      border-top-color: #00ff88;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 10px;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div id="layout-container"></div>
+  
+  <script type="module">
+    import { GestureRecognizer, FilesetResolver } from 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.8/vision_bundle.mjs';
+    import { GoldenLayout } from 'https://esm.sh/golden-layout@2.6.0';
+    
+    // ========================================================================
+    // State
+    // ========================================================================
+    const state = {
+      gestureRecognizer: null,
+      video: null,
+      landmarksCanvas: null,
+      cursorCanvas: null,
+      isRunning: false,
+      lastTimestamp: 0,
+      
+      // Filter state
+      filter: {
+        x: null,
+        y: null,
+        dx: null,
+        dy: null,
+        lastTime: null,
+      },
+      
+      // Config
+      config: {
+        minCutoff: 1.0,
+        beta: 0.007,
+      },
+      
+      // Current frame
+      currentFrame: {
+        gesture: 'None',
+        confidence: 0,
+        position: null,
+        smoothed: null,
+        fsmState: 'DISARMED',
+      },
+      
+      // FSM
+      fsmHistory: [],
+    };
+    
+    // ========================================================================
+    // 1€ Filter
+    // ========================================================================
+    function lowPassFilter(prevValue, newValue, alpha) {
+      if (prevValue === null) return newValue;
+      return prevValue + alpha * (newValue - newValue);
+    }
+    
+    function computeAlpha(cutoff, dt) {
+      const tau = 1.0 / (2 * Math.PI * cutoff);
+      return 1.0 / (1.0 + tau / dt);
+    }
+    
+    function oneEuroFilter(x, y, timestamp) {
+      const { filter, config } = state;
+      
+      if (filter.lastTime === null) {
+        filter.x = x;
+        filter.y = y;
+        filter.dx = 0;
+        filter.dy = 0;
+        filter.lastTime = timestamp;
+        return { x, y };
+      }
+      
+      const dt = Math.max((timestamp - filter.lastTime) / 1000, 0.001);
+      filter.lastTime = timestamp;
+      
+      // Derivative
+      const dx = (x - filter.x) / dt;
+      const dy = (y - filter.y) / dt;
+      
+      // Filter derivative
+      const alphaDeriv = computeAlpha(1.0, dt);
+      filter.dx = filter.dx + alphaDeriv * (dx - filter.dx);
+      filter.dy = filter.dy + alphaDeriv * (dy - filter.dy);
+      
+      // Adaptive cutoff
+      const speed = Math.sqrt(filter.dx * filter.dx + filter.dy * filter.dy);
+      const cutoff = config.minCutoff + config.beta * speed;
+      
+      // Filter position
+      const alpha = computeAlpha(cutoff, dt);
+      filter.x = filter.x + alpha * (x - filter.x);
+      filter.y = filter.y + alpha * (y - filter.y);
+      
+      return { x: filter.x, y: filter.y };
+    }
+    
+    function resetFilter() {
+      state.filter = { x: null, y: null, dx: null, dy: null, lastTime: null };
+    }
+    
+    // ========================================================================
+    // FSM (Simplified)
+    // ========================================================================
+    let armingStart = null;
+    const ARM_THRESHOLD_MS = 300;
+    
+    function updateFSM(gesture, palmFacing) {
+      const prev = state.currentFrame.fsmState;
+      let next = prev;
+      
+      if (!palmFacing) {
+        next = 'DISARMED';
+        armingStart = null;
+      } else if (gesture === 'Open_Palm') {
+        if (prev === 'DISARMED') {
+          armingStart = Date.now();
+          next = 'ARMING';
+        } else if (prev === 'ARMING') {
+          if (Date.now() - armingStart > ARM_THRESHOLD_MS) {
+            next = 'ARMED';
+          }
+        }
+      } else if (gesture === 'Pointing_Up' && (prev === 'ARMED' || prev === 'ACTIVE')) {
+        next = 'ACTIVE';
+      } else if (gesture === 'Victory' && (prev === 'ARMED' || prev === 'ACTIVE')) {
+        next = 'ACTIVE';
+      } else if (prev === 'ACTIVE' && gesture === 'Open_Palm') {
+        next = 'ARMED';
+      }
+      
+      if (next !== prev) {
+        state.fsmHistory.unshift(`${new Date().toLocaleTimeString()} ${prev} → ${next}`);
+        if (state.fsmHistory.length > 20) state.fsmHistory.pop();
+      }
+      
+      state.currentFrame.fsmState = next;
+    }
+    
+    // ========================================================================
+    // MediaPipe
+    // ========================================================================
+    async function initMediaPipe() {
+      const vision = await FilesetResolver.forVisionTasks(
+        'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.8/wasm'
+      );
+      
+      state.gestureRecognizer = await GestureRecognizer.createFromOptions(vision, {
+        baseOptions: {
+          modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task',
+          delegate: 'GPU',
+        },
+        runningMode: 'VIDEO',
+        numHands: 1,
+      });
+      
+      console.log('MediaPipe initialized');
+    }
+    
+    async function startCamera() {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { width: 640, height: 480, facingMode: 'user' },
+      });
+      
+      state.video.srcObject = stream;
+      await state.video.play();
+      
+      state.landmarksCanvas.width = state.video.videoWidth;
+      state.landmarksCanvas.height = state.video.videoHeight;
+      
+      state.isRunning = true;
+      processFrame();
+    }
+    
+    function processFrame() {
+      if (!state.isRunning || !state.gestureRecognizer) {
+        requestAnimationFrame(processFrame);
+        return;
+      }
+      
+      const timestamp = performance.now();
+      if (timestamp === state.lastTimestamp) {
+        requestAnimationFrame(processFrame);
+        return;
+      }
+      state.lastTimestamp = timestamp;
+      
+      const results = state.gestureRecognizer.recognizeForVideo(state.video, timestamp);
+      
+      // Clear landmarks canvas
+      const ctx = state.landmarksCanvas.getContext('2d');
+      ctx.clearRect(0, 0, state.landmarksCanvas.width, state.landmarksCanvas.height);
+      
+      if (results.landmarks && results.landmarks.length > 0) {
+        const landmarks = results.landmarks[0];
+        const gestures = results.gestures;
+        
+        // Get gesture
+        let gesture = 'None';
+        let confidence = 0;
+        if (gestures && gestures.length > 0 && gestures[0].length > 0) {
+          gesture = gestures[0][0].categoryName;
+          confidence = gestures[0][0].score;
+        }
+        
+        // Get index fingertip (landmark 8)
+        const indexTip = landmarks[8];
+        const rawX = indexTip.x;
+        const rawY = indexTip.y;
+        
+        // Palm facing detection (simplified)
+        const wrist = landmarks[0];
+        const middleMCP = landmarks[9];
+        const palmNormalZ = -(middleMCP.z - wrist.z);
+        const palmFacing = palmNormalZ > -0.05;
+        
+        // Apply filter
+        const smoothed = oneEuroFilter(rawX, rawY, timestamp);
+        
+        // Update FSM
+        updateFSM(gesture, palmFacing);
+        
+        // Update state
+        state.currentFrame = {
+          gesture,
+          confidence,
+          position: { x: rawX, y: rawY },
+          smoothed,
+          fsmState: state.currentFrame.fsmState,
+          palmFacing,
+        };
+        
+        // Draw landmarks
+        drawLandmarks(ctx, landmarks);
+        
+        // Draw cursor
+        drawCursor(rawX, rawY, smoothed.x, smoothed.y);
+      } else {
+        state.currentFrame.gesture = 'None';
+        state.currentFrame.confidence = 0;
+        state.currentFrame.position = null;
+        state.currentFrame.fsmState = 'DISARMED';
+        resetFilter();
+        clearCursor();
+      }
+      
+      // Update UI
+      updateUI();
+      
+      requestAnimationFrame(processFrame);
+    }
+    
+    function drawLandmarks(ctx, landmarks) {
+      const w = state.landmarksCanvas.width;
+      const h = state.landmarksCanvas.height;
+      
+      // Note: Canvas has CSS transform: scaleX(-1) to mirror, so we draw normally
+      // Draw connections
+      const connections = [
+        [0, 1], [1, 2], [2, 3], [3, 4],  // Thumb
+        [0, 5], [5, 6], [6, 7], [7, 8],  // Index
+        [0, 9], [9, 10], [10, 11], [11, 12],  // Middle
+        [0, 13], [13, 14], [14, 15], [15, 16],  // Ring
+        [0, 17], [17, 18], [18, 19], [19, 20],  // Pinky
+        [5, 9], [9, 13], [13, 17],  // Palm
+      ];
+      
+      ctx.strokeStyle = '#ff4444';
+      ctx.lineWidth = 2;
+      
+      for (const [i, j] of connections) {
+        ctx.beginPath();
+        ctx.moveTo(landmarks[i].x * w, landmarks[i].y * h);
+        ctx.lineTo(landmarks[j].x * w, landmarks[j].y * h);
+        ctx.stroke();
+      }
+      
+      // Draw joints
+      ctx.fillStyle = '#00ff88';
+      for (const lm of landmarks) {
+        ctx.beginPath();
+        ctx.arc(lm.x * w, lm.y * h, 4, 0, 2 * Math.PI);
+        ctx.fill();
+      }
+      
+      // Draw index tip larger
+      ctx.fillStyle = '#4488ff';
+      ctx.beginPath();
+      ctx.arc(landmarks[8].x * w, landmarks[8].y * h, 8, 0, 2 * Math.PI);
+      ctx.fill();
+    }
+    
+    function drawCursor(rawX, rawY, smoothX, smoothY) {
+      if (!state.cursorCanvas) return;
+      
+      const ctx = state.cursorCanvas.getContext('2d');
+      const w = state.cursorCanvas.width;
+      const h = state.cursorCanvas.height;
+      
+      ctx.clearRect(0, 0, w, h);
+      
+      // Coordinate mapping: 
+      // rawX/rawY are normalized [0,1] from MediaPipe
+      // Apply gain controls here for ergonomic adjustments
+      // Currently 1:1 mapping (mirror X for selfie view)
+      const gainX = 1.0;  // Future: user-adjustable
+      const gainY = 1.0;  // Future: user-adjustable
+      const offsetX = 0;  // Future: deadzone center offset
+      const offsetY = 0;
+      
+      // Mirror X for selfie-view cursor (hand goes right, cursor goes right)
+      const displayRawX = (1 - rawX) * gainX + offsetX;
+      const displayRawY = rawY * gainY + offsetY;
+      const displaySmoothX = (1 - smoothX) * gainX + offsetX;
+      const displaySmoothY = smoothY * gainY + offsetY;
+      
+      // Raw cursor (red, smaller)
+      ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';
+      ctx.beginPath();
+      ctx.arc(displayRawX * w, displayRawY * h, 8, 0, 2 * Math.PI);
+      ctx.fill();
+      
+      // Smoothed cursor (green, larger)
+      ctx.fillStyle = '#00ff88';
+      ctx.beginPath();
+      ctx.arc(displaySmoothX * w, displaySmoothY * h, 15, 0, 2 * Math.PI);
+      ctx.fill();
+      
+      // State indicator ring
+      const stateColor = {
+        'DISARMED': '#666',
+        'ARMING': '#ffcc00',
+        'ARMED': '#00ff88',
+        'ACTIVE': '#4488ff',
+      }[state.currentFrame.fsmState] || '#666';
+      
+      ctx.strokeStyle = stateColor;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(displaySmoothX * w, displaySmoothY * h, 20, 0, 2 * Math.PI);
+      ctx.stroke();
+    }
+    
+    function clearCursor() {
+      if (!state.cursorCanvas) return;
+      const ctx = state.cursorCanvas.getContext('2d');
+      ctx.clearRect(0, 0, state.cursorCanvas.width, state.cursorCanvas.height);
+    }
+    
+    // ========================================================================
+    // UI Updates
+    // ========================================================================
+    function updateUI() {
+      // Status panel
+      const fpsEl = document.getElementById('status-fps');
+      const gestureEl = document.getElementById('status-gesture');
+      const confidenceEl = document.getElementById('status-confidence');
+      const positionEl = document.getElementById('status-position');
+      
+      if (fpsEl) fpsEl.textContent = Math.round(1000 / (performance.now() - state.lastTimestamp + 16));
+      if (gestureEl) gestureEl.textContent = state.currentFrame.gesture;
+      if (confidenceEl) confidenceEl.textContent = (state.currentFrame.confidence * 100).toFixed(0) + '%';
+      if (positionEl && state.currentFrame.smoothed) {
+        positionEl.textContent = `(${(state.currentFrame.smoothed.x * 100).toFixed(0)}%, ${(state.currentFrame.smoothed.y * 100).toFixed(0)}%)`;
+      }
+      
+      // FSM panel
+      const fsmStateEl = document.getElementById('fsm-state');
+      const fsmHistoryEl = document.getElementById('fsm-history');
+      
+      if (fsmStateEl) {
+        fsmStateEl.textContent = state.currentFrame.fsmState;
+        fsmStateEl.className = 'fsm-state ' + state.currentFrame.fsmState.toLowerCase();
+      }
+      
+      if (fsmHistoryEl) {
+        fsmHistoryEl.innerHTML = state.fsmHistory.map(h => `<div>${h}</div>`).join('');
+      }
+      
+      // Gesture panel
+      const gestureIconEl = document.getElementById('gesture-icon');
+      const gestureNameEl = document.getElementById('gesture-name');
+      const gestureConfEl = document.getElementById('gesture-confidence');
+      
+      const gestureIcons = {
+        'None': '❓',
+        'Open_Palm': '✋',
+        'Closed_Fist': '✊',
+        'Pointing_Up': '☝️',
+        'Victory': '✌️',
+        'Thumb_Up': '👍',
+        'Thumb_Down': '👎',
+        'ILoveYou': '🤟',
+      };
+      
+      if (gestureIconEl) gestureIconEl.textContent = gestureIcons[state.currentFrame.gesture] || '❓';
+      if (gestureNameEl) gestureNameEl.textContent = state.currentFrame.gesture.replace('_', ' ');
+      if (gestureConfEl) gestureConfEl.textContent = `Confidence: ${(state.currentFrame.confidence * 100).toFixed(0)}%`;
+    }
+    
+    // ========================================================================
+    // Golden Layout
+    // ========================================================================
+    async function initGoldenLayout() {
+      const container = document.getElementById('layout-container');
+      
+      const config = {
+        root: {
+          type: 'row',
+          content: [
+            {
+              type: 'column',
+              width: 60,
+              content: [
+                {
+                  type: 'component',
+                  componentType: 'camera',
+                  title: '📹 Camera + Landmarks',
+                  height: 60,
+                },
+                {
+                  type: 'component',
+                  componentType: 'cursor',
+                  title: '🎯 Cursor Area',
+                },
+              ],
+            },
+            {
+              type: 'column',
+              width: 40,
+              content: [
+                {
+                  type: 'component',
+                  componentType: 'gesture',
+                  title: '🤚 Gesture',
+                  height: 30,
+                },
+                {
+                  type: 'component',
+                  componentType: 'fsm',
+                  title: '⚙️ FSM State',
+                  height: 35,
+                },
+                {
+                  type: 'component',
+                  componentType: 'status',
+                  title: '📊 Status',
+                },
+              ],
+            },
+          ],
+        },
+      };
+      
+      const layout = new GoldenLayout(container);
+      
+      // Register components
+      layout.registerComponentFactoryFunction('camera', (container) => {
+        container.element.innerHTML = `
+          <div class="panel">
+            <div id="camera-container" class="panel-content">
+              <video id="video" autoplay playsinline muted></video>
+              <canvas id="landmarks-canvas"></canvas>
+            </div>
+          </div>
+        `;
+        
+        // Store references
+        setTimeout(() => {
+          state.video = document.getElementById('video');
+          state.landmarksCanvas = document.getElementById('landmarks-canvas');
+        }, 0);
+      });
+      
+      layout.registerComponentFactoryFunction('cursor', (container) => {
+        container.element.innerHTML = `
+          <div class="panel">
+            <div id="cursor-container" class="panel-content">
+              <canvas id="cursor-canvas"></canvas>
+              <div class="cursor-label">
+                <span style="color:#ff4444">●</span> Raw &nbsp;
+                <span style="color:#00ff88">●</span> Smoothed
+              </div>
+            </div>
+          </div>
+        `;
+        
+        setTimeout(() => {
+          state.cursorCanvas = document.getElementById('cursor-canvas');
+          const rect = state.cursorCanvas.parentElement.getBoundingClientRect();
+          state.cursorCanvas.width = rect.width;
+          state.cursorCanvas.height = rect.height;
+        }, 100);
+        
+        // Handle resize
+        container.on('resize', () => {
+          if (state.cursorCanvas) {
+            const rect = state.cursorCanvas.parentElement.getBoundingClientRect();
+            state.cursorCanvas.width = rect.width;
+            state.cursorCanvas.height = rect.height;
+          }
+        });
+      });
+      
+      layout.registerComponentFactoryFunction('gesture', (container) => {
+        container.element.innerHTML = `
+          <div class="panel">
+            <div class="panel-content">
+              <div class="gesture-display">
+                <div id="gesture-icon" class="gesture-icon">❓</div>
+                <div id="gesture-name" class="gesture-name">None</div>
+                <div id="gesture-confidence" class="gesture-confidence">Confidence: 0%</div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      
+      layout.registerComponentFactoryFunction('fsm', (container) => {
+        container.element.innerHTML = `
+          <div class="panel">
+            <div class="panel-content">
+              <div id="fsm-state" class="fsm-state disarmed">DISARMED</div>
+              <div class="fsm-history" id="fsm-history"></div>
+            </div>
+          </div>
+        `;
+      });
+      
+      layout.registerComponentFactoryFunction('status', (container) => {
+        container.element.innerHTML = `
+          <div class="panel">
+            <div class="panel-content">
+              <div class="status-grid">
+                <div class="status-item">
+                  <div class="status-label">FPS</div>
+                  <div id="status-fps" class="status-value green">--</div>
+                </div>
+                <div class="status-item">
+                  <div class="status-label">Gesture</div>
+                  <div id="status-gesture" class="status-value blue">None</div>
+                </div>
+                <div class="status-item">
+                  <div class="status-label">Confidence</div>
+                  <div id="status-confidence" class="status-value yellow">0%</div>
+                </div>
+                <div class="status-item">
+                  <div class="status-label">Position</div>
+                  <div id="status-position" class="status-value">--</div>
+                </div>
+              </div>
+              <div style="margin-top: 15px;">
+                <button id="start-btn" onclick="window.startDemo()">▶ Start Camera</button>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      
+      layout.loadLayout(config);
+      
+      return layout;
+    }
+    
+    // ========================================================================
+    // Init
+    // ========================================================================
+    window.startDemo = async function() {
+      const btn = document.getElementById('start-btn');
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = '⏳ Loading...';
+      }
+      
+      try {
+        await initMediaPipe();
+        await startCamera();
+        if (btn) btn.textContent = '✓ Running';
+      } catch (err) {
+        console.error(err);
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = '❌ Error - Retry';
+        }
+      }
+    };
+    
+    // Initialize Golden Layout
+    initGoldenLayout().then(() => {
+      console.log('Golden Layout initialized');
+    });
+  </script>
+</body>
+</html>

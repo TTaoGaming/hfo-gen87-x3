@@ -27,6 +27,8 @@
 		"enforce": "tsx scripts/enforce-architecture.ts ./sandbox",
 		"enforce:strict": "tsx scripts/enforce-architecture.ts ./sandbox --strict",
 		"enforce:json": "tsx scripts/enforce-architecture.ts ./sandbox --json",
+		"detect:stubs": "tsx scripts/detect-stubs.ts",
+		"detect:stubs:json": "tsx scripts/detect-stubs.ts --json",
 		"v-phase": "tsx scripts/v-phase-gate.ts",
 		"v-phase:staged": "tsx scripts/v-phase-gate.ts --staged",
 		"v-phase:demo": "tsx scripts/v-phase-gate.ts sandbox/demo-golden",
@@ -38,7 +40,9 @@
 		"orchestration:test": "tsx src/orchestration/test-orchestration.ts",
 		"temporal:worker": "tsx src/orchestration/temporal.worker.ts",
 		"temporal:client": "tsx src/orchestration/temporal.client.ts",
-		"crewai:test": "python src/orchestration/crewai_hive.py"
+		"crewai:test": "python src/orchestration/crewai_hive.py",
+		"dashboard:update": "tsx scripts/update-dashboard.ts",
+		"dashboard:open": "start HFO_DEV_DASHBOARD.html"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^1.9.0",

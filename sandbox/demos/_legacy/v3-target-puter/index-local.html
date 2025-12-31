@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gen87.X3 - Local Window Gesture Control Demo</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+      min-height: 100vh;
+      overflow: hidden;
+      color: #fff;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════ */
+    /* Video Layer (Background)                                            */
+    /* ═══════════════════════════════════════════════════════════════════ */
+    #videoContainer {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      width: 320px;
+      height: 240px;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 2px solid rgba(255,255,255,0.2);
+      z-index: 100;
+      background: #000;
+    }
+
+    #videoLayer {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scaleX(-1);
+    }
+
+    #landmarkOverlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════ */
+    /* Cursor Layer (Fullscreen overlay)                                   */
+    /* ═══════════════════════════════════════════════════════════════════ */
+    #cursorLayer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 50;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════ */
+    /* Header                                                              */
+    /* ═══════════════════════════════════════════════════════════════════ */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 50px;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      z-index: 1000;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 600;
+    }
+
+    .logo .icon {
+      font-size: 1.5rem;
+    }
+
+    .logo .badge {
+      background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+      color: #000;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 700;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .btn {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+
+    .btn:hover {
+      background: rgba(255,255,255,0.2);
+      border-color: rgba(255,255,255,0.3);
+    }
+
+    .btn.primary {
+      background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+      color: #000;
+      border: none;
+    }
+
+    #fpsCounter {
+      font-family: monospace;
+      color: #4ade80;
+      font-size: 0.8rem;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════ */
+    /* Status Panel                                                        */
+    /* ═══════════════════════════════════════════════════════════════════ */
+    .status-panel {
+      position: fixed;
+      left: 10px;
+      top: 60px;
+      width: 200px;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(10px);
+      border-radius: 12px;
+      padding: 15px;
+      z-index: 1000;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .status-panel h3 {
+      font-size: 0.9rem;
+      margin-bottom: 12px;
+      color: #888;
+    }
+
+    .status-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 0.85rem;
+    }
+
+    .status-label {
+      color: #888;
+    }
+
+    .status-value {
+      color: #fff;
+      font-family: monospace;
+    }
+
+    .status-value.active {
+      color: #4ade80;
+    }
+
+    .status-value.error {
+      color: #f87171;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════ */
+    /* Gesture Display                                                     */
+    /* ═══════════════════════════════════════════════════════════════════ */
+    .gesture-display {
+      position: fixed;
+      left: 10px;
+      bottom: 10px;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(10px);
+      border-radius: 12px;
+      padding: 15px;
+      z-index: 1000;
+      border: 1px solid rgba(255,255,255,0.1);
+      min-width: 140px;
+      text-align: center;
+    }
+
+    #gestureIcon {
+      font-size: 3rem;
+      margin-bottom: 5px;
+    }
+
+    #gestureLabel {
+      font-size: 0.85rem;
+      color: #888;
+    }
+
+    #fsmState {
+      font-size: 0.7rem;
+      color: #4ade80;
+      margin-top: 5px;
+      font-family: monospace;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════ */
+    /* Window Container (for local windows)                                */
+    /* ═══════════════════════════════════════════════════════════════════ */
+    .window-container {
+      position: fixed;
+      top: 60px;
+      left: 220px;
+      right: 10px;
+      bottom: 260px;
+      overflow: visible;
+    }
+
+    .local-window {
+      position: absolute;
+      background: #1e1e2e;
+      border-radius: 12px;
+      border: 2px solid rgba(255,255,255,0.1);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+      overflow: hidden;
+      min-width: 200px;
+      min-height: 150px;
+    }
+
+    .local-window.active {
+      border-color: #4ade80;
+      box-shadow: 0 0 0 1px #4ade80, 0 10px 40px rgba(74,222,128,0.2);
+    }
+
+    .local-window .titlebar {
+      background: #16161e;
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: move;
+      user-select: none;
+    }
+
+    .local-window .titlebar .title {
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+
+    .local-window .titlebar .buttons {
+      display: flex;
+      gap: 6px;
+    }
+
+    .local-window .titlebar .btn-circle {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+    }
+
+    .local-window .titlebar .btn-close { background: #f87171; }
+    .local-window .titlebar .btn-min { background: #fbbf24; }
+    .local-window .titlebar .btn-max { background: #4ade80; }
+
+    .local-window .content {
+      padding: 15px;
+      height: calc(100% - 36px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: crosshair;
+    }
+
+    .local-window .target-icon {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+
+    .local-window .coords {
+      font-family: monospace;
+      color: #4ade80;
+      background: rgba(0,0,0,0.3);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      margin-top: 10px;
+    }
+
+    .local-window .event-log {
+      font-size: 0.7rem;
+      color: #888;
+      margin-top: 10px;
+      max-height: 60px;
+      overflow-y: auto;
+      width: 100%;
+    }
+
+    .local-window .event-log .event {
+      padding: 2px 6px;
+      margin: 2px 0;
+      background: rgba(0,0,0,0.2);
+      border-radius: 3px;
+    }
+
+    .local-window .event-log .event.pointerdown { border-left: 3px solid #4ade80; }
+    .local-window .event-log .event.pointerup { border-left: 3px solid #f87171; }
+    .local-window .event-log .event.pointermove { border-left: 3px solid #60a5fa; }
+
+    .local-window.hover {
+      background: #252535;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════ */
+    /* Loading Overlay                                                     */
+    /* ═══════════════════════════════════════════════════════════════════ */
+    #loadingOverlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.9);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid rgba(255,255,255,0.1);
+      border-top-color: #4ade80;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    #loadingStatus {
+      margin-top: 20px;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+  <!-- Loading Overlay -->
+  <div id="loadingOverlay">
+    <div class="spinner"></div>
+    <div id="loadingStatus">Loading MediaPipe...</div>
+  </div>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="logo">
+      <span class="icon">🕷️</span>
+      <span>Gen87.X3</span>
+      <span class="badge">LOCAL WINDOWS</span>
+    </div>
+    <div class="controls">
+      <button class="btn primary" id="startBtn">▶ Start Camera</button>
+      <button class="btn" id="createWindowBtn">+ Create Window</button>
+      <button class="btn" id="tileWindowsBtn">⊞ Tile Windows</button>
+      <button class="btn" id="injectTestBtn">🧪 Inject Test</button>
+      <span id="fpsCounter">-- FPS</span>
+    </div>
+  </header>
+
+  <!-- Status Panel -->
+  <div class="status-panel">
+    <h3>🎯 Pipeline Status</h3>
+    <div class="status-row">
+      <span class="status-label">Camera</span>
+      <span class="status-value" id="cameraStatus">Offline</span>
+    </div>
+    <div class="status-row">
+      <span class="status-label">MediaPipe</span>
+      <span class="status-value" id="mediapipeStatus">Loading...</span>
+    </div>
+    <div class="status-row">
+      <span class="status-label">Hand Detected</span>
+      <span class="status-value" id="handStatus">--</span>
+    </div>
+    <div class="status-row">
+      <span class="status-label">Windows</span>
+      <span class="status-value" id="windowCount">0</span>
+    </div>
+    <div class="status-row">
+      <span class="status-label">Active Window</span>
+      <span class="status-value" id="activeWindow">None</span>
+    </div>
+    <div class="status-row">
+      <span class="status-label">Cursor Position</span>
+      <span class="status-value" id="cursorPos">--</span>
+    </div>
+  </div>
+
+  <!-- Gesture Display -->
+  <div class="gesture-display">
+    <div id="gestureIcon">👋</div>
+    <div id="gestureLabel">Waiting...</div>
+    <div id="fsmState">IDLE</div>
+  </div>
+
+  <!-- Window Container -->
+  <div class="window-container" id="windowContainer"></div>
+
+  <!-- Video Container -->
+  <div id="videoContainer">
+    <video id="videoLayer" autoplay playsinline muted></video>
+    <canvas id="landmarkOverlay"></canvas>
+  </div>
+
+  <!-- Cursor Layer (full screen) -->
+  <canvas id="cursorLayer"></canvas>
+
+  <!-- Main Script -->
+  <script type="module" src="main-local.js"></script>
+</body>
+</html>

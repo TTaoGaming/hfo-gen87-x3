@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "version": "87.X3",
+  "timestamp": "2025-12-31T08:00:00Z",
+  "generation": 87,
+  "iteration": "X3",
+  "nextGeneration": 88,
+  
+  "authoritative": {
+    "agentInstructions": "AGENTS.md",
+    "quickContext": "llms.txt",
+    "dailySpec": "hfo_daily_specs/W3C_POINTER_GESTURE_CONTROL_PLANE_20251231.md",
+    "swarmSpec": "hfo_daily_specs/HARD_GATED_SWARM_SCATTER_GATHER_20251230.md",
+    "contracts": "sandbox/src/contracts/",
+    "adapters": "sandbox/src/adapters/",
+    "blackboard": "sandbox/obsidianblackboard.jsonl",
+    "memoryBank": "../portable_hfo_memory_pre_hfo_to_gen84_2025-12-27T21-46-52/hfo_memory.duckdb",
+    "referenceImpl": "../hfo_kiro_gen85/",
+    "incidentLog": "CRITICAL_INCIDENT_LOG.md",
+    "architectureAudit": "ARCHITECTURE_AUDIT_REPORT.md",
+    "devDashboard": "HFO_DEV_DASHBOARD.html"
+  },
+  
+  "documentation": {
+    "_comment": "Three-tier documentation structure aligned with Medallion architecture",
+    "bronze": {
+      "purpose": "HUNT phase research - ephemeral explorations",
+      "location": "sandbox/research/",
+      "subfolders": ["explorations/", "notes/", "_archive/"]
+    },
+    "silver": {
+      "purpose": "Session handoffs - continuity between agents",
+      "location": "sandbox/handoffs/",
+      "subfolders": ["templates/"]
+    },
+    "gold": {
+      "purpose": "Finalized architectural specs - authoritative",
+      "location": "sandbox/specs/"
+    },
+    "audits": {
+      "purpose": "Compliance audits and structural reviews",
+      "location": "sandbox/audits/"
+    }
+  },
+  
+  "active": {
+    "specs": [
+      "hfo_daily_specs/W3C_POINTER_GESTURE_CONTROL_PLANE_20251231.md",
+      "hfo_daily_specs/HARD_GATED_SWARM_SCATTER_GATHER_20251230.md",
+      "sandbox/specs/HIVE_SWARM_MCP_SERVER_ARCHITECTURE.md",
+      "sandbox/specs/OBSIDIAN_LEGENDARY_COMMANDERS_VSCODE_AGENTS.md",
+      "sandbox/specs/PRE_CREATE_CHECKLIST.md",
+      "sandbox/specs/VSCODE_AGENTS_CAPABILITY_CHECKLIST.md"
+    ],
+    "contextPayload": "sandbox/specs/GEN87_X3_CONTEXT_PAYLOAD_V1_20251230Z.md",
+    "grimoire": "sandbox/specs/OBSIDIAN_GRIMOIRE_GALOIS_LATTICE.md",
+    "commanders": "sandbox/specs/OBSIDIAN_LEGENDARY_COMMANDERS.md",
+    "activeDemo": "sandbox/demos/main/"
+  },
+  
+  "archived": {
+    "v1Specs": "sandbox/specs/_archived_v1/",
+    "v2Specs": "sandbox/specs/_archived_v2/",
+    "sessionLogs": "sandbox/_archive/session_logs/",
+    "legacyDemos": "sandbox/demos/_legacy/"
+  },
+  
+  "stagingForRemoval": {
+    "reason": "Content verified copied to demos/main/ and demos/_legacy/. Safe to delete after confirmation.",
+    "folder": "sandbox/_staging_for_removal/",
+    "items": ["demo/", "demo-daedalos/", "demo-golden/", "demo-puter/", "demo-real/"]
+  },
+  
+  "enforcement": {
+    "preCommitHooks": ".husky/pre-commit",
+    "architectureGate": "scripts/enforce-architecture.ts",
+    "vPhaseGate": "scripts/v-phase-gate.ts",
+    "stubDetector": "scripts/detect-stubs.ts",
+    "theaterDetector": "scripts/theater-detector.ts"
+  },
+  
+  "hive": {
+    "currentPhase": "H",
+    "phaseDescription": "HUNT - Research and planning for N+1",
+    "ports": {
+      "0": { "commander": "Lidless Legion", "verb": "SENSE", "status": "active" },
+      "1": { "commander": "Web Weaver", "verb": "FUSE", "status": "active" },
+      "2": { "commander": "Mirror Magus", "verb": "SHAPE", "status": "standby" },
+      "3": { "commander": "Spore Storm", "verb": "DELIVER", "status": "standby" },
+      "4": { "commander": "Red Regnant", "verb": "TEST", "status": "standby" },
+      "5": { "commander": "Pyre Praetorian", "verb": "DEFEND", "status": "active" },
+      "6": { "commander": "Kraken Keeper", "verb": "STORE", "status": "active" },
+      "7": { "commander": "Spider Sovereign", "verb": "DECIDE", "status": "active" }
+    }
+  },
+  
+  "metrics": {
+    "lastUpdated": "2025-12-31T00:15:00Z",
+    "tests": {
+      "total": 506,
+      "red": 229,
+      "green": 270,
+      "skip": 7,
+      "stubsDetected": 461,
+      "stubsByFile": {
+        "emulator-adapters.test.ts": 93,
+        "ui-shell-port.test.ts": 86,
+        "observability-standards.test.ts": 68,
+        "golden-master.test.ts": 54,
+        "overlay-port.test.ts": 38,
+        "fsm-state-transitions.test.ts": 32,
+        "evolutionary-tuner.test.ts": 26,
+        "w3c-pointer-compliance.test.ts": 16,
+        "other": 48
+      }
+    },
+    "gaps": {
+      "design": 8.75,
+      "enforcement": 3.5,
+      "delta": -5.25
+    }
+  },
+  
+  "ssot": {
+    "rule": "Only files listed in 'authoritative' and 'active' are canonical. All others are reference only.",
+    "updateProtocol": "1) Update MANIFEST.json 2) Archive old version 3) Emit blackboard signal",
+    "conflictResolution": "authoritative > active > deprecated"
+  }
+}

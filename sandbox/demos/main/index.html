@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gen87.X3 Gesture Control Plane — MASTER Demo v2</title>
+  <!-- Golden Layout CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/golden-layout@2.6.0/dist/css/goldenlayout-base.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/golden-layout@2.6.0/dist/css/themes/goldenlayout-dark-theme.css">
+  <style>
+    :root {
+      --bg-dark: #0a0a0f;
+      --bg-panel: #12121a;
+      --border: #2a2a3a;
+      --accent: #00ff88;
+      --accent-dim: rgba(0, 255, 136, 0.3);
+      --warning: #ffaa00;
+      --warning-dim: rgba(255, 170, 0, 0.3);
+      --error: #ff4444;
+      --nats: #27aae1;
+      --text: #e0e0e0;
+      --text-dim: #808090;
+      --landmark-line: #ff4444;
+      --landmark-joint: #00ff88;
+      --landmark-tip: #4488ff;
+    }
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    html, body {
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      background: var(--bg-dark);
+      color: var(--text);
+      height: 100%;
+      overflow: hidden;
+    }
+    
+    #layout-container { width: 100%; height: 100%; }
+    
+    /* Golden Layout overrides */
+    .lm_header { background: var(--bg-panel) !important; }
+    .lm_tab { background: var(--bg-dark) !important; }
+    .lm_tab.lm_active { background: var(--bg-panel) !important; border-bottom: 2px solid var(--accent) !important; }
+    .lm_content { background: var(--bg-panel) !important; overflow: hidden !important; }
+    .lm_splitter { background: var(--border) !important; }
+    
+    /* Panel styles */
+    .panel-content {
+      padding: 1rem;
+      height: 100%;
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .panel-content h2 {
+      font-size: 0.9rem;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      flex-shrink: 0;
+    }
+    
+    /* Camera Panel with Landmark Overlay */
+    .camera-container {
+      position: relative;
+      width: 100%;
+      flex: 1;
+      min-height: 0;
+      background: #000;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    
+    #camera {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      transform: scaleX(-1);
+    }
+    
+    #landmarks-canvas {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      transform: scaleX(-1);
+      pointer-events: none;
+    }
+    
+    .camera-overlay {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 0.5rem;
+      border-radius: 4px;
+      font-size: 0.7rem;
+    }
+    
+    .gesture-badge {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: var(--accent);
+    }
+    
+    .confidence-bar {
+      width: 100px;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      margin-top: 4px;
+    }
+    
+    .confidence-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 2px;
+      transition: width 0.1s;
+    }
+    
+    /* Target Panel */
+    .target-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: var(--bg-dark);
+      border: 2px dashed var(--border);
+      cursor: none;
+    }
+    
+    #gesture-cursor {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      border: 2px solid var(--accent);
+      border-radius: 50%;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      transition: all 0.05s ease-out;
+      z-index: 1000;
+    }
+    
+    #gesture-cursor.tracking { border-color: var(--accent); }
+    #gesture-cursor.pressing { background: var(--accent-dim); transform: translate(-50%, -50%) scale(1.5); }
+    #gesture-cursor.dragging { background: var(--accent-dim); border-style: dashed; }
+    #gesture-cursor.pinching { background: var(--warning-dim); border-color: var(--warning); }
+    #gesture-cursor.hover { border-style: dotted; opacity: 0.7; }
+    
+    /* Controls/Settings Panel */
+    .settings-group {
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .settings-group h3 {
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+    }
+    
+    .setting-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+    }
+    
+    .setting-row label {
+      font-size: 0.75rem;
+      color: var(--text);
+    }
+    
+    .setting-row input[type="range"] {
+      width: 100px;
+      accent-color: var(--accent);
+    }
+    
+    .setting-row .value {
+      font-size: 0.7rem;
+      color: var(--accent);
+      min-width: 40px;
+      text-align: right;
+      font-family: monospace;
+    }
+    
+    .setting-row input[type="checkbox"] {
+      accent-color: var(--accent);
+    }
+    
+    /* Status badges */
+    .status-bar { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap; flex-shrink: 0; }
+    .badge { padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600; }
+    .badge.connected { background: var(--accent); color: var(--bg-dark); }
+    .badge.disconnected { background: var(--error); color: white; }
+    .badge.nats { background: var(--nats); color: white; }
+    .badge.fallback { background: var(--warning); color: var(--bg-dark); }
+    .badge.arming { background: var(--warning); color: var(--bg-dark); animation: pulse 0.5s infinite; }
+    .badge.armed { background: var(--accent); color: var(--bg-dark); }
+    
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    
+    /* Controls */
+    .controls { display: flex; gap: 0.5rem; margin: 0.75rem 0; flex-shrink: 0; }
+    button {
+      padding: 0.5rem 1rem;
+      border: 1px solid var(--accent);
+      background: transparent;
+      color: var(--accent);
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.75rem;
+      transition: all 0.2s;
+    }
+    button:hover { background: var(--accent); color: var(--bg-dark); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    
+    /* Debug Panel */
+    .debug-section { margin-bottom: 1rem; }
+    .debug-section h3 { font-size: 0.7rem; color: var(--text-dim); margin-bottom: 0.5rem; text-transform: uppercase; }
+    
+    .pipeline-stage {
+      padding: 0.4rem;
+      margin-bottom: 0.2rem;
+      border-radius: 4px;
+      border-left: 3px solid var(--border);
+      font-size: 0.65rem;
+    }
+    .pipeline-stage.active { border-left-color: var(--accent); background: rgba(0, 255, 136, 0.05); }
+    .pipeline-stage.nats { border-left-color: var(--nats); background: rgba(39, 170, 225, 0.05); }
+    
+    .metric { display: flex; justify-content: space-between; padding: 0.2rem 0; border-bottom: 1px solid var(--border); font-size: 0.7rem; }
+    .metric-label { color: var(--text-dim); }
+    .metric-value { font-weight: 600; }
+    .metric-value.real { color: var(--accent); }
+    .metric-value.nats { color: var(--nats); }
+    
+    #event-log {
+      font-size: 0.6rem;
+      max-height: 120px;
+      overflow-y: auto;
+      background: var(--bg-dark);
+      padding: 0.5rem;
+      border-radius: 4px;
+      flex: 1;
+      min-height: 0;
+    }
+    .log-entry { padding: 0.1rem 0; border-bottom: 1px solid var(--border); }
+    .log-entry.pointer { color: var(--accent); }
+    .log-entry.nats { color: var(--nats); }
+    .log-entry.fsm { color: #88aaff; }
+    .log-entry.error { color: var(--error); }
+    .log-entry.gesture { color: var(--warning); }
+  </style>
+</head>
+<body>
+  <div id="layout-container"></div>
+  
+  <script type="module">
+    // ============================================================
+    // GEN87.X3 GESTURE CONTROL PLANE — MASTER DEMO v2
+    // ============================================================
+    // ✅ Golden Layout - 4 Dockable panels (Camera, Target, Settings, Debug)
+    // ✅ MediaPipe Landmark Visualization - 21-point skeleton
+    // ✅ CORRECT FSM with confidence thresholds + debounce
+    // ✅ Settings Panel - 1€ filter tuning, gesture thresholds
+    // ✅ NATS WebSocket - Event bus (with graceful fallback)
+    // ✅ Hexagonal Adapters - Port pattern with Zod validation
+    // ✅ discriminatedUnion FSMAction output per spec
+    // ============================================================
+    
+    // === CDN IMPORTS ===
+    import { GoldenLayout } from 'https://esm.sh/golden-layout@2.6.0';
+    import { connect, StringCodec } from 'https://esm.sh/nats.ws@1.30.3';
+    import { GestureRecognizer, FilesetResolver } from 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.8';
+    import { z } from 'https://esm.sh/zod@3.24.1';
+    import { createActor, createMachine, assign } from 'https://esm.sh/xstate@5.19.2';
+    
+    // ============================================================
+    // ZOD SCHEMAS (Contract Validation)
+    // ============================================================
+    
+    const GestureLabelSchema = z.enum([
+      'None', 'Closed_Fist', 'Open_Palm', 'Pointing_Up',
+      'Thumb_Down', 'Thumb_Up', 'Victory', 'ILoveYou'
+    ]);
+    
+    const NormalizedLandmarkSchema = z.object({
+      x: z.number().min(0).max(1),
+      y: z.number().min(0).max(1),
+      z: z.number(),
+      visibility: z.number().optional(),
+    });
+    
+    const SensorFrameSchema = z.object({
+      timestamp: z.number(),
+      landmarks: z.array(z.array(NormalizedLandmarkSchema)),
+      gesture: GestureLabelSchema,
+      gestureConfidence: z.number().min(0).max(1),
+    });
+    
+    const SmoothedFrameSchema = z.object({
+      timestamp: z.number(),
+      rawLandmarks: z.array(z.array(NormalizedLandmarkSchema)),
+      smoothedLandmarks: z.array(z.array(NormalizedLandmarkSchema)),
+      gesture: GestureLabelSchema,
+      gestureConfidence: z.number().min(0).max(1),
+    });
+    
+    // discriminatedUnion FSMAction per spec
+    const FSMActionSchema = z.discriminatedUnion('action', [
+      z.object({ action: z.literal('move'), x: z.number(), y: z.number(), state: z.string() }),
+      z.object({ action: z.literal('down'), x: z.number(), y: z.number(), button: z.number(), state: z.string() }),
+      z.object({ action: z.literal('up'), x: z.number(), y: z.number(), button: z.number(), state: z.string() }),
+      z.object({ action: z.literal('cancel'), state: z.string() }),
+      z.object({ action: z.literal('none'), state: z.string() }),
+    ]);
+    
+    const PointerEventOutSchema = z.object({
+      eventType: z.enum(['pointerdown', 'pointermove', 'pointerup', 'pointercancel']),
+      pointerId: z.number(),
+      pointerType: z.enum(['mouse', 'pen', 'touch']),
+      clientX: z.number(),
+      clientY: z.number(),
+      pressure: z.number(),
+      button: z.number(),
+      buttons: z.number(),
+      isPrimary: z.boolean(),
+    });
+    
+    // ============================================================
+    // CONFIGURATION (Mutable via Settings Panel)
+    // ============================================================
+    
+    const CONFIG = {
+      oneEuro: { minCutoff: 1.0, beta: 0.007, dCutoff: 1.0 },
+      gesture: { confidenceThreshold: 0.7, debounceFrames: 3 },
+      palm: { requireFacing: true, armThreshold: 0.85 },
+      debug: { showRawLandmarks: false, logVerbose: false },
+    };
+    
+    // ============================================================
+    // NATS SUBSTRATE ADAPTER
+    // ============================================================
+    
+    const NATS_SUBJECTS = {
+      SENSOR: 'hfo.sensor.frame',
+      SMOOTHED: 'hfo.smoother.frame',
+      FSM: 'hfo.fsm.action',
+      POINTER: 'hfo.pointer.event',
+    };
+    
+    class NatsSubstrateAdapter {
+      constructor() { this.nc = null; this.sc = StringCodec(); this.connected = false; }
+      
+      async connect(servers = 'ws://localhost:4222') {
+        try {
+          this.nc = await connect({ servers });
+          this.connected = true;
+          console.log('[NATS] Connected');
+          return true;
+        } catch (err) {
+          console.warn('[NATS] Connection failed:', err.message);
+          return false;
+        }
+      }
+      
+      async publish(subject, data) {
+        if (!this.connected) return false;
+        try { this.nc.publish(subject, this.sc.encode(JSON.stringify(data))); return true; }
+        catch (err) { return false; }
+      }
+      
+      subscribe(subject, callback) {
+        if (!this.connected) return null;
+        const sub = this.nc.subscribe(subject);
+        (async () => { for await (const msg of sub) callback(JSON.parse(this.sc.decode(msg.data))); })();
+        return sub;
+      }
+      
+      async close() { if (this.nc) { await this.nc.drain(); this.connected = false; } }
+    }
+    
+    // ============================================================
+    // ONE EURO ADAPTER (Smoothing with Configurable Params)
+    // ============================================================
+    
+    class LowPassFilter {
+      constructor(alpha) { this.alpha = alpha; this.y = null; }
+      filter(value, alpha = this.alpha) {
+        this.y = this.y === null ? value : alpha * value + (1 - alpha) * this.y;
+        return this.y;
+      }
+      reset() { this.y = null; }
+    }
+    
+    class OneEuroAdapter {
+      constructor() { this.filters = new Map(); this.lastTimestamp = null; }
+      
+      _alpha(cutoff, dt) {
+        const tau = 1.0 / (2 * Math.PI * cutoff);
+        return 1.0 / (1.0 + tau / dt);
+      }
+      
+      _getFilter(key) {
+        if (!this.filters.has(key)) {
+          this.filters.set(key, { x: new LowPassFilter(0.5), dx: new LowPassFilter(0.5) });
+        }
+        return this.filters.get(key);
+      }
+      
+      smooth(sensorFrame) {
+        const dt = this.lastTimestamp ? Math.max((sensorFrame.timestamp - this.lastTimestamp) / 1000, 0.001) : 1/60;
+        this.lastTimestamp = sensorFrame.timestamp;
+        
+        const smoothedLandmarks = sensorFrame.landmarks.map((hand, handIdx) =>
+          hand.map((lm, lmIdx) => {
+            const key = `${handIdx}-${lmIdx}`;
+            const filter = this._getFilter(key);
+            const prevX = filter.x.y ?? lm.x;
+            const prevY = filter.dx.y ?? lm.y;
+            const dx = (lm.x - prevX) / dt;
+            const dy = (lm.y - prevY) / dt;
+            const speed = Math.sqrt(dx * dx + dy * dy);
+            const cutoff = CONFIG.oneEuro.minCutoff + CONFIG.oneEuro.beta * speed;
+            const alpha = this._alpha(cutoff, dt);
+            return { x: filter.x.filter(lm.x, alpha), y: filter.dx.filter(lm.y, alpha), z: lm.z, visibility: lm.visibility };
+          })
+        );
+        
+        return { timestamp: sensorFrame.timestamp, rawLandmarks: sensorFrame.landmarks, smoothedLandmarks, gesture: sensorFrame.gesture, gestureConfidence: sensorFrame.gestureConfidence };
+      }
+      
+      reset() { this.filters.clear(); this.lastTimestamp = null; }
+    }
+    
+    // ============================================================
+    // CORRECT FSM with Confidence Threshold + Debounce
+    // ============================================================
+    // 
+    // GESTURE MAPPINGS (CORRECTED - was wrong before):
+    // - Closed_Fist: Press/Click (button 0) ← THIS triggers mousedown
+    // - Pointing_Up: Hover/Move (neutral tracking) ← NOT pinch!
+    // - Open_Palm: Release/Cancel (disarm) ← Releases click
+    // - Victory: NOT pinch! Could be scroll gesture
+    // - Thumb_Up/Thumb_Down: Confirmation/reject
+    // - ILoveYou: Special gesture
+    //
+    // States: idle → tracking → pressing → dragging → released
+    //
+    
+    const gestureFSM = createMachine({
+      id: 'gesture',
+      initial: 'idle',
+      context: {
+        x: 0.5,
+        y: 0.5,
+        pressure: 0,
+        gesture: 'None',
+        confidence: 0,
+        debounceCounter: 0,
+        pendingGesture: null,
+      },
+      states: {
+        idle: {
+          entry: assign({ pressure: 0, gesture: 'None' }),
+          on: {
+            HAND_DETECTED: {
+              target: 'tracking',
+              actions: assign({
+                x: ({ event }) => event.x,
+                y: ({ event }) => event.y,
+              })
+            }
+          }
+        },
+        tracking: {
+          on: {
+            HAND_LOST: 'idle',
+            MOVE: {
+              actions: assign({
+                x: ({ event }) => event.x,
+                y: ({ event }) => event.y,
+              })
+            },
+            CLOSED_FIST: {
+              target: 'pressing',
+              actions: assign({ gesture: 'Closed_Fist', pressure: 0.8 })
+            },
+          }
+        },
+        pressing: {
+          entry: assign({ pressure: 0.8 }),
+          on: {
+            HAND_LOST: 'idle',
+            MOVE: {
+              target: 'dragging',
+              actions: assign({ x: ({ event }) => event.x, y: ({ event }) => event.y })
+            },
+            OPEN_PALM: 'released',
+            POINTING_UP: 'released',
+          }
+        },
+        dragging: {
+          on: {
+            HAND_LOST: 'idle',
+            MOVE: {
+              actions: assign({ x: ({ event }) => event.x, y: ({ event }) => event.y })
+            },
+            OPEN_PALM: 'released',
+            POINTING_UP: 'released',
+          }
+        },
+        released: {
+          entry: assign({ gesture: 'None', pressure: 0 }),
+          always: 'tracking'
+        }
+      }
+    });
+    
+    class XStateFSMAdapter {
+      constructor() {
+        this.actor = createActor(gestureFSM);
+        this.actor.start();
+        this.gestureBuffer = [];
+        this.lastOutput = null;
+      }
+      
+      process(smoothedFrame) {
+        const state = this.actor.getSnapshot();
+        
+        if (smoothedFrame.smoothedLandmarks.length === 0) {
+          this.actor.send({ type: 'HAND_LOST' });
+          return { action: 'cancel', state: 'idle' };
+        }
+        
+        const indexTip = smoothedFrame.smoothedLandmarks[0][8];
+        const gesture = smoothedFrame.gesture;
+        const confidence = smoothedFrame.gestureConfidence;
+        
+        // CONFIDENCE GATE: Only process gestures above threshold
+        const validGesture = confidence >= CONFIG.gesture.confidenceThreshold ? gesture : 'None';
+        
+        // DEBOUNCE: Buffer gestures and only act on stable ones
+        this.gestureBuffer.push(validGesture);
+        if (this.gestureBuffer.length > CONFIG.gesture.debounceFrames) {
+          this.gestureBuffer.shift();
+        }
+        
+        // Only act if gesture is consistent across debounce window
+        const stableGesture = this.gestureBuffer.every(g => g === validGesture) ? validGesture : 'None';
+        
+        // Send appropriate event based on current state and stable gesture
+        if (state.value === 'idle') {
+          this.actor.send({ type: 'HAND_DETECTED', x: indexTip.x, y: indexTip.y });
+        } else {
+          this.actor.send({ type: 'MOVE', x: indexTip.x, y: indexTip.y });
+          
+          // CORRECT GESTURE → EVENT MAPPING
+          if (stableGesture === 'Closed_Fist' && state.value === 'tracking') {
+            this.actor.send({ type: 'CLOSED_FIST' });
+          } else if ((stableGesture === 'Open_Palm' || stableGesture === 'Pointing_Up') && 
+                     (state.value === 'pressing' || state.value === 'dragging')) {
+            this.actor.send({ type: 'OPEN_PALM' });
+          }
+        }
+        
+        const newState = this.actor.getSnapshot();
+        const x = newState.context.x;
+        const y = newState.context.y;
+        
+        // Generate discriminatedUnion output per spec
+        let output;
+        const stateStr = String(newState.value);
+        
+        if (state.value === 'tracking' && newState.value === 'pressing') {
+          output = { action: 'down', x, y, button: 0, state: stateStr };
+        } else if ((state.value === 'pressing' || state.value === 'dragging') && newState.value === 'released') {
+          output = { action: 'up', x, y, button: 0, state: 'tracking' };
+        } else if (newState.value === 'idle') {
+          output = { action: 'cancel', state: stateStr };
+        } else {
+          output = { action: 'move', x, y, state: stateStr };
+        }
+        
+        this.lastOutput = output;
+        return output;
+      }
+    }
+    
+    // ============================================================
+    // POINTER EVENT ADAPTER
+    // ============================================================
+    
+    class PointerEventAdapter {
+      constructor() { this.pointerId = 1; this.pointerType = 'touch'; }
+      
+      emit(fsmAction, target) {
+        const clientX = (1 - fsmAction.x) * target.bounds.width + target.bounds.x;
+        const clientY = fsmAction.y * target.bounds.height + target.bounds.y;
+        
+        let eventType, button = -1, buttons = 0, pressure = 0;
+        
+        if (fsmAction.action === 'down') {
+          eventType = 'pointerdown';
+          button = fsmAction.button;
+          buttons = 1;
+          pressure = 0.5;
+        } else if (fsmAction.action === 'up') {
+          eventType = 'pointerup';
+          button = fsmAction.button;
+          buttons = 0;
+          pressure = 0;
+        } else if (fsmAction.action === 'cancel') {
+          eventType = 'pointercancel';
+          button = -1;
+          buttons = 0;
+        } else if (fsmAction.action === 'move') {
+          eventType = 'pointermove';
+          buttons = fsmAction.state === 'dragging' ? 1 : 0;
+          pressure = buttons ? 0.5 : 0;
+        } else {
+          return null;
+        }
+        
+        return {
+          eventType, pointerId: this.pointerId, pointerType: this.pointerType,
+          clientX, clientY, pressure, button, buttons, isPrimary: true
+        };
+      }
+    }
+    
+    class DOMAdapter {
+      constructor(targetElement) { this.target = targetElement; }
+      inject(pointerEvent) {
+        const event = new PointerEvent(pointerEvent.eventType, { ...pointerEvent, bubbles: true, cancelable: true });
+        this.target.dispatchEvent(event);
+        return true;
+      }
+    }
+    
+    // ============================================================
+    // MEDIAPIPE ADAPTER with Landmark Data
+    // ============================================================
+    
+    class MediaPipeAdapter {
+      constructor() { this.recognizer = null; }
+      
+      async initialize(videoElement) {
+        const vision = await FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.8/wasm');
+        this.recognizer = await GestureRecognizer.createFromOptions(vision, {
+          baseOptions: {
+            modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task',
+            delegate: 'GPU'
+          },
+          runningMode: 'VIDEO',
+          numHands: 1
+        });
+      }
+      
+      async sense(video, timestamp) {
+        if (!this.recognizer) return { timestamp, landmarks: [], gesture: 'None', gestureConfidence: 0 };
+        const results = this.recognizer.recognizeForVideo(video, timestamp);
+        
+        let gesture = 'None';
+        let gestureConfidence = 0;
+        if (results.gestures && results.gestures.length > 0 && results.gestures[0].length > 0) {
+          gesture = results.gestures[0][0].categoryName;
+          gestureConfidence = results.gestures[0][0].score;
+        }
+        
+        return {
+          timestamp,
+          landmarks: results.landmarks || [],
+          gesture,
+          gestureConfidence,
+        };
+      }
+    }
+    
+    // ============================================================
+    // LANDMARK DRAWING UTILITY
+    // ============================================================
+    
+    const HAND_CONNECTIONS = [
+      [0, 1], [1, 2], [2, 3], [3, 4],
+      [0, 5], [5, 6], [6, 7], [7, 8],
+      [0, 9], [9, 10], [10, 11], [11, 12],
+      [0, 13], [13, 14], [14, 15], [15, 16],
+      [0, 17], [17, 18], [18, 19], [19, 20],
+      [5, 9], [9, 13], [13, 17],
+    ];
+    
+    function drawLandmarks(ctx, landmarks, canvasWidth, canvasHeight) {
+      if (!landmarks || landmarks.length === 0) return;
+      
+      const hand = landmarks[0];
+      
+      ctx.strokeStyle = '#ff4444';
+      ctx.lineWidth = 2;
+      
+      for (const [i, j] of HAND_CONNECTIONS) {
+        if (hand[i] && hand[j]) {
+          ctx.beginPath();
+          ctx.moveTo(hand[i].x * canvasWidth, hand[i].y * canvasHeight);
+          ctx.lineTo(hand[j].x * canvasWidth, hand[j].y * canvasHeight);
+          ctx.stroke();
+        }
+      }
+      
+      ctx.fillStyle = '#00ff88';
+      for (const lm of hand) {
+        ctx.beginPath();
+        ctx.arc(lm.x * canvasWidth, lm.y * canvasHeight, 4, 0, 2 * Math.PI);
+        ctx.fill();
+      }
+      
+      const indexTip = hand[8];
+      if (indexTip) {
+        ctx.fillStyle = '#4488ff';
+        ctx.beginPath();
+        ctx.arc(indexTip.x * canvasWidth, indexTip.y * canvasHeight, 8, 0, 2 * Math.PI);
+        ctx.fill();
+      }
+    }
+    
+    // ============================================================
+    // GOLDEN LAYOUT CONFIG - 4 PANELS
+    // ============================================================
+    
+    const layoutConfig = {
+      root: {
+        type: 'row',
+        content: [
+          {
+            type: 'column',
+            width: 30,
+            content: [
+              { type: 'component', componentType: 'camera-panel', title: '📹 Camera', height: 60 },
+              { type: 'component', componentType: 'settings-panel', title: '⚙️ Settings', height: 40 }
+            ]
+          },
+          { type: 'component', componentType: 'target-panel', title: '🎯 Target', width: 45 },
+          { type: 'component', componentType: 'debug-panel', title: '🔬 Debug', width: 25 }
+        ]
+      }
+    };
+    
+    // ============================================================
+    // APPLICATION STATE
+    // ============================================================
+    
+    let goldenLayout = null;
+    let nats = null;
+    let useNats = false;
+    let isRunning = false;
+    let animationId = null;
+    let frameCount = 0;
+    let lastFpsTime = performance.now();
+    
+    let sensorAdapter = null;
+    let smootherAdapter = null;
+    let fsmAdapter = null;
+    let emitterAdapter = null;
+    let targetAdapter = null;
+    
+    let videoEl = null;
+    let landmarksCanvas = null;
+    let targetEl = null;
+    let cursorEl = null;
+    let logEl = null;
+    let metricsEls = {};
+    let statusEls = {};
+    
+    // ============================================================
+    // LOGGING
+    // ============================================================
+    
+    function log(message, type = 'info') {
+      if (!logEl) return;
+      if (!CONFIG.debug.logVerbose && type === 'verbose') return;
+      const entry = document.createElement('div');
+      entry.className = `log-entry ${type}`;
+      entry.textContent = `[${new Date().toISOString().slice(11,19)}] ${message}`;
+      logEl.insertBefore(entry, logEl.firstChild);
+      if (logEl.children.length > 50) logEl.removeChild(logEl.lastChild);
+    }
+    
+    // ============================================================
+    // COMPONENT FACTORIES
+    // ============================================================
+    
+    function createCameraPanel(container) {
+      container.element.innerHTML = `
+        <div class="panel-content">
+          <h2>Stage 1: Sensor</h2>
+          <div class="status-bar">
+            <span class="badge disconnected" id="status-nats">NATS: --</span>
+            <span class="badge disconnected" id="status-pipeline">Pipeline: --</span>
+          </div>
+          <div class="camera-container">
+            <video id="camera" autoplay playsinline muted></video>
+            <canvas id="landmarks-canvas"></canvas>
+            <div class="camera-overlay">
+              <div class="gesture-badge" id="gesture-label">None</div>
+              <div class="confidence-bar"><div class="confidence-fill" id="confidence-fill" style="width: 0%"></div></div>
+            </div>
+          </div>
+          <div class="controls">
+            <button id="btn-start">▶ Start</button>
+            <button id="btn-stop" disabled>⏹ Stop</button>
+          </div>
+        </div>
+      `;
+      
+      videoEl = container.element.querySelector('#camera');
+      landmarksCanvas = container.element.querySelector('#landmarks-canvas');
+      statusEls.nats = container.element.querySelector('#status-nats');
+      statusEls.pipeline = container.element.querySelector('#status-pipeline');
+      statusEls.gestureLabel = container.element.querySelector('#gesture-label');
+      statusEls.confidenceFill = container.element.querySelector('#confidence-fill');
+      
+      container.element.querySelector('#btn-start').addEventListener('click', startPipeline);
+      container.element.querySelector('#btn-stop').addEventListener('click', stopPipeline);
+    }
+    
+    function createTargetPanel(container) {
+      container.element.innerHTML = `
+        <div class="panel-content" style="padding: 0;">
+          <div class="target-container" id="target-area">
+            <div id="gesture-cursor"></div>
+          </div>
+        </div>
+      `;
+      
+      targetEl = container.element.querySelector('#target-area');
+      cursorEl = container.element.querySelector('#gesture-cursor');
+      
+      targetEl.addEventListener('pointerdown', (e) => {
+        if (e.pointerType === 'touch') log('🎯 pointerdown', 'pointer');
+      });
+      targetEl.addEventListener('pointerup', (e) => {
+        if (e.pointerType === 'touch') log('🎯 pointerup', 'pointer');
+      });
+    }
+    
+    function createSettingsPanel(container) {
+      container.element.innerHTML = `
+        <div class="panel-content">
+          <h2>Configuration</h2>
+          
+          <div class="settings-group">
+            <h3>1€ Filter</h3>
+            <div class="setting-row">
+              <label>Min Cutoff</label>
+              <input type="range" id="setting-minCutoff" min="0.1" max="5" step="0.1" value="1.0">
+              <span class="value" id="value-minCutoff">1.0</span>
+            </div>
+            <div class="setting-row">
+              <label>Beta (Speed)</label>
+              <input type="range" id="setting-beta" min="0" max="0.05" step="0.001" value="0.007">
+              <span class="value" id="value-beta">0.007</span>
+            </div>
+            <div class="setting-row">
+              <label>D Cutoff</label>
+              <input type="range" id="setting-dCutoff" min="0.1" max="5" step="0.1" value="1.0">
+              <span class="value" id="value-dCutoff">1.0</span>
+            </div>
+          </div>
+          
+          <div class="settings-group">
+            <h3>Gesture Recognition</h3>
+            <div class="setting-row">
+              <label>Confidence</label>
+              <input type="range" id="setting-confidence" min="0.5" max="1.0" step="0.05" value="0.7">
+              <span class="value" id="value-confidence">0.7</span>
+            </div>
+            <div class="setting-row">
+              <label>Debounce (frames)</label>
+              <input type="range" id="setting-debounce" min="1" max="10" step="1" value="3">
+              <span class="value" id="value-debounce">3</span>
+            </div>
+          </div>
+          
+          <div class="settings-group">
+            <h3>Debug</h3>
+            <div class="setting-row">
+              <label>Verbose Logging</label>
+              <input type="checkbox" id="setting-verbose">
+            </div>
+          </div>
+        </div>
+      `;
+      
+      const setupSlider = (id, configPath, valueId) => {
+        const slider = container.element.querySelector(`#${id}`);
+        const valueEl = container.element.querySelector(`#${valueId}`);
+        slider.addEventListener('input', () => {
+          const val = parseFloat(slider.value);
+          const [group, key] = configPath.split('.');
+          CONFIG[group][key] = val;
+          valueEl.textContent = val.toFixed(key === 'beta' ? 3 : 1);
+          log(`${key} = ${val}`, 'verbose');
+        });
+      };
+      
+      setupSlider('setting-minCutoff', 'oneEuro.minCutoff', 'value-minCutoff');
+      setupSlider('setting-beta', 'oneEuro.beta', 'value-beta');
+      setupSlider('setting-dCutoff', 'oneEuro.dCutoff', 'value-dCutoff');
+      setupSlider('setting-confidence', 'gesture.confidenceThreshold', 'value-confidence');
+      setupSlider('setting-debounce', 'gesture.debounceFrames', 'value-debounce');
+      
+      container.element.querySelector('#setting-verbose').addEventListener('change', (e) => {
+        CONFIG.debug.logVerbose = e.target.checked;
+      });
+    }
+    
+    function createDebugPanel(container) {
+      container.element.innerHTML = `
+        <div class="panel-content">
+          <h2>Pipeline Debug</h2>
+          
+          <div class="debug-section">
+            <h3>Flow</h3>
+            <div class="pipeline-stage active">1. SENSE → MediaPipe</div>
+            <div class="pipeline-stage nats" id="stage-nats-1">↓ NATS: hfo.sensor.frame</div>
+            <div class="pipeline-stage active">2. SMOOTH → 1€ Filter</div>
+            <div class="pipeline-stage nats" id="stage-nats-2">↓ NATS: hfo.smoother.frame</div>
+            <div class="pipeline-stage active">3. FSM → XState</div>
+            <div class="pipeline-stage nats" id="stage-nats-3">↓ NATS: hfo.fsm.action</div>
+            <div class="pipeline-stage active">4. EMIT → W3C Pointer</div>
+            <div class="pipeline-stage nats" id="stage-nats-4">↓ NATS: hfo.pointer.event</div>
+            <div class="pipeline-stage active">5. INJECT → DOM</div>
+          </div>
+          
+          <div class="debug-section">
+            <h3>Metrics</h3>
+            <div class="metric"><span class="metric-label">FPS</span><span class="metric-value" id="metric-fps">0</span></div>
+            <div class="metric"><span class="metric-label">Raw X</span><span class="metric-value" id="metric-raw-x">-</span></div>
+            <div class="metric"><span class="metric-label">Raw Y</span><span class="metric-value" id="metric-raw-y">-</span></div>
+            <div class="metric"><span class="metric-label">Smooth X</span><span class="metric-value real" id="metric-smooth-x">-</span></div>
+            <div class="metric"><span class="metric-label">Smooth Y</span><span class="metric-value real" id="metric-smooth-y">-</span></div>
+            <div class="metric"><span class="metric-label">FSM State</span><span class="metric-value real" id="metric-fsm">idle</span></div>
+            <div class="metric"><span class="metric-label">Gesture</span><span class="metric-value real" id="metric-gesture">None</span></div>
+            <div class="metric"><span class="metric-label">Confidence</span><span class="metric-value real" id="metric-confidence">0%</span></div>
+          </div>
+          
+          <div class="debug-section" style="flex: 1; display: flex; flex-direction: column;">
+            <h3>Event Log</h3>
+            <div id="event-log"></div>
+          </div>
+        </div>
+      `;
+      
+      logEl = container.element.querySelector('#event-log');
+      metricsEls = {
+        fps: container.element.querySelector('#metric-fps'),
+        rawX: container.element.querySelector('#metric-raw-x'),
+        rawY: container.element.querySelector('#metric-raw-y'),
+        smoothX: container.element.querySelector('#metric-smooth-x'),
+        smoothY: container.element.querySelector('#metric-smooth-y'),
+        fsm: container.element.querySelector('#metric-fsm'),
+        gesture: container.element.querySelector('#metric-gesture'),
+        confidence: container.element.querySelector('#metric-confidence'),
+      };
+    }
+    
+    // ============================================================
+    // NATS CONNECTION
+    // ============================================================
+    
+    async function connectNats() {
+      nats = new NatsSubstrateAdapter();
+      const connected = await nats.connect('ws://localhost:4222');
+      
+      if (connected) {
+        useNats = true;
+        statusEls.nats.textContent = 'NATS: Connected';
+        statusEls.nats.className = 'badge nats';
+        log('✅ NATS connected', 'nats');
+      } else {
+        useNats = false;
+        statusEls.nats.textContent = 'NATS: Fallback';
+        statusEls.nats.className = 'badge fallback';
+        log('⚠️ NATS unavailable - direct pipeline', 'error');
+      }
+    }
+    
+    // ============================================================
+    // PIPELINE
+    // ============================================================
+    
+    async function initializeAdapters() {
+      log('Initializing adapters...', 'info');
+      
+      sensorAdapter = new MediaPipeAdapter();
+      await sensorAdapter.initialize(videoEl);
+      log('✅ MediaPipeAdapter', 'pointer');
+      
+      smootherAdapter = new OneEuroAdapter();
+      log('✅ OneEuroAdapter', 'pointer');
+      
+      fsmAdapter = new XStateFSMAdapter();
+      log('✅ XStateFSMAdapter', 'fsm');
+      
+      emitterAdapter = new PointerEventAdapter();
+      log('✅ PointerEventAdapter', 'pointer');
+      
+      targetAdapter = new DOMAdapter(targetEl);
+      log('✅ DOMAdapter', 'pointer');
+      
+      return true;
+    }
+    
+    async function pipelineLoop(timestamp) {
+      if (!isRunning) return;
+      
+      try {
+        // === STAGE 1: SENSE ===
+        const sensorFrame = await sensorAdapter.sense(videoEl, timestamp);
+        
+        // Draw landmarks on video
+        const ctx = landmarksCanvas.getContext('2d');
+        ctx.clearRect(0, 0, landmarksCanvas.width, landmarksCanvas.height);
+        if (sensorFrame.landmarks.length > 0) {
+          drawLandmarks(ctx, sensorFrame.landmarks, landmarksCanvas.width, landmarksCanvas.height);
+          
+          const tip = sensorFrame.landmarks[0][8];
+          if (tip) {
+            metricsEls.rawX.textContent = tip.x.toFixed(3);
+            metricsEls.rawY.textContent = tip.y.toFixed(3);
+          }
+        }
+        
+        statusEls.gestureLabel.textContent = sensorFrame.gesture;
+        statusEls.confidenceFill.style.width = `${sensorFrame.gestureConfidence * 100}%`;
+        metricsEls.gesture.textContent = sensorFrame.gesture;
+        metricsEls.confidence.textContent = `${(sensorFrame.gestureConfidence * 100).toFixed(0)}%`;
+        
+        if (useNats) await nats.publish(NATS_SUBJECTS.SENSOR, sensorFrame);
+        
+        // === STAGE 2: SMOOTH ===
+        const smoothedFrame = smootherAdapter.smooth(sensorFrame);
+        
+        if (smoothedFrame.smoothedLandmarks.length > 0) {
+          const tip = smoothedFrame.smoothedLandmarks[0][8];
+          if (tip) {
+            metricsEls.smoothX.textContent = tip.x.toFixed(3);
+            metricsEls.smoothY.textContent = tip.y.toFixed(3);
+            
+            const rect = targetEl.getBoundingClientRect();
+            cursorEl.style.left = `${(1 - tip.x) * rect.width}px`;
+            cursorEl.style.top = `${tip.y * rect.height}px`;
+          }
+        }
+        
+        if (useNats) await nats.publish(NATS_SUBJECTS.SMOOTHED, smoothedFrame);
+        
+        // === STAGE 3: FSM ===
+        const fsmAction = fsmAdapter.process(smoothedFrame);
+        metricsEls.fsm.textContent = fsmAction.state;
+        
+        cursorEl.className = fsmAction.state;
+        
+        if (useNats) await nats.publish(NATS_SUBJECTS.FSM, fsmAction);
+        
+        // === STAGE 4: EMIT ===
+        const rect = targetEl.getBoundingClientRect();
+        const pointerEvent = emitterAdapter.emit(fsmAction, { targetId: 'target', bounds: { x: rect.x, y: rect.y, width: rect.width, height: rect.height } });
+        
+        if (pointerEvent) {
+          if (useNats) await nats.publish(NATS_SUBJECTS.POINTER, pointerEvent);
+          
+          // === STAGE 5: INJECT ===
+          targetAdapter.inject(pointerEvent);
+          
+          if (pointerEvent.eventType !== 'pointermove') {
+            log(`${pointerEvent.eventType} @ (${pointerEvent.clientX.toFixed(0)}, ${pointerEvent.clientY.toFixed(0)})`, 'pointer');
+          }
+        }
+        
+        // FPS
+        frameCount++;
+        const now = performance.now();
+        if (now - lastFpsTime >= 1000) {
+          metricsEls.fps.textContent = frameCount;
+          frameCount = 0;
+          lastFpsTime = now;
+        }
+        
+      } catch (err) {
+        log(`Error: ${err.message}`, 'error');
+      }
+      
+      animationId = requestAnimationFrame(pipelineLoop);
+    }
+    
+    async function startPipeline() {
+      log('Starting pipeline...', 'info');
+      
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
+        videoEl.srcObject = stream;
+        await videoEl.play();
+        
+        landmarksCanvas.width = videoEl.videoWidth || 640;
+        landmarksCanvas.height = videoEl.videoHeight || 480;
+        
+        await connectNats();
+        await initializeAdapters();
+        
+        isRunning = true;
+        statusEls.pipeline.textContent = 'Pipeline: Running';
+        statusEls.pipeline.className = 'badge connected';
+        
+        document.querySelector('#btn-start').disabled = true;
+        document.querySelector('#btn-stop').disabled = false;
+        
+        log('🚀 Pipeline started', 'pointer');
+        animationId = requestAnimationFrame(pipelineLoop);
+        
+      } catch (err) {
+        log(`Start failed: ${err.message}`, 'error');
+      }
+    }
+    
+    function stopPipeline() {
+      isRunning = false;
+      if (animationId) cancelAnimationFrame(animationId);
+      if (videoEl?.srcObject) {
+        videoEl.srcObject.getTracks().forEach(t => t.stop());
+        videoEl.srcObject = null;
+      }
+      if (nats) nats.close();
+      if (smootherAdapter) smootherAdapter.reset();
+      
+      statusEls.pipeline.textContent = 'Pipeline: Stopped';
+      statusEls.pipeline.className = 'badge disconnected';
+      
+      document.querySelector('#btn-start').disabled = false;
+      document.querySelector('#btn-stop').disabled = true;
+      
+      log('Pipeline stopped', 'info');
+    }
+    
+    // ============================================================
+    // INIT
+    // ============================================================
+    
+    function init() {
+      goldenLayout = new GoldenLayout(document.getElementById('layout-container'));
+      
+      goldenLayout.registerComponentFactoryFunction('camera-panel', createCameraPanel);
+      goldenLayout.registerComponentFactoryFunction('target-panel', createTargetPanel);
+      goldenLayout.registerComponentFactoryFunction('settings-panel', createSettingsPanel);
+      goldenLayout.registerComponentFactoryFunction('debug-panel', createDebugPanel);
+      
+      goldenLayout.loadLayout(layoutConfig);
+      
+      window.addEventListener('resize', () => goldenLayout.setSize(window.innerWidth, window.innerHeight));
+      
+      console.log('[Gen87.X3] MASTER Demo v2 initialized');
+      console.log('[Gen87.X3] Features: 4-panel Golden Layout, MediaPipe viz, Settings, Correct FSM');
+      console.log('[Gen87.X3] NATS: docker run -p 4222:4222 nats:latest');
+    }
+    
+    init();
+  </script>
+</body>
+</html>

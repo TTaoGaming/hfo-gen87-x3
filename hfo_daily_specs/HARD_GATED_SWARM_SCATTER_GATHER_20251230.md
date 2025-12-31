@@ -262,6 +262,139 @@ interface FlipOutput {
 
 ---
 
+## 2.3 Commander Facade Tools (NEW - 2025-12-30)
+
+> **Design Pattern**: Each Commander is a FACADE over multiple underlying tools.  
+> **User Interaction**: TTao talks ONLY to Spider Sovereign. All other Commanders are internal.
+
+### Architecture
+
+```
+USER (TTao)
+    │
+    ▼
+┌─────────────────────────────────────────────────────────────┐
+│              SPIDER SOVEREIGN (Port 7)                       │
+│              Orchestrator Facade - DECIDE                    │
+├─────────────────────────────────────────────────────────────┤
+│                         Internal Swarm                       │
+│  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐           │
+│  │ Lidless │ │ Weaver  │ │ Magus   │ │ Storm   │           │
+│  │ (0)     │ │ (1)     │ │ (2)     │ │ (3)     │           │
+│  │ SENSE   │ │ FUSE    │ │ SHAPE   │ │ DELIVER │           │
+│  └─────────┘ └─────────┘ └─────────┘ └─────────┘           │
+│  ┌─────────┐ ┌─────────┐ ┌─────────┐                       │
+│  │ Regnant │ │ Pyre    │ │ Kraken  │                       │
+│  │ (4)     │ │ (5)     │ │ (6)     │                       │
+│  │ TEST    │ │ DEFEND  │ │ STORE   │                       │
+│  └─────────┘ └─────────┘ └─────────┘                       │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 2.3.1 `lidless_sense` — Port 0 (Lidless Legion)
+
+**Purpose**: Unified sensor mesh for HUNT phase research.
+
+**Sensors**:
+- `web`: Tavily API for web search
+- `memory`: DuckDB FTS on 6,423 artifacts
+- `code`: Workspace grep + semantic search
+- `graph`: MCP Memory knowledge graph
+
+```typescript
+interface LidlessSenseInput {
+  query: string;                              // Search query
+  sources?: ('web' | 'memory' | 'code' | 'graph' | 'all')[];  // Default: ['all']
+  limit?: number;                             // Results per source (default: 5)
+  options?: {
+    webDepth?: 'basic' | 'advanced';          // Tavily search depth
+    memoryGen?: number;                       // Filter by generation
+    codePattern?: string;                     // Glob pattern for code search
+  };
+}
+
+interface SenseResult {
+  source: 'web' | 'memory' | 'code' | 'graph';
+  title: string;
+  content: string;
+  url?: string;                               // For web results
+  filepath?: string;                          // For code/memory results
+  generation?: number;                        // For memory results
+  score: number;                              // Relevance score 0-1
+  metadata?: Record<string, unknown>;
+}
+
+interface LidlessSenseOutput {
+  query: string;
+  timestamp: string;
+  sources_queried: string[];
+  results: SenseResult[];
+  exemplars: SenseResult[];                   // Top deduplicated results
+  total_results: number;
+  signal: {                                   // Auto-emitted to blackboard
+    port: 0;
+    hive: 'H';
+    msg: string;
+  };
+}
+```
+
+**Auto-Stigmergy**: Every sense() call emits signal to obsidianblackboard.jsonl.
+
+### 2.3.2 `kraken_store` — Port 6 (Kraken Keeper)
+
+**Purpose**: Unified storage for knowledge persistence.
+
+```typescript
+interface KrakenStoreInput {
+  data: unknown;
+  tier: 'session' | 'document' | 'archive';
+  metadata?: {
+    generation?: number;
+    tags?: string[];
+    source?: string;
+  };
+}
+
+interface KrakenStoreOutput {
+  success: boolean;
+  id: string;
+  tier: string;
+  signal: { port: 6; hive: 'I'; msg: string };
+}
+```
+
+### 2.3.3 `pyre_defend` — Port 5 (Pyre Praetorian)
+
+**Purpose**: Gate validation and quarantine.
+
+```typescript
+interface PyreDefendInput {
+  signal: StigmergySignal;
+  gates?: ('G0' | 'G1' | 'G2' | 'G3' | 'G4' | 'G5' | 'G6' | 'G7' | 'all')[];
+}
+
+interface PyreDefendOutput {
+  valid: boolean;
+  gates_passed: string[];
+  gates_failed: string[];
+  quarantined: boolean;
+  signal: { port: 5; hive: 'V'; msg: string };
+}
+```
+
+### 2.3.4 Future Commander Tools
+
+| Commander | Tool | Purpose | Phase |
+|-----------|------|---------|-------|
+| Web Weaver (1) | `weaver_fuse` | Connect schemas, validate contracts | I |
+| Mirror Magus (2) | `magus_shape` | Transform data, implement code | V |
+| Spore Storm (3) | `storm_deliver` | Emit outputs, deploy artifacts | E |
+| Red Regnant (4) | `regnant_test` | Property testing, chaos engineering | E |
+| Spider Sovereign (7) | `spider_decide` | Orchestration, sequential thinking | ALL |
+
+---
+
 ## 3. Implementation Plan
 
 ### 3.1 HIVE/8 Iteration Map

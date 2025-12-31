@@ -10,9 +10,8 @@
  * - Parameter controls
  */
 
-import { expect, test, Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 import * as fs from "fs";
-import * as path from "path";
 
 const DEMO_URL = "http://localhost:9093/simple-pipeline.html";
 const SCREENSHOT_DIR = "test-results/pipeline-screenshots";
