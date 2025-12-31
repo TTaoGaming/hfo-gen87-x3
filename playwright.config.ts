@@ -21,10 +21,18 @@ export default defineConfig({
 			use: { ...devices['Desktop Chrome'] },
 		},
 	],
-	webServer: {
-		command: 'npx http-server sandbox/demo-golden -p 9093 --cors -c-1',
-		url: 'http://localhost:9093/simple-pipeline.html',
-		reuseExistingServer: true,
-		timeout: 10000,
-	},
+	webServer: [
+		{
+			command: 'npx http-server sandbox/demo-golden -p 9093 --cors -c-1',
+			url: 'http://localhost:9093/index.html',
+			reuseExistingServer: true,
+			timeout: 30000,
+		},
+		{
+			command: 'npx http-server sandbox/demo-real -p 9094 --cors -c-1',
+			url: 'http://localhost:9094/index.html',
+			reuseExistingServer: true,
+			timeout: 30000,
+		},
+	],
 });

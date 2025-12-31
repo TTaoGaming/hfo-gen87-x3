@@ -56,6 +56,68 @@ MediaPipe → Physics (Rapier/1€) → FSM (XState) → W3C Pointer → TargetA
 
 ---
 
+## 🔴 HARD-GATED TOOL REQUIREMENTS (ENFORCED)
+
+> **These are NOT suggestions. These are REQUIREMENTS.**  
+> **Violations result in QUARANTINE.**
+
+### 🧊 Cold Start Protocol (EVERY new conversation)
+
+**BEFORE doing anything else, you MUST:**
+
+```
+1. [REQUIRED] mcp_memory_read_graph
+   → Check what knowledge already exists in memory
+   → Load user context: TTao preferences, mission, AI friction patterns
+   → Load architecture: HIVE/8, swarm patterns, limitations
+
+2. [REQUIRED] mcp_memory_search_nodes("<task keywords>")
+   → Search for relevant exemplars based on current task
+   → Find prior art before reinventing
+```
+
+### 📊 Phase-Specific Requirements
+
+| Phase | REQUIRED Tools | BLOCKED Tools |
+|-------|----------------|---------------|
+| **H (Hunt)** | `mcp_memory_read_graph`, `mcp_tavily_tavily-search` | `create_file`, `edit_file`, `run_in_terminal` |
+| **I (Interlock)** | `mcp_sequentialthi_sequentialthinking` (before contracts) | `runTests` (reward hack prevention) |
+| **V (Validate)** | `mcp_sequentialthi_sequentialthinking` (before complex impl) | `delete_file` (can't delete tests) |
+| **E (Evolve)** | `mcp_memory_add_observations` (persist lessons) | `create_file` (new features = next H) |
+
+### ✍️ Pre-Create-File Protocol
+
+**BEFORE creating ANY file, you MUST:**
+
+```
+1. [REQUIRED in I/V phase] mcp_sequentialthi_sequentialthinking
+   → At least 3 thoughts minimum
+   → Include: problem analysis, approach, potential issues
+   → Output: reasoned decision on file structure/content
+```
+
+### 🏁 Phase Exit Protocol
+
+**BEFORE transitioning to next phase:**
+
+```
+1. [REQUIRED in E phase] mcp_memory_add_observations
+   → What worked? What didn't?
+   → New patterns discovered
+   → Lessons for next iteration
+```
+
+### ⚠️ Violation Types
+
+| Violation | Trigger | Severity |
+|-----------|---------|----------|
+| `MEMORY_NOT_READ` | Cold start without memory graph read | 🔴 BLOCK |
+| `NO_TAVILY_GROUNDING` | H phase web claim without search | 🟡 WARN |
+| `NO_SEQUENTIAL_THINKING` | I/V phase file create without reasoning | 🔴 BLOCK |
+| `NO_LESSON_PERSISTENCE` | E phase exit without memory update | 🟡 WARN |
+
+---
+
 ## 🧰 Pre-Configured Tools (Auto-Approved)
 
 ### Primary Tools - USE THESE

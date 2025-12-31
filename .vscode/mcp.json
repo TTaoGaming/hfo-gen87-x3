@@ -12,6 +12,14 @@
 			"env": {
 				"TAVILY_API_KEY": "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"
 			}
+		},
+		"rag-memory-mcp": {
+			"type": "stdio",
+			"command": "npx",
+			"args": ["-y", "rag-memory-mcp"],
+			"env": {
+				"RAG_MEMORY_DATA_DIR": "${workspaceFolder}/sandbox/.rag-memory"
+			}
 		}
 	}
 }

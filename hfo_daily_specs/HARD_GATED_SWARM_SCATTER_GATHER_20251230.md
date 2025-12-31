@@ -998,3 +998,379 @@ Based on blackboard analysis (154 signals, 69% tests passing):
 ---
 
 *Updated: 2025-12-30 | Session 3 | Phased Rollout Complete*
+
+---
+
+## 14. HARD-GATED TOOL ENFORCEMENT — Memory, Sequential Thinking, Tavily
+
+> **Added by**: Spider Sovereign (2025-12-30 Session 4)  
+> **Context**: User explicitly requested HARD enforcement of memory graph, sequential thinking, and Tavily grounding  
+> **Key Principle**: These tools are REQUIRED per phase, not just available
+
+### 14.1 The Core Problem
+
+AI agents (including Claude) suffer from:
+- **RLHF reward hacking**: Taking shortcuts to please, not to be correct
+- **Context amnesia**: Forgetting what was learned in previous sessions
+- **Hallucination**: Making claims without grounding in sources
+- **Lazy reasoning**: Jumping to conclusions without structured thinking
+
+**Solution**: HARD GATES that REQUIRE specific tools at specific phases.
+
+### 14.2 REQUIRED_TOOLS Per Phase
+
+```typescript
+// In hive-enforcer MCP server
+const REQUIRED_TOOLS: Record<Phase, string[]> = {
+  H: [
+    "mcp_memory_read_graph",      // Cold start: what do we already know?
+    "mcp_tavily_tavily-search",   // Ground web claims in sources
+  ],
+  I: [
+    "mcp_sequentialthi_sequentialthinking",  // Reason before defining contracts
+  ],
+  V: [
+    "mcp_sequentialthi_sequentialthinking",  // Reason before complex implementation
+  ],
+  E: [
+    "mcp_memory_add_observations",  // Persist lessons for next cycle
+  ],
+};
+
+const BLOCKED_TOOLS: Record<Phase, string[]> = {
+  H: ["create_file", "edit_file", "run_in_terminal"],  // No impl in research
+  I: ["runTests"],  // Would pass with no impl (reward hack)
+  V: ["delete_file"],  // Can't delete tests to make them pass
+  E: ["create_file"],  // New features belong in next H phase
+};
+```
+
+### 14.3 New Violation Types
+
+| Violation | Phase | Trigger | Severity |
+|-----------|-------|---------|----------|
+| `MEMORY_NOT_READ` | H | Proceeding without `mcp_memory_read_graph` | 🔴 BLOCK |
+| `NO_TAVILY_GROUNDING` | H | Web claim without `mcp_tavily_tavily-search` | 🟡 WARN |
+| `NO_SEQUENTIAL_THINKING` | I, V | `create_file` without prior `mcp_sequentialthi_sequentialthinking` | 🔴 BLOCK |
+| `NO_LESSON_PERSISTENCE` | E | Phase exit without `mcp_memory_add_observations` | 🟡 WARN |
+
+### 14.4 New Tool: `hive_checkRequirements`
+
+```typescript
+interface CheckRequirementsInput {
+  phase: "H" | "I" | "V" | "E";
+  sessionId: string;
+}
+
+interface CheckRequirementsOutput {
+  phase: string;
+  requirements: {
+    tool: string;
+    status: "satisfied" | "unsatisfied" | "partial";
+    lastCalled?: string;  // ISO timestamp
+    callCount: number;
+  }[];
+  canProceed: boolean;
+  blockers: string[];
+}
+```
+
+### 14.5 Session State Tracking
+
+The MCP server must track tool calls per session:
+
+```typescript
+interface SessionState {
+  sessionId: string;
+  currentPhase: Phase;
+  toolCalls: {
+    tool: string;
+    timestamp: string;
+    args?: unknown;
+  }[];
+  requirementsSatisfied: {
+    memoryRead: boolean;
+    tavilySearched: boolean;
+    sequentialThinkingUsed: boolean;
+    lessonsPersistedThisPhase: boolean;
+  };
+}
+```
+
+### 14.6 Cold Start Protocol
+
+**EVERY new conversation/session MUST:**
+
+```
+1. [REQUIRED] mcp_memory_read_graph
+   - Check what knowledge already exists
+   - Load user context (TTao preferences, mission, AI friction patterns)
+   - Load architecture context (HIVE/8, swarm patterns, limitations)
+
+2. [REQUIRED for H phase] mcp_memory_search_nodes
+   - Search for relevant exemplars based on task
+   - Find prior art before reinventing
+
+3. [OPTIONAL but recommended] mcp_tavily_tavily-search
+   - If making any web/library claims, MUST ground in search
+```
+
+### 14.7 Pre-Create-File Protocol
+
+**BEFORE creating any file, MUST:**
+
+```
+1. [REQUIRED in I/V phase] mcp_sequentialthi_sequentialthinking
+   - At least 3 thoughts minimum
+   - Must include: problem analysis, approach, potential issues
+   - Output: reasoned decision on file structure/content
+
+2. [REQUIRED] hive_checkRequirements
+   - Verify all phase requirements satisfied
+   - If blockers exist, address them first
+```
+
+### 14.8 Phase Exit Protocol
+
+**BEFORE transitioning to next phase, MUST:**
+
+```
+1. [REQUIRED for E phase] mcp_memory_add_observations
+   - What worked? What didn't?
+   - New patterns discovered
+   - Lessons for next iteration
+
+2. [REQUIRED] hive_flip (for E→H transition)
+   - Archives current blackboard
+   - Increments generation
+   - Creates fresh trace context
+```
+
+### 14.9 AGENTS.md Integration
+
+Add to every agent's instructions:
+
+```markdown
+## 🚨 HARD-GATED TOOL REQUIREMENTS
+
+### On Cold Start (EVERY new conversation):
+1. MUST call `mcp_memory_read_graph` FIRST
+2. MUST call `mcp_memory_search_nodes` for task-relevant context
+
+### In H Phase (Hunt/Research):
+- MUST use `mcp_tavily_tavily-search` for ANY web/library claim
+- MUST NOT create files or run commands (research only)
+
+### In I Phase (Interlock/Contracts):
+- MUST use `mcp_sequentialthi_sequentialthinking` BEFORE creating schemas/tests
+- At least 3 thoughts analyzing the problem
+
+### In V Phase (Validate/Implement):
+- MUST use `mcp_sequentialthi_sequentialthinking` BEFORE complex implementation
+- MUST run tests after implementation (not before!)
+
+### In E Phase (Evolve/Refactor):
+- MUST use `mcp_memory_add_observations` to persist lessons
+- MUST NOT add new features (save for next H phase)
+```
+
+### 14.10 Memory Graph Entities Created
+
+| Entity | Type | Key Content |
+|--------|------|-------------|
+| `HIVE_Enforcer_MCP_Server` | Architecture | Tool specs, backends, config |
+| `HIVE_Phase_Tools_Enforcement` | Policy | REQUIRED/BLOCKED tools per phase |
+| `Swarm_Scatter_Gather_Pattern` | Pattern | Sequential scatter, future parallel |
+| `OpenRouter_Backend` | Integration | API, models, cost analysis |
+| `VS_Code_Agent_Limitations` | Constraint | #runSubagent inherits model |
+| `HIVE_Phased_Rollout` | Plan | Phase 0→1→2→3 progression |
+
+### 14.11 Enforcement Signal
+
+```json
+{
+  "ts": "2025-12-30T...",
+  "mark": 1.0,
+  "pull": "downstream",
+  "msg": "HUNT: Hard-gated tool enforcement spec complete. REQUIRED: memory read on cold start, sequential thinking before file creation, tavily for web claims, memory persistence in E phase. 6 new memory entities created.",
+  "type": "signal",
+  "hive": "H",
+  "gen": 87,
+  "port": 7
+}
+```
+
+---
+
+*Updated: 2025-12-30 | Session 4 | Hard-Gated Tool Enforcement Added*
+
+---
+
+## 15. HFO Evolutionary Timeline (Memory Bank Integration)
+
+> **Source**: Memory Bank DuckDB (6,423 artifacts, FTS-indexed)  
+> **Analysis Date**: 2025-12-30  
+> **Anomaly Detection**: Sequential thinking applied
+
+### 15.1 Era Progression (Pre-HFO to HFO)
+
+| Era | Date Range | File Count | Focus | Key Artifacts |
+|-----|------------|------------|-------|---------------|
+| **tectangle** | Feb 2025 | 76 | Data flow experiments | AIDataFlowSummary, early architecture |
+| **spatial** | Aug 2025 | 146 | MCP integration, context optimization | AI-Context-Optimization-Options |
+| **hope** | Aug 2025 | 998 | HOPE framework, MCP integration sessions | mcp-integration-session files |
+| **hfo** | Oct-Dec 2025 | 4,000+ | Hive Fractal OBSIDIAN | HANDOFF, QUINE, card_\*, AGENTS.md |
+
+### 15.2 HFO Generation Timeline (Authoritative from HANDOFF Files)
+
+| Date | Gen | Files | Milestone | Notes |
+|------|-----|-------|-----------|-------|
+| 2025-10-30 | 21 | 22 | Cold start gem | First dated HFO gen |
+| 2025-11-05 | 23 | 10 | MBSE Roadmap | HFOMBSE_Gen23_Roadmap |
+| 2025-11-06 | 24-25 | 28 | Rapid iteration | README foundations |
+| 2025-11-07 | 26 | 10 | AGENTS.gen26.md | Agent instructions formalized |
+| 2025-11-12/13 | 30 | 39 | Bootstrap example | BOOTSTRAP_EXAMPLE.md |
+| 2025-11-14 | 31 | 10 | Scatter-gather vision | 2025-11-14_scatter_gather_vision.md |
+| 2025-11-16 | 1 | 68 | **Retroactive validation** | Gen 1 validated AFTER Gen 31 |
+| 2025-11-22/24 | 53 | 110 | Generation jump | Gap: Gen 32-52 undocumented |
+| 2025-11-25 | 55 | 77 | Heartbeat design | Local heartbeat options |
+| 2025-11-28 | 59 | 4 | Handoff notes | Transition documentation |
+| 2025-11-30 | 61 | 42 | README expansion | |
+| 2025-12-02 | 63 | 282 | Mini blackboard handoff | **Largest middle gen** |
+| 2025-12-03 | 64 | 130 | Memory Council | Gen64_Memory_Council.md |
+| 2025-12-12/14 | 72 | 54 | Gen 72 handoff | HANDOFF_GEN_72.md |
+| 2025-12-16 | 78 | 22 | First Gen 78 handoff | HANDOFF_2025-12-16.md |
+| 2025-12-20 | 77, 79, 80 | ~200 | Parallel workspace day | Multiple gens same day |
+| 2025-12-21/22 | 78 | (+) | More Gen 78 handoffs | Kiro archive handoff |
+| 2025-12-22/23 | 83 | 588 | Baton handoff | **Largest gen (588 files)** |
+| 2025-12-25 | 83-84 | 55 | Christmas push | Final Gen 83/84 |
+| 2025-12-27 | 84 | - | Memory Bank export | DuckDB snapshot created |
+| 2025-12-28/29 | 85 | 566 tests | Kiro workspace | Gen85 codebase |
+| 2025-12-30 | 87.X3 | - | Current | W3C Gesture Control Plane |
+
+### 15.3 Timeline Anomalies Explained
+
+| Anomaly | Observation | Explanation | Status |
+|---------|-------------|-------------|--------|
+| **Gen 1 after Gen 31** | Gen 1 dated 2025-11-16, Gen 21-31 dated earlier | Gen 1 was retroactive validation/documentation | Explained |
+| **Gen 32-52 gap** | 21 generations with no dated files | Rapid undocumented iteration OR intentional jump | Ambiguous |
+| **Gen 83 Sept date** | One file in Gen 83 dated 2025-09-05 | Imported legacy file or embedded date error | Explained |
+| **Multi-gen Dec 20** | Gen 77, 79, 80 same day | Parallel workspaces or rapid iteration | Normal |
+| **Gen 0 = 2667 files** | Largest "generation" | Not a real gen - workspace artifacts + ingestion default | Explained |
+
+**VALIDATION RESULT**: Timeline IS fundamentally sequential. Anomalies are explainable artifacts of:
+- Retroactive documentation
+- Imported legacy files  
+- Generation number jumps for versioning
+
+---
+
+*Updated: 2025-12-30 | Session 5 | Evolutionary Timeline Added*
+
+## 16. Warlock Transition Pattern (TTao's Meta-Problem)
+
+### 16.1 Current State: Sequential Orchestrator
+
+Problems:
+- Human is the single thread synchronizing all AI (3-4 running)
+- Sequential context switching between agents
+- Manual result aggregation and decision making
+- Cognitive load scales O(n) with agent count
+- "I'm still the main orchestrator and that is my main problem"
+
+### 16.2 Target State: Intent-Level Warlock
+
+Benefits:
+- User speaks intent (strategic level only)
+- Spider Sovereign decomposes to HIVE phases automatically
+- Port-pair commanders execute in parallel
+- Stigmergy coordinates via blackboard (no human routing)
+- User receives synthesized outcome
+- Cognitive load = O(1) regardless of swarm size
+
+### 16.3 The Warlock Archetype
+
+| Port | Commander | Role in Warlock Pattern |
+|------|-----------|------------------------|
+| 7 | Spider Sovereign | Strategic C2, receives intent, delegates |
+| 0 | Lidless Legion | Senses environment, informs Spider |
+| 1-6 | Other Commanders | Execute delegated tasks |
+
+**Warlock Mode Activation Flow:**
+1. User speaks INTENT to Spider (Port 7)
+2. Spider applies sequential thinking (3+ thoughts)
+3. Spider delegates via blackboard signals to HIVE phases
+4. Spider aggregates results from blackboard
+5. User receives synthesized summary
+
+### 16.4 Powers-of-8 Scaling Vision
+
+| Scale Level | Agent Count | Configuration |
+|-------------|-------------|---------------|
+| Bootstrap | 1 | Sequential (current) |
+| Pair | 2 | Anti-diagonal HIVE pair |
+| Octant | 8 | Full 8-port activation |
+| Swarm-64 | 64 | 8 agents x 8 parallel tasks |
+| Swarm-512 | 512 | 8 x 8 x 8 hierarchical |
+
+**Current Blocker**: VS Code #runSubagent runs sequentially, not parallel.
+**Solution Path**: MCP hive-enforcer + external swarm frameworks + blackboard stigmergy
+
+---
+
+## 17. Memory Bank Query Patterns for Agents
+
+### 17.1 Generation Classification Rules
+
+| Gen Range | Era | Date Range | Notes |
+|-----------|-----|------------|-------|
+| 0 | (mixed) | Various | Not a real gen - workspace artifacts |
+| 1-31 | early-hfo | Oct-Nov 2025 | Foundation period |
+| 32-52 | (gap) | - | Undocumented or skipped |
+| 53-64 | mid-hfo | Nov-Dec 2025 | Rapid growth |
+| 65-84 | late-hfo | Dec 2025 | Maturation |
+| 85+ | kiro-era | Dec 2025+ | TypeScript implementation |
+
+### 17.2 Memory Bank Statistics
+
+| Metric | Value |
+|--------|-------|
+| Total Artifacts | 6,423 |
+| Eras | 4 (tectangle, spatial, hope, hfo) |
+| HFO Generations | 1-84 |
+| FTS Index | BM25 full-text |
+| VSS Index | Planned |
+| GraphRAG | Planned |
+
+---
+
+## 18. Obsidian Grimoire Integration
+
+> **Document**: sandbox/specs/OBSIDIAN_GRIMOIRE_GALOIS_LATTICE.md
+> **Created**: 2025-12-30
+
+### 18.1 The 8 Legendary Commanders
+
+| Port | Commander | Trigram | Element | JADC2 Role |
+|------|-----------|---------|---------|------------|
+| 0 | Lidless Legion | Earth | Earth | Observer |
+| 1 | Web Weaver | Thunder | Air | Bridger |
+| 2 | Mirror Magus | Water | Water | Shaper |
+| 3 | Spore Storm | Wind | Fire | Injector |
+| 4 | Red Regnant | Mountain | Water | Disruptor |
+| 5 | Pyre Praetorian | Fire | Fire | Immunizer |
+| 6 | Kraken Keeper | Lake | Air | Assimilator |
+| 7 | Spider Sovereign | Heaven | Earth | Navigator |
+
+### 18.2 HIVE Anti-Diagonal Pairs (Sum = 7)
+
+| Phase | Ports | Commanders | Domain |
+|-------|-------|------------|--------|
+| H (Hunt) | 0 + 7 | Lidless + Spider | Past (memory) |
+| I (Interlock) | 1 + 6 | Weaver + Kraken | Present (connect) |
+| V (Validate) | 2 + 5 | Magus + Pyre | Future (verify) |
+| E (Evolve) | 3 + 4 | Storm + Regnant | Iterate (N+1) |
+
+---
+
+*Updated: 2025-12-30 | Session 5 | Warlock Pattern + Grimoire Integration Added*
