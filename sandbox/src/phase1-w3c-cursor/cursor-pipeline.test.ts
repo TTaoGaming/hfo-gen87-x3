@@ -221,11 +221,14 @@ try {
 }
 
 try {
-	OneEuroFilter = require('./one-euro-filter.js').OneEuroFilter;
+	// Production: Use npm 1eurofilter package by Géry Casiez (original author)
+	// See: https://www.npmjs.com/package/1eurofilter
+	OneEuroFilter = require('1eurofilter').OneEuroFilter;
 } catch {
+	// Fallback if npm package not installed
 	OneEuroFilter = class {
 		constructor() {
-			throw new Error('OneEuroFilter not implemented');
+			throw new Error('OneEuroFilter not available - install: npm install 1eurofilter');
 		}
 	};
 }

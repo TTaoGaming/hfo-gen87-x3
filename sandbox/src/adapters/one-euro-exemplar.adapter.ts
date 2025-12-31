@@ -55,9 +55,10 @@ const DEFAULT_CONFIG: Required<OneEuroConfig> = {
  * ```
  */
 export class OneEuroExemplarAdapter implements SmootherPort {
-	private readonly config: Required<OneEuroConfig>;
+	private config: Required<OneEuroConfig>;
 	private readonly filters: Map<string, { x: OneEuroFilter; y: OneEuroFilter }> = new Map();
 	private lastTimestamp: number | null = null;
+	private lastPosition: { x: number; y: number } | null = null;
 
 	constructor(config: OneEuroConfig = {}) {
 		this.config = { ...DEFAULT_CONFIG, ...config };
@@ -74,21 +75,28 @@ export class OneEuroExemplarAdapter implements SmootherPort {
 			return this.createPassthroughFrame(frame);
 		}
 
-		// Calculate delta time
+		// Calculate delta time for velocity estimation (in seconds)
 		const dt = this.lastTimestamp !== null 
 			? Math.max((frame.ts - this.lastTimestamp) / 1000, 0.001) 
 			: 1 / this.config.frequency;
 		this.lastTimestamp = frame.ts;
 
-		// Smooth index tip (primary cursor position)
-		const smoothedTip = this.smoothLandmark('indexTip', frame.indexTip, dt);
+		// Convert timestamp to seconds for the 1€ filter
+		// The filter expects cumulative timestamp, not delta
+		const timestampSec = frame.ts / 1000;
 
-		// Calculate velocity from smoothed position
-		const tipFilter = this.filters.get('indexTip');
-		const velocity = tipFilter ? {
-			x: this.estimateVelocity(tipFilter.x, smoothedTip.x, dt),
-			y: this.estimateVelocity(tipFilter.y, smoothedTip.y, dt),
-		} : { x: 0, y: 0 };
+		// Smooth index tip (primary cursor position)
+		const smoothedTip = this.smoothLandmark('indexTip', frame.indexTip, timestampSec);
+
+		// Calculate velocity from smoothed position delta
+		let velocity = { x: 0, y: 0 };
+		if (this.lastPosition && dt > 0) {
+			velocity = {
+				x: (smoothedTip.x - this.lastPosition.x) / dt,
+				y: (smoothedTip.y - this.lastPosition.y) / dt,
+			};
+		}
+		this.lastPosition = { x: smoothedTip.x, y: smoothedTip.y };
 
 		// Build and validate output using schema's expected shape
 		const output: SmoothedFrame = {
@@ -108,48 +116,44 @@ export class OneEuroExemplarAdapter implements SmootherPort {
 
 	/**
 	 * Smooth a single landmark using paired X/Y filters
+	 * @param key - Landmark identifier for filter caching
+	 * @param landmark - Raw landmark position
+	 * @param timestampSec - Absolute timestamp in seconds (frame.ts / 1000)
 	 */
 	private smoothLandmark(
 		key: string,
 		landmark: NormalizedLandmark,
-		dt: number
+		timestampSec: number
 	): NormalizedLandmark {
 		// Get or create filter pair for this landmark
 		if (!this.filters.has(key)) {
+			// OneEuroFilter constructor: (freq, mincutoff?, beta?, dcutoff?)
 			this.filters.set(key, {
-				x: new OneEuroFilter({
-					frequency: this.config.frequency,
-					minCutoff: this.config.minCutoff,
-					beta: this.config.beta,
-					dCutoff: this.config.dCutoff,
-				}),
-				y: new OneEuroFilter({
-					frequency: this.config.frequency,
-					minCutoff: this.config.minCutoff,
-					beta: this.config.beta,
-					dCutoff: this.config.dCutoff,
-				}),
+				x: new OneEuroFilter(
+					this.config.frequency,
+					this.config.minCutoff,
+					this.config.beta,
+					this.config.dCutoff,
+				),
+				y: new OneEuroFilter(
+					this.config.frequency,
+					this.config.minCutoff,
+					this.config.beta,
+					this.config.dCutoff,
+				),
 			});
 		}
 
 		const filter = this.filters.get(key)!;
 
+		// filter() takes (value, timestamp) where timestamp is ABSOLUTE time in seconds
+		// The npm 1eurofilter internally calculates dt from consecutive timestamps
 		return {
-			x: filter.x.filter(landmark.x, dt),
-			y: filter.y.filter(landmark.y, dt),
+			x: filter.x.filter(landmark.x, timestampSec),
+			y: filter.y.filter(landmark.y, timestampSec),
 			z: landmark.z,
 			visibility: landmark.visibility,
 		};
-	}
-
-	/**
-	 * Estimate velocity from filter state
-	 * The 1€ filter internally tracks dx/dy - we approximate from position change
-	 */
-	private estimateVelocity(filter: OneEuroFilter, currentValue: number, dt: number): number {
-		// Simple derivative approximation
-		// In production, could access filter's internal dx if exposed
-		return 0; // TODO: Expose velocity from filter internals
 	}
 
 	/**
@@ -175,6 +179,25 @@ export class OneEuroExemplarAdapter implements SmootherPort {
 	reset(): void {
 		this.filters.clear();
 		this.lastTimestamp = null;
+		this.lastPosition = null;
+	}
+
+	/**
+	 * Update filter parameters at runtime
+	 * @param mincutoff - Min cutoff frequency in Hz (> 0). Lower = more smoothing.
+	 * @param beta - Speed coefficient (> 0). Higher = less lag at high speeds.
+	 */
+	setParams(mincutoff: number, beta: number): void {
+		this.config.minCutoff = mincutoff;
+		this.config.beta = beta;
+
+		// Update all existing filters with new parameters
+		this.filters.forEach((filterPair) => {
+			filterPair.x.setMinCutoff(mincutoff);
+			filterPair.x.setBeta(beta);
+			filterPair.y.setMinCutoff(mincutoff);
+			filterPair.y.setBeta(beta);
+		});
 	}
 
 	/**

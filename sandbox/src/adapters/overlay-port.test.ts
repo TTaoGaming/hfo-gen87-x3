@@ -1,14 +1,17 @@
 /**
  * Overlay Port Tests - Cursor/Skeleton Visualization Layer
  *
- * Gen87.X3 | Phase: VALIDATE (V) | TDD RED
+ * Gen87.X3 | Phase: INTERLOCK (I) | TDD RED - HONEST
+ *
+ * REFACTORED 2025-12-31: Converted fake-green stubs to honest .todo()
+ * These tests WILL BE SKIPPED until implementation exists - that's the point!
  *
  * OverlayPort provides polymorphic cursor visualization:
  * - PixiOverlay (WebGL - fastest)
  * - Canvas2DOverlay (good performance)
  * - DOMOverlay (slowest, most compatible)
  */
-import { beforeEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
 // =============================================================================
@@ -212,134 +215,55 @@ function createOverlay(
 }
 
 // =============================================================================
-// TEST SUITE
+// TEST SUITE - HONEST RED (.todo() for unimplemented)
 // =============================================================================
 
 describe('OverlayPort', () => {
 	const overlayTypes = ['pixi', 'canvas', 'dom'] as const;
 
 	describe.each(overlayTypes)('%s Overlay', (type) => {
-		let overlay: OverlayPort;
-
-		beforeEach(() => {
-			overlay = createOverlay(type);
-		});
-
 		describe('Initialization', () => {
-			it('should initialize with container element', () => {
-				const container = document.createElement('div');
-				expect(() => overlay.initialize(container)).rejects.toThrow('Not implemented');
-			});
-
-			it('should create canvas/WebGL context on init', () => {
-				const container = document.createElement('div');
-				expect(() => overlay.initialize(container)).rejects.toThrow('Not implemented');
-			});
+			it.todo(`${type}: should initialize with container element`);
+			it.todo(`${type}: should create canvas/WebGL context on init`);
 		});
 
 		describe('Cursor Rendering', () => {
-			it('should set cursor positions', () => {
-				expect(() =>
-					overlay.setCursor(
-						{ x: 0.5, y: 0.5 },
-						{ x: 0.52, y: 0.48 },
-						{ x: 0.54, y: 0.46 },
-						'armed',
-					),
-				).toThrow('Not implemented');
-			});
-
-			it('should handle null cursor positions', () => {
-				expect(() => overlay.setCursor(null, null, null, 'hidden')).toThrow('Not implemented');
-			});
-
-			it('should render different cursor states', () => {
-				const states: CursorState[] = ['hidden', 'tracking', 'armed', 'active', 'error'];
-				for (const state of states) {
-					expect(() => overlay.setCursor({ x: 0.5, y: 0.5 }, null, null, state)).toThrow(
-						'Not implemented',
-					);
-				}
-			});
-
-			it('should only show configured cursors', () => {
-				// If showRaw=false, raw cursor should not render
-				expect(() => overlay.setConfig({ showRaw: false })).toThrow('Not implemented');
-			});
+			it.todo(`${type}: should set cursor positions`);
+			it.todo(`${type}: should handle null cursor positions`);
+			it.todo(`${type}: should render different cursor states`);
+			it.todo(`${type}: should only show configured cursors`);
 		});
 
 		describe('Landmark Rendering', () => {
-			it('should render 21 landmarks', () => {
-				const landmarks: NormalizedLandmark[] = Array.from({ length: 21 }, (_, i) => ({
-					x: i / 21,
-					y: 0.5,
-					z: 0,
-				}));
-				expect(() => overlay.setLandmarks(landmarks)).toThrow('Not implemented');
-			});
-
-			it('should handle null landmarks (no hand)', () => {
-				expect(() => overlay.setLandmarks(null)).toThrow('Not implemented');
-			});
-
-			it('should connect landmarks with skeleton lines', () => {
-				// Skeleton connects: 0-1-2-3-4 (thumb), 0-5-6-7-8 (index), etc.
-				expect(() => overlay.setConfig({ showSkeleton: true })).toThrow('Not implemented');
-			});
+			it.todo(`${type}: should render 21 landmarks`);
+			it.todo(`${type}: should handle null landmarks (no hand)`);
+			it.todo(`${type}: should connect landmarks with skeleton lines`);
 		});
 
 		describe('Visibility Control', () => {
-			it('should toggle visibility', () => {
-				expect(() => overlay.setVisible(true)).toThrow('Not implemented');
-				expect(() => overlay.setVisible(false)).toThrow('Not implemented');
-			});
+			it.todo(`${type}: should show overlay when setVisible(true)`);
+			it.todo(`${type}: should hide overlay when setVisible(false)`);
 		});
 
 		describe('Configuration', () => {
-			it('should update cursor size', () => {
-				expect(() => overlay.setConfig({ cursorSize: 30 })).toThrow('Not implemented');
-			});
-
-			it('should update cursor colors', () => {
-				expect(() =>
-					overlay.setConfig({
-						colors: {
-							raw: '#ff00ff',
-							smoothed: '#00ffff',
-							predicted: '#ffff00',
-							skeleton: '#ffffff',
-						},
-					}),
-				).toThrow('Not implemented');
-			});
-
-			it('should toggle cursor types', () => {
-				expect(() =>
-					overlay.setConfig({
-						showRaw: true,
-						showSmoothed: true,
-						showPredicted: true,
-					}),
-				).toThrow('Not implemented');
-			});
+			it.todo(`${type}: should update cursor size`);
+			it.todo(`${type}: should update cursor colors`);
+			it.todo(`${type}: should toggle cursor types`);
 		});
 
 		describe('Bounds', () => {
-			it('should return current bounds', () => {
-				expect(() => overlay.getBounds()).toThrow('Not implemented');
-			});
+			it.todo(`${type}: should return current bounds`);
 		});
 
 		describe('Disposal', () => {
-			it('should cleanup resources on dispose', () => {
-				expect(() => overlay.dispose()).toThrow('Not implemented');
-			});
-
-			it('should remove canvas from DOM on dispose', () => {
-				expect(() => overlay.dispose()).toThrow('Not implemented');
-			});
+			it.todo(`${type}: should cleanup resources on dispose`);
+			it.todo(`${type}: should remove canvas from DOM on dispose`);
 		});
 	});
+
+	// ==========================================================================
+	// REAL TESTS - Schema validation (these actually test something!)
+	// ==========================================================================
 
 	describe('Schema Validation', () => {
 		it('should validate CursorState enum', () => {

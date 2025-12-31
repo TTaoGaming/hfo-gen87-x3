@@ -116,6 +116,11 @@ export class SmootherChain implements SmootherPort {
 
 	/** Replace all smoothers in the chain (runtime swap) */
 	setSmoothers(smoothers: SmootherPort[]): void {
+		// Reset all new smoothers to ensure clean state
+		// This prevents NaN from stale timestamps when reusing smoothers
+		for (const smoother of smoothers) {
+			smoother.reset();
+		}
 		this.smoothers = [...smoothers];
 	}
 }
