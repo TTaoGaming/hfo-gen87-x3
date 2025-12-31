@@ -15,9 +15,9 @@ import {
 	NatsSubstrateAdapter,
 	type NatsSubstrateOptions,
 } from '../adapters/nats-substrate.adapter.js';
-import { NatsSubjects, type StageGateConfig } from '../contracts/nats-substrate.js';
 import { OneEuroExemplarAdapter } from '../adapters/one-euro-exemplar.adapter.js';
 import { XStateFSMAdapter } from '../adapters/xstate-fsm.adapter.js';
+import { NatsSubjects, type StageGateConfig } from '../contracts/nats-substrate.js';
 import type { SensorFrame, SmoothedFrame } from '../contracts/schemas.js';
 
 // ============================================================================
@@ -201,7 +201,7 @@ export class PipelineOrchestrator {
 	private readonly options: Required<PipelineOrchestratorOptions>;
 	private pointerIds: Map<string, number> = new Map();
 	private lastPositions: Map<string, { x: number; y: number }> = new Map();
-	
+
 	// Production adapters (npm 1eurofilter + XState)
 	private smoother: OneEuroExemplarAdapter | null = null;
 	private fsmAdapters: Map<string, XStateFSMAdapter> = new Map();
@@ -226,10 +226,10 @@ export class PipelineOrchestrator {
 
 		// Initialize production adapters with error handling
 		try {
-			this.smoother = new OneEuroExemplarAdapter({ 
-				frequency: 60, 
-				minCutoff: 1.0, 
-				beta: 0.007 
+			this.smoother = new OneEuroExemplarAdapter({
+				frequency: 60,
+				minCutoff: 1.0,
+				beta: 0.007,
 			});
 			this.log('OneEuroExemplarAdapter initialized (npm 1eurofilter)');
 		} catch (err) {
@@ -333,30 +333,37 @@ export class PipelineOrchestrator {
 							palmFacing: true,
 							label: 'Open_Palm' as const,
 							confidence: input.handedness,
-							landmarks: input.landmarks.map(l => ({ x: l.x, y: l.y, z: l.z, visibility: l.visibility ?? 1.0 })),
+							landmarks: input.landmarks.map((l) => ({
+								x: l.x,
+								y: l.y,
+								z: l.z,
+								visibility: l.visibility ?? 1.0,
+							})),
 							indexTip: { x: input.fingertip.x, y: input.fingertip.y, z: 0, visibility: 1.0 },
 							thumbTip: { x: input.thumbTip.x, y: input.thumbTip.y, z: 0, visibility: 1.0 },
 							palmBase: { x: input.palmBase.x, y: input.palmBase.y, z: 0, visibility: 1.0 },
 						};
-						
+
 						const smoothed = this.smoother.smooth(sensorFrame);
-						
-						this.lastPositions.set(handId, { 
-							x: (smoothed.position?.x ?? input.fingertip.x) * this.options.screenWidth, 
-							y: (smoothed.position?.y ?? input.fingertip.y) * this.options.screenHeight 
+
+						this.lastPositions.set(handId, {
+							x: (smoothed.position?.x ?? input.fingertip.x) * this.options.screenWidth,
+							y: (smoothed.position?.y ?? input.fingertip.y) * this.options.screenHeight,
 						});
 
 						return {
 							handId,
 							timestamp: input.timestamp,
-							position: { 
-								x: (smoothed.position?.x ?? input.fingertip.x) * this.options.screenWidth, 
-								y: (smoothed.position?.y ?? input.fingertip.y) * this.options.screenHeight 
+							position: {
+								x: (smoothed.position?.x ?? input.fingertip.x) * this.options.screenWidth,
+								y: (smoothed.position?.y ?? input.fingertip.y) * this.options.screenHeight,
 							},
-							velocity: { 
-								x: smoothed.velocity?.x ?? 0, 
-								y: smoothed.velocity?.y ?? 0, 
-								magnitude: Math.sqrt((smoothed.velocity?.x ?? 0) ** 2 + (smoothed.velocity?.y ?? 0) ** 2)
+							velocity: {
+								x: smoothed.velocity?.x ?? 0,
+								y: smoothed.velocity?.y ?? 0,
+								magnitude: Math.sqrt(
+									(smoothed.velocity?.x ?? 0) ** 2 + (smoothed.velocity?.y ?? 0) ** 2,
+								),
 							},
 							predicted: !!smoothed.prediction,
 							cutoff: 1.0, // Adaptive cutoff is internal to 1€ filter
@@ -427,18 +434,30 @@ export class PipelineOrchestrator {
 
 						const previousState = fsmAdapter.getState();
 						const action = fsmAdapter.process(smoothedFrame);
-						
+
 						// Map FSMAction to FSMOutput
-						const pointerEventType = action.action === 'move' ? 'move' as const
-							: action.action === 'down' ? 'down' as const
-							: action.action === 'up' ? 'up' as const
-							: action.action === 'cancel' ? 'cancel' as const
-							: undefined;
+						const pointerEventType =
+							action.action === 'move'
+								? ('move' as const)
+								: action.action === 'down'
+									? ('down' as const)
+									: action.action === 'up'
+										? ('up' as const)
+										: action.action === 'cancel'
+											? ('cancel' as const)
+											: undefined;
 
 						return {
 							handId,
 							timestamp: input.timestamp,
-							state: action.state as 'DISARMED' | 'ARMING' | 'ARMED' | 'DOWN_COMMIT' | 'DOWN_NAV' | 'ZOOM' | 'SCROLL',
+							state: action.state as
+								| 'DISARMED'
+								| 'ARMING'
+								| 'ARMED'
+								| 'DOWN_COMMIT'
+								| 'DOWN_NAV'
+								| 'ZOOM'
+								| 'SCROLL',
 							previousState,
 							event: action.action,
 							palmCone: 30,

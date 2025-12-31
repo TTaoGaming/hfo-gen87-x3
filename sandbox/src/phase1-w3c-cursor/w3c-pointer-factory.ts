@@ -67,8 +67,16 @@ export const PointerEventInitSchema = z.object({
 	tiltX: z.number().int().min(-90).max(90).default(0),
 	tiltY: z.number().int().min(-90).max(90).default(0),
 	twist: z.number().int().min(0).max(359).default(0),
-	altitudeAngle: z.number().min(0).max(Math.PI / 2).default(Math.PI / 2),
-	azimuthAngle: z.number().min(0).max(2 * Math.PI).default(0),
+	altitudeAngle: z
+		.number()
+		.min(0)
+		.max(Math.PI / 2)
+		.default(Math.PI / 2),
+	azimuthAngle: z
+		.number()
+		.min(0)
+		.max(2 * Math.PI)
+		.default(0),
 	pointerType: z.enum(['mouse', 'pen', 'touch', '']).default('mouse'),
 	isPrimary: z.boolean().default(true),
 
@@ -162,7 +170,7 @@ export class W3CPointerEventFactory {
 	 */
 	private createBaseInit(
 		position: { x: number; y: number },
-		overrides: Partial<PointerEventInit> = {}
+		overrides: Partial<PointerEventInit> = {},
 	): PointerEventInit {
 		const { clientX, clientY } = this.normalizedToViewport(position);
 
@@ -236,7 +244,7 @@ export class W3CPointerEventFactory {
 				button: 0,
 				buttons: 0,
 				pressure: 0,
-			}
+			},
 		);
 		return this.createEvent('pointercancel', init);
 	}

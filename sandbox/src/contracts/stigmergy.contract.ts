@@ -1,18 +1,32 @@
 /**
- * @fileoverview Universal Stigmergy Signal Contract - 8-Part Header Format
+ * @fileoverview Universal Stigmergy Signal Contract - 8-Part Polymorphic Archetype Format
  *
- * HFO/HIVE/8 stigmergy protocol requires exactly 8 fields for all signals.
- * This contract ENFORCES the format at compile-time (Zod) and runtime.
+ * HFO/HIVE/8 stigmergy protocol uses 8 ARCHETYPAL positions for all signals.
+ * Each position maps to a port/commander and answers a fundamental question.
+ * The archetypes are POLYMORPHIC - they can manifest as different concrete types.
  *
- * The 8 Universal Fields:
- * 1. ts     - ISO8601 timestamp (when)
- * 2. mark   - Quality/confidence 0.0-1.0 (how confident)
- * 3. pull   - Direction: upstream/downstream/lateral (where)
- * 4. msg    - Human-readable message (what)
- * 5. type   - Signal type: signal/event/error/metric (category)
- * 6. hive   - HIVE phase: H/I/V/E/X (workflow)
- * 7. gen    - Generation number >= 87 (version)
- * 8. port   - Port 0-7 (who/which commander)
+ * ╔════════════════════════════════════════════════════════════════════════════╗
+ * ║  THE 8 ARCHETYPES (Polymorphic Signal Positions)                          ║
+ * ╠════╦════════════╦════════════╦═══════════════╦════════════════════════════╣
+ * ║ Pos║ Port       ║ Archetype  ║ Question      ║ Concrete Manifestations    ║
+ * ╠════╬════════════╬════════════╬═══════════════╬════════════════════════════╣
+ * ║ [0]║ Lidless    ║ WHEN       ║ When sensed?  ║ ts, seq, epoch, frameNum   ║
+ * ║ [1]║ Weaver     ║ LINK       ║ How connected?║ mark, confidence, weight   ║
+ * ║ [2]║ Magus      ║ FLOW       ║ Which way?    ║ pull, gradient, delta, vel ║
+ * ║ [3]║ Storm      ║ PAYLOAD    ║ What content? ║ msg, data, artifact, ptr   ║
+ * ║ [4]║ Regnant    ║ CLASS      ║ What category?║ type, tag, label, schema   ║
+ * ║ [5]║ Pyre       ║ PHASE      ║ What stage?   ║ hive, gate, checkpoint     ║
+ * ║ [6]║ Kraken     ║ VERSION    ║ What lineage? ║ gen, hash, merkle, parent  ║
+ * ║ [7]║ Spider     ║ SOURCE     ║ Who authored? ║ port, agent, namespace     ║
+ * ╚════╩════════════╩════════════╩═══════════════╩════════════════════════════╝
+ *
+ * ANY 8-tuple conforming to these archetypes is valid stigmergy:
+ * - Standard:     {ts, mark, pull, msg, type, hive, gen, port}
+ * - GitCommit:    {commitTs, confidence, branch, message, commitType, phase, parentHash, author}
+ * - TestResult:   {runTime, passRate, testFlow, output, testClass, stage, suiteVersion, runner}
+ * - GestureFrame: {frameTs, handedness, velocity, landmarks, gestureType, fsmState, frameNum, handId}
+ *
+ * The concrete implementation below uses the STANDARD manifestation for blackboard signals.
  *
  * @module contracts/stigmergy.contract
  * @hive I (Interlock)
@@ -20,6 +34,30 @@
  */
 
 import { z } from 'zod';
+
+// Import archetype enforcement (DEFENSE IN DEPTH LAYER 1)
+import {
+	AI_ENFORCEMENT_REMINDER,
+	ARCHETYPE_NAMES,
+	ARCHETYPE_POSITIONS,
+	type ArchetypeGateResult,
+	type ArchetypeValidationResult,
+	enforceArchetypeAlignmentStrict,
+	generateEnforcementReport,
+	validateArchetypeAlignment,
+} from './archetype-enforcement.js';
+
+// Re-export archetype enforcement for external access
+export {
+	AI_ENFORCEMENT_REMINDER,
+	ARCHETYPE_NAMES,
+	ARCHETYPE_POSITIONS,
+	enforceArchetypeAlignmentStrict,
+	generateEnforcementReport,
+	validateArchetypeAlignment,
+	type ArchetypeGateResult,
+	type ArchetypeValidationResult,
+};
 
 // ============================================================================
 // CONSTANTS - Gate Thresholds
@@ -405,6 +443,58 @@ export function validateSignal(input: unknown): ValidationResult {
 	}
 
 	return result;
+}
+
+/**
+ * DEFENSE IN DEPTH: Combined gate + archetype validation
+ *
+ * This function runs BOTH the G0-G7 gate validation AND the G-A0 to G-A7
+ * archetype validation. Use this for maximum enforcement.
+ *
+ * @param input - The signal to validate
+ * @returns Combined validation result with both gate sets
+ */
+export function validateSignalWithArchetypes(input: unknown): {
+	gateResult: ValidationResult;
+	archetypeResult: ArchetypeValidationResult;
+	fullyValid: boolean;
+	enforcementReport: string;
+} {
+	const gateResult = validateSignal(input);
+	const archetypeResult = validateArchetypeAlignment(input);
+
+	return {
+		gateResult,
+		archetypeResult,
+		fullyValid: gateResult.valid && archetypeResult.valid,
+		enforcementReport: generateEnforcementReport(archetypeResult),
+	};
+}
+
+/**
+ * STRICT validation - throws on ANY gate or archetype violation
+ *
+ * Use this in production code where schema drift is unacceptable.
+ * This is the HARDEST enforcement layer.
+ */
+export function validateSignalStrict(input: unknown): StigmergySignal {
+	// Layer 1: Validate G0-G7 gates
+	const gateResult = validateSignal(input);
+	if (!gateResult.valid) {
+		throw new Error(
+			`GATE_VIOLATION: ${gateResult.quarantineReason}\n` +
+				gateResult.gates
+					.filter((g) => !g.passed)
+					.map((g) => `  ${g.gate} (${g.field}): ${g.error}`)
+					.join('\n'),
+		);
+	}
+
+	// Layer 2: Validate archetype alignment
+	enforceArchetypeAlignmentStrict(input);
+
+	// Both layers passed - return validated signal
+	return gateResult.signal!;
 }
 
 /**

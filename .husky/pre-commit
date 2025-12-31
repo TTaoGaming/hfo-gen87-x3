@@ -145,11 +145,32 @@ if [ -n "$CONTRACT_FILES" ]; then
     # exit 1
   fi
 fi
-echo "✅ G5 PASSED"
+echo "✅ G6 PASSED"
+echo ""
+
+# Gate 7: ANTI-THEATER GATE (HARD BLOCK - AI Cannot Bypass)
+echo "📋 Gate 7/8: Anti-Theater Gate (AI Cannot Bypass)..."
+npx tsx scripts/anti-theater-gate.ts 2>/dev/null || {
+  echo ""
+  echo "╔════════════════════════════════════════════════════════════════╗"
+  echo "║  ❌ THEATER DETECTED - COMMIT BLOCKED                          ║"
+  echo "║                                                                ║"
+  echo "║  AI agents keep faking the architecture with inline code.     ║"
+  echo "║  This gate BLOCKS commits containing:                         ║"
+  echo "║    - Hand-rolled 1€ filter (use OneEuroExemplarAdapter)       ║"
+  echo "║    - Inline Rapier physics (use RapierPhysicsAdapter)         ║"
+  echo "║    - Inline XState machines (use XStateAdapter)               ║"
+  echo "║    - Direct npm imports in demos (use adapter bundle)         ║"
+  echo "║                                                                ║"
+  echo "║  Run 'npm run gate:theater' to see violations.                ║"
+  echo "╚════════════════════════════════════════════════════════════════╝"
+  exit 1
+}
+echo "✅ G7 PASSED (No theater detected)"
 echo ""
 
 echo "╔════════════════════════════════════════════════════════════════╗"
-echo "║  ✅ ALL 7 GATES PASSED - Commit approved                       ║"
+echo "║  ✅ ALL 8 GATES PASSED - Commit approved                       ║"
 echo "║  HIVE/8 Workflow Enforced via Spider Sovereign Mode           ║"
 echo "║  Remember: Use HIVE commit prefixes (H: I: V: E:)             ║"
 echo "╚════════════════════════════════════════════════════════════════╝"

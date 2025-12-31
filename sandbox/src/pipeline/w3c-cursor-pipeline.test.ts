@@ -6,9 +6,13 @@
  * Tests the production-ready W3C cursor pipeline that wires
  * real adapters together.
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { W3CCursorPipeline, createW3CCursorPipeline, PipelineConfigSchema } from './w3c-cursor-pipeline.js';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { SensorFrame } from '../contracts/schemas.js';
+import {
+	PipelineConfigSchema,
+	W3CCursorPipeline,
+	createW3CCursorPipeline,
+} from './w3c-cursor-pipeline.js';
 
 // ============================================================================
 // TEST FIXTURES
@@ -192,9 +196,7 @@ describe('W3CCursorPipeline.subscribe', () => {
 		pipeline.processFrame(createSensorFrame());
 
 		expect(listener).toHaveBeenCalled();
-		expect(listener).toHaveBeenCalledWith(
-			expect.objectContaining({ type: 'frame' })
-		);
+		expect(listener).toHaveBeenCalledWith(expect.objectContaining({ type: 'frame' }));
 	});
 
 	it('should allow unsubscribing', () => {
@@ -219,9 +221,7 @@ describe('W3CCursorPipeline.subscribe', () => {
 		}
 
 		// Check if any stateChange events were emitted
-		const stateChanges = listener.mock.calls.filter(
-			(call) => call[0].type === 'stateChange'
-		);
+		const stateChanges = listener.mock.calls.filter((call) => call[0].type === 'stateChange');
 		// State changes may or may not occur depending on FSM logic
 		expect(listener).toHaveBeenCalled();
 	});

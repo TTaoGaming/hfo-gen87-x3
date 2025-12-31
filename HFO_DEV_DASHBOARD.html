@@ -412,10 +412,22 @@
     import { GoldenLayout } from 'https://esm.sh/golden-layout@2.6.0';
     
     // ============================================================
-    // DASHBOARD DATA (Auto-updated by scripts)
+    // DASHBOARD DATA (Loaded from dashboard-data.json)
     // ============================================================
     
-    const DASHBOARD_DATA = {
+    // Try to load from JSON file, fallback to embedded data
+    let DASHBOARD_DATA;
+    try {
+      const response = await fetch('./dashboard-data.json');
+      if (response.ok) {
+        DASHBOARD_DATA = await response.json();
+        console.log('📊 Loaded dashboard data from JSON file');
+      } else {
+        throw new Error('JSON file not available');
+      }
+    } catch (e) {
+      console.log('📊 Using embedded dashboard data (run dashboard:update to refresh)');
+      DASHBOARD_DATA = {
         "lastUpdated": "2025-12-31T07:06:52.996Z",
         "generation": 87,
         "iteration": "X3",
@@ -706,6 +718,7 @@
           }
         ]
       };
+    } // end fallback data
     
     // ============================================================
     // GOLDEN LAYOUT CONFIG
@@ -940,26 +953,71 @@
       const d = DASHBOARD_DATA;
       const statusIcons = { pass: '✅', warn: '⚠️', fail: '🔴', info: 'ℹ️' };
       
-      container.element.innerHTML = `
-        <div class="panel-content">
-          <div class="panel-header">
-            <h2>Checklist</h2>
-            <span class="timestamp">${d.productionChecks.filter(c => c.status === 'pass').length}/${d.productionChecks.length} passing</span>
-          </div>
-          
-          <div class="checklist">
-            ${d.productionChecks.map(check => `
-              <div class="check-item ${check.status}">
-                <span class="icon">${statusIcons[check.status]}</span>
-                <div class="text">
-                  <strong>${check.title}</strong>
-                  <span>${check.desc}</span>
-                </div>
+      // Check if we have realVsTheater data (new format)
+      const hasRealVsTheater = d.realVsTheater && d.realVsTheater.real;
+      
+      if (hasRealVsTheater) {
+        container.element.innerHTML = `
+          <div class="panel-content">
+            <div class="panel-header">
+              <h2>🎭 REAL vs THEATER</h2>
+              <span class="timestamp">${d.realVsTheater.real.length} real / ${d.realVsTheater.theater.length} theater</span>
+            </div>
+            
+            <div style="margin-bottom: 1rem;">
+              <h3 style="color: var(--accent); font-size: 0.75rem; margin-bottom: 0.5rem;">✅ REAL (Validated)</h3>
+              <div class="checklist">
+                ${d.realVsTheater.real.map(item => `
+                  <div class="check-item pass">
+                    <span class="icon">✅</span>
+                    <div class="text">
+                      <strong>${item.id}</strong>
+                      <span>${item.tests || item.desc || ''}</span>
+                    </div>
+                  </div>
+                `).join('')}
               </div>
-            `).join('')}
+            </div>
+            
+            <div>
+              <h3 style="color: var(--warning); font-size: 0.75rem; margin-bottom: 0.5rem;">🎭 THEATER (Pending)</h3>
+              <div class="checklist">
+                ${d.realVsTheater.theater.map(item => `
+                  <div class="check-item warn">
+                    <span class="icon">⚠️</span>
+                    <div class="text">
+                      <strong>${item.id}${item.count !== undefined ? ` (${item.count})` : ''}</strong>
+                      <span>${item.desc || ''}</span>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
           </div>
-        </div>
-      `;
+        `;
+      } else {
+        // Fallback to old format
+        container.element.innerHTML = `
+          <div class="panel-content">
+            <div class="panel-header">
+              <h2>Checklist</h2>
+              <span class="timestamp">${d.productionChecks?.filter(c => c.status === 'pass').length || 0}/${d.productionChecks?.length || 0} passing</span>
+            </div>
+            
+            <div class="checklist">
+              ${(d.productionChecks || []).map(check => `
+                <div class="check-item ${check.status}">
+                  <span class="icon">${statusIcons[check.status]}</span>
+                  <div class="text">
+                    <strong>${check.title}</strong>
+                    <span>${check.desc}</span>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
     }
     
     function createScriptsPanel(container) {

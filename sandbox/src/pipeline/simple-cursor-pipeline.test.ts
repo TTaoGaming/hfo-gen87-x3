@@ -12,9 +12,9 @@
  *
  * NO THEATER - Uses production code only
  */
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
+import type { SensorFrame } from '../contracts/schemas.js';
 import { SimpleCursorPipeline } from './simple-cursor-pipeline.js';
-import type { SensorFrame, PointerEventOut } from '../contracts/schemas.js';
 
 describe('SimpleCursorPipeline', () => {
 	let pipeline: SimpleCursorPipeline;
@@ -49,7 +49,7 @@ describe('SimpleCursorPipeline', () => {
 		it('should process SensorFrame and return PointerEvents', () => {
 			const frame = createTestFrame({ x: 0.5, y: 0.5, label: 'Open_Palm' });
 			const result = pipeline.process(frame);
-			
+
 			expect(result).toBeDefined();
 			expect(result.events).toBeInstanceOf(Array);
 			expect(result.fsmState).toBeDefined();
@@ -71,7 +71,7 @@ describe('SimpleCursorPipeline', () => {
 
 			// Should now be ARMED and emitting move events
 			expect(pipeline.getFSMState()).toBe('ARMED');
-			expect(lastResult?.events.some(e => e.type === 'pointermove')).toBe(true);
+			expect(lastResult?.events.some((e) => e.type === 'pointermove')).toBe(true);
 		});
 
 		it('should emit pointerdown when transitioning to DOWN_COMMIT', () => {
@@ -82,14 +82,17 @@ describe('SimpleCursorPipeline', () => {
 			expect(pipeline.getFSMState()).toBe('ARMED');
 
 			// Now do Pointing_Up within command window
-			const result = pipeline.process(createTestFrame({ 
-				x: 0.5, y: 0.5, 
-				label: 'Pointing_Up', 
-				ts: 350 
-			}));
+			const result = pipeline.process(
+				createTestFrame({
+					x: 0.5,
+					y: 0.5,
+					label: 'Pointing_Up',
+					ts: 350,
+				}),
+			);
 
 			expect(pipeline.getFSMState()).toBe('DOWN_COMMIT');
-			expect(result.events.some(e => e.type === 'pointerdown')).toBe(true);
+			expect(result.events.some((e) => e.type === 'pointerdown')).toBe(true);
 		});
 
 		it('should emit pointerup when returning to ARMED from DOWN_COMMIT', () => {
@@ -97,20 +100,23 @@ describe('SimpleCursorPipeline', () => {
 			for (let i = 0; i < 4; i++) {
 				pipeline.process(createTestFrame({ x: 0.5, y: 0.5, label: 'Open_Palm', ts: i * 100 }));
 			}
-			
+
 			// Enter DOWN_COMMIT
 			pipeline.process(createTestFrame({ x: 0.5, y: 0.5, label: 'Pointing_Up', ts: 350 }));
 			expect(pipeline.getFSMState()).toBe('DOWN_COMMIT');
-			
+
 			// Return to Open_Palm
-			const result = pipeline.process(createTestFrame({ 
-				x: 0.5, y: 0.5, 
-				label: 'Open_Palm', 
-				ts: 400 
-			}));
+			const result = pipeline.process(
+				createTestFrame({
+					x: 0.5,
+					y: 0.5,
+					label: 'Open_Palm',
+					ts: 400,
+				}),
+			);
 
 			expect(pipeline.getFSMState()).toBe('ARMED');
-			expect(result.events.some(e => e.type === 'pointerup')).toBe(true);
+			expect(result.events.some((e) => e.type === 'pointerup')).toBe(true);
 		});
 	});
 
@@ -123,8 +129,8 @@ describe('SimpleCursorPipeline', () => {
 
 			// Send jittery frames
 			const jitteryFrames = [
-				createTestFrame({ x: 0.500, y: 0.500, label: 'Open_Palm', ts: 400 }),
-				createTestFrame({ x: 0.510, y: 0.520, label: 'Open_Palm', ts: 416 }), // +10px jitter
+				createTestFrame({ x: 0.5, y: 0.5, label: 'Open_Palm', ts: 400 }),
+				createTestFrame({ x: 0.51, y: 0.52, label: 'Open_Palm', ts: 416 }), // +10px jitter
 				createTestFrame({ x: 0.495, y: 0.505, label: 'Open_Palm', ts: 433 }), // -5px jitter
 				createTestFrame({ x: 0.508, y: 0.515, label: 'Open_Palm', ts: 450 }), // +8px jitter
 			];
@@ -132,7 +138,7 @@ describe('SimpleCursorPipeline', () => {
 			const positions: Array<{ x: number; y: number }> = [];
 			for (const frame of jitteryFrames) {
 				const result = pipeline.process(frame);
-				const moveEvent = result.events.find(e => e.type === 'pointermove');
+				const moveEvent = result.events.find((e) => e.type === 'pointermove');
 				if (moveEvent && 'clientX' in moveEvent) {
 					positions.push({ x: moveEvent.clientX, y: moveEvent.clientY });
 				}
@@ -141,11 +147,12 @@ describe('SimpleCursorPipeline', () => {
 			// Smoothed positions should vary less than raw input
 			// This is a basic test - the filter should reduce high-frequency noise
 			expect(positions.length).toBeGreaterThan(0);
-			
+
 			// Calculate variance of smoothed positions
 			const xMean = positions.reduce((sum, p) => sum + p.x, 0) / positions.length;
-			const xVariance = positions.reduce((sum, p) => sum + (p.x - xMean) ** 2, 0) / positions.length;
-			
+			const xVariance =
+				positions.reduce((sum, p) => sum + (p.x - xMean) ** 2, 0) / positions.length;
+
 			// Should have some variation but be smoothed (filter is working)
 			expect(xVariance).toBeLessThan(10000); // Viewport pixels squared
 		});
@@ -159,15 +166,18 @@ describe('SimpleCursorPipeline', () => {
 			}
 
 			// Send frame at center
-			const result = pipeline.process(createTestFrame({ 
-				x: 0.5, y: 0.5, 
-				label: 'Open_Palm', 
-				ts: 400 
-			}));
+			const result = pipeline.process(
+				createTestFrame({
+					x: 0.5,
+					y: 0.5,
+					label: 'Open_Palm',
+					ts: 400,
+				}),
+			);
 
-			const moveEvent = result.events.find(e => e.type === 'pointermove');
+			const moveEvent = result.events.find((e) => e.type === 'pointermove');
 			expect(moveEvent).toBeDefined();
-			
+
 			if (moveEvent && 'clientX' in moveEvent) {
 				// Center of 1920x1080 should be around 960,540
 				expect(moveEvent.clientX).toBeCloseTo(960, -1); // ±10 px tolerance
@@ -182,13 +192,16 @@ describe('SimpleCursorPipeline', () => {
 			}
 
 			// Top-left corner
-			const topLeft = pipeline.process(createTestFrame({ 
-				x: 0.0, y: 0.0, 
-				label: 'Open_Palm', 
-				ts: 400 
-			}));
+			const topLeft = pipeline.process(
+				createTestFrame({
+					x: 0.0,
+					y: 0.0,
+					label: 'Open_Palm',
+					ts: 400,
+				}),
+			);
 
-			const moveEvent = topLeft.events.find(e => e.type === 'pointermove');
+			const moveEvent = topLeft.events.find((e) => e.type === 'pointermove');
 			if (moveEvent && 'clientX' in moveEvent) {
 				expect(moveEvent.clientX).toBeCloseTo(0, -1);
 				expect(moveEvent.clientY).toBeCloseTo(0, -1);
@@ -244,7 +257,7 @@ function createTestFrame(options: {
 	palmFacing?: boolean;
 }): SensorFrame {
 	const { x, y, label = 'Open_Palm', ts = 0, confidence = 0.95, palmFacing = true } = options;
-	
+
 	return {
 		ts,
 		handId: 'right',

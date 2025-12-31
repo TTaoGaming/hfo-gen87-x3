@@ -19,19 +19,19 @@
 // ============================================================================
 
 export {
-	W3CPointerEventFactory,
-	DOMEventDispatcher,
 	CursorPipeline,
+	DOMEventDispatcher,
+	FSMActionSchema,
+	PointerEventInitSchema,
 	// Schemas
 	PointerEventTypeSchema,
-	PointerEventInitSchema,
-	FSMActionSchema,
+	W3CPointerEventFactory,
+	type DOMDispatcherConfig,
+	type FSMAction,
+	type PointerEventInit,
 	// Types
 	type PointerEventType,
-	type PointerEventInit,
-	type FSMAction,
 	type W3CPointerFactoryConfig,
-	type DOMDispatcherConfig,
 } from './w3c-pointer-factory.js';
 
 // ============================================================================
@@ -46,10 +46,10 @@ export type { OneEuroConfig } from '../adapters/one-euro-exemplar.adapter.js';
 export { OneEuroAdapter } from '../adapters/one-euro.adapter.js';
 
 // Smoother composition
-export { SmootherChain } from '../smoothers/smoother-chain.js';
+export { OneEuroSmoother } from '../smoothers/one-euro-smoother.js';
 export { PhysicsSpringDamperSmoother } from '../smoothers/physics-spring-smoother.js';
 export { PredictiveSmoother } from '../smoothers/predictive-smoother.js';
-export { OneEuroSmoother } from '../smoothers/one-euro-smoother.js';
+export { SmootherChain } from '../smoothers/smoother-chain.js';
 
 // ============================================================================
 // STAGE 3: FSM (XState v5)
@@ -67,7 +67,7 @@ export { MediaPipeAdapter } from '../adapters/mediapipe.adapter.js';
 // STAGE 5: TARGET ADAPTERS
 // ============================================================================
 
-export { PointerEventAdapter, DOMAdapter } from '../adapters/pointer-event.adapter.js';
+export { DOMAdapter, PointerEventAdapter } from '../adapters/pointer-event.adapter.js';
 
 // ============================================================================
 // FULL PIPELINE COMPOSITION
@@ -81,29 +81,29 @@ export type { PipelineConfig } from '../adapters/pipeline.js';
 // ============================================================================
 
 export type {
+	AdapterPort,
+	EmitterPort,
+	FSMPort,
+	PipelinePort,
 	SensorPort,
 	SmootherPort,
-	FSMPort,
-	EmitterPort,
-	AdapterPort,
-	PipelinePort,
 } from '../contracts/ports.js';
 
 export {
-	SensorFrameSchema,
-	SmoothedFrameSchema,
+	AdapterTargetSchema,
 	FSMActionSchema,
 	PointerEventOutSchema,
-	AdapterTargetSchema,
+	SensorFrameSchema,
+	SmoothedFrameSchema,
 } from '../contracts/schemas.js';
 
 export type {
+	AdapterTarget,
+	FSMAction as FSMActionOut,
+	NormalizedLandmark,
+	PointerEventOut,
 	SensorFrame,
 	SmoothedFrame,
-	FSMAction as FSMActionOut,
-	PointerEventOut,
-	AdapterTarget,
-	NormalizedLandmark,
 } from '../contracts/schemas.js';
 
 // ============================================================================

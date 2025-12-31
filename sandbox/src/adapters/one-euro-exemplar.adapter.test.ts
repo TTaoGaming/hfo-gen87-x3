@@ -6,9 +6,9 @@
  * PRINCIPLE: Test the npm exemplar wrapper, not reimplement the filter.
  * The 1eurofilter@1.2.2 package is by the original author (Géry Casiez).
  */
-import { describe, it, expect, beforeEach } from 'vitest';
-import { OneEuroExemplarAdapter } from './one-euro-exemplar.adapter.js';
+import { beforeEach, describe, expect, it } from 'vitest';
 import type { SensorFrame } from '../contracts/schemas.js';
+import { OneEuroExemplarAdapter } from './one-euro-exemplar.adapter.js';
 
 describe('OneEuroExemplarAdapter', () => {
 	let adapter: OneEuroExemplarAdapter;
@@ -93,11 +93,11 @@ describe('OneEuroExemplarAdapter', () => {
 		it('should smooth noisy input over multiple frames', () => {
 			// Simulate noisy input around (0.5, 0.5) with jitter
 			const frames = [
-				createFrame(0, 0.50, 0.50),
+				createFrame(0, 0.5, 0.5),
 				createFrame(16, 0.52, 0.48), // jitter
 				createFrame(32, 0.49, 0.51), // jitter
 				createFrame(48, 0.51, 0.49), // jitter
-				createFrame(64, 0.50, 0.50),
+				createFrame(64, 0.5, 0.5),
 			];
 
 			const results = frames.map((f) => adapter.smooth(f));

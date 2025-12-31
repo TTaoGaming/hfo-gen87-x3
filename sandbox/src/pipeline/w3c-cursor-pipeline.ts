@@ -20,13 +20,13 @@
 import { z } from 'zod';
 import { OneEuroAdapter } from '../adapters/one-euro.adapter.js';
 import { XStateFSMAdapter } from '../adapters/xstate-fsm.adapter.js';
+import type { FSMPort, SmootherPort } from '../contracts/ports.js';
+import type { FSMAction, SensorFrame, SmoothedFrame } from '../contracts/schemas.js';
 import {
-	W3CPointerEventFactory,
 	DOMEventDispatcher,
 	type FSMAction as FactoryFSMAction,
+	W3CPointerEventFactory,
 } from '../phase1-w3c-cursor/w3c-pointer-factory.js';
-import type { SensorFrame, SmoothedFrame, FSMAction } from '../contracts/schemas.js';
-import type { SmootherPort, FSMPort } from '../contracts/ports.js';
 
 // ============================================================================
 // PIPELINE CONFIGURATION SCHEMA
@@ -91,7 +91,7 @@ export class W3CCursorPipeline {
 	private readonly factory: W3CPointerEventFactory;
 	private dispatcher: DOMEventDispatcher | null = null;
 	private listeners: Set<PipelineListener> = new Set();
-	private lastState: string = 'DISARMED';
+	private lastState = 'DISARMED';
 
 	constructor(config: Partial<PipelineConfig> = {}) {
 		this.config = PipelineConfigSchema.parse(config) as Required<PipelineConfig>;
@@ -188,7 +188,7 @@ export class W3CCursorPipeline {
 	 */
 	private mapActionToFactory(
 		action: FSMAction,
-		position: { x: number; y: number }
+		position: { x: number; y: number },
 	): FactoryFSMAction {
 		switch (action.action) {
 			case 'move':
@@ -333,4 +333,4 @@ export function createW3CCursorPipeline(config?: Partial<PipelineConfig>): W3CCu
 // TYPE EXPORTS
 // ============================================================================
 
-export type { SensorFrame, SmoothedFrame, FSMAction };
+export type { FSMAction, SensorFrame, SmoothedFrame };

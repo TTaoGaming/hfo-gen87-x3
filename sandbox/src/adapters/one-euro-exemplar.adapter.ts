@@ -15,10 +15,10 @@
 import { OneEuroFilter } from '1eurofilter';
 import type { SmootherPort } from '../contracts/ports.js';
 import {
+	type NormalizedLandmark,
 	type SensorFrame,
 	type SmoothedFrame,
 	SmoothedFrameSchema,
-	type NormalizedLandmark,
 } from '../contracts/schemas.js';
 
 /**
@@ -76,9 +76,10 @@ export class OneEuroExemplarAdapter implements SmootherPort {
 		}
 
 		// Calculate delta time for velocity estimation (in seconds)
-		const dt = this.lastTimestamp !== null 
-			? Math.max((frame.ts - this.lastTimestamp) / 1000, 0.001) 
-			: 1 / this.config.frequency;
+		const dt =
+			this.lastTimestamp !== null
+				? Math.max((frame.ts - this.lastTimestamp) / 1000, 0.001)
+				: 1 / this.config.frequency;
 		this.lastTimestamp = frame.ts;
 
 		// Convert timestamp to seconds for the 1€ filter
@@ -123,7 +124,7 @@ export class OneEuroExemplarAdapter implements SmootherPort {
 	private smoothLandmark(
 		key: string,
 		landmark: NormalizedLandmark,
-		timestampSec: number
+		timestampSec: number,
 	): NormalizedLandmark {
 		// Get or create filter pair for this landmark
 		if (!this.filters.has(key)) {
