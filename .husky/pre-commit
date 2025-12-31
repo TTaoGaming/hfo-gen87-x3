@@ -40,7 +40,7 @@ echo "✅ G3 PASSED"
 echo ""
 
 # Gate 4: Architecture Enforcement (Reward Hacking Detection)
-echo "📋 Gate 4/5: Architecture Compliance..."
+echo "📋 Gate 4/6: Architecture Compliance..."
 npx tsx scripts/enforce-architecture.ts ./sandbox 2>/dev/null || {
   echo "❌ G4 FAILED: Architecture violations detected."
   echo ""
@@ -56,8 +56,29 @@ npx tsx scripts/enforce-architecture.ts ./sandbox 2>/dev/null || {
 echo "✅ G4 PASSED"
 echo ""
 
-# Gate 5: Contract TRL Lineage Check
-echo "📋 Gate 5/5: TRL 9 Contract Lineage..."
+# Gate 5: V-PHASE REWARD HACKING DETECTOR (NEW - CRITICAL)
+echo "📋 Gate 5/6: V-Phase Reward Hacking Detector..."
+npx tsx scripts/v-phase-gate.ts --staged || {
+  echo ""
+  echo "❌ G5 FAILED: REWARD HACKING DETECTED"
+  echo ""
+  echo "   A demo that doesn't use the architecture is NOT a demo."
+  echo "   It's a spike that proves nothing."
+  echo ""
+  echo "   Common violations:"
+  echo "   - Inline FSM instead of XState adapter"
+  echo "   - Inline 1€ filter instead of OneEuroAdapter"
+  echo "   - Direct DOM events instead of NATS substrate"
+  echo "   - TODO stubs in production code"
+  echo "   - 'For now' shortcuts that bypass architecture"
+  echo ""
+  exit 1
+}
+echo "✅ G5 PASSED"
+echo ""
+
+# Gate 6: Contract TRL Lineage Check
+echo "📋 Gate 6/6: TRL 9 Contract Lineage..."
 # Check that contract files have @source or @see tags
 CONTRACT_FILES=$(find ./sandbox -name "*.contract.ts" -o -name "*schema*.ts" 2>/dev/null | head -20)
 if [ -n "$CONTRACT_FILES" ]; then
@@ -80,7 +101,7 @@ echo "✅ G5 PASSED"
 echo ""
 
 echo "╔════════════════════════════════════════════════════════════════╗"
-echo "║  ✅ ALL 5 GATES PASSED - Commit approved                       ║"
+echo "║  ✅ ALL 6 GATES PASSED - Commit approved                       ║"
 echo "║  Remember: Use HIVE commit prefixes (H: I: V: E:)             ║"
 echo "╚════════════════════════════════════════════════════════════════╝"
 echo ""
