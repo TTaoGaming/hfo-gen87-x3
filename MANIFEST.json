@@ -49,13 +49,15 @@
       "hfo_daily_specs/HARD_GATED_SWARM_SCATTER_GATHER_20251230.md",
       "sandbox/specs/HIVE_SWARM_MCP_SERVER_ARCHITECTURE.md",
       "sandbox/specs/OBSIDIAN_LEGENDARY_COMMANDERS_VSCODE_AGENTS.md",
+      "sandbox/specs/EXEMPLAR_COMPOSITION.md",
       "sandbox/specs/PRE_CREATE_CHECKLIST.md",
       "sandbox/specs/VSCODE_AGENTS_CAPABILITY_CHECKLIST.md"
     ],
     "contextPayload": "sandbox/specs/GEN87_X3_CONTEXT_PAYLOAD_V1_20251230Z.md",
     "grimoire": "sandbox/specs/OBSIDIAN_GRIMOIRE_GALOIS_LATTICE.md",
     "commanders": "sandbox/specs/OBSIDIAN_LEGENDARY_COMMANDERS.md",
-    "activeDemo": "sandbox/demos/main/"
+    "activeDemo": "sandbox/demos/main/",
+    "dinoDemo": "sandbox/demos/main/index-dino.html"
   },
   
   "archived": {

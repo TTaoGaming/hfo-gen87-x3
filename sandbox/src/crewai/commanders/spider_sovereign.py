@@ -9,9 +9,10 @@ Secret: "The spider weaves the web that weaves the spider."
 HIVE Phase: H (Hunt) - paired with Lidless Legion (Port 0)
 """
 
-from crewai import Agent
+from crewai import Agent, LLM
 from crewai.tools import tool
-from typing import List
+from typing import List, Optional
+import os
 
 
 # === TOOLS ===
@@ -60,8 +61,19 @@ def orchestrate_hive_cycle(task: str) -> str:
 
 # === AGENT ===
 
-def create_spider_sovereign(verbose: bool = True) -> Agent:
+def create_spider_sovereign(verbose: bool = True, llm: Optional[LLM] = None) -> Agent:
     """Create the Spider Sovereign agent (Port 7 - DECIDE)."""
+    # Use OpenRouter DeepSeek by default (cheap + smart)
+    if llm is None:
+        api_key = os.environ.get("OPENROUTER_API_KEY")
+        if api_key:
+            llm = LLM(
+                model="openrouter/deepseek/deepseek-chat",
+                api_key=api_key,
+                base_url="https://openrouter.ai/api/v1",
+                temperature=0.5,
+            )
+    
     return Agent(
         role="Spider Sovereign - Port 7 Navigator",
         goal="DECIDE strategic direction. Route tasks, orchestrate HIVE phases, manage the swarm.",
@@ -80,4 +92,5 @@ def create_spider_sovereign(verbose: bool = True) -> Agent:
         tools=[route_to_commander, determine_hive_phase, emit_decide_signal, orchestrate_hive_cycle],
         verbose=verbose,
         allow_delegation=True,
+        llm=llm,
     )
