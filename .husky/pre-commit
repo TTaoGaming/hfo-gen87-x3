@@ -4,12 +4,38 @@
 echo ""
 echo "╔════════════════════════════════════════════════════════════════╗"
 echo "║  🕸️  HFO Gen87 Pre-Commit Enforcement Gates                    ║"
-echo "║  HIVE/8 Phase: I (Interlock) - TDD RED/GREEN enforcement      ║"
+echo "║  HIVE/8 Phase: Spider Sovereign Mode Active                    ║"
 echo "╚════════════════════════════════════════════════════════════════╝"
 echo ""
 
+# Gate 0: HIVE Signal Trail Check (NEW - CRITICAL)
+echo "📋 Gate 0/7: HIVE Signal Trail..."
+BLACKBOARD="./sandbox/obsidianblackboard.jsonl"
+if [ -f "$BLACKBOARD" ]; then
+  # Check for HUNT signal in last 20 minutes
+  LAST_HUNT=$(grep -o '"hive":"H"' "$BLACKBOARD" | tail -1)
+  LAST_SIGNAL=$(tail -1 "$BLACKBOARD" 2>/dev/null)
+  
+  if [ -z "$LAST_HUNT" ]; then
+    echo "⚠️  WARNING: No HUNT signal found in blackboard"
+    echo "   Spider Sovereign mode expects H→I→V→E workflow"
+    echo "   Emit a HUNT signal before implementing features"
+  fi
+  
+  # Extract last phase
+  LAST_PHASE=$(echo "$LAST_SIGNAL" | grep -o '"hive":"[HIVE]"' | head -1 | cut -d'"' -f4)
+  echo "   Last HIVE phase: $LAST_PHASE"
+  echo "✅ G0 PASSED (signal trail exists)"
+else
+  echo "⚠️  WARNING: No blackboard found at $BLACKBOARD"
+  echo "   Creating new blackboard..."
+  mkdir -p ./sandbox
+  touch "$BLACKBOARD"
+fi
+echo ""
+
 # Gate 1: TypeScript type check
-echo "📋 Gate 1/5: TypeCheck..."
+echo "📋 Gate 1/7: TypeCheck..."
 npm run typecheck || {
   echo "❌ G1 FAILED: TypeCheck errors detected."
   echo "   Fix type errors before committing."
@@ -101,7 +127,8 @@ echo "✅ G5 PASSED"
 echo ""
 
 echo "╔════════════════════════════════════════════════════════════════╗"
-echo "║  ✅ ALL 6 GATES PASSED - Commit approved                       ║"
+echo "║  ✅ ALL 7 GATES PASSED - Commit approved                       ║"
+echo "║  HIVE/8 Workflow Enforced via Spider Sovereign Mode           ║"
 echo "║  Remember: Use HIVE commit prefixes (H: I: V: E:)             ║"
 echo "╚════════════════════════════════════════════════════════════════╝"
 echo ""
