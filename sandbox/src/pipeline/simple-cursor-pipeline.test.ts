@@ -1,5 +1,7 @@
-/**
- * Simple Cursor Pipeline Integration Tests
+/** * @vitest-environment jsdom
+ */
+
+/** * Simple Cursor Pipeline Integration Tests
  *
  * Gen87.X3 | HIVE Phase: INTERLOCK (I) | TDD RED
  *
