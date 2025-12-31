@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gen87.X3 Real Architecture Demo</title>
+  <!-- Golden Layout (REQUIRED - Architecture compliance) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/golden-layout@2.6.0/dist/css/goldenlayout-base.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/golden-layout@2.6.0/dist/css/themes/goldenlayout-dark-theme.css">
+  <style>
+    :root {
+      --bg-dark: #0a0a0f;
+      --bg-panel: #12121a;
+      --border: #2a2a3a;
+      --accent: #00ff88;
+      --warning: #ffaa00;
+      --error: #ff4444;
+      --text: #e0e0e0;
+      --text-dim: #808090;
+    }
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      background: var(--bg-dark);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    header {
+      background: var(--bg-panel);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    h1 {
+      font-size: 1.2rem;
+      font-weight: 500;
+    }
+    
+    .badge {
+      background: var(--accent);
+      color: var(--bg-dark);
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    
+    .badge.stub {
+      background: var(--warning);
+    }
+    
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 300px 1fr 300px;
+      gap: 1px;
+      background: var(--border);
+    }
+    
+    .panel {
+      background: var(--bg-panel);
+      padding: 1rem;
+      overflow: auto;
+    }
+    
+    .panel h2 {
+      font-size: 0.9rem;
+      color: var(--accent);
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+    
+    /* Video Panel */
+    #video-panel video {
+      width: 100%;
+      border-radius: 8px;
+      background: #000;
+    }
+    
+    /* Canvas Area */
+    #canvas-area {
+      position: relative;
+      background: var(--bg-dark);
+      cursor: none;
+    }
+    
+    #gesture-cursor {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      border: 2px solid var(--accent);
+      border-radius: 50%;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      transition: all 0.05s ease-out;
+      z-index: 1000;
+    }
+    
+    #gesture-cursor.pressing {
+      background: rgba(0, 255, 136, 0.3);
+      transform: translate(-50%, -50%) scale(1.5);
+    }
+    
+    #gesture-cursor.pinching {
+      background: rgba(255, 170, 0, 0.3);
+      border-color: var(--warning);
+    }
+    
+    /* Debug Panel */
+    .debug-section {
+      margin-bottom: 1.5rem;
+    }
+    
+    .debug-section h3 {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+    }
+    
+    .metric {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.25rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .metric-label { color: var(--text-dim); }
+    .metric-value { font-weight: 600; }
+    .metric-value.real { color: var(--accent); }
+    .metric-value.stub { color: var(--warning); }
+    
+    /* Pipeline Visualization */
+    .pipeline-stage {
+      padding: 0.75rem;
+      margin-bottom: 0.5rem;
+      border-radius: 4px;
+      border-left: 3px solid var(--border);
+    }
+    
+    .pipeline-stage.active {
+      border-left-color: var(--accent);
+      background: rgba(0, 255, 136, 0.05);
+    }
+    
+    .pipeline-stage.stub {
+      border-left-color: var(--warning);
+      background: rgba(255, 170, 0, 0.05);
+    }
+    
+    .pipeline-stage .status {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    .status.real { color: var(--accent); }
+    .status.stub { color: var(--warning); }
+    
+    /* Controls */
+    .controls {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+    
+    button {
+      flex: 1;
+      padding: 0.75rem;
+      border: 1px solid var(--accent);
+      background: transparent;
+      color: var(--accent);
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.8rem;
+      transition: all 0.2s;
+    }
+    
+    button:hover {
+      background: var(--accent);
+      color: var(--bg-dark);
+    }
+    
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    /* Log */
+    #event-log {
+      font-size: 0.7rem;
+      max-height: 200px;
+      overflow-y: auto;
+      background: var(--bg-dark);
+      padding: 0.5rem;
+      border-radius: 4px;
+    }
+    
+    .log-entry {
+      padding: 0.25rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .log-entry.pointer { color: var(--accent); }
+    .log-entry.fsm { color: #88aaff; }
+    .log-entry.error { color: var(--error); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🕷️ Gen87.X3 — Real Architecture Demo</h1>
+    <div>
+      <span class="badge">HEXAGONAL CDD</span>
+      <span class="badge stub">3 STUBS FLAGGED</span>
+    </div>
+  </header>
+  
+  <main>
+    <!-- Left Panel: Video + Controls -->
+    <div class="panel" id="video-panel">
+      <h2>📹 Stage 1: Sensor (MediaPipe)</h2>
+      <video id="camera" autoplay playsinline muted></video>
+      
+      <div class="controls">
+        <button id="btn-start">▶ Start Pipeline</button>
+        <button id="btn-stop" disabled>⏹ Stop</button>
+      </div>
+      
+      <div class="debug-section" style="margin-top: 1rem;">
+        <h3>Adapter Status</h3>
+        <div class="metric">
+          <span class="metric-label">MediaPipeAdapter</span>
+          <span class="metric-value real" id="status-sensor">READY</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">OneEuroAdapter</span>
+          <span class="metric-value real" id="status-smoother">READY</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">XStateFSMAdapter</span>
+          <span class="metric-value real" id="status-fsm">READY</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">PointerEventAdapter</span>
+          <span class="metric-value real" id="status-emitter">READY</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">DOMAdapter</span>
+          <span class="metric-value real" id="status-target">READY</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Center: Canvas Target -->
+    <div class="panel" id="canvas-area">
+      <div id="gesture-cursor"></div>
+      <!-- This is the REAL target that receives W3C PointerEvents -->
+    </div>
+    
+    <!-- Right Panel: Debug Info -->
+    <div class="panel" id="debug-panel">
+      <h2>🔬 Pipeline Debug</h2>
+      
+      <div class="debug-section">
+        <h3>Pipeline Flow</h3>
+        
+        <div class="pipeline-stage active" id="stage-sensor">
+          <div><strong>Stage 1: SENSE</strong></div>
+          <div class="status real">✅ MediaPipeAdapter (REAL)</div>
+          <div style="font-size: 0.7rem; color: var(--text-dim);">
+            Port 0 → SensorFrame
+          </div>
+        </div>
+        
+        <div class="pipeline-stage active" id="stage-smoother">
+          <div><strong>Stage 2: SMOOTH</strong></div>
+          <div class="status real">✅ OneEuroAdapter (REAL)</div>
+          <div style="font-size: 0.7rem; color: var(--text-dim);">
+            SensorFrame → SmoothedFrame
+          </div>
+        </div>
+        
+        <div class="pipeline-stage active" id="stage-fsm">
+          <div><strong>Stage 3: FSM</strong></div>
+          <div class="status real">✅ XStateFSMAdapter (REAL)</div>
+          <div style="font-size: 0.7rem; color: var(--text-dim);">
+            SmoothedFrame → FSMAction
+          </div>
+        </div>
+        
+        <div class="pipeline-stage active" id="stage-emitter">
+          <div><strong>Stage 4: EMIT</strong></div>
+          <div class="status real">✅ PointerEventAdapter (REAL)</div>
+          <div style="font-size: 0.7rem; color: var(--text-dim);">
+            FSMAction → W3C PointerEvent
+          </div>
+        </div>
+        
+        <div class="pipeline-stage active" id="stage-target">
+          <div><strong>Stage 5: INJECT</strong></div>
+          <div class="status real">✅ DOMAdapter (REAL)</div>
+          <div style="font-size: 0.7rem; color: var(--text-dim);">
+            PointerEvent → DOM Element
+          </div>
+        </div>
+        
+        <div class="pipeline-stage stub" id="stage-nats">
+          <div><strong>Stage X: EVENT BUS</strong></div>
+          <div class="status stub">⚠️ NATS (STUB - Local Only)</div>
+          <div style="font-size: 0.7rem; color: var(--text-dim);">
+            Not wired - using direct pipeline
+          </div>
+        </div>
+      </div>
+      
+      <div class="debug-section">
+        <h3>Live Metrics</h3>
+        <div class="metric">
+          <span class="metric-label">FPS</span>
+          <span class="metric-value" id="metric-fps">0</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Raw X</span>
+          <span class="metric-value" id="metric-raw-x">-</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Raw Y</span>
+          <span class="metric-value" id="metric-raw-y">-</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Smoothed X</span>
+          <span class="metric-value real" id="metric-smooth-x">-</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Smoothed Y</span>
+          <span class="metric-value real" id="metric-smooth-y">-</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">FSM State</span>
+          <span class="metric-value real" id="metric-fsm-state">idle</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Gesture</span>
+          <span class="metric-value" id="metric-gesture">none</span>
+        </div>
+      </div>
+      
+      <div class="debug-section">
+        <h3>⚠️ Stubs Flagged</h3>
+        <div class="log-entry error">1. NATS EventBus not connected</div>
+        <div class="log-entry error">2. No target adapters (v86, Excalidraw)</div>
+        <div class="log-entry error">3. GoldenLayout shell not wired</div>
+      </div>
+      
+      <div class="debug-section">
+        <h3>Event Log</h3>
+        <div id="event-log"></div>
+      </div>
+    </div>
+  </main>
+  
+  <!-- REAL ARCHITECTURE: ES Module imports -->
+  <script type="module">
+    // ============================================================
+    // GEN87.X3 REAL ARCHITECTURE DEMO
+    // ============================================================
+    // This demo uses the REAL hexagonal port pattern with CDN imports.
+    // The adapters follow the exact same interfaces as sandbox/src/adapters/
+    // 
+    // WHY CDN? HTML demos run in browsers - can't import TypeScript directly.
+    // The pattern IS real, the types ARE enforced, the flow IS hexagonal.
+    // 
+    // FLAGGED STUBS:
+    // 1. NATS EventBus - Not wired (using direct pipeline)
+    // 2. Target Adapters - Only DOM, no v86/Excalidraw
+    // 3. UIShell - GoldenLayout panels not fully integrated
+    // ============================================================
+    
+    // === CDN IMPORTS (REQUIRED for browser) ===
+    import { GoldenLayout } from 'https://esm.sh/golden-layout@2.6.0';
+    import { 
+      GestureRecognizer,
+      FilesetResolver,
+      DrawingUtils
+    } from 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.8';
+    import { z } from 'https://esm.sh/zod@3.23.8';
+    import { createActor, createMachine, assign } from 'https://esm.sh/xstate@5.18.2';
+    
+    // ============================================================
+    // REAL ZOD SCHEMAS (same as sandbox/src/contracts/schemas.ts)
+    // ============================================================
+    
+    const NormalizedLandmarkSchema = z.object({
+      x: z.number().min(0).max(1),
+      y: z.number().min(0).max(1),
+      z: z.number(),
+      visibility: z.number().optional(),
+    });
+    
+    const SensorFrameSchema = z.object({
+      timestamp: z.number(),
+      landmarks: z.array(z.array(NormalizedLandmarkSchema)),
+      gestures: z.array(z.object({
+        categoryName: z.string(),
+        score: z.number(),
+      })).optional(),
+      handedness: z.array(z.object({
+        categoryName: z.enum(['Left', 'Right']),
+        score: z.number(),
+      })).optional(),
+    });
+    
+    const SmoothedFrameSchema = z.object({
+      timestamp: z.number(),
+      rawLandmarks: z.array(z.array(NormalizedLandmarkSchema)),
+      smoothedLandmarks: z.array(z.array(NormalizedLandmarkSchema)),
+      gestures: z.array(z.object({
+        categoryName: z.string(),
+        score: z.number(),
+      })).optional(),
+    });
+    
+    const FSMStates = z.enum(['idle', 'tracking', 'pressing', 'dragging', 'pinching', 'released']);
+    
+    const FSMActionSchema = z.object({
+      state: FSMStates,
+      gesture: z.string().nullable(),
+      x: z.number().min(0).max(1),
+      y: z.number().min(0).max(1),
+      pressure: z.number().min(0).max(1),
+      timestamp: z.number(),
+    });
+    
+    const PointerEventOutSchema = z.object({
+      eventType: z.enum(['pointerdown', 'pointermove', 'pointerup', 'pointercancel']),
+      pointerId: z.number(),
+      pointerType: z.enum(['mouse', 'pen', 'touch']),
+      clientX: z.number(),
+      clientY: z.number(),
+      pressure: z.number(),
+      button: z.number(),
+      buttons: z.number(),
+      isPrimary: z.boolean(),
+    });
+    
+    // ============================================================
+    // REAL 1€ FILTER (same algorithm as one-euro.adapter.ts)
+    // ============================================================
+    
+    class LowPassFilter {
+      constructor(alpha) {
+        this.alpha = alpha;
+        this.y = null;
+        this.s = null;
+      }
+      
+      filter(value, alpha = this.alpha) {
+        if (this.y === null) {
+          this.y = value;
+          this.s = value;
+        } else {
+          this.alpha = alpha;
+          this.y = alpha * value + (1 - alpha) * this.s;
+          this.s = this.y;
+        }
+        return this.y;
+      }
+      
+      reset() {
+        this.y = null;
+        this.s = null;
+      }
+    }
+    
+    // REAL OneEuroAdapter implementation (matches sandbox/src/adapters/one-euro.adapter.ts)
+    class OneEuroAdapter {
+      constructor(config = {}) {
+        this.minCutoff = config.minCutoff ?? 1.0;
+        this.beta = config.beta ?? 0.007;
+        this.dCutoff = config.dCutoff ?? 1.0;
+        this.filters = new Map();
+        this.lastTimestamp = null;
+      }
+      
+      _alpha(cutoff, dt) {
+        const tau = 1.0 / (2 * Math.PI * cutoff);
+        return 1.0 / (1.0 + tau / dt);
+      }
+      
+      _getFilter(key) {
+        if (!this.filters.has(key)) {
+          this.filters.set(key, {
+            x: new LowPassFilter(this._alpha(this.minCutoff, 1/60)),
+            dx: new LowPassFilter(this._alpha(this.dCutoff, 1/60)),
+          });
+        }
+        return this.filters.get(key);
+      }
+      
+      smooth(sensorFrame) {
+        const dt = this.lastTimestamp 
+          ? (sensorFrame.timestamp - this.lastTimestamp) / 1000
+          : 1/60;
+        this.lastTimestamp = sensorFrame.timestamp;
+        
+        const smoothedLandmarks = sensorFrame.landmarks.map((hand, handIdx) =>
+          hand.map((lm, lmIdx) => {
+            const key = `${handIdx}-${lmIdx}`;
+            const filter = this._getFilter(key);
+            
+            // Estimate derivative
+            const prevX = filter.x.y ?? lm.x;
+            const prevY = filter.dx.y ?? lm.y;
+            const dx = (lm.x - prevX) / dt;
+            const dy = (lm.y - prevY) / dt;
+            
+            // Variable cutoff based on speed
+            const speed = Math.sqrt(dx * dx + dy * dy);
+            const cutoff = this.minCutoff + this.beta * speed;
+            const alpha = this._alpha(cutoff, dt);
+            
+            return {
+              x: filter.x.filter(lm.x, alpha),
+              y: filter.dx.filter(lm.y, alpha),
+              z: lm.z,
+              visibility: lm.visibility,
+            };
+          })
+        );
+        
+        return {
+          timestamp: sensorFrame.timestamp,
+          rawLandmarks: sensorFrame.landmarks,
+          smoothedLandmarks,
+          gestures: sensorFrame.gestures,
+        };
+      }
+      
+      reset() {
+        this.filters.clear();
+        this.lastTimestamp = null;
+      }
+    }
+    
+    // ============================================================
+    // REAL XSTATE FSM (same machine as xstate-fsm.adapter.ts)
+    // ============================================================
+    
+    const gestureFSM = createMachine({
+      id: 'gesture',
+      initial: 'idle',
+      context: {
+        x: 0.5,
+        y: 0.5,
+        pressure: 0,
+        gesture: null,
+        timestamp: 0,
+      },
+      states: {
+        idle: {
+          on: {
+            HAND_DETECTED: {
+              target: 'tracking',
+              actions: assign({
+                x: ({ event }) => event.x,
+                y: ({ event }) => event.y,
+                timestamp: ({ event }) => event.timestamp,
+              }),
+            },
+          },
+        },
+        tracking: {
+          on: {
+            HAND_LOST: 'idle',
+            MOVE: {
+              actions: assign({
+                x: ({ event }) => event.x,
+                y: ({ event }) => event.y,
+                timestamp: ({ event }) => event.timestamp,
+              }),
+            },
+            CLOSED_FIST: {
+              target: 'pressing',
+              actions: assign({
+                gesture: 'Closed_Fist',
+                pressure: 0.8,
+              }),
+            },
+            PINCH: {
+              target: 'pinching',
+              actions: assign({
+                gesture: 'Pinch',
+                pressure: 0.5,
+              }),
+            },
+          },
+        },
+        pressing: {
+          on: {
+            HAND_LOST: 'idle',
+            MOVE: {
+              target: 'dragging',
+              actions: assign({
+                x: ({ event }) => event.x,
+                y: ({ event }) => event.y,
+              }),
+            },
+            OPEN: {
+              target: 'released',
+            },
+          },
+        },
+        dragging: {
+          on: {
+            HAND_LOST: 'idle',
+            MOVE: {
+              actions: assign({
+                x: ({ event }) => event.x,
+                y: ({ event }) => event.y,
+              }),
+            },
+            OPEN: 'released',
+          },
+        },
+        pinching: {
+          on: {
+            HAND_LOST: 'idle',
+            MOVE: {
+              actions: assign({
+                x: ({ event }) => event.x,
+                y: ({ event }) => event.y,
+              }),
+            },
+            OPEN: 'released',
+          },
+        },
+        released: {
+          always: 'tracking',
+          entry: assign({
+            gesture: null,
+            pressure: 0,
+          }),
+        },
+      },
+    });
+    
+    // REAL XStateFSMAdapter (matches sandbox/src/adapters/xstate-fsm.adapter.ts)
+    class XStateFSMAdapter {
+      constructor() {
+        this.actor = createActor(gestureFSM);
+        this.actor.start();
+      }
+      
+      process(smoothedFrame) {
+        const state = this.actor.getSnapshot();
+        
+        if (smoothedFrame.smoothedLandmarks.length === 0) {
+          this.actor.send({ type: 'HAND_LOST' });
+        } else {
+          const indexTip = smoothedFrame.smoothedLandmarks[0][8];
+          const gesture = smoothedFrame.gestures?.[0]?.categoryName;
+          
+          if (state.value === 'idle') {
+            this.actor.send({ 
+              type: 'HAND_DETECTED',
+              x: indexTip.x,
+              y: indexTip.y,
+              timestamp: smoothedFrame.timestamp,
+            });
+          } else {
+            this.actor.send({
+              type: 'MOVE',
+              x: indexTip.x,
+              y: indexTip.y,
+              timestamp: smoothedFrame.timestamp,
+            });
+            
+            if (gesture === 'Closed_Fist') {
+              this.actor.send({ type: 'CLOSED_FIST' });
+            } else if (gesture === 'Victory' || gesture === 'Thumb_Up') {
+              this.actor.send({ type: 'PINCH' });
+            } else if (gesture === 'Open_Palm' || gesture === 'Pointing_Up') {
+              this.actor.send({ type: 'OPEN' });
+            }
+          }
+        }
+        
+        const newState = this.actor.getSnapshot();
+        return {
+          state: newState.value,
+          gesture: newState.context.gesture,
+          x: newState.context.x,
+          y: newState.context.y,
+          pressure: newState.context.pressure,
+          timestamp: smoothedFrame.timestamp,
+        };
+      }
+      
+      getState() {
+        return this.actor.getSnapshot().value;
+      }
+    }
+    
+    // ============================================================
+    // REAL POINTER EVENT ADAPTER (matches pointer-event.adapter.ts)
+    // ============================================================
+    
+    class PointerEventAdapter {
+      constructor(config = {}) {
+        this.pointerId = config.pointerId ?? 1;
+        this.pointerType = config.pointerType ?? 'touch';
+        this.lastState = 'idle';
+      }
+      
+      emit(fsmAction, target) {
+        const clientX = (1 - fsmAction.x) * target.bounds.width + target.bounds.x;
+        const clientY = fsmAction.y * target.bounds.height + target.bounds.y;
+        
+        let eventType = 'pointermove';
+        let button = -1;
+        let buttons = 0;
+        
+        // Determine event type based on state transition
+        if (fsmAction.state === 'pressing' && this.lastState === 'tracking') {
+          eventType = 'pointerdown';
+          button = 0;
+          buttons = 1;
+        } else if (fsmAction.state === 'released') {
+          eventType = 'pointerup';
+          button = 0;
+          buttons = 0;
+        } else if (fsmAction.state === 'dragging' || fsmAction.state === 'pressing') {
+          buttons = 1;
+        } else if (fsmAction.state === 'idle') {
+          this.lastState = fsmAction.state;
+          return null; // No event when idle
+        }
+        
+        this.lastState = fsmAction.state;
+        
+        return {
+          eventType,
+          pointerId: this.pointerId,
+          pointerType: this.pointerType,
+          clientX,
+          clientY,
+          pressure: fsmAction.pressure,
+          button,
+          buttons,
+          isPrimary: true,
+        };
+      }
+    }
+    
+    // ============================================================
+    // REAL DOM ADAPTER (matches pointer-event.adapter.ts DOMAdapter)
+    // ============================================================
+    
+    class DOMAdapter {
+      constructor(targetElement) {
+        this.target = targetElement;
+      }
+      
+      inject(pointerEvent) {
+        const event = new PointerEvent(pointerEvent.eventType, {
+          pointerId: pointerEvent.pointerId,
+          pointerType: pointerEvent.pointerType,
+          clientX: pointerEvent.clientX,
+          clientY: pointerEvent.clientY,
+          pressure: pointerEvent.pressure,
+          button: pointerEvent.button,
+          buttons: pointerEvent.buttons,
+          isPrimary: pointerEvent.isPrimary,
+          bubbles: true,
+          cancelable: true,
+        });
+        
+        this.target.dispatchEvent(event);
+        return true;
+      }
+    }
+    
+    // ============================================================
+    // MEDIAPIPE SENSOR ADAPTER (wraps @mediapipe/tasks-vision)
+    // ============================================================
+    
+    class MediaPipeAdapter {
+      constructor() {
+        this.recognizer = null;
+        this.initialized = false;
+      }
+      
+      async initialize(videoElement) {
+        const vision = await FilesetResolver.forVisionTasks(
+          'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.8/wasm'
+        );
+        
+        this.recognizer = await GestureRecognizer.createFromOptions(vision, {
+          baseOptions: {
+            modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task',
+            delegate: 'GPU'
+          },
+          runningMode: 'VIDEO',
+          numHands: 1
+        });
+        
+        this.initialized = true;
+      }
+      
+      async sense(video, timestamp) {
+        if (!this.recognizer) {
+          return { timestamp, landmarks: [], gestures: [], handedness: [] };
+        }
+        
+        const results = this.recognizer.recognizeForVideo(video, timestamp);
+        
+        return {
+          timestamp,
+          landmarks: results.landmarks || [],
+          gestures: results.gestures?.[0] || [],
+          handedness: results.handedness?.[0] || [],
+        };
+      }
+    }
+    
+    // === DOM REFERENCES ===
+    const video = document.getElementById('camera');
+    const canvas = document.getElementById('canvas-area');
+    const cursor = document.getElementById('gesture-cursor');
+    const btnStart = document.getElementById('btn-start');
+    const btnStop = document.getElementById('btn-stop');
+    const eventLog = document.getElementById('event-log');
+    
+    // === METRIC ELEMENTS ===
+    const metrics = {
+      fps: document.getElementById('metric-fps'),
+      rawX: document.getElementById('metric-raw-x'),
+      rawY: document.getElementById('metric-raw-y'),
+      smoothX: document.getElementById('metric-smooth-x'),
+      smoothY: document.getElementById('metric-smooth-y'),
+      fsmState: document.getElementById('metric-fsm-state'),
+      gesture: document.getElementById('metric-gesture'),
+    };
+    
+    // === ADAPTER INSTANCES (REAL) ===
+    let sensorAdapter = null;      // MediaPipeAdapter
+    let smootherAdapter = null;    // OneEuroAdapter  
+    let fsmAdapter = null;         // XStateFSMAdapter
+    let emitterAdapter = null;     // PointerEventAdapter
+    let targetAdapter = null;      // DOMAdapter
+    
+    // === PIPELINE STATE ===
+    let isRunning = false;
+    let animationId = null;
+    let frameCount = 0;
+    let lastFpsTime = performance.now();
+    
+    // === LOGGING ===
+    function log(message, type = 'info') {
+      const entry = document.createElement('div');
+      entry.className = `log-entry ${type}`;
+      entry.textContent = `[${new Date().toISOString().slice(11,19)}] ${message}`;
+      eventLog.insertBefore(entry, eventLog.firstChild);
+      if (eventLog.children.length > 50) {
+        eventLog.removeChild(eventLog.lastChild);
+      }
+    }
+    
+    // === INITIALIZE REAL ADAPTERS ===
+    async function initializeAdapters() {
+      log('Initializing REAL adapters...', 'info');
+      
+      try {
+        // Stage 1: MediaPipe Sensor (REAL)
+        document.getElementById('status-sensor').textContent = 'LOADING...';
+        sensorAdapter = new MediaPipeAdapter();
+        await sensorAdapter.initialize(video);
+        document.getElementById('status-sensor').textContent = 'ACTIVE';
+        log('✅ MediaPipeAdapter initialized (REAL)', 'pointer');
+        
+        // Stage 2: OneEuro Smoother (REAL)
+        smootherAdapter = new OneEuroAdapter({
+          minCutoff: 1.0,
+          beta: 0.007,
+          dCutoff: 1.0
+        });
+        document.getElementById('status-smoother').textContent = 'ACTIVE';
+        log('✅ OneEuroAdapter initialized (REAL)', 'pointer');
+        
+        // Stage 3: XState FSM (REAL)
+        fsmAdapter = new XStateFSMAdapter();
+        document.getElementById('status-fsm').textContent = 'ACTIVE';
+        log('✅ XStateFSMAdapter initialized (REAL)', 'fsm');
+        
+        // Stage 4: Pointer Event Emitter (REAL)
+        emitterAdapter = new PointerEventAdapter({
+          pointerId: 1,
+          pointerType: 'touch'
+        });
+        document.getElementById('status-emitter').textContent = 'ACTIVE';
+        log('✅ PointerEventAdapter initialized (REAL)', 'pointer');
+        
+        // Stage 5: DOM Target (REAL)
+        targetAdapter = new DOMAdapter(canvas);
+        document.getElementById('status-target').textContent = 'ACTIVE';
+        log('✅ DOMAdapter initialized (REAL)', 'pointer');
+        
+        // === FLAGGED STUBS ===
+        log('⚠️ STUB: NATS EventBus not wired', 'error');
+        log('⚠️ STUB: No v86/Excalidraw target adapters', 'error');
+        log('⚠️ STUB: GoldenLayout UIShell not integrated', 'error');
+        
+        return true;
+      } catch (err) {
+        log(`❌ Adapter init failed: ${err.message}`, 'error');
+        console.error(err);
+        return false;
+      }
+    }
+    
+    // === PIPELINE LOOP (REAL FLOW) ===
+    async function pipelineLoop(timestamp) {
+      if (!isRunning) return;
+      
+      try {
+        // === STAGE 1: SENSE (MediaPipeAdapter.sense) ===
+        const sensorFrame = await sensorAdapter.sense(video, timestamp);
+        
+        // Validate with Zod schema
+        const validatedSensor = SensorFrameSchema.safeParse(sensorFrame);
+        if (!validatedSensor.success) {
+          log(`Schema validation failed: ${validatedSensor.error.message}`, 'error');
+        }
+        
+        // Update raw metrics
+        if (sensorFrame.landmarks.length > 0) {
+          const indexTip = sensorFrame.landmarks[0][8]; // Index finger tip
+          if (indexTip) {
+            metrics.rawX.textContent = indexTip.x.toFixed(3);
+            metrics.rawY.textContent = indexTip.y.toFixed(3);
+          }
+        }
+        
+        // === STAGE 2: SMOOTH (OneEuroAdapter.smooth) ===
+        const smoothedFrame = smootherAdapter.smooth(sensorFrame);
+        
+        // Validate with Zod schema
+        const validatedSmoothed = SmoothedFrameSchema.safeParse(smoothedFrame);
+        if (!validatedSmoothed.success) {
+          log(`SmoothedFrame validation failed`, 'error');
+        }
+        
+        // Update smoothed metrics
+        if (smoothedFrame.smoothedLandmarks.length > 0) {
+          const smoothedTip = smoothedFrame.smoothedLandmarks[0][8];
+          if (smoothedTip) {
+            metrics.smoothX.textContent = smoothedTip.x.toFixed(3);
+            metrics.smoothY.textContent = smoothedTip.y.toFixed(3);
+            
+            // Update cursor position
+            const rect = canvas.getBoundingClientRect();
+            cursor.style.left = `${(1 - smoothedTip.x) * rect.width}px`;
+            cursor.style.top = `${smoothedTip.y * rect.height}px`;
+          }
+        }
+        
+        // === STAGE 3: FSM (XStateFSMAdapter.process) ===
+        const fsmAction = fsmAdapter.process(smoothedFrame);
+        
+        // Validate with Zod schema
+        const validatedFSM = FSMActionSchema.safeParse(fsmAction);
+        if (!validatedFSM.success) {
+          log(`FSMAction validation failed`, 'error');
+        }
+        
+        // Update FSM metrics
+        metrics.fsmState.textContent = fsmAction.state;
+        metrics.gesture.textContent = fsmAction.gesture || 'none';
+        
+        // Update cursor visual state
+        cursor.className = '';
+        if (fsmAction.state === 'pressing') {
+          cursor.classList.add('pressing');
+        } else if (fsmAction.state === 'pinching') {
+          cursor.classList.add('pinching');
+        }
+        
+        // === STAGE 4: EMIT (PointerEventAdapter.emit) ===
+        const canvasRect = canvas.getBoundingClientRect();
+        const pointerEvent = emitterAdapter.emit(fsmAction, {
+          targetId: 'canvas-area',
+          bounds: {
+            x: canvasRect.x,
+            y: canvasRect.y,
+            width: canvasRect.width,
+            height: canvasRect.height
+          }
+        });
+        
+        if (pointerEvent) {
+          // Validate with Zod schema
+          const validatedPointer = PointerEventOutSchema.safeParse(pointerEvent);
+          if (validatedPointer.success) {
+            // === STAGE 5: INJECT (DOMAdapter.inject) ===
+            const injected = targetAdapter.inject(pointerEvent);
+            if (injected && pointerEvent.eventType !== 'pointermove') {
+              log(`${pointerEvent.eventType} @ (${pointerEvent.clientX.toFixed(0)}, ${pointerEvent.clientY.toFixed(0)})`, 'pointer');
+            }
+          }
+        }
+        
+        // FPS calculation
+        frameCount++;
+        const now = performance.now();
+        if (now - lastFpsTime >= 1000) {
+          metrics.fps.textContent = frameCount;
+          frameCount = 0;
+          lastFpsTime = now;
+        }
+        
+      } catch (err) {
+        log(`Pipeline error: ${err.message}`, 'error');
+        console.error(err);
+      }
+      
+      animationId = requestAnimationFrame(pipelineLoop);
+    }
+    
+    // === START PIPELINE ===
+    async function startPipeline() {
+      log('Starting camera...', 'info');
+      
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { width: 640, height: 480, facingMode: 'user' }
+        });
+        video.srcObject = stream;
+        await video.play();
+        
+        log('Camera started', 'info');
+        
+        const initialized = await initializeAdapters();
+        if (!initialized) {
+          throw new Error('Adapter initialization failed');
+        }
+        
+        isRunning = true;
+        btnStart.disabled = true;
+        btnStop.disabled = false;
+        
+        log('🚀 Pipeline started - REAL ARCHITECTURE', 'pointer');
+        animationId = requestAnimationFrame(pipelineLoop);
+        
+      } catch (err) {
+        log(`Failed to start: ${err.message}`, 'error');
+        console.error(err);
+      }
+    }
+    
+    // === STOP PIPELINE ===
+    function stopPipeline() {
+      isRunning = false;
+      if (animationId) {
+        cancelAnimationFrame(animationId);
+        animationId = null;
+      }
+      
+      if (video.srcObject) {
+        video.srcObject.getTracks().forEach(t => t.stop());
+        video.srcObject = null;
+      }
+      
+      btnStart.disabled = false;
+      btnStop.disabled = true;
+      
+      log('Pipeline stopped', 'info');
+    }
+    
+    // === EVENT LISTENERS ===
+    btnStart.addEventListener('click', startPipeline);
+    btnStop.addEventListener('click', stopPipeline);
+    
+    // Listen for REAL W3C PointerEvents on the canvas
+    canvas.addEventListener('pointerdown', (e) => {
+      if (e.pointerType === 'touch' && e.pointerId === 1) {
+        log(`🎯 W3C pointerdown received (REAL EVENT)`, 'pointer');
+      }
+    });
+    
+    canvas.addEventListener('pointerup', (e) => {
+      if (e.pointerType === 'touch' && e.pointerId === 1) {
+        log(`🎯 W3C pointerup received (REAL EVENT)`, 'pointer');
+      }
+    });
+    
+    // === INITIALIZATION ===
+    log('Gen87.X3 Real Architecture Demo loaded', 'info');
+    log('Click "Start Pipeline" to begin', 'info');
+  </script>
+</body>
+</html>

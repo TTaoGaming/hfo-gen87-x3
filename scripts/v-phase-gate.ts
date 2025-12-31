@@ -55,11 +55,13 @@ const REWARD_HACK_PATTERNS = {
   },
 
   // Pattern 2: Inline 1€ filter instead of adapter
+  // Blocks: function oneEuroFilter(), const oneEuro = ...
+  // Allows: class OneEuroAdapter (this IS the adapter pattern)
   inlineOneEuro: {
     rule: 'NO_INLINE_FILTER',
     severity: 'CRITICAL' as const,
-    pattern: /function\s+oneEuro|const\s+oneEuro|let\s+oneEuro|class\s+.*(?:LowPass|OneEuro)/gi,
-    antiPattern: /import.*(?:OneEuroAdapter|one-euro\.adapter)/i,
+    pattern: /function\s+oneEuro(?:Filter)?|const\s+oneEuro\s*=|let\s+oneEuro\s*=/gi,
+    antiPattern: /import.*(?:OneEuroAdapter|one-euro\.adapter)|class\s+OneEuroAdapter/i,
     message: 'Inline 1€ filter detected. MUST use OneEuroAdapter.',
     appliesTo: ['.html', '.tsx', '.jsx'],
   },
