@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>W3C Pointer Control Plane - 1:1 Frame Mapping</title>
+  
+  <!-- 
+    ATTEMPT: 2025-12-31T05:00:00Z
+    FIX: 1:1 frame mapping - cursor in target panel matches finger in camera
+    ADDED: Golden event injection for testing without camera
+  -->
+  
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    html, body {
+      height: 100%; width: 100%;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #1a1a2e;
+      color: #eee;
+    }
+    
+    /* Main layout: Camera/Targets stacked on left, controls on right */
+    .main-container {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      height: 100%;
+      gap: 10px;
+      padding: 10px;
+    }
+    
+    /* Left side: Camera with targets overlay - THE KEY CHANGE */
+    .interaction-zone {
+      position: relative;
+      background: #000;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    
+    /* Camera layer (z=0) */
+    #video {
+      position: absolute;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transform: scaleX(-1);  /* Mirror for selfie view */
+      opacity: 0.6;
+    }
+    
+    #landmarks-canvas {
+      position: absolute;
+      width: 100%; height: 100%;
+      transform: scaleX(-1);
+      pointer-events: none;
+      z-index: 1;
+    }
+    
+    /* Target layer (z=2) - SAME FRAME as camera */
+    #target-overlay {
+      position: absolute;
+      width: 100%; height: 100%;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(2, 1fr);
+      gap: 20px;
+      padding: 40px;
+      z-index: 2;
+    }
+    
+    .click-target {
+      background: rgba(50, 50, 80, 0.7);
+      border: 3px solid rgba(100, 100, 150, 0.8);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      cursor: pointer;
+      transition: all 0.15s ease-out;
+      user-select: none;
+    }
+    .click-target:hover {
+      border-color: #00ff88;
+      background: rgba(0, 255, 136, 0.2);
+      transform: scale(1.05);
+    }
+    .click-target.hit {
+      background: rgba(0, 255, 136, 0.6) !important;
+      border-color: #00ff88 !important;
+      animation: hit-pulse 0.3s ease-out;
+    }
+    @keyframes hit-pulse {
+      0% { transform: scale(1.15); }
+      100% { transform: scale(1); }
+    }
+    
+    /* Virtual cursor (z=3) - CONSTRAINED to interaction zone */
+    #virtual-cursor {
+      position: absolute;
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      background: rgba(0, 255, 136, 0.9);
+      border: 3px solid #fff;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      z-index: 3;
+      display: none;
+      box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+    }
+    #virtual-cursor.armed { background: rgba(0, 255, 136, 0.9); }
+    #virtual-cursor.active { background: rgba(68, 136, 255, 0.9); box-shadow: 0 0 30px rgba(68, 136, 255, 0.7); }
+    #virtual-cursor.arming { background: rgba(255, 204, 0, 0.9); animation: pulse 0.3s infinite alternate; }
+    #virtual-cursor.disarmed { background: rgba(136, 136, 136, 0.5); }
+    @keyframes pulse { from { opacity: 0.6; } to { opacity: 1; } }
+    
+    /* Crosshair showing exact finger position */
+    .crosshair {
+      position: absolute;
+      pointer-events: none;
+      z-index: 4;
+    }
+    .crosshair-h {
+      width: 100%; height: 1px;
+      background: rgba(255, 0, 0, 0.5);
+      left: 0;
+    }
+    .crosshair-v {
+      width: 1px; height: 100%;
+      background: rgba(255, 0, 0, 0.5);
+      top: 0;
+    }
+    
+    /* Right side: Controls */
+    .control-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow-y: auto;
+    }
+    
+    .panel {
+      background: #16213e;
+      border-radius: 8px;
+      padding: 12px;
+    }
+    .panel-title {
+      font-size: 12px;
+      text-transform: uppercase;
+      color: #888;
+      margin-bottom: 8px;
+      border-bottom: 1px solid #333;
+      padding-bottom: 4px;
+    }
+    
+    /* FSM State */
+    .fsm-state {
+      font-size: 20px;
+      font-weight: bold;
+      text-align: center;
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+    }
+    .fsm-state.disarmed { background: #333; color: #888; }
+    .fsm-state.arming { background: #663300; color: #ffcc00; animation: pulse 0.5s infinite alternate; }
+    .fsm-state.armed { background: #006633; color: #00ff88; }
+    .fsm-state.active { background: #003366; color: #4488ff; }
+    
+    /* Status items */
+    .status-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 0;
+      border-bottom: 1px solid #222;
+    }
+    .status-label { color: #888; font-size: 12px; }
+    .status-value { font-family: monospace; font-weight: 600; }
+    .status-value.green { color: #00ff88; }
+    .status-value.yellow { color: #ffcc00; }
+    .status-value.blue { color: #4488ff; }
+    
+    /* Gesture display */
+    .gesture-display {
+      text-align: center;
+      padding: 10px;
+    }
+    .gesture-icon { font-size: 40px; }
+    .gesture-name { font-size: 14px; color: #00ff88; margin-top: 4px; }
+    
+    /* Event log */
+    #event-log {
+      font-family: monospace;
+      font-size: 10px;
+      background: #0a0a15;
+      padding: 8px;
+      border-radius: 4px;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+    #event-log .pointer-event { color: #00ff88; }
+    #event-log .fsm-event { color: #ffcc00; }
+    #event-log .hit-event { color: #ff4444; }
+    #event-log .golden-event { color: #ff88ff; }
+    
+    /* Golden Test Controls */
+    .golden-controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+    .golden-btn {
+      background: #2a2a4e;
+      border: 1px solid #444;
+      color: #fff;
+      padding: 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 11px;
+      transition: all 0.15s;
+    }
+    .golden-btn:hover { background: #3a3a6e; border-color: #666; }
+    .golden-btn.active { background: #4a4a8e; border-color: #00ff88; }
+    
+    /* Position slider for golden input */
+    .position-control {
+      margin-top: 10px;
+    }
+    .position-control label {
+      display: block;
+      font-size: 11px;
+      color: #888;
+      margin-bottom: 4px;
+    }
+    .position-control input[type="range"] {
+      width: 100%;
+    }
+    .position-display {
+      text-align: center;
+      font-family: monospace;
+      font-size: 12px;
+      color: #00ff88;
+      margin-top: 4px;
+    }
+    
+    button {
+      background: #00ff88;
+      color: #000;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      width: 100%;
+    }
+    button:hover { background: #00cc66; }
+    button:disabled { background: #333; color: #666; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+  <div class="main-container">
+    <!-- LEFT: Interaction Zone (Camera + Targets + Cursor all in same frame) -->
+    <div class="interaction-zone" id="interaction-zone">
+      <video id="video" autoplay playsinline muted></video>
+      <canvas id="landmarks-canvas"></canvas>
+      
+      <!-- Target overlay - positioned over camera -->
+      <div id="target-overlay">
+        <div class="click-target" data-target="1">🍎</div>
+        <div class="click-target" data-target="2">🍊</div>
+        <div class="click-target" data-target="3">🍋</div>
+        <div class="click-target" data-target="4">🍇</div>
+        <div class="click-target" data-target="5">🍓</div>
+        <div class="click-target" data-target="6">🫐</div>
+      </div>
+      
+      <!-- Virtual cursor - INSIDE interaction zone, uses relative positioning -->
+      <div id="virtual-cursor"></div>
+      
+      <!-- Crosshairs for debugging position -->
+      <div id="crosshair-h" class="crosshair crosshair-h" style="display:none;"></div>
+      <div id="crosshair-v" class="crosshair crosshair-v" style="display:none;"></div>
+    </div>
+    
+    <!-- RIGHT: Control Panel -->
+    <div class="control-panel">
+      <!-- Camera Control -->
+      <div class="panel">
+        <div class="panel-title">📹 Camera</div>
+        <button id="start-btn" onclick="window.startDemo()">▶ Start Camera</button>
+      </div>
+      
+      <!-- FSM State -->
+      <div class="panel">
+        <div class="panel-title">⚙️ FSM State</div>
+        <div id="fsm-state" class="fsm-state disarmed">DISARMED</div>
+        <div class="status-row">
+          <span class="status-label">Hits</span>
+          <span id="status-hits" class="status-value green">0</span>
+        </div>
+      </div>
+      
+      <!-- Current Gesture -->
+      <div class="panel">
+        <div class="panel-title">🤚 Gesture</div>
+        <div class="gesture-display">
+          <div id="gesture-icon" class="gesture-icon">❓</div>
+          <div id="gesture-name" class="gesture-name">None</div>
+        </div>
+      </div>
+      
+      <!-- Position -->
+      <div class="panel">
+        <div class="panel-title">📍 Position (Normalized 0-1)</div>
+        <div class="status-row">
+          <span class="status-label">Raw</span>
+          <span id="status-raw" class="status-value">--</span>
+        </div>
+        <div class="status-row">
+          <span class="status-label">Smoothed</span>
+          <span id="status-smoothed" class="status-value blue">--</span>
+        </div>
+      </div>
+      
+      <!-- GOLDEN INPUT TESTING -->
+      <div class="panel">
+        <div class="panel-title">🧪 Golden Input (No Camera)</div>
+        <div class="golden-controls">
+          <button class="golden-btn" onclick="injectGoldenGesture('Open_Palm')">✋ Palm</button>
+          <button class="golden-btn" onclick="injectGoldenGesture('Pointing_Up')">☝️ Point</button>
+          <button class="golden-btn" onclick="injectGoldenGesture('Closed_Fist')">✊ Fist</button>
+          <button class="golden-btn" onclick="injectGoldenGesture('None')">❌ None</button>
+        </div>
+        <div class="position-control">
+          <label>X Position: <span id="golden-x-val">0.50</span></label>
+          <input type="range" id="golden-x" min="0" max="100" value="50" oninput="updateGoldenPosition()">
+        </div>
+        <div class="position-control">
+          <label>Y Position: <span id="golden-y-val">0.50</span></label>
+          <input type="range" id="golden-y" min="0" max="100" value="50" oninput="updateGoldenPosition()">
+        </div>
+        <div class="position-display" id="golden-pos">(0.50, 0.50)</div>
+        <button class="golden-btn" style="margin-top:8px; grid-column: span 2; background:#663399;" onclick="runGoldenSequence()">🎬 Run Click Sequence</button>
+      </div>
+      
+      <!-- Event Log -->
+      <div class="panel" style="flex: 1; min-height: 0;">
+        <div class="panel-title">📝 Event Log</div>
+        <div id="event-log"></div>
+      </div>
+    </div>
+  </div>
+  
+  <script type="module">
+    import { GestureRecognizer, FilesetResolver } from 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.8/vision_bundle.mjs';
+    
+    // ========================================================================
+    // STATE
+    // ========================================================================
+    const state = {
+      gestureRecognizer: null,
+      video: null,
+      landmarksCanvas: null,
+      interactionZone: null,
+      isRunning: false,
+      lastTimestamp: 0,
+      
+      // 1€ Filter state
+      filter: { x: null, y: null, dx: null, dy: null, lastTime: null },
+      config: { minCutoff: 1.0, beta: 0.007 },
+      
+      // Current frame (normalized 0-1)
+      currentFrame: {
+        gesture: 'None',
+        confidence: 0,
+        rawPosition: null,      // Raw from MediaPipe (0-1)
+        smoothedPosition: null, // After 1€ filter (0-1)
+        fsmState: 'DISARMED',
+        palmFacing: false,
+      },
+      
+      // Golden input mode
+      goldenMode: false,
+      goldenPosition: { x: 0.5, y: 0.5 },
+      goldenGesture: 'None',
+      
+      // FSM
+      fsmHistory: [],
+      armingStart: null,
+      
+      // Pointer state
+      pointerState: {
+        isDown: false,
+        pointerId: 1,
+        hitCount: 0,
+      },
+      
+      // Event log
+      eventLog: [],
+    };
+    
+    // ========================================================================
+    // COORDINATE MAPPING - THE KEY FIX
+    // ========================================================================
+    
+    /**
+     * Convert normalized position (0-1) to pixel position WITHIN the interaction zone.
+     * This ensures 1:1 mapping: finger at (0.3, 0.7) in camera = cursor at (0.3, 0.7) in zone.
+     */
+    function normalizedToZonePixels(normX, normY) {
+      const zone = state.interactionZone;
+      if (!zone) return { x: 0, y: 0 };
+      
+      const rect = zone.getBoundingClientRect();
+      
+      // Mirror X for selfie view (camera is mirrored, so we mirror cursor too)
+      const mirroredX = 1 - normX;
+      
+      return {
+        x: rect.left + mirroredX * rect.width,
+        y: rect.top + normY * rect.height,
+      };
+    }
+    
+    /**
+     * Convert normalized position to LOCAL pixel position within zone (for cursor element)
+     */
+    function normalizedToLocalPixels(normX, normY) {
+      const zone = state.interactionZone;
+      if (!zone) return { x: 0, y: 0 };
+      
+      const rect = zone.getBoundingClientRect();
+      const mirroredX = 1 - normX;
+      
+      return {
+        x: mirroredX * rect.width,
+        y: normY * rect.height,
+      };
+    }
+    
+    // ========================================================================
+    // W3C POINTER EVENT FACTORY
+    // ========================================================================
+    function createW3CPointerEvent(type, screenPosition, options = {}) {
+      return new PointerEvent(type, {
+        bubbles: true,
+        cancelable: true,
+        composed: true,
+        
+        clientX: screenPosition.x,
+        clientY: screenPosition.y,
+        screenX: screenPosition.x,
+        screenY: screenPosition.y,
+        
+        pointerId: options.pointerId ?? state.pointerState.pointerId,
+        pointerType: 'pen',
+        isPrimary: true,
+        
+        pressure: type === 'pointerdown' ? 0.5 : (type === 'pointermove' ? 0.5 : 0),
+        
+        button: type === 'pointerdown' ? 0 : (type === 'pointerup' ? 0 : -1),
+        buttons: type === 'pointerdown' ? 1 : (type === 'pointermove' && state.pointerState.isDown ? 1 : 0),
+      });
+    }
+    
+    function dispatchPointerEvent(type, normalizedPosition) {
+      // Convert normalized (0-1) to screen pixels for event dispatch
+      const screenPos = normalizedToZonePixels(normalizedPosition.x, normalizedPosition.y);
+      const event = createW3CPointerEvent(type, screenPos);
+      
+      const target = document.elementFromPoint(screenPos.x, screenPos.y);
+      
+      if (target) {
+        target.dispatchEvent(event);
+        logEvent('pointer-event', `${type} @ (${normalizedPosition.x.toFixed(2)}, ${normalizedPosition.y.toFixed(2)}) → ${target.className.split(' ')[0] || target.tagName}`);
+        return target;
+      }
+      return null;
+    }
+    
+    // ========================================================================
+    // 1€ FILTER
+    // ========================================================================
+    function computeAlpha(cutoff, dt) {
+      const tau = 1.0 / (2 * Math.PI * cutoff);
+      return 1.0 / (1.0 + tau / dt);
+    }
+    
+    function oneEuroFilter(x, y, timestamp) {
+      const { filter, config } = state;
+      
+      if (filter.lastTime === null) {
+        filter.x = x; filter.y = y;
+        filter.dx = 0; filter.dy = 0;
+        filter.lastTime = timestamp;
+        return { x, y };
+      }
+      
+      const dt = Math.max((timestamp - filter.lastTime) / 1000, 0.001);
+      filter.lastTime = timestamp;
+      
+      const dx = (x - filter.x) / dt;
+      const dy = (y - filter.y) / dt;
+      
+      const alphaDeriv = computeAlpha(1.0, dt);
+      filter.dx = filter.dx + alphaDeriv * (dx - filter.dx);
+      filter.dy = filter.dy + alphaDeriv * (dy - filter.dy);
+      
+      const speed = Math.sqrt(filter.dx * filter.dx + filter.dy * filter.dy);
+      const cutoff = config.minCutoff + config.beta * speed;
+      
+      const alpha = computeAlpha(cutoff, dt);
+      filter.x = filter.x + alpha * (x - filter.x);
+      filter.y = filter.y + alpha * (y - filter.y);
+      
+      return { x: filter.x, y: filter.y };
+    }
+    
+    function resetFilter() {
+      state.filter = { x: null, y: null, dx: null, dy: null, lastTime: null };
+    }
+    
+    // ========================================================================
+    // FSM
+    // ========================================================================
+    const ARM_THRESHOLD_MS = 300;
+    
+    function updateFSM(gesture, palmFacing, normalizedPosition) {
+      const prev = state.currentFrame.fsmState;
+      let next = prev;
+      
+      if (!palmFacing && gesture !== 'Open_Palm' && gesture !== 'Pointing_Up') {
+        next = 'DISARMED';
+        state.armingStart = null;
+        
+        if (state.pointerState.isDown) {
+          dispatchPointerEvent('pointerup', normalizedPosition);
+          state.pointerState.isDown = false;
+        }
+      } else if (gesture === 'Open_Palm') {
+        if (prev === 'DISARMED') {
+          state.armingStart = Date.now();
+          next = 'ARMING';
+        } else if (prev === 'ARMING') {
+          if (Date.now() - state.armingStart > ARM_THRESHOLD_MS) {
+            next = 'ARMED';
+          }
+        } else if (prev === 'ACTIVE') {
+          if (state.pointerState.isDown) {
+            dispatchPointerEvent('pointerup', normalizedPosition);
+            state.pointerState.isDown = false;
+          }
+          next = 'ARMED';
+        }
+      } else if (gesture === 'Pointing_Up' && prev === 'ARMED') {
+        next = 'ACTIVE';
+        if (!state.pointerState.isDown) {
+          dispatchPointerEvent('pointerdown', normalizedPosition);
+          state.pointerState.isDown = true;
+        }
+      }
+      
+      if (next !== prev) {
+        state.fsmHistory.unshift(`${new Date().toLocaleTimeString()} ${prev} → ${next}`);
+        if (state.fsmHistory.length > 20) state.fsmHistory.pop();
+        logEvent('fsm-event', `${prev} → ${next}`);
+      }
+      
+      state.currentFrame.fsmState = next;
+    }
+    
+    // ========================================================================
+    // UPDATE CURSOR POSITION
+    // ========================================================================
+    function updateCursor(normalizedPosition) {
+      const cursor = document.getElementById('virtual-cursor');
+      if (!cursor || !normalizedPosition) return;
+      
+      // Convert to local pixels within the interaction zone
+      const local = normalizedToLocalPixels(normalizedPosition.x, normalizedPosition.y);
+      
+      cursor.style.display = 'block';
+      cursor.style.left = local.x + 'px';
+      cursor.style.top = local.y + 'px';
+      cursor.className = state.currentFrame.fsmState.toLowerCase();
+      
+      // Update crosshairs
+      const crossH = document.getElementById('crosshair-h');
+      const crossV = document.getElementById('crosshair-v');
+      if (crossH && crossV) {
+        crossH.style.display = 'block';
+        crossH.style.top = local.y + 'px';
+        crossV.style.display = 'block';
+        crossV.style.left = local.x + 'px';
+      }
+    }
+    
+    // ========================================================================
+    // EVENT LOG
+    // ========================================================================
+    function logEvent(type, message) {
+      state.eventLog.unshift({ type, message, time: new Date().toLocaleTimeString() });
+      if (state.eventLog.length > 50) state.eventLog.pop();
+      
+      const el = document.getElementById('event-log');
+      if (el) {
+        el.innerHTML = state.eventLog.map(e => 
+          `<div class="${e.type}">[${e.time}] ${e.message}</div>`
+        ).join('');
+      }
+    }
+    
+    // ========================================================================
+    // MEDIAPIPE
+    // ========================================================================
+    async function initMediaPipe() {
+      const vision = await FilesetResolver.forVisionTasks(
+        'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.8/wasm'
+      );
+      
+      state.gestureRecognizer = await GestureRecognizer.createFromOptions(vision, {
+        baseOptions: {
+          modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task',
+          delegate: 'GPU',
+        },
+        runningMode: 'VIDEO',
+        numHands: 1,
+      });
+      
+      console.log('✅ MediaPipe initialized');
+    }
+    
+    async function startCamera() {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { width: 640, height: 480, facingMode: 'user' },
+      });
+      
+      state.video.srcObject = stream;
+      await state.video.play();
+      
+      state.landmarksCanvas.width = state.video.videoWidth;
+      state.landmarksCanvas.height = state.video.videoHeight;
+      
+      state.isRunning = true;
+      state.goldenMode = false;
+      processFrame();
+    }
+    
+    // ========================================================================
+    // PROCESS FRAME
+    // ========================================================================
+    function processFrame() {
+      if (!state.isRunning && !state.goldenMode) {
+        requestAnimationFrame(processFrame);
+        return;
+      }
+      
+      const timestamp = performance.now();
+      
+      // Skip if same timestamp
+      if (!state.goldenMode && timestamp === state.lastTimestamp) {
+        requestAnimationFrame(processFrame);
+        return;
+      }
+      state.lastTimestamp = timestamp;
+      
+      let rawX, rawY, gesture, confidence, palmFacing;
+      
+      if (state.goldenMode) {
+        // GOLDEN INPUT MODE - use injected values
+        rawX = state.goldenPosition.x;
+        rawY = state.goldenPosition.y;
+        gesture = state.goldenGesture;
+        confidence = 0.95;
+        palmFacing = true;
+      } else if (state.gestureRecognizer) {
+        // CAMERA MODE
+        const results = state.gestureRecognizer.recognizeForVideo(state.video, timestamp);
+        
+        // Clear landmarks canvas
+        const ctx = state.landmarksCanvas.getContext('2d');
+        ctx.clearRect(0, 0, state.landmarksCanvas.width, state.landmarksCanvas.height);
+        
+        if (!results.landmarks || results.landmarks.length === 0) {
+          state.currentFrame.gesture = 'None';
+          state.currentFrame.fsmState = 'DISARMED';
+          resetFilter();
+          document.getElementById('virtual-cursor').style.display = 'none';
+          document.getElementById('crosshair-h').style.display = 'none';
+          document.getElementById('crosshair-v').style.display = 'none';
+          updateUI();
+          requestAnimationFrame(processFrame);
+          return;
+        }
+        
+        const landmarks = results.landmarks[0];
+        const gestures = results.gestures;
+        
+        gesture = 'None';
+        confidence = 0;
+        if (gestures && gestures.length > 0 && gestures[0].length > 0) {
+          gesture = gestures[0][0].categoryName;
+          confidence = gestures[0][0].score;
+        }
+        
+        // Index fingertip (landmark 8) - already normalized 0-1
+        rawX = landmarks[8].x;
+        rawY = landmarks[8].y;
+        
+        // Palm facing detection
+        const palmNormalZ = -(landmarks[9].z - landmarks[0].z);
+        palmFacing = palmNormalZ > -0.05;
+        
+        // Draw landmarks
+        drawLandmarks(ctx, landmarks);
+      } else {
+        requestAnimationFrame(processFrame);
+        return;
+      }
+      
+      // Store raw position
+      state.currentFrame.rawPosition = { x: rawX, y: rawY };
+      
+      // Apply 1€ filter (operates in normalized 0-1 space)
+      const smoothed = oneEuroFilter(rawX, rawY, timestamp);
+      state.currentFrame.smoothedPosition = smoothed;
+      state.currentFrame.gesture = gesture;
+      state.currentFrame.confidence = confidence;
+      state.currentFrame.palmFacing = palmFacing;
+      
+      // Update cursor position (1:1 mapping)
+      updateCursor(smoothed);
+      
+      // Update FSM and dispatch events
+      updateFSM(gesture, palmFacing, smoothed);
+      
+      // Emit pointermove if armed or active
+      if (state.currentFrame.fsmState === 'ARMED' || state.currentFrame.fsmState === 'ACTIVE') {
+        dispatchPointerEvent('pointermove', smoothed);
+      }
+      
+      // Update UI
+      updateUI();
+      
+      requestAnimationFrame(processFrame);
+    }
+    
+    // ========================================================================
+    // DRAW LANDMARKS
+    // ========================================================================
+    function drawLandmarks(ctx, landmarks) {
+      const w = state.landmarksCanvas.width;
+      const h = state.landmarksCanvas.height;
+      
+      const connections = [
+        [0, 1], [1, 2], [2, 3], [3, 4],
+        [0, 5], [5, 6], [6, 7], [7, 8],
+        [0, 9], [9, 10], [10, 11], [11, 12],
+        [0, 13], [13, 14], [14, 15], [15, 16],
+        [0, 17], [17, 18], [18, 19], [19, 20],
+        [5, 9], [9, 13], [13, 17],
+      ];
+      
+      ctx.strokeStyle = '#ff4444';
+      ctx.lineWidth = 2;
+      for (const [i, j] of connections) {
+        ctx.beginPath();
+        ctx.moveTo(landmarks[i].x * w, landmarks[i].y * h);
+        ctx.lineTo(landmarks[j].x * w, landmarks[j].y * h);
+        ctx.stroke();
+      }
+      
+      ctx.fillStyle = '#00ff88';
+      for (const lm of landmarks) {
+        ctx.beginPath();
+        ctx.arc(lm.x * w, lm.y * h, 4, 0, 2 * Math.PI);
+        ctx.fill();
+      }
+      
+      ctx.fillStyle = '#4488ff';
+      ctx.beginPath();
+      ctx.arc(landmarks[8].x * w, landmarks[8].y * h, 8, 0, 2 * Math.PI);
+      ctx.fill();
+    }
+    
+    // ========================================================================
+    // UPDATE UI
+    // ========================================================================
+    function updateUI() {
+      const { gesture, confidence, rawPosition, smoothedPosition, fsmState } = state.currentFrame;
+      
+      // FSM state
+      const fsmEl = document.getElementById('fsm-state');
+      if (fsmEl) {
+        fsmEl.textContent = fsmState;
+        fsmEl.className = 'fsm-state ' + fsmState.toLowerCase();
+      }
+      
+      // Hits
+      document.getElementById('status-hits').textContent = state.pointerState.hitCount;
+      
+      // Gesture
+      const gestureIcons = {
+        'None': '❓', 'Open_Palm': '✋', 'Closed_Fist': '✊',
+        'Pointing_Up': '☝️', 'Victory': '✌️', 'Thumb_Up': '👍',
+      };
+      document.getElementById('gesture-icon').textContent = gestureIcons[gesture] || '❓';
+      document.getElementById('gesture-name').textContent = gesture.replace('_', ' ');
+      
+      // Position
+      if (rawPosition) {
+        document.getElementById('status-raw').textContent = 
+          `(${rawPosition.x.toFixed(2)}, ${rawPosition.y.toFixed(2)})`;
+      }
+      if (smoothedPosition) {
+        document.getElementById('status-smoothed').textContent = 
+          `(${smoothedPosition.x.toFixed(2)}, ${smoothedPosition.y.toFixed(2)})`;
+      }
+    }
+    
+    // ========================================================================
+    // CLICK TARGET HANDLERS
+    // ========================================================================
+    function setupClickTargets() {
+      document.querySelectorAll('.click-target').forEach(target => {
+        target.addEventListener('pointerdown', (e) => {
+          if (e.pointerType === 'pen') {
+            target.classList.add('hit');
+            state.pointerState.hitCount++;
+            logEvent('hit-event', `🎯 HIT: ${target.textContent}`);
+            setTimeout(() => target.classList.remove('hit'), 300);
+          }
+        });
+      });
+    }
+    
+    // ========================================================================
+    // GOLDEN INPUT INJECTION (For testing without camera)
+    // ========================================================================
+    window.injectGoldenGesture = function(gesture) {
+      state.goldenMode = true;
+      state.goldenGesture = gesture;
+      logEvent('golden-event', `Injected gesture: ${gesture}`);
+      
+      // Trigger one frame update
+      state.isRunning = false;
+      processFrame();
+    };
+    
+    window.updateGoldenPosition = function() {
+      const x = parseFloat(document.getElementById('golden-x').value) / 100;
+      const y = parseFloat(document.getElementById('golden-y').value) / 100;
+      
+      state.goldenPosition = { x, y };
+      state.goldenMode = true;
+      
+      document.getElementById('golden-x-val').textContent = x.toFixed(2);
+      document.getElementById('golden-y-val').textContent = y.toFixed(2);
+      document.getElementById('golden-pos').textContent = `(${x.toFixed(2)}, ${y.toFixed(2)})`;
+      
+      // Trigger frame update
+      state.isRunning = false;
+      processFrame();
+    };
+    
+    window.runGoldenSequence = async function() {
+      logEvent('golden-event', '🎬 Starting golden click sequence...');
+      
+      const positions = [
+        { x: 0.17, y: 0.25 },  // Apple (top-left)
+        { x: 0.50, y: 0.25 },  // Orange (top-center)
+        { x: 0.83, y: 0.25 },  // Lemon (top-right)
+        { x: 0.17, y: 0.75 },  // Grapes (bottom-left)
+        { x: 0.50, y: 0.75 },  // Strawberry (bottom-center)
+        { x: 0.83, y: 0.75 },  // Blueberry (bottom-right)
+      ];
+      
+      state.goldenMode = true;
+      
+      for (let i = 0; i < positions.length; i++) {
+        const pos = positions[i];
+        
+        // Move to position
+        state.goldenPosition = pos;
+        document.getElementById('golden-x').value = pos.x * 100;
+        document.getElementById('golden-y').value = pos.y * 100;
+        document.getElementById('golden-pos').textContent = `(${pos.x.toFixed(2)}, ${pos.y.toFixed(2)})`;
+        
+        // Show palm to arm
+        state.goldenGesture = 'Open_Palm';
+        processFrame();
+        await sleep(100);
+        processFrame();
+        await sleep(100);
+        processFrame();
+        await sleep(200);  // Wait for arming
+        processFrame();
+        
+        // Point to click
+        state.goldenGesture = 'Pointing_Up';
+        processFrame();
+        await sleep(150);
+        
+        // Release
+        state.goldenGesture = 'Open_Palm';
+        processFrame();
+        await sleep(150);
+        
+        // Disarm
+        state.goldenGesture = 'None';
+        processFrame();
+        await sleep(200);
+      }
+      
+      logEvent('golden-event', '🎬 Sequence complete!');
+    };
+    
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+    
+    // ========================================================================
+    // INIT
+    // ========================================================================
+    window.startDemo = async function() {
+      const btn = document.getElementById('start-btn');
+      btn.disabled = true;
+      btn.textContent = '⏳ Loading...';
+      
+      try {
+        await initMediaPipe();
+        btn.textContent = '⏳ Starting Camera...';
+        await startCamera();
+        btn.textContent = '✓ Camera Running';
+        logEvent('fsm-event', 'Camera started - show palm to arm');
+      } catch (err) {
+        console.error(err);
+        btn.disabled = false;
+        btn.textContent = '❌ Error - Retry';
+        logEvent('hit-event', `Error: ${err.message}`);
+      }
+    };
+    
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      state.video = document.getElementById('video');
+      state.landmarksCanvas = document.getElementById('landmarks-canvas');
+      state.interactionZone = document.getElementById('interaction-zone');
+      
+      setupClickTargets();
+      
+      logEvent('fsm-event', 'Ready - use Golden Input or Start Camera');
+      logEvent('golden-event', 'Try: 🎬 Run Click Sequence to test all targets');
+    });
+  </script>
+</body>
+</html>

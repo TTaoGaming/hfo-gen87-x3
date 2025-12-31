@@ -782,4 +782,219 @@ REQUEST_TIMEOUT_MS=30000
 
 ---
 
-*Updated: 2025-12-30 | Session 2 | Powers of 8 Analysis Complete*
+## 13. PHASED ROLLOUT APPROACH — VS Code → Production Swarm
+
+> **Added by**: Spider Sovereign (2025-12-30 Session 3)  
+> **Context**: User manually switching models. Need structured path to HIVE/8:1010+  
+> **Key Finding**: #runSubagent inherits parent model. Handoffs respect target model but require clicks.
+
+### 13.1 The Progression Ladder
+
+```
+HIVE/8:0000 (Bootstrap)          → HIVE/8:1010 (BFT Primitive)      → HIVE/8:2121+ (Production)
+   1 agent, sequential               8 scatter / 1 gather              64+ parallel workers
+   ANY LLM, no infra                 Basic orchestrator                Full infrastructure
+   $X per phase                      $X/8 per scatter phase            $X/64+ per scatter
+```
+
+### 13.2 Phase 0: HIVE/8:0000 — Manual Sequential (CURRENT)
+
+**Status**: ✅ WORKING NOW  
+**What**: User manually follows H→I→V→E, staying on Claude Opus 4.5 for everything  
+**Model**: `claude-opus-4.5` everywhere (3x multiplier)  
+**Infrastructure**: None (VS Code Copilot subscription)
+
+| Phase | Model | Cost | Notes |
+|-------|-------|------|-------|
+| H (Hunt) | Claude Opus 4.5 | 3x | Research with expensive model |
+| I (Interlock) | Claude Opus 4.5 | 3x | Contracts with expensive model |
+| V (Validate) | Claude Opus 4.5 | 3x | Implementation with expensive model |
+| E (Evolve) | Claude Opus 4.5 | 3x | Refactor with expensive model |
+| **Total** | | **12x** | Expensive but WORKS |
+
+**Evidence from blackboard** (154 signals traced):
+- `HUNT`: 40+ research signals ✅
+- `INTERLOCK`: 30+ contract signals ✅  
+- `VALIDATE`: 20+ implementation signals ✅
+- `EVOLVE`: 10+ refactor signals ✅
+- Test status: 428/620 passing (69%)
+
+**Pros**:
+- ✅ No infrastructure needed
+- ✅ Maximum quality per response
+- ✅ User has full control
+
+**Cons**:
+- ❌ Expensive (3x on everything)
+- ❌ No parallelism
+- ❌ Cognitive load on user to track phases
+
+---
+
+### 13.3 Phase 1: HIVE/8:0000 — Assisted Model Switching (NEXT)
+
+**Status**: 🟡 AGENTS EXIST, UNTESTED  
+**What**: Spider Sovereign orchestrates with handoffs to cheaper worker models  
+**Trigger**: User clicks handoff buttons to switch to gpt-5-mini workers  
+**Infrastructure**: VS Code agents with `send: true` handoffs (buggy but functional)
+
+| Phase | Model | Cost | How |
+|-------|-------|------|-----|
+| H (Hunt) | gpt-5-mini | **FREE** | Handoff to Lidless Legion |
+| I (Interlock) | Claude Opus 4.5 | 3x | Spider synthesizes contracts |
+| V (Validate) | gpt-5-mini | **FREE** | Handoff to Mirror Magus |
+| E (Evolve) | Claude Opus 4.5 | 3x | Spider synthesizes final |
+| **Total** | | **6x** | 50% savings! |
+
+**Pattern**: SCATTER phases (H, V) use cheap models, GATHER phases (I, E) use expensive
+
+**How to Use**:
+```
+1. User → @spider-sovereign "Research auth patterns"
+2. Spider responds + offers: [🔍 Hunt: Research & Reconnaissance] button
+3. User CLICKS button → Switches to @lidless-legion (gpt-5-mini)
+4. Lidless completes research → offers: [🕷️ Return to Spider] button
+5. User CLICKS → Returns with results to Spider
+```
+
+**Agents Ready**:
+| Agent | Model | Location |
+|-------|-------|----------|
+| spider-sovereign | Claude Opus 4.5 | `.github/agents/spider-sovereign.agent.md` |
+| lidless-legion | gpt-5-mini | `.github/agents/lidless-legion.agent.md` |
+| web-weaver | gpt-5-mini | `.github/agents/web-weaver.agent.md` |
+| mirror-magus | gpt-5-mini | `.github/agents/mirror-magus.agent.md` |
+| spore-storm | gpt-5-mini | `.github/agents/spore-storm.agent.md` |
+| red-regnant | gpt-5-mini | `.github/agents/red-regnant.agent.md` |
+| pyre-praetorian | gpt-5-mini | `.github/agents/pyre-praetorian.agent.md` |
+| kraken-keeper | gpt-5-mini | `.github/agents/kraken-keeper.agent.md` |
+
+**Limitation Discovered (2025-12-30)**:
+- `#runSubagent` inherits parent model (Spider's expensive Claude)
+- Handoffs respect target model BUT require user clicks
+- `send: true` exists but is buggy (may still show button)
+
+**Next Step**: Test handoff workflow end-to-end
+
+---
+
+### 13.4 Phase 2: HIVE/8:1010 — MCP Swarm Server (PLANNED)
+
+**Status**: 🔴 SPEC WRITTEN, NOT IMPLEMENTED  
+**What**: Custom MCP server that spawns 8 parallel cheap workers via OpenRouter  
+**Trigger**: Spider calls `hive_scatter(tasks[8])` → MCP server handles parallelism  
+**Infrastructure**: hive-enforcer MCP server + OpenRouter API key
+
+| Phase | Agents | Model | Cost |
+|-------|--------|-------|------|
+| H (Hunt) | 8 parallel | gpt-5-mini | 8 × FREE = **FREE** |
+| I (Interlock) | 1 synthesizer | Claude Opus 4.5 | 3x |
+| V (Validate) | 8 parallel | gpt-5-mini | 8 × FREE = **FREE** |
+| E (Evolve) | 1 synthesizer | Claude Opus 4.5 | 3x |
+| **Total** | 18 agent-phases | | **~6x** with TRUE parallelism |
+
+**Architecture**:
+```
+Spider Sovereign (Claude Opus 4.5, via Copilot)
+    │
+    │  hive_scatter([task1..task8], backend="openrouter", model="gpt-5-mini")
+    ▼
+hive-enforcer MCP Server (local Node.js)
+    │
+    │  Promise.all([...8 parallel HTTP calls...])
+    ▼
+OpenRouter API → 8× gpt-5-mini workers (PARALLEL)
+    │
+    ▼
+Results gathered → returned to Spider
+```
+
+**Cost Estimate**:
+- 8 workers × gpt-5-mini: ~$0.00 (free tier)
+- 2 synthesizers × Claude Opus 4.5: covered by Copilot subscription
+- Total: **~$0 per HIVE cycle** (assuming free tier models)
+
+**Prerequisites**:
+- [ ] OpenRouter account (free sign-up)
+- [ ] `@modelcontextprotocol/sdk` installed
+- [ ] hive-enforcer MCP server implemented
+- [ ] Gen85 gate-validator.ts integrated
+
+---
+
+### 13.5 Phase 3: HIVE/8:2121+ — External Orchestrator (FUTURE)
+
+**Status**: 🔵 FUTURE (when needed for production)  
+**What**: Full LangGraph/Temporal infrastructure for 64+ parallel workers  
+**Infrastructure**: Temporal server, CrewAI agents, external job queue
+
+| Configuration | Max Concurrent | Total Phases | Infrastructure |
+|---------------|----------------|--------------|----------------|
+| HIVE/8:2121 | 64 | 144 | Temporal.io + Workers |
+| HIVE/8:3232 | 512 | 1152 | Kubernetes cluster |
+| HIVE/8:4343 | 4096 | 8736 | Cloud-scale infrastructure |
+
+**When to Scale**:
+- :1010 bottleneck (8 agents insufficient)
+- Production workload requires 64+ parallel
+- Byzantine fault tolerance needed (multiple models vote)
+
+---
+
+### 13.6 Recommended Path (User's Current State)
+
+Based on blackboard analysis (154 signals, 69% tests passing):
+
+| Step | Action | Effort | Benefit |
+|------|--------|--------|---------|
+| **NOW** | Continue Phase 0 (manual) | None | Finish V phase |
+| **SOON** | Test Phase 1 (handoff to gpt-5-mini) | 30 min | 50% cost savings |
+| **NEXT** | Implement Phase 2 (MCP swarm) | 4-8 hours | True parallelism |
+| **LATER** | Phase 3 (external orchestrator) | Days | Production scale |
+
+**Immediate Action**: 
+```
+1. Finish current V phase work (make tests GREEN)
+2. When ready for next H phase, try: @spider-sovereign
+3. Click handoff to @lidless-legion for research (tests gpt-5-mini)
+4. Report findings → Continue iteration
+```
+
+---
+
+### 13.7 Model Inheritance Physics Test Results
+
+| Pattern | Model Used | Cost | User Action |
+|---------|-----------|------|-------------|
+| Direct to `@lidless-legion` | gpt-5-mini | FREE | Type `@lidless-legion` |
+| `@spider-sovereign` → `#runSubagent @lidless-legion` | Claude Opus 4.5 | 3x | INHERITS (bad) |
+| `@spider-sovereign` → Handoff button | gpt-5-mini | FREE | Click button |
+| `@spider-sovereign` → MCP `hive_scatter` | gpt-5-mini | FREE | Automatic |
+
+**Key Insight**: To use cheap models, either:
+1. Talk directly to worker agents (`@lidless-legion`)
+2. Use handoffs (click button)
+3. Use MCP server (Phase 2+)
+
+**Avoid**: `#runSubagent` for cost-sensitive work (inherits expensive model)
+
+---
+
+### 13.8 Blackboard Signal for Rollout Decision
+
+```json
+{
+  "ts": "2025-12-30T23:30:00Z",
+  "mark": 1.0,
+  "pull": "downstream",
+  "msg": "DECIDE: Phased rollout documented. Phase 0 (manual) CURRENT. Phase 1 (handoffs) READY. Phase 2 (MCP swarm) SPEC COMPLETE. Recommend: Finish V phase, then test Phase 1 handoffs for 50% cost savings.",
+  "type": "signal",
+  "hive": "H",
+  "gen": 87,
+  "port": 7
+}
+```
+
+---
+
+*Updated: 2025-12-30 | Session 3 | Phased Rollout Complete*

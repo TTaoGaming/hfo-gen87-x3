@@ -21,10 +21,10 @@ export default defineConfig({
 			use: { ...devices['Desktop Chrome'] },
 		},
 	],
-	// WebServer disabled until we have an app to test
-	// webServer: {
-	// 	command: 'npm run dev',
-	// 	url: 'http://localhost:5173',
-	// 	reuseExistingServer: !process.env.CI,
-	// },
+	webServer: {
+		command: 'npx http-server sandbox/demo-golden -p 9093 --cors -c-1',
+		url: 'http://localhost:9093/simple-pipeline.html',
+		reuseExistingServer: true,
+		timeout: 10000,
+	},
 });

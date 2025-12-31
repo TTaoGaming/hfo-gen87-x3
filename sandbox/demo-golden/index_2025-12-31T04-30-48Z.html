@@ -3,77 +3,52 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gesture Control Plane - Golden Layout Demo</title>
+  <title>W3C Pointer Control Plane - Gen87.X3</title>
   
-  <!-- Golden Layout CSS -->
+  <!-- 
+    ATTEMPT: 2025-12-31T04:30:48Z
+    BASE: demo-golden/index.html (897 lines, working)
+    GOAL: Add W3C Pointer Events + Click Targets
+    STRATEGY: Minimal changes, extend don't rewrite
+  -->
+  
+  <!-- Golden Layout v2.6.0 (ES modules, NO jQuery) -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/golden-layout@2.6.0/dist/css/goldenlayout-base.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/golden-layout@2.6.0/dist/css/themes/goldenlayout-dark-theme.css">
   
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     
     html, body {
-      height: 100%;
-      width: 100%;
+      height: 100%; width: 100%;
       overflow: hidden;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: #1a1a2e;
       color: #eee;
     }
     
-    #layout-container {
-      width: 100%;
-      height: 100%;
-    }
+    #layout-container { width: 100%; height: 100%; }
     
-    /* Golden Layout Overrides - Fix scrollbar clipping */
-    .lm_content {
-      overflow: hidden !important;
-      display: flex !important;
-      flex-direction: column !important;
-    }
+    /* Golden Layout Overrides */
+    .lm_content { overflow: hidden !important; display: flex !important; flex-direction: column !important; }
+    .lm_item_container { overflow: hidden !important; }
+    .lm_header { overflow: visible !important; flex-shrink: 0 !important; }
+    .lm_controls { display: flex !important; gap: 2px; }
+    .lm_tab { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     
-    .lm_item_container {
-      overflow: hidden !important;
-    }
-    
-    /* Fix header button clipping */
-    .lm_header {
-      overflow: visible !important;
-      flex-shrink: 0 !important;
-    }
-    
-    .lm_controls {
-      display: flex !important;
-      gap: 2px;
-    }
-    
-    .lm_tab {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    
-    /* Panel Styles - Responsive */
+    /* Panel Base */
     .panel {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
+      width: 100%; height: 100%;
+      display: flex; flex-direction: column;
       background: #16213e;
       overflow: hidden;
-      min-height: 0; /* Critical for flex children */
+      min-height: 0;
     }
-    
     .panel-content {
       flex: 1 1 auto;
       overflow: hidden;
       padding: 8px;
-      min-height: 0; /* Critical for nested flex */
+      min-height: 0;
       display: flex;
       flex-direction: column;
     }
@@ -81,259 +56,174 @@
     /* Camera Panel */
     #camera-container {
       position: relative;
-      width: 100%;
-      height: 100%;
+      width: 100%; height: 100%;
       background: #000;
       display: flex;
       align-items: center;
       justify-content: center;
     }
-    
     #video {
       position: absolute;
-      width: 100%;
-      height: 100%;
+      width: 100%; height: 100%;
       object-fit: contain;
       transform: scaleX(-1);
     }
-    
     #landmarks-canvas {
       position: absolute;
-      width: 100%;
-      height: 100%;
+      width: 100%; height: 100%;
       object-fit: contain;
       transform: scaleX(-1);
       pointer-events: none;
     }
     
-    /* Cursor Panel */
-    #cursor-container {
+    /* Target Panel - NEW! Click targets for W3C Pointer Events */
+    #target-container {
       position: relative;
-      width: 100%;
-      height: 100%;
+      width: 100%; height: 100%;
       background: #0f0f23;
-      border: 2px dashed #333;
+      display: flex;
+      flex-wrap: wrap;
+      align-content: center;
+      justify-content: center;
+      gap: 20px;
+      padding: 20px;
+    }
+    .click-target {
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      background: #333;
+      border: 3px solid #555;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      cursor: pointer;
+      transition: all 0.2s;
+      user-select: none;
+    }
+    .click-target:hover { border-color: #00ff88; transform: scale(1.1); }
+    .click-target.hit {
+      background: #00ff88 !important;
+      border-color: #00ff88 !important;
+      animation: hit-pulse 0.3s ease-out;
+    }
+    @keyframes hit-pulse {
+      0% { transform: scale(1.3); }
+      100% { transform: scale(1); }
     }
     
-    #cursor-canvas {
-      width: 100%;
-      height: 100%;
+    /* Virtual Cursor - Follows gesture, dispatches W3C events */
+    #virtual-cursor {
+      position: fixed;
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      background: rgba(0, 255, 136, 0.8);
+      border: 3px solid #fff;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      z-index: 9999;
+      transition: background 0.1s;
+      display: none;
     }
+    #virtual-cursor.armed { background: rgba(0, 255, 136, 0.8); }
+    #virtual-cursor.clicking { background: rgba(68, 136, 255, 0.8); }
+    #virtual-cursor.disarmed { background: rgba(136, 136, 136, 0.5); }
     
-    .cursor-label {
-      position: absolute;
-      bottom: 10px;
-      left: 10px;
-      font-size: 12px;
-      color: #666;
-    }
-    
-    /* Status Panel */
-    /* Status Panel - Responsive Grid */
+    /* Status Grid */
     .status-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-      gap: 8px;
-      flex: 1;
-      min-height: 0;
-      align-content: start;
+      gap: 8px; flex: 1; min-height: 0; align-content: start;
     }
-    
     .status-item {
       background: #1a1a2e;
       padding: clamp(6px, 1.5vw, 12px);
       border-radius: 8px;
       border: 1px solid #333;
-      min-width: 0; /* Allow shrinking */
+      min-width: 0;
     }
-    
-    .status-label {
-      font-size: clamp(9px, 1.2vw, 11px);
-      color: #888;
-      text-transform: uppercase;
-      margin-bottom: 2px;
-    }
-    
-    .status-value {
-      font-size: clamp(14px, 2vw, 18px);
-      font-weight: 600;
-      font-family: 'Monaco', monospace;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    
+    .status-label { font-size: 11px; color: #888; text-transform: uppercase; margin-bottom: 2px; }
+    .status-value { font-size: 16px; font-weight: 600; font-family: 'Monaco', monospace; }
     .status-value.green { color: #00ff88; }
     .status-value.yellow { color: #ffcc00; }
     .status-value.red { color: #ff4444; }
     .status-value.blue { color: #4488ff; }
     
-    /* FSM Panel - Responsive */
+    /* FSM State Display */
     .fsm-state {
-      font-size: clamp(16px, 3vw, 24px);
-      font-weight: bold;
+      font-size: 20px; font-weight: bold;
       text-align: center;
-      padding: clamp(10px, 2vw, 20px);
+      padding: 15px;
       border-radius: 8px;
       margin-bottom: 10px;
-      flex-shrink: 0;
     }
-    
     .fsm-state.disarmed { background: #333; color: #888; }
-    .fsm-state.arming { background: #663300; color: #ffcc00; }
+    .fsm-state.arming { background: #663300; color: #ffcc00; animation: pulse 0.5s infinite alternate; }
     .fsm-state.armed { background: #006633; color: #00ff88; }
     .fsm-state.active { background: #003366; color: #4488ff; }
+    @keyframes pulse { from { opacity: 0.7; } to { opacity: 1; } }
     
     .fsm-history {
-      font-family: monospace;
-      font-size: 11px;
-      color: #666;
-      flex: 1;
-      min-height: 0;
-      overflow-y: auto;
+      font-family: monospace; font-size: 11px; color: #666;
+      flex: 1; min-height: 0; overflow-y: auto;
     }
+    .fsm-history div { padding: 2px 0; border-bottom: 1px solid #222; }
     
-    .fsm-history div {
-      padding: 2px 0;
-      border-bottom: 1px solid #222;
-    }
-    
-    /* Controls Panel */
-    .control-group {
-      margin-bottom: 15px;
-    }
-    
-    .control-label {
-      font-size: 12px;
-      color: #888;
-      margin-bottom: 5px;
-    }
-    
-    .control-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    
-    input[type="range"] {
-      flex: 1;
-      accent-color: #00ff88;
-    }
-    
-    .control-value {
-      font-family: monospace;
-      min-width: 50px;
-      text-align: right;
-    }
-    
-    button {
-      background: #00ff88;
-      color: #000;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 600;
-      transition: all 0.2s;
-    }
-    
-    button:hover {
-      background: #00cc66;
-    }
-    
-    button:disabled {
-      background: #333;
-      color: #666;
-      cursor: not-allowed;
-    }
-    
-    /* Gesture Panel - Responsive */
+    /* Gesture Display */
     .gesture-display {
       text-align: center;
-      padding: clamp(8px, 2vw, 20px);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
-      min-height: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      height: 100%; min-height: 0;
     }
+    .gesture-icon { font-size: 48px; margin-bottom: 8px; }
+    .gesture-name { font-size: 18px; font-weight: bold; color: #00ff88; }
+    .gesture-confidence { font-size: 14px; color: #888; margin-top: 5px; }
     
-    .gesture-icon {
-      font-size: clamp(32px, 8vw, 64px);
-      margin-bottom: 8px;
-      line-height: 1;
+    /* Event Log */
+    #event-log {
+      font-family: monospace; font-size: 10px;
+      background: #0a0a15; padding: 8px;
+      border-radius: 4px; height: 100%;
+      overflow-y: auto; color: #888;
     }
+    #event-log .pointer-event { color: #00ff88; }
+    #event-log .fsm-event { color: #ffcc00; }
+    #event-log .hit-event { color: #ff4444; }
     
-    .gesture-name {
-      font-size: clamp(14px, 2.5vw, 20px);
-      font-weight: bold;
-      color: #00ff88;
+    button {
+      background: #00ff88; color: #000;
+      border: none; padding: 10px 20px;
+      border-radius: 6px; cursor: pointer;
+      font-weight: 600; transition: all 0.2s;
     }
-    
-    .gesture-confidence {
-      font-size: 14px;
-      color: #888;
-      margin-top: 5px;
-    }
-    
-    /* Loading */
-    .loading {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
-      color: #888;
-    }
-    
-    .spinner {
-      width: 40px;
-      height: 40px;
-      border: 3px solid #333;
-      border-top-color: #00ff88;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin-bottom: 10px;
-    }
-    
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
+    button:hover { background: #00cc66; }
+    button:disabled { background: #333; color: #666; cursor: not-allowed; }
   </style>
 </head>
 <body>
   <div id="layout-container"></div>
+  
+  <!-- Virtual cursor for W3C pointer events -->
+  <div id="virtual-cursor"></div>
   
   <script type="module">
     import { GestureRecognizer, FilesetResolver } from 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.8/vision_bundle.mjs';
     import { GoldenLayout } from 'https://esm.sh/golden-layout@2.6.0';
     
     // ========================================================================
-    // State
+    // STATE
     // ========================================================================
     const state = {
       gestureRecognizer: null,
       video: null,
       landmarksCanvas: null,
-      cursorCanvas: null,
       isRunning: false,
       lastTimestamp: 0,
       
-      // Filter state
-      filter: {
-        x: null,
-        y: null,
-        dx: null,
-        dy: null,
-        lastTime: null,
-      },
-      
-      // Config
-      config: {
-        minCutoff: 1.0,
-        beta: 0.007,
-      },
+      // 1€ Filter state
+      filter: { x: null, y: null, dx: null, dy: null, lastTime: null },
+      config: { minCutoff: 1.0, beta: 0.007 },
       
       // Current frame
       currentFrame: {
@@ -342,20 +232,95 @@
         position: null,
         smoothed: null,
         fsmState: 'DISARMED',
+        palmFacing: false,
       },
       
       // FSM
       fsmHistory: [],
+      armingStart: null,
+      
+      // W3C Pointer Event tracking
+      pointerState: {
+        lastPosition: null,
+        isDown: false,
+        pointerId: 1,
+        hitCount: 0,
+      },
+      
+      // Event log
+      eventLog: [],
     };
     
     // ========================================================================
-    // 1€ Filter
+    // W3C POINTER EVENT FACTORY (Inline - from w3c-pointer-factory.ts)
     // ========================================================================
-    function lowPassFilter(prevValue, newValue, alpha) {
-      if (prevValue === null) return newValue;
-      return prevValue + alpha * (newValue - newValue);
+    function createW3CPointerEvent(type, position, options = {}) {
+      const init = {
+        bubbles: true,
+        cancelable: true,
+        composed: true,
+        
+        // Position
+        clientX: position.x,
+        clientY: position.y,
+        screenX: position.x,
+        screenY: position.y,
+        
+        // Pointer identity
+        pointerId: options.pointerId ?? state.pointerState.pointerId,
+        pointerType: 'pen',  // Gesture = pen-like input
+        isPrimary: true,
+        
+        // Pressure (W3C: 0.5 for active, 0 for hover)
+        pressure: type === 'pointerdown' ? 0.5 : (type === 'pointermove' ? 0.5 : 0),
+        tangentialPressure: 0,
+        
+        // Tilt (gesture has no tilt)
+        tiltX: 0,
+        tiltY: 0,
+        twist: 0,
+        
+        // Contact geometry
+        width: 1,
+        height: 1,
+        
+        // Button state
+        button: type === 'pointerdown' ? 0 : (type === 'pointerup' ? 0 : -1),
+        buttons: type === 'pointerdown' ? 1 : (type === 'pointermove' && state.pointerState.isDown ? 1 : 0),
+        
+        // Modifiers
+        ctrlKey: false,
+        shiftKey: false,
+        altKey: false,
+        metaKey: false,
+      };
+      
+      return new PointerEvent(type, init);
     }
     
+    // ========================================================================
+    // DISPATCH W3C POINTER EVENT
+    // ========================================================================
+    function dispatchPointerEvent(type, screenPosition) {
+      const event = createW3CPointerEvent(type, screenPosition);
+      
+      // Find element at position
+      const target = document.elementFromPoint(screenPosition.x, screenPosition.y);
+      
+      if (target) {
+        target.dispatchEvent(event);
+        
+        // Log event
+        logEvent('pointer-event', `${type} @ (${Math.round(screenPosition.x)}, ${Math.round(screenPosition.y)}) → ${target.className || target.tagName}`);
+        
+        return target;
+      }
+      return null;
+    }
+    
+    // ========================================================================
+    // 1€ FILTER (from working index.html)
+    // ========================================================================
     function computeAlpha(cutoff, dt) {
       const tau = 1.0 / (2 * Math.PI * cutoff);
       return 1.0 / (1.0 + tau / dt);
@@ -376,20 +341,16 @@
       const dt = Math.max((timestamp - filter.lastTime) / 1000, 0.001);
       filter.lastTime = timestamp;
       
-      // Derivative
       const dx = (x - filter.x) / dt;
       const dy = (y - filter.y) / dt;
       
-      // Filter derivative
       const alphaDeriv = computeAlpha(1.0, dt);
       filter.dx = filter.dx + alphaDeriv * (dx - filter.dx);
       filter.dy = filter.dy + alphaDeriv * (dy - filter.dy);
       
-      // Adaptive cutoff
       const speed = Math.sqrt(filter.dx * filter.dx + filter.dy * filter.dy);
       const cutoff = config.minCutoff + config.beta * speed;
       
-      // Filter position
       const alpha = computeAlpha(cutoff, dt);
       filter.x = filter.x + alpha * (x - filter.x);
       filter.y = filter.y + alpha * (y - filter.y);
@@ -402,45 +363,77 @@
     }
     
     // ========================================================================
-    // FSM (Simplified)
+    // FSM (from working index.html + W3C events)
     // ========================================================================
-    let armingStart = null;
     const ARM_THRESHOLD_MS = 300;
     
-    function updateFSM(gesture, palmFacing) {
+    function updateFSM(gesture, palmFacing, screenPosition) {
       const prev = state.currentFrame.fsmState;
       let next = prev;
       
       if (!palmFacing) {
         next = 'DISARMED';
-        armingStart = null;
+        state.armingStart = null;
+        
+        // Pointer up if was down
+        if (state.pointerState.isDown) {
+          dispatchPointerEvent('pointerup', screenPosition);
+          state.pointerState.isDown = false;
+        }
       } else if (gesture === 'Open_Palm') {
         if (prev === 'DISARMED') {
-          armingStart = Date.now();
+          state.armingStart = Date.now();
           next = 'ARMING';
         } else if (prev === 'ARMING') {
-          if (Date.now() - armingStart > ARM_THRESHOLD_MS) {
+          if (Date.now() - state.armingStart > ARM_THRESHOLD_MS) {
             next = 'ARMED';
           }
+        } else if (prev === 'ACTIVE') {
+          // Release click
+          if (state.pointerState.isDown) {
+            dispatchPointerEvent('pointerup', screenPosition);
+            state.pointerState.isDown = false;
+          }
+          next = 'ARMED';
         }
-      } else if (gesture === 'Pointing_Up' && (prev === 'ARMED' || prev === 'ACTIVE')) {
+      } else if (gesture === 'Pointing_Up' && prev === 'ARMED') {
+        // Click!
         next = 'ACTIVE';
-      } else if (gesture === 'Victory' && (prev === 'ARMED' || prev === 'ACTIVE')) {
-        next = 'ACTIVE';
-      } else if (prev === 'ACTIVE' && gesture === 'Open_Palm') {
-        next = 'ARMED';
+        if (!state.pointerState.isDown) {
+          dispatchPointerEvent('pointerdown', screenPosition);
+          state.pointerState.isDown = true;
+        }
       }
       
       if (next !== prev) {
         state.fsmHistory.unshift(`${new Date().toLocaleTimeString()} ${prev} → ${next}`);
         if (state.fsmHistory.length > 20) state.fsmHistory.pop();
+        logEvent('fsm-event', `${prev} → ${next}`);
       }
       
       state.currentFrame.fsmState = next;
     }
     
     // ========================================================================
-    // MediaPipe
+    // EVENT LOG
+    // ========================================================================
+    function logEvent(type, message) {
+      state.eventLog.unshift({ type, message, time: new Date().toLocaleTimeString() });
+      if (state.eventLog.length > 50) state.eventLog.pop();
+      updateEventLog();
+    }
+    
+    function updateEventLog() {
+      const el = document.getElementById('event-log');
+      if (el) {
+        el.innerHTML = state.eventLog.map(e => 
+          `<div class="${e.type}">[${e.time}] ${e.message}</div>`
+        ).join('');
+      }
+    }
+    
+    // ========================================================================
+    // MEDIAPIPE
     // ========================================================================
     async function initMediaPipe() {
       const vision = await FilesetResolver.forVisionTasks(
@@ -456,7 +449,7 @@
         numHands: 1,
       });
       
-      console.log('MediaPipe initialized');
+      console.log('✅ MediaPipe initialized');
     }
     
     async function startCamera() {
@@ -474,6 +467,9 @@
       processFrame();
     }
     
+    // ========================================================================
+    // PROCESS FRAME (Main loop)
+    // ========================================================================
     function processFrame() {
       if (!state.isRunning || !state.gestureRecognizer) {
         requestAnimationFrame(processFrame);
@@ -489,7 +485,7 @@
       
       const results = state.gestureRecognizer.recognizeForVideo(state.video, timestamp);
       
-      // Clear landmarks canvas
+      // Clear landmarks
       const ctx = state.landmarksCanvas.getContext('2d');
       ctx.clearRect(0, 0, state.landmarksCanvas.width, state.landmarksCanvas.height);
       
@@ -505,45 +501,68 @@
           confidence = gestures[0][0].score;
         }
         
-        // Get index fingertip (landmark 8)
+        // Index fingertip (landmark 8)
         const indexTip = landmarks[8];
         const rawX = indexTip.x;
         const rawY = indexTip.y;
         
-        // Palm facing detection (simplified)
+        // Palm facing detection
         const wrist = landmarks[0];
         const middleMCP = landmarks[9];
         const palmNormalZ = -(middleMCP.z - wrist.z);
         const palmFacing = palmNormalZ > -0.05;
         
-        // Apply filter
+        // Apply 1€ filter
         const smoothed = oneEuroFilter(rawX, rawY, timestamp);
         
-        // Update FSM
-        updateFSM(gesture, palmFacing);
+        // Convert to screen coordinates (mirror X for selfie view)
+        const screenX = (1 - smoothed.x) * window.innerWidth;
+        const screenY = smoothed.y * window.innerHeight;
+        const screenPosition = { x: screenX, y: screenY };
+        
+        // Update virtual cursor position
+        const cursor = document.getElementById('virtual-cursor');
+        if (cursor) {
+          cursor.style.display = 'block';
+          cursor.style.left = screenX + 'px';
+          cursor.style.top = screenY + 'px';
+        }
+        
+        // Update FSM (dispatches W3C pointer events)
+        updateFSM(gesture, palmFacing, screenPosition);
+        
+        // Emit pointermove if tracking
+        if (state.currentFrame.fsmState !== 'DISARMED') {
+          dispatchPointerEvent('pointermove', screenPosition);
+        }
         
         // Update state
         state.currentFrame = {
+          ...state.currentFrame,
           gesture,
           confidence,
           position: { x: rawX, y: rawY },
           smoothed,
-          fsmState: state.currentFrame.fsmState,
           palmFacing,
         };
         
         // Draw landmarks
         drawLandmarks(ctx, landmarks);
         
-        // Draw cursor
-        drawCursor(rawX, rawY, smoothed.x, smoothed.y);
+        // Update cursor style
+        if (cursor) {
+          cursor.className = state.currentFrame.fsmState.toLowerCase();
+        }
       } else {
+        // No hand detected
         state.currentFrame.gesture = 'None';
         state.currentFrame.confidence = 0;
         state.currentFrame.position = null;
         state.currentFrame.fsmState = 'DISARMED';
         resetFilter();
-        clearCursor();
+        
+        const cursor = document.getElementById('virtual-cursor');
+        if (cursor) cursor.style.display = 'none';
       }
       
       // Update UI
@@ -552,19 +571,20 @@
       requestAnimationFrame(processFrame);
     }
     
+    // ========================================================================
+    // DRAW LANDMARKS
+    // ========================================================================
     function drawLandmarks(ctx, landmarks) {
       const w = state.landmarksCanvas.width;
       const h = state.landmarksCanvas.height;
       
-      // Note: Canvas has CSS transform: scaleX(-1) to mirror, so we draw normally
-      // Draw connections
       const connections = [
-        [0, 1], [1, 2], [2, 3], [3, 4],  // Thumb
-        [0, 5], [5, 6], [6, 7], [7, 8],  // Index
-        [0, 9], [9, 10], [10, 11], [11, 12],  // Middle
-        [0, 13], [13, 14], [14, 15], [15, 16],  // Ring
-        [0, 17], [17, 18], [18, 19], [19, 20],  // Pinky
-        [5, 9], [9, 13], [13, 17],  // Palm
+        [0, 1], [1, 2], [2, 3], [3, 4],
+        [0, 5], [5, 6], [6, 7], [7, 8],
+        [0, 9], [9, 10], [10, 11], [11, 12],
+        [0, 13], [13, 14], [14, 15], [15, 16],
+        [0, 17], [17, 18], [18, 19], [19, 20],
+        [5, 9], [9, 13], [13, 17],
       ];
       
       ctx.strokeStyle = '#ff4444';
@@ -577,7 +597,6 @@
         ctx.stroke();
       }
       
-      // Draw joints
       ctx.fillStyle = '#00ff88';
       for (const lm of landmarks) {
         ctx.beginPath();
@@ -585,88 +604,31 @@
         ctx.fill();
       }
       
-      // Draw index tip larger
+      // Index tip larger
       ctx.fillStyle = '#4488ff';
       ctx.beginPath();
       ctx.arc(landmarks[8].x * w, landmarks[8].y * h, 8, 0, 2 * Math.PI);
       ctx.fill();
     }
     
-    function drawCursor(rawX, rawY, smoothX, smoothY) {
-      if (!state.cursorCanvas) return;
-      
-      const ctx = state.cursorCanvas.getContext('2d');
-      const w = state.cursorCanvas.width;
-      const h = state.cursorCanvas.height;
-      
-      ctx.clearRect(0, 0, w, h);
-      
-      // Coordinate mapping: 
-      // rawX/rawY are normalized [0,1] from MediaPipe
-      // Apply gain controls here for ergonomic adjustments
-      // Currently 1:1 mapping (mirror X for selfie view)
-      const gainX = 1.0;  // Future: user-adjustable
-      const gainY = 1.0;  // Future: user-adjustable
-      const offsetX = 0;  // Future: deadzone center offset
-      const offsetY = 0;
-      
-      // Mirror X for selfie-view cursor (hand goes right, cursor goes right)
-      const displayRawX = (1 - rawX) * gainX + offsetX;
-      const displayRawY = rawY * gainY + offsetY;
-      const displaySmoothX = (1 - smoothX) * gainX + offsetX;
-      const displaySmoothY = smoothY * gainY + offsetY;
-      
-      // Raw cursor (red, smaller)
-      ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';
-      ctx.beginPath();
-      ctx.arc(displayRawX * w, displayRawY * h, 8, 0, 2 * Math.PI);
-      ctx.fill();
-      
-      // Smoothed cursor (green, larger)
-      ctx.fillStyle = '#00ff88';
-      ctx.beginPath();
-      ctx.arc(displaySmoothX * w, displaySmoothY * h, 15, 0, 2 * Math.PI);
-      ctx.fill();
-      
-      // State indicator ring
-      const stateColor = {
-        'DISARMED': '#666',
-        'ARMING': '#ffcc00',
-        'ARMED': '#00ff88',
-        'ACTIVE': '#4488ff',
-      }[state.currentFrame.fsmState] || '#666';
-      
-      ctx.strokeStyle = stateColor;
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.arc(displaySmoothX * w, displaySmoothY * h, 20, 0, 2 * Math.PI);
-      ctx.stroke();
-    }
-    
-    function clearCursor() {
-      if (!state.cursorCanvas) return;
-      const ctx = state.cursorCanvas.getContext('2d');
-      ctx.clearRect(0, 0, state.cursorCanvas.width, state.cursorCanvas.height);
-    }
-    
     // ========================================================================
-    // UI Updates
+    // UPDATE UI
     // ========================================================================
     function updateUI() {
-      // Status panel
-      const fpsEl = document.getElementById('status-fps');
+      // Status
       const gestureEl = document.getElementById('status-gesture');
       const confidenceEl = document.getElementById('status-confidence');
       const positionEl = document.getElementById('status-position');
+      const hitsEl = document.getElementById('status-hits');
       
-      if (fpsEl) fpsEl.textContent = Math.round(1000 / (performance.now() - state.lastTimestamp + 16));
       if (gestureEl) gestureEl.textContent = state.currentFrame.gesture;
       if (confidenceEl) confidenceEl.textContent = (state.currentFrame.confidence * 100).toFixed(0) + '%';
       if (positionEl && state.currentFrame.smoothed) {
         positionEl.textContent = `(${(state.currentFrame.smoothed.x * 100).toFixed(0)}%, ${(state.currentFrame.smoothed.y * 100).toFixed(0)}%)`;
       }
+      if (hitsEl) hitsEl.textContent = state.pointerState.hitCount;
       
-      // FSM panel
+      // FSM
       const fsmStateEl = document.getElementById('fsm-state');
       const fsmHistoryEl = document.getElementById('fsm-history');
       
@@ -679,20 +641,15 @@
         fsmHistoryEl.innerHTML = state.fsmHistory.map(h => `<div>${h}</div>`).join('');
       }
       
-      // Gesture panel
+      // Gesture
       const gestureIconEl = document.getElementById('gesture-icon');
       const gestureNameEl = document.getElementById('gesture-name');
       const gestureConfEl = document.getElementById('gesture-confidence');
       
       const gestureIcons = {
-        'None': '❓',
-        'Open_Palm': '✋',
-        'Closed_Fist': '✊',
-        'Pointing_Up': '☝️',
-        'Victory': '✌️',
-        'Thumb_Up': '👍',
-        'Thumb_Down': '👎',
-        'ILoveYou': '🤟',
+        'None': '❓', 'Open_Palm': '✋', 'Closed_Fist': '✊',
+        'Pointing_Up': '☝️', 'Victory': '✌️', 'Thumb_Up': '👍',
+        'Thumb_Down': '👎', 'ILoveYou': '🤟',
       };
       
       if (gestureIconEl) gestureIconEl.textContent = gestureIcons[state.currentFrame.gesture] || '❓';
@@ -701,7 +658,25 @@
     }
     
     // ========================================================================
-    // Golden Layout
+    // CLICK TARGET HANDLING
+    // ========================================================================
+    function setupClickTargets() {
+      document.querySelectorAll('.click-target').forEach(target => {
+        // W3C Pointer Event listeners
+        target.addEventListener('pointerdown', (e) => {
+          if (e.pointerType === 'pen') {  // Our gesture pointer
+            target.classList.add('hit');
+            state.pointerState.hitCount++;
+            logEvent('hit-event', `🎯 HIT: ${target.textContent}`);
+            
+            setTimeout(() => target.classList.remove('hit'), 300);
+          }
+        });
+      });
+    }
+    
+    // ========================================================================
+    // GOLDEN LAYOUT
     // ========================================================================
     async function initGoldenLayout() {
       const container = document.getElementById('layout-container');
@@ -712,24 +687,24 @@
           content: [
             {
               type: 'column',
-              width: 60,
+              width: 50,
               content: [
                 {
                   type: 'component',
                   componentType: 'camera',
-                  title: '📹 Camera + Landmarks',
-                  height: 60,
+                  title: '📹 Camera',
+                  height: 50,
                 },
                 {
                   type: 'component',
-                  componentType: 'cursor',
-                  title: '🎯 Cursor Area',
+                  componentType: 'targets',
+                  title: '🎯 Click Targets',
                 },
               ],
             },
             {
               type: 'column',
-              width: 40,
+              width: 25,
               content: [
                 {
                   type: 'component',
@@ -740,13 +715,24 @@
                 {
                   type: 'component',
                   componentType: 'fsm',
-                  title: '⚙️ FSM State',
-                  height: 35,
+                  title: '⚙️ FSM',
+                  height: 40,
                 },
                 {
                   type: 'component',
                   componentType: 'status',
                   title: '📊 Status',
+                },
+              ],
+            },
+            {
+              type: 'column',
+              width: 25,
+              content: [
+                {
+                  type: 'component',
+                  componentType: 'events',
+                  title: '📝 Event Log',
                 },
               ],
             },
@@ -756,7 +742,7 @@
       
       const layout = new GoldenLayout(container);
       
-      // Register components
+      // Camera panel
       layout.registerComponentFactoryFunction('camera', (container) => {
         container.element.innerHTML = `
           <div class="panel">
@@ -766,44 +752,30 @@
             </div>
           </div>
         `;
-        
-        // Store references
         setTimeout(() => {
           state.video = document.getElementById('video');
           state.landmarksCanvas = document.getElementById('landmarks-canvas');
         }, 0);
       });
       
-      layout.registerComponentFactoryFunction('cursor', (container) => {
+      // NEW: Click targets panel
+      layout.registerComponentFactoryFunction('targets', (container) => {
         container.element.innerHTML = `
           <div class="panel">
-            <div id="cursor-container" class="panel-content">
-              <canvas id="cursor-canvas"></canvas>
-              <div class="cursor-label">
-                <span style="color:#ff4444">●</span> Raw &nbsp;
-                <span style="color:#00ff88">●</span> Smoothed
-              </div>
+            <div id="target-container" class="panel-content">
+              <div class="click-target" data-target="1">🍎</div>
+              <div class="click-target" data-target="2">🍊</div>
+              <div class="click-target" data-target="3">🍋</div>
+              <div class="click-target" data-target="4">🍇</div>
+              <div class="click-target" data-target="5">🍓</div>
+              <div class="click-target" data-target="6">🫐</div>
             </div>
           </div>
         `;
-        
-        setTimeout(() => {
-          state.cursorCanvas = document.getElementById('cursor-canvas');
-          const rect = state.cursorCanvas.parentElement.getBoundingClientRect();
-          state.cursorCanvas.width = rect.width;
-          state.cursorCanvas.height = rect.height;
-        }, 100);
-        
-        // Handle resize
-        container.on('resize', () => {
-          if (state.cursorCanvas) {
-            const rect = state.cursorCanvas.parentElement.getBoundingClientRect();
-            state.cursorCanvas.width = rect.width;
-            state.cursorCanvas.height = rect.height;
-          }
-        });
+        setTimeout(setupClickTargets, 100);
       });
       
+      // Gesture panel
       layout.registerComponentFactoryFunction('gesture', (container) => {
         container.element.innerHTML = `
           <div class="panel">
@@ -818,6 +790,7 @@
         `;
       });
       
+      // FSM panel
       layout.registerComponentFactoryFunction('fsm', (container) => {
         container.element.innerHTML = `
           <div class="panel">
@@ -829,15 +802,12 @@
         `;
       });
       
+      // Status panel
       layout.registerComponentFactoryFunction('status', (container) => {
         container.element.innerHTML = `
           <div class="panel">
             <div class="panel-content">
               <div class="status-grid">
-                <div class="status-item">
-                  <div class="status-label">FPS</div>
-                  <div id="status-fps" class="status-value green">--</div>
-                </div>
                 <div class="status-item">
                   <div class="status-label">Gesture</div>
                   <div id="status-gesture" class="status-value blue">None</div>
@@ -850,6 +820,10 @@
                   <div class="status-label">Position</div>
                   <div id="status-position" class="status-value">--</div>
                 </div>
+                <div class="status-item">
+                  <div class="status-label">Hits</div>
+                  <div id="status-hits" class="status-value green">0</div>
+                </div>
               </div>
               <div style="margin-top: 15px;">
                 <button id="start-btn" onclick="window.startDemo()">▶ Start Camera</button>
@@ -859,37 +833,51 @@
         `;
       });
       
-      layout.loadLayout(config);
+      // NEW: Event log panel
+      layout.registerComponentFactoryFunction('events', (container) => {
+        container.element.innerHTML = `
+          <div class="panel">
+            <div class="panel-content" style="padding: 0;">
+              <div id="event-log"></div>
+            </div>
+          </div>
+        `;
+      });
       
+      layout.loadLayout(config);
       return layout;
     }
     
     // ========================================================================
-    // Init
+    // INIT
     // ========================================================================
     window.startDemo = async function() {
       const btn = document.getElementById('start-btn');
       if (btn) {
         btn.disabled = true;
-        btn.textContent = '⏳ Loading...';
+        btn.textContent = '⏳ Loading MediaPipe...';
       }
       
       try {
         await initMediaPipe();
+        if (btn) btn.textContent = '⏳ Starting Camera...';
         await startCamera();
         if (btn) btn.textContent = '✓ Running';
+        logEvent('fsm-event', 'Demo started - show palm to arm');
       } catch (err) {
         console.error(err);
         if (btn) {
           btn.disabled = false;
           btn.textContent = '❌ Error - Retry';
         }
+        logEvent('hit-event', `Error: ${err.message}`);
       }
     };
     
-    // Initialize Golden Layout
+    // Initialize
     initGoldenLayout().then(() => {
-      console.log('Golden Layout initialized');
+      console.log('✅ Golden Layout v2.6.0 initialized');
+      logEvent('fsm-event', 'Layout ready - click Start Camera');
     });
   </script>
 </body>

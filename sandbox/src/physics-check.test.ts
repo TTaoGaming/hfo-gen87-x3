@@ -1,13 +1,13 @@
 /**
  * Physics Check - Package Verification Test
- * 
+ *
  * Purpose: Verify all installed packages can be imported and used
  * Phase: HUNT (H) - Primitive verification
- * 
+ *
  * Run: npx vitest run sandbox/src/physics-check.test.ts
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 describe('Physics Check - Package Verification', () => {
 	describe('Stage 1: SENSOR (MediaPipe)', () => {
@@ -24,11 +24,11 @@ describe('Physics Check - Package Verification', () => {
 		it('should import 1eurofilter package', async () => {
 			const { OneEuroFilter } = await import('1eurofilter');
 			expect(OneEuroFilter).toBeDefined();
-			
+
 			// Test instantiation
 			const filter = new OneEuroFilter(60, 1.0, 0.007, 1.0);
 			expect(filter).toBeDefined();
-			
+
 			// Test filtering
 			const filtered = filter.filter(0.5, 0);
 			expect(typeof filtered).toBe('number');
@@ -37,15 +37,15 @@ describe('Physics Check - Package Verification', () => {
 		it('should import @dimforge/rapier2d-compat', async () => {
 			const RAPIER = await import('@dimforge/rapier2d-compat');
 			expect(RAPIER).toBeDefined();
-			
+
 			// Initialize WASM (required before use)
 			await RAPIER.init();
-			
+
 			// Create a physics world
 			const gravity = { x: 0.0, y: -9.81 };
 			const world = new RAPIER.World(gravity);
 			expect(world).toBeDefined();
-			
+
 			// Clean up
 			world.free();
 		});
@@ -215,15 +215,15 @@ describe('Package Version Summary', () => {
 			'@mediapipe/tasks-vision': '^0.10.22',
 			'1eurofilter': '^1.2.2',
 			'@dimforge/rapier2d-compat': '^0.19.3',
-			'xstate': '^5.25.0',
-			'zod': '^3.25.76',
+			xstate: '^5.25.0',
+			zod: '^3.25.76',
 
 			// UI/Rendering
 			'pixi.js': '^8.14.3',
 			'golden-layout': '^2.6.0',
 
 			// Pipeline composition
-			'rxjs': '^7.8.2',
+			rxjs: '^7.8.2',
 
 			// Observability
 			'@opentelemetry/api': '^1.9.0',
