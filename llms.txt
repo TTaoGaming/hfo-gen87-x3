@@ -1,0 +1,39 @@
+# HFO Gen87.X3 — AI Tool Context
+
+> Run: `npm test` (894 tests) | Prove: `npm run weaver:check <name>`
+
+## Architecture (Polymorphic Adapters + 8-Port Hexagonal)
+Each adapter implements a Port interface. Swap implementations without changing consumers.
+
+## Available Adapters
+| Name | Package | Port | Purpose |
+|------|---------|------|---------|
+| one-euro | 1eurofilter | SmootherPort | Pointer jitter reduction |
+| rapier-physics | @dimforge/rapier2d-compat | PhysicsPort | 2D physics simulation |
+| xstate-fsm | xstate | FSMPort | Finite state machines |
+| golden-layout | golden-layout | UIShellPort | Tile/panel UI |
+| tile-composer | (internal) | OverlayPort | Multi-tile gestures |
+| mediapipe | @mediapipe/tasks-vision | SensorPort | Hand/pose tracking |
+
+## Signal Schema (8 fields, all required)
+```json
+{"ts":"ISO8601","mark":0.0-1.0,"pull":"upstream|downstream|lateral","msg":"string","type":"signal|event|error|metric","hive":"H|I|V|E|X","gen":87,"port":0-7}
+```
+
+## HIVE/8 Phases (TDD)
+- H (Hunt): Research, find exemplars → Port 0+7
+- I (Interlock): Write failing tests, define contracts → Port 1+6  
+- V (Validate): Make tests pass, implement → Port 2+5
+- E (Evolve): Refactor, emit results → Port 3+4
+
+## Commands
+- `npm test` — Run all 894 tests
+- `npm run weaver:check <adapter>` — Quality check single adapter
+- `npm run weaver:status` — Show all adapter statuses
+- `npx stryker run --mutate "path/to/file.ts"` — Mutation testing
+
+## File Patterns
+- `hot/bronze/src/adapters/*.adapter.ts` — Adapter implementations
+- `hot/bronze/src/contracts/*.ts` — Zod schemas and ports
+- `hot/silver/src/fsm/*.ts` — W3C pointer FSM
+- `WEAVER_MANIFEST.json` — Adapter registry with quality scores
