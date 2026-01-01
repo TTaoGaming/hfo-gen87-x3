@@ -37,6 +37,12 @@ export interface RapierConfig {
 	predictionMs?: number;
 	/** Physics substeps per frame (more = smoother but slower) */
 	substeps?: number;
+	// ========== VELOCITY DEAD ZONE (Standard UX Pattern) ==========
+	/** Velocity threshold below which cursor stays still (jitter elimination)
+	 * Standard values: Unity 0.125, Steam 0.05-0.08, our default 0.002 (tight)
+	 * @see https://docs.unity3d.com/Packages/com.unity.inputsystem@1.0/manual/Controls.html#deadzones
+	 */
+	velocityDeadZone?: number;
 	// ========== ADAPTIVE MODE (1€ Filter-inspired) ==========
 	/** Minimum stiffness at rest (like fcmin in 1€) - adaptive mode only */
 	minStiffness?: number;
@@ -48,14 +54,16 @@ export interface RapierConfig {
 
 const DEFAULT_CONFIG: Required<RapierConfig> = {
 	mode: 'smoothed',
-	stiffness: 400, // High for responsive tracking
-	damping: 0.85, // Slightly underdamped for natural feel
+	stiffness: 200, // Reduced for smoother response (was 400 - too snappy)
+	damping: 1.2, // CRITICALLY DAMPED+ to prevent oscillation (was 0.85 - underdamped!)
 	predictionMs: 50, // 3 frames at 60fps
-	substeps: 2,
+	substeps: 4, // More substeps for smoother physics (was 2)
+	// Velocity dead zone - standard UX pattern (Unity 0.125, Steam 0.05)
+	velocityDeadZone: 0.002, // 0.2% of normalized space - tight but eliminates jitter
 	// Adaptive mode defaults (tuned for cursor tracking)
-	minStiffness: 100, // Smooth at rest (like low fcmin)
-	speedCoefficient: 500, // Scale factor for velocity → stiffness
-	maxStiffness: 800, // Cap for stability
+	minStiffness: 50, // Lower minimum for smoother rest behavior (was 100)
+	speedCoefficient: 300, // Gentler ramp-up (was 500 - too aggressive)
+	maxStiffness: 400, // Lower cap for stability (was 800 - caused oscillation)
 };
 
 // ============================================================================
@@ -297,6 +305,84 @@ export class RapierPhysicsAdapter implements SmootherPort {
 	 */
 	getConfig(): Readonly<Required<RapierConfig>> {
 		return { ...this.config };
+	}
+
+	/**
+	 * Calculate Time-to-Impact (TTI) to a target point
+	 *
+	 * Uses current velocity to estimate when cursor will reach target.
+	 * Returns Infinity if cursor is moving away from target.
+	 *
+	 * @param targetX - Target X coordinate (0-1)
+	 * @param targetY - Target Y coordinate (0-1)
+	 * @returns TTI in milliseconds, or Infinity if moving away
+	 */
+	calculateTTI(targetX: number, targetY: number): number {
+		if (!this.cursorBody) return Number.POSITIVE_INFINITY;
+
+		const pos = this.cursorBody.translation();
+		const vel = this.cursorBody.linvel();
+
+		// Distance vector to target
+		const dx = targetX - pos.x;
+		const dy = targetY - pos.y;
+		const distance = Math.sqrt(dx * dx + dy * dy);
+
+		// Already at target
+		if (distance < 0.001) return 0;
+
+		// Speed magnitude
+		const speed = Math.sqrt(vel.x ** 2 + vel.y ** 2);
+		if (speed < 0.001) return Number.POSITIVE_INFINITY;
+
+		// Dot product to check if moving toward target
+		const dot = dx * vel.x + dy * vel.y;
+		if (dot <= 0) return Number.POSITIVE_INFINITY; // Moving away
+
+		// Project velocity onto direction to target
+		const velocityTowardTarget = dot / distance;
+
+		// TTI = distance / velocity (convert to ms)
+		return (distance / velocityTowardTarget) * 1000;
+	}
+
+	/**
+	 * Get predicted trajectory points for visualization
+	 *
+	 * @param durationMs - How far to predict (ms)
+	 * @param steps - Number of trajectory points
+	 * @returns Array of predicted positions with timestamps
+	 */
+	getPredictedTrajectory(
+		durationMs: number,
+		steps: number,
+	): Array<{ x: number; y: number; t: number }> {
+		const trajectory: Array<{ x: number; y: number; t: number }> = [];
+
+		if (!this.cursorBody) {
+			// Return empty trajectory if not initialized
+			return trajectory;
+		}
+
+		const pos = this.cursorBody.translation();
+		const vel = this.cursorBody.linvel();
+
+		for (let i = 0; i <= steps; i++) {
+			const t = (i / steps) * durationMs;
+			const τ = t / 1000; // Convert to seconds
+
+			// Linear extrapolation: position + velocity * time
+			let x = pos.x + vel.x * τ;
+			let y = pos.y + vel.y * τ;
+
+			// Clamp to [0,1]
+			x = Math.max(0, Math.min(1, x));
+			y = Math.max(0, Math.min(1, y));
+
+			trajectory.push({ x, y, t });
+		}
+
+		return trajectory;
 	}
 
 	private createPassthroughFrame(frame: SensorFrame): SmoothedFrame {

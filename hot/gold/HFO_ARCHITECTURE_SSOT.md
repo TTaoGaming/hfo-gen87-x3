@@ -4,23 +4,132 @@
 
 ---
 
-## 0. Core Principle: Fractal 8-Pattern
+## 0. Why This Architecture Exists
+
+This is a **fractal semantic chunking technique** designed for human-AI shared representation.
+
+**The Problem**: Remembering complex architectures piece-by-piece is hard.
+
+**The Solution**: A self-deriving coordinate system with maximum semantic tension.
+
+### The OBSIDIAN Mnemonic
+
+The 8 roles spell **OBSIDIAN** — each letter maps to a port, a binary value, and an element:
+
+```
+O - Observer    Port 0  000  ☷ Earth     Port = Binary (0 = 000)
+B - Bridger     Port 1  001  ☶ Mountain  Port = Binary (1 = 001)
+S - Shaper      Port 2  010  ☵ Water     Port = Binary (2 = 010)
+I - Injector    Port 3  011  ☴ Wind      Port = Binary (3 = 011)
+D - Disruptor   Port 4  100  ☳ Thunder   Port = Binary (4 = 100)
+I - Immunizer   Port 5  101  ☲ Fire      Port = Binary (5 = 101)
+A - Assimilator Port 6  110  ☱ Lake      Port = Binary (6 = 110)
+N - Navigator   Port 7  111  ☰ Heaven    Port = Binary (7 = 111)
+```
+
+**Self-Derivation**: The mapping is **mathematical, not arbitrary**:
+
+```
+Port N = Binary(N) = Trigram(N)
+```
+
+- Port 0 → `000` → ☷ (no lines set) → Earth (ground state)
+- Port 7 → `111` → ☰ (all lines set) → Heaven (full activation)
+
+**The binary IS the port number. The trigram IS the binary. No lookup table needed.**
+
+### Semantic Tension as Pattern Matching
+
+The 8×8 Galois Lattice creates **semantic tension** — like a web where you can feel asymmetry:
+
+- If something "looks wrong" in the matrix → there's likely a bug
+- If a port is doing another port's verb → immediate violation
+- The symmetry IS the architecture
+
+**This maximizes human pattern-matching ability**. Point to [row, col] → know exactly what's being discussed.
+
+---
+
+## 1. Core Principle: Fractal 8-Pattern
 
 The architecture is **fractal** — the same 8-port pattern repeats at every scale:
 
 | Level | Structure | Description |
 |-------|-----------|-------------|
+| Mnemonic | OBSIDIAN | 8 letters → 8 roles |
 | Ports | 8 Commanders | The 8 archetypal roles (SENSE→DECIDE) |
 | Fields | 8 Signal fields | Each field embodies one port's contribution |
 | Gates | 8 Validators | Each gate validates one port's field |
 | Matrix | 8×8 Galois | 64 port×port compositions |
 | Swarm | 8^N Agents | Powers of 8 coordination |
 
-**This is not arbitrary — every field, gate, and structure maps to the 8 archetypes.**
+**Every field, gate, and structure maps to the 8 archetypes. The structure builds itself.**
 
 ---
 
-## 1. Identity
+## 2. Provenance: Zero-Invention Architecture
+
+**Constraint**: This architecture contains **ZERO invention**. Every element traces to battle-tested research (TRL 8-9).
+
+> *"If you notice something that looks a little weak, there's likely a bug — the whole system should be TRL level 8 or 9 only."*
+
+### Exemplar Sources
+
+| Domain | Source | What We Took |
+|--------|--------|--------------|
+| Military C2 | **JADC2** | 8 function breakdown (Sensors→Command) |
+| Composability | **DARPA Mosaic Warfare** | Polymorphic hexagonal tiles |
+| Cosmology | **I Ching Bagua** | 8 trigrams, binary encoding |
+| Architecture | **Hexagonal/Ports & Adapters** | Port interface pattern |
+| Biology | **Stigmergy** | Indirect coordination mechanisms |
+| TDD | **Kent Beck** | RED→GREEN→REFACTOR |
+| Quality | **Deming PDCA** | Plan→Do→Check→Act |
+
+### JADC2 → OBSIDIAN Mapping
+
+The 8 OBSIDIAN roles ARE the JADC2 functional breakdown:
+
+| Port | Role | JADC2 Function | Military Domain |
+|------|------|----------------|-----------------|
+| 0 | Observer | Sensors | ISR (Intelligence, Surveillance, Reconnaissance) |
+| 1 | Bridger | Gateways | Transport |
+| 2 | Shaper | Effectors | Fires |
+| 3 | Injector | Logistics | Sustainment |
+| 4 | Disruptor | Red Cell | Adversary Simulation |
+| 5 | Immunizer | Shields | Protection |
+| 6 | Assimilator | Fusion | PED (Processing, Exploitation, Dissemination) |
+| 7 | Navigator | Command | C2 (Command & Control) |
+
+### Stigmergy Mechanisms (Biological Coordination)
+
+| Port | Role | Stigmergy | Description |
+|------|------|-----------|-------------|
+| 0 | Observer | Olfaction | Sense chemical gradients |
+| 1 | Bridger | Boundary | Define interface edges |
+| 2 | Shaper | Secretion | Emit pheromone trails |
+| 3 | Injector | Intensification | Amplify signals |
+| 4 | Disruptor | Dissipation | Decay/dilute signals |
+| 5 | Immunizer | Inhibition | Block harmful signals |
+| 6 | Assimilator | Accretion | Accumulate over time |
+| 7 | Navigator | Nucleation | Seed new patterns |
+
+### What IS Allowed
+
+- ✅ **Retheming**: Military terms → fantasy commanders (Sensors → Lidless Legion)
+- ✅ **Composition**: Combining patterns (JADC2 + Bagua + Hexagonal)
+- ✅ **Specialization**: Applying general patterns to AI agent coordination
+
+### What IS NOT Allowed
+
+- ❌ Novel algorithms not found in literature
+- ❌ Unproven patterns (TRL < 8)
+- ❌ Invented terminology without traceable source
+
+**If an element doesn't trace to an exemplar, it's a bug.**
+
+---
+
+## 3. Identity
 
 **Hive Fleet Obsidian (HFO)** is a Total Tool Virtualization platform built as a **strange loop**:
 
@@ -30,24 +139,24 @@ The system is recursive self-reference: **Identity = Purpose = Constraint**. Eac
 
 ---
 
-## 2. The 8 Ports
+## 4. The 8 Ports
 
-| Port | Commander | Verb | Trigram | Binary | Element | Greek |
-|------|-----------|------|---------|--------|---------|-------|
-| 0 | Lidless Legion | **SENSE** | ☷ Kun | `000` | Earth | ONTOS |
-| 1 | Web Weaver | **FUSE** | ☴ Xun | `011` | Wind | LOGOS |
-| 2 | Mirror Magus | **SHAPE** | ☲ Li | `101` | Fire | TECHNE |
-| 3 | Spore Storm | **DELIVER** | ☳ Zhen | `100` | Thunder | CHRONOS |
-| 4 | Red Regnant | **TEST** | ☱ Dui | `110` | Lake | PATHOS |
-| 5 | Pyre Praetorian | **DEFEND** | ☶ Gen | `001` | Mountain | ETHOS |
-| 6 | Kraken Keeper | **STORE** | ☵ Kan | `010` | Water | TOPOS |
-| 7 | Spider Sovereign | **DECIDE** | ☰ Qian | `111` | Heaven | TELOS |
+| Port | Role | Commander | Verb | JADC2 | Stigmergy | Trigram | Binary | Element |
+|------|------|-----------|------|-------|-----------|---------|--------|---------|
+| 0 | **O**bserver | Lidless Legion | **SENSE** | Sensors | Olfaction | ☷ Kun | `000` | Earth |
+| 1 | **B**ridger | Web Weaver | **FUSE** | Gateways | Boundary | ☶ Gen | `001` | Mountain |
+| 2 | **S**haper | Mirror Magus | **SHAPE** | Effectors | Secretion | ☵ Kan | `010` | Water |
+| 3 | **I**njector | Spore Storm | **DELIVER** | Logistics | Intensification | ☴ Xun | `011` | Wind |
+| 4 | **D**isruptor | Red Regnant | **TEST** | Red Cell | Dissipation | ☳ Zhen | `100` | Thunder |
+| 5 | **I**mmunizer | Pyre Praetorian | **DEFEND** | Shields | Inhibition | ☲ Li | `101` | Fire |
+| 6 | **A**ssimilator | Kraken Keeper | **STORE** | Fusion | Accretion | ☱ Dui | `110` | Lake |
+| 7 | **N**avigator | Spider Sovereign | **DECIDE** | Command | Nucleation | ☰ Qian | `111` | Heaven |
 
 **Diagonal Quine**: Each port's mantra is *"How do we VERB the VERB?"* — self-reference that constrains the port to ONLY its verb.
 
 ---
 
-## 3. HIVE/8 State Machine
+## 5. HIVE/8 State Machine
 
 ```
 H (Hunt) → I (Interlock) → V (Validate) → E (Evolve) → FLIP → H(N+1)
@@ -66,7 +175,7 @@ H (Hunt) → I (Interlock) → V (Validate) → E (Evolve) → FLIP → H(N+1)
 
 ---
 
-## 4. Galois Lattice (8×8)
+## 6. Galois Lattice (8×8)
 
 Each cell `[row,col]` = *"How do we ROW_VERB the COL_VERB?"*
 
@@ -88,7 +197,7 @@ Each cell `[row,col]` = *"How do we ROW_VERB the COL_VERB?"*
 
 ---
 
-## 5. Capabilities (What Each Port CAN Do)
+## 7. Capabilities (What Each Port CAN Do)
 
 | Port | Capabilities |
 |------|--------------|
@@ -105,7 +214,7 @@ Each cell `[row,col]` = *"How do we ROW_VERB the COL_VERB?"*
 
 ---
 
-## 6. Prohibitions (What Each Port CANNOT Do)
+## 8. Prohibitions (What Each Port CANNOT Do)
 
 | Port | Prohibitions |
 |------|--------------|
@@ -126,7 +235,7 @@ Each cell `[row,col]` = *"How do we ROW_VERB the COL_VERB?"*
 
 ---
 
-## 7. Fractal Architecture (The Pattern Repeats)
+## 9. Fractal Architecture (The Pattern Repeats)
 
 The 8-port structure is **fractal** — it repeats at every scale. The signal fields ARE the ports in microcosm.
 
@@ -189,7 +298,7 @@ Level 5: 8^N Swarm                → Powers of 8 agent coordination
 
 ---
 
-## 8. Violation Patterns
+## 10. Violation Patterns
 
 ### Port Violations (Capability Breaches)
 
@@ -228,7 +337,7 @@ Level 5: 8^N Swarm                → Powers of 8 agent coordination
 
 ---
 
-## 9. Medallion Tiers
+## 11. Medallion Tiers
 
 ```
 hot/bronze/quarantine/  → Entry point (untrusted, unvalidated)
@@ -252,7 +361,7 @@ hot/gold/               → Production (approved, released)
 
 ---
 
-## 10. Polymorphic Adapters
+## 12. Polymorphic Adapters
 
 Each port accepts multiple adapter implementations via interface contracts.
 
@@ -273,7 +382,7 @@ class RapierSmoother implements ShapePort { ... }    // TODO
 
 ---
 
-## 11. Implementation Reference
+## 13. Implementation Reference
 
 | Component | Path |
 |-----------|------|
@@ -286,7 +395,7 @@ class RapierSmoother implements ShapePort { ... }    // TODO
 
 ---
 
-## 12. Quick Reference Card
+## 14. Quick Reference Card
 
 ### Port → Verb → Action
 
@@ -312,7 +421,7 @@ class RapierSmoother implements ShapePort { ... }    // TODO
 
 ---
 
-## 13. The Strange Loop Test
+## 15. The Strange Loop Test
 
 To verify you understand the architecture, answer:
 

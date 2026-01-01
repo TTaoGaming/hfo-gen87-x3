@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HFO Demo: MediaPipe Hands (SensorPort)</title>
+    
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        header {
+            padding: 16px 24px;
+            background: #16213e;
+            border-bottom: 2px solid #00d9ff;
+        }
+        
+        header h1 { font-size: 1.5rem; color: #00d9ff; }
+        header p { color: #888; font-size: 0.9rem; margin-top: 4px; }
+        
+        main {
+            flex: 1;
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+        }
+        
+        .video-container {
+            flex: 1;
+            position: relative;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            aspect-ratio: 4/3;
+            max-height: 70vh;
+        }
+        
+        video, canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        canvas { z-index: 1; }
+        
+        .sidebar {
+            width: 320px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .card {
+            background: #16213e;
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid #0f3460;
+        }
+        
+        .card h3 {
+            font-size: 0.9rem;
+            color: #00d9ff;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .port-badge {
+            background: #00d9ff;
+            color: #000;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #0f3460;
+            font-size: 0.85rem;
+        }
+        
+        .data-row:last-child { border-bottom: none; }
+        .data-row .label { color: #888; }
+        .data-row .value { color: #fff; font-family: monospace; }
+        .data-row .value.active { color: #00ff88; }
+        .data-row .value.inactive { color: #ff4444; }
+        
+        #start-btn {
+            background: #00d9ff;
+            color: #000;
+            border: none;
+            padding: 16px 32px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        
+        #start-btn:hover { transform: scale(1.02); }
+        #start-btn:disabled { background: #333; color: #666; cursor: not-allowed; }
+        
+        .index-tip-viz {
+            width: 100%;
+            height: 150px;
+            background: #0d1421;
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cursor-dot {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #00d9ff;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 20px #00d9ff;
+            transition: all 0.05s ease-out;
+        }
+        
+        footer {
+            padding: 12px 24px;
+            background: #16213e;
+            border-top: 2px solid #0f3460;
+            font-size: 0.8rem;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>✋ MediaPipe Hands Demo</h1>
+        <p>SensorPort — Port 0 (SENSE) — Hand Landmark Detection</p>
+    </header>
+    
+    <main>
+        <div class="video-container">
+            <video id="video" autoplay playsinline></video>
+            <canvas id="canvas"></canvas>
+        </div>
+        
+        <div class="sidebar">
+            <button id="start-btn">▶️ Start Camera</button>
+            
+            <div class="card">
+                <h3>📊 SensorFrame Output <span class="port-badge">SensorPort</span></h3>
+                <div class="data-row">
+                    <span class="label">trackingOk</span>
+                    <span class="value" id="tracking-ok">—</span>
+                </div>
+                <div class="data-row">
+                    <span class="label">handId</span>
+                    <span class="value" id="hand-id">—</span>
+                </div>
+                <div class="data-row">
+                    <span class="label">indexTip.x</span>
+                    <span class="value" id="index-x">—</span>
+                </div>
+                <div class="data-row">
+                    <span class="label">indexTip.y</span>
+                    <span class="value" id="index-y">—</span>
+                </div>
+                <div class="data-row">
+                    <span class="label">palmFacing</span>
+                    <span class="value" id="palm-facing">—</span>
+                </div>
+                <div class="data-row">
+                    <span class="label">landmarks</span>
+                    <span class="value" id="landmarks-count">—</span>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>🎯 Index Tip Position</h3>
+                <div class="index-tip-viz">
+                    <div class="cursor-dot" id="cursor-dot"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer>
+        HFO Gen87.X3 | SensorPort outputs SensorFrame { ts, handId, trackingOk, palmFacing, indexTip, landmarks }
+    </footer>
+
+    <!-- MediaPipe Hands -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/hands.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1675466862/camera_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils@0.3.1675466124/drawing_utils.js"></script>
+
+    <script>
+        // ============================================================================
+        // HFO ARCHITECTURE: SensorPort Implementation via MediaPipe Hands
+        // ============================================================================
+        
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const startBtn = document.getElementById('start-btn');
+        const cursorDot = document.getElementById('cursor-dot');
+        
+        // UI elements
+        const trackingOkEl = document.getElementById('tracking-ok');
+        const handIdEl = document.getElementById('hand-id');
+        const indexXEl = document.getElementById('index-x');
+        const indexYEl = document.getElementById('index-y');
+        const palmFacingEl = document.getElementById('palm-facing');
+        const landmarksCountEl = document.getElementById('landmarks-count');
+        
+        let hands = null;
+        let camera = null;
+        
+        // ============================================================================
+        // SENSORPORT INTERFACE: sense() returns SensorFrame
+        // ============================================================================
+        
+        function createSensorFrame(results) {
+            const ts = performance.now();
+            
+            if (!results.multiHandLandmarks || results.multiHandLandmarks.length === 0) {
+                return {
+                    ts,
+                    handId: 'none',
+                    trackingOk: false,
+                    palmFacing: false,
+                    indexTip: null,
+                    landmarks: null,
+                    label: 'None',
+                    confidence: 0
+                };
+            }
+            
+            const landmarks = results.multiHandLandmarks[0];
+            const handedness = results.multiHandedness?.[0];
+            
+            // Index finger tip is landmark 8
+            const indexTip = landmarks[8];
+            
+            // Palm facing detection: compare wrist to middle MCP z-depth
+            const wrist = landmarks[0];
+            const middleMcp = landmarks[9];
+            const palmFacing = wrist.z > middleMcp.z;
+            
+            return {
+                ts,
+                handId: handedness?.label?.toLowerCase() || 'right',
+                trackingOk: true,
+                palmFacing,
+                indexTip: {
+                    x: indexTip.x,
+                    y: indexTip.y,
+                    z: indexTip.z,
+                    visibility: 1.0
+                },
+                landmarks: landmarks.map(l => ({ x: l.x, y: l.y, z: l.z })),
+                label: 'Open_Palm',
+                confidence: handedness?.score || 0.9
+            };
+        }
+        
+        // ============================================================================
+        // MEDIAPIPE SETUP
+        // ============================================================================
+        
+        function onResults(results) {
+            // Clear canvas
+            ctx.save();
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw landmarks
+            if (results.multiHandLandmarks) {
+                for (const landmarks of results.multiHandLandmarks) {
+                    drawConnectors(ctx, landmarks, HAND_CONNECTIONS, { color: '#00d9ff', lineWidth: 2 });
+                    drawLandmarks(ctx, landmarks, { color: '#ff0066', lineWidth: 1, radius: 3 });
+                }
+            }
+            ctx.restore();
+            
+            // Create SensorFrame (this is what SensorPort.sense() returns)
+            const frame = createSensorFrame(results);
+            
+            // Update UI
+            updateUI(frame);
+        }
+        
+        function updateUI(frame) {
+            trackingOkEl.textContent = frame.trackingOk ? '✅ true' : '❌ false';
+            trackingOkEl.className = 'value ' + (frame.trackingOk ? 'active' : 'inactive');
+            
+            handIdEl.textContent = frame.handId;
+            
+            if (frame.indexTip) {
+                indexXEl.textContent = frame.indexTip.x.toFixed(3);
+                indexYEl.textContent = frame.indexTip.y.toFixed(3);
+                
+                // Update cursor visualization
+                const vizWidth = cursorDot.parentElement.offsetWidth;
+                const vizHeight = cursorDot.parentElement.offsetHeight;
+                cursorDot.style.left = `${frame.indexTip.x * vizWidth}px`;
+                cursorDot.style.top = `${frame.indexTip.y * vizHeight}px`;
+                cursorDot.style.opacity = '1';
+            } else {
+                indexXEl.textContent = 'null';
+                indexYEl.textContent = 'null';
+                cursorDot.style.opacity = '0.2';
+            }
+            
+            palmFacingEl.textContent = frame.palmFacing ? '👋 true' : '✊ false';
+            landmarksCountEl.textContent = frame.landmarks ? `${frame.landmarks.length} points` : 'null';
+        }
+        
+        // ============================================================================
+        // START CAMERA
+        // ============================================================================
+        
+        startBtn.addEventListener('click', async () => {
+            startBtn.disabled = true;
+            startBtn.textContent = '⏳ Loading MediaPipe...';
+            
+            try {
+                // Initialize MediaPipe Hands
+                hands = new Hands({
+                    locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/${file}`
+                });
+                
+                hands.setOptions({
+                    maxNumHands: 1,
+                    modelComplexity: 1,
+                    minDetectionConfidence: 0.7,
+                    minTrackingConfidence: 0.5
+                });
+                
+                hands.onResults(onResults);
+                
+                // Setup camera
+                camera = new Camera(video, {
+                    onFrame: async () => {
+                        canvas.width = video.videoWidth;
+                        canvas.height = video.videoHeight;
+                        await hands.send({ image: video });
+                    },
+                    width: 640,
+                    height: 480
+                });
+                
+                await camera.start();
+                startBtn.textContent = '🟢 Camera Active';
+                
+                console.log('✅ MediaPipe Hands initialized — SensorPort demo ready');
+                
+            } catch (err) {
+                console.error('Failed to start:', err);
+                startBtn.textContent = '❌ Error - Check Console';
+                startBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

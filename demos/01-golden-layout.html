@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HFO Demo: GoldenLayout (UIShellPort)</title>
+    
+    <!-- GoldenLayout CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/golden-layout@2.6.0/dist/css/goldenlayout-base.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/golden-layout@2.6.0/dist/css/themes/goldenlayout-dark-theme.css">
+    
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        header {
+            padding: 16px 24px;
+            background: #16213e;
+            border-bottom: 2px solid #0f3460;
+        }
+        
+        header h1 {
+            font-size: 1.5rem;
+            color: #e94560;
+        }
+        
+        header p {
+            color: #888;
+            font-size: 0.9rem;
+            margin-top: 4px;
+        }
+        
+        #layout-container {
+            flex: 1;
+            position: relative;
+        }
+        
+        .tile-content {
+            padding: 20px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        
+        .tile-content h2 {
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+        }
+        
+        .tile-content .port-badge {
+            background: #e94560;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            margin-bottom: 16px;
+        }
+        
+        .tile-content p {
+            color: #aaa;
+            font-size: 0.85rem;
+            max-width: 300px;
+        }
+        
+        /* Sensor tile */
+        .sensor-tile { background: linear-gradient(135deg, #1a1a2e 0%, #0d2137 100%); }
+        .sensor-tile .port-badge { background: #00d9ff; color: #000; }
+        
+        /* Smoother tile */
+        .smoother-tile { background: linear-gradient(135deg, #1a1a2e 0%, #1a3d1a 100%); }
+        .smoother-tile .port-badge { background: #00ff88; color: #000; }
+        
+        /* FSM tile */
+        .fsm-tile { background: linear-gradient(135deg, #1a1a2e 0%, #3d1a3d 100%); }
+        .fsm-tile .port-badge { background: #ff00ff; color: #000; }
+        
+        /* Output tile */
+        .output-tile { background: linear-gradient(135deg, #1a1a2e 0%, #3d3d1a 100%); }
+        .output-tile .port-badge { background: #ffff00; color: #000; }
+        
+        footer {
+            padding: 12px 24px;
+            background: #16213e;
+            border-top: 2px solid #0f3460;
+            font-size: 0.8rem;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🏛️ GoldenLayout Demo</h1>
+        <p>UIShellPort — Port 3 (DELIVER) — Tiling Window Manager</p>
+    </header>
+    
+    <div id="layout-container"></div>
+    
+    <footer>
+        HFO Gen87.X3 | Drag tabs to rearrange • Double-click to maximize • Resize by dragging borders
+    </footer>
+
+    <!-- GoldenLayout JS -->
+    <script src="https://cdn.jsdelivr.net/npm/golden-layout@2.6.0/dist/bundle/cjs/golden-layout.umd.js"></script>
+    
+    <script>
+        // ============================================================================
+        // HFO ARCHITECTURE: UIShellPort Implementation via GoldenLayout
+        // ============================================================================
+        
+        const container = document.getElementById('layout-container');
+        
+        // Layout configuration - shows HFO pipeline stages as tiles
+        const layoutConfig = {
+            root: {
+                type: 'row',
+                content: [
+                    {
+                        type: 'column',
+                        width: 30,
+                        content: [
+                            {
+                                type: 'component',
+                                componentType: 'sensor',
+                                title: '👁️ Sensor',
+                            },
+                            {
+                                type: 'component',
+                                componentType: 'smoother',
+                                title: '🎯 Smoother',
+                            }
+                        ]
+                    },
+                    {
+                        type: 'column',
+                        width: 70,
+                        content: [
+                            {
+                                type: 'component',
+                                componentType: 'fsm',
+                                title: '🔄 FSM',
+                                height: 40,
+                            },
+                            {
+                                type: 'component',
+                                componentType: 'output',
+                                title: '📤 Output',
+                            }
+                        ]
+                    }
+                ]
+            }
+        };
+        
+        // Create GoldenLayout instance
+        const layout = new goldenLayout.GoldenLayout(container);
+        
+        // Register component factories (this is the polymorphic adapter pattern)
+        layout.registerComponentFactoryFunction('sensor', (container) => {
+            container.element.innerHTML = `
+                <div class="tile-content sensor-tile">
+                    <span class="port-badge">SensorPort • Port 0</span>
+                    <h2>👁️ SENSE</h2>
+                    <p>MediaPipe, Webcam, PointerEvents — any input source that implements SensorPort</p>
+                </div>
+            `;
+        });
+        
+        layout.registerComponentFactoryFunction('smoother', (container) => {
+            container.element.innerHTML = `
+                <div class="tile-content smoother-tile">
+                    <span class="port-badge">SmootherPort • Port 2</span>
+                    <h2>🎯 SHAPE</h2>
+                    <p>1€ Filter, Rapier Physics, Kalman — any smoother that implements SmootherPort</p>
+                </div>
+            `;
+        });
+        
+        layout.registerComponentFactoryFunction('fsm', (container) => {
+            container.element.innerHTML = `
+                <div class="tile-content fsm-tile">
+                    <span class="port-badge">FSMPort • Port 7</span>
+                    <h2>🔄 DECIDE</h2>
+                    <p>XState FSM — gesture → action mapping. DISARMED → ARMED → DOWN → action</p>
+                </div>
+            `;
+        });
+        
+        layout.registerComponentFactoryFunction('output', (container) => {
+            container.element.innerHTML = `
+                <div class="tile-content output-tile">
+                    <span class="port-badge">EmitterPort • Port 5</span>
+                    <h2>📤 DEFEND</h2>
+                    <p>W3C PointerEvents output — standard events your app can consume</p>
+                </div>
+            `;
+        });
+        
+        // Load and render layout
+        layout.loadLayout(layoutConfig);
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            layout.setSize(container.offsetWidth, container.offsetHeight);
+        });
+        
+        console.log('✅ GoldenLayout initialized — UIShellPort demo ready');
+        console.log('💡 Try: Drag tiles to rearrange, resize borders, double-click to maximize');
+    </script>
+</body>
+</html>

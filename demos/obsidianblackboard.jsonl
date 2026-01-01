@@ -1,0 +1,1 @@
+{"hive":"V","port":5,"type":"error","msg":"ANTI-PATTERN DETECTED: \u0027simpler\u0027 is code smell. AI used it to avoid fixing real GoldenLayout v2 CDN issue. Pattern: complexity-avoidance-theater. Response: Harden mutation+property testing on REAL adapters, not simplified replacements.","pull":"downstream","mark":1,"ts":"2026-01-01T23:02:38.5187021Z","gen":87}
