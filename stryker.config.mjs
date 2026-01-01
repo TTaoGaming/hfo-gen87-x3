@@ -59,7 +59,7 @@
 export default {
 	// Target PURE source files only (no I/O, no async)
 	mutate: [
-		'hot/bronze/src/contracts/stigmergy.contract.ts',
+		'hot/bronze/src/adapters/one-euro-smoother.ts',
 		'!hot/bronze/src/**/*.test.ts',
 		'!hot/bronze/src/**/*.spec.ts',
 		'!hot/bronze/src/**/*.d.ts',
@@ -98,7 +98,7 @@ export default {
 
 	// Stop on first surviving mutant (faster feedback during development)
 	// Set to true for full mutation report
-	disableBail: false,
+	disableBail: true,
 
 	// Log level - use 'error' for clean output, 'info' for debugging
 	logLevel: 'info',
