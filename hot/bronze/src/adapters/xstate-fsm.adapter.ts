@@ -173,42 +173,11 @@ export const guards = {
 };
 
 // ============================================================================
-// ACTIONS
+// ACTIONS (typed for XState v5 setup)
 // ============================================================================
 
-const actions = {
-	recordBaselineTime: assign({
-		baselineStableAt: ({ event }) => {
-			if (event.type === 'FRAME') return event.frame.ts;
-			return null;
-		},
-	}),
-
-	clearBaselineTime: assign({
-		baselineStableAt: null,
-	}),
-
-	setArmedFromBaseline: assign({
-		armedFromBaseline: true,
-	}),
-
-	clearArmedFromBaseline: assign({
-		armedFromBaseline: false,
-	}),
-
-	updatePosition: assign({
-		lastPosition: ({ event }) => {
-			if (event.type === 'FRAME' && event.frame.position) {
-				return { x: event.frame.position.x, y: event.frame.position.y };
-			}
-			return null;
-		},
-		currentTs: ({ event }) => {
-			if (event.type === 'FRAME') return event.frame.ts;
-			return 0;
-		},
-	}),
-};
+// Define actions inline in setup() to get proper types
+// This avoids the ActionFunction type mismatch with assign()
 
 // ============================================================================
 // STATE MACHINE
@@ -220,7 +189,39 @@ const gestureMachine = setup({
 		events: {} as GestureEvent,
 	},
 	guards,
-	actions,
+	actions: {
+		recordBaselineTime: assign({
+			baselineStableAt: ({ event }: { event: GestureEvent }) => {
+				if (event.type === 'FRAME') return event.frame.ts;
+				return null;
+			},
+		}),
+
+		clearBaselineTime: assign({
+			baselineStableAt: () => null,
+		}),
+
+		setArmedFromBaseline: assign({
+			armedFromBaseline: () => true,
+		}),
+
+		clearArmedFromBaseline: assign({
+			armedFromBaseline: () => false,
+		}),
+
+		updatePosition: assign({
+			lastPosition: ({ event }: { event: GestureEvent }) => {
+				if (event.type === 'FRAME' && event.frame.position) {
+					return { x: event.frame.position.x, y: event.frame.position.y };
+				}
+				return null;
+			},
+			currentTs: ({ event }: { event: GestureEvent }) => {
+				if (event.type === 'FRAME') return event.frame.ts;
+				return 0;
+			},
+		}),
+	},
 }).createMachine({
 	id: 'gestureFSM',
 	initial: 'DISARMED',
@@ -422,12 +423,14 @@ const gestureMachine = setup({
 // ============================================================================
 
 type GestureActor = ActorRefFrom<typeof gestureMachine>;
-type GestureSnapshot = SnapshotFrom<typeof gestureMachine>;
+// @ts-expect-error Reserved for future snapshot inspection
+type _GestureSnapshot = SnapshotFrom<typeof gestureMachine>;
 
 export class XStateFSMAdapter implements FSMPort {
 	private actor: GestureActor;
 	private previousState: FSMState = 'DISARMED';
-	private previousFrame: SmoothedFrame | null = null;
+	// @ts-expect-error Reserved for stateful transitions
+	private _previousFrame: SmoothedFrame | null = null;
 	private subscribers: Set<(state: string, action: FSMAction) => void> = new Set();
 
 	constructor() {
@@ -438,7 +441,9 @@ export class XStateFSMAdapter implements FSMPort {
 		this.actor.subscribe((snapshot) => {
 			const newState = snapshot.value as FSMState;
 			if (this.subscribers.size > 0) {
-				const action = this.computeAction(newState, snapshot.context);
+				// For subscription callbacks, emit move action with last known position
+				const position = snapshot.context.lastPosition ?? { x: 0.5, y: 0.5 };
+				const action: FSMAction = { action: 'move', state: newState, x: position.x, y: position.y };
 				this.subscribers.forEach((cb) => cb(newState, action));
 			}
 		});
@@ -458,7 +463,7 @@ export class XStateFSMAdapter implements FSMPort {
 		// Compute action based on state transition (pass current frame for label access)
 		const action = this.computeAction(newState, snapshot.context, frame);
 
-		this.previousFrame = frame;
+		this._previousFrame = frame;
 
 		// CDD: Validate output at port boundary
 		return FSMActionSchema.parse(action);

@@ -142,17 +142,16 @@ class RapierSmootherAdapter implements SmootherPort {
 // ============================================================================
 
 /**
- * VirtualDOMAdapter - Creates an AdapterPort from AdapterTarget
+ * VirtualDOMAdapter - Creates a virtual adapter for headless environments
  *
  * For test/headless environments where real DOM elements aren't available.
  * In browser, we'd use the real DOMAdapter from pointer-event.adapter.ts
  */
-class VirtualDOMAdapter implements AdapterPort {
+class VirtualDOMAdapter {
 	private _bounds: AdapterTarget['bounds'];
 	private _hasCapture = false;
-	private readonly _pointerId = 1;
 
-	constructor(private readonly target: AdapterTarget) {
+	constructor(target: AdapterTarget) {
 		this._bounds = target.bounds;
 	}
 
@@ -262,7 +261,7 @@ export class RawHTMLShellAdapter implements UIShellPort {
 		}
 	}
 
-	splitTile(tileId: string, direction: 'horizontal' | 'vertical', newTile: TileConfig): void {
+	splitTile(_tileId: string, _direction: 'horizontal' | 'vertical', newTile: TileConfig): void {
 		// Simple implementation: just add new tile
 		this.addTile(newTile);
 	}
@@ -420,45 +419,41 @@ export class HFOPortFactory implements PortFactory {
 		const { smoother } = this.config;
 
 		switch (smoother.type) {
-			case '1euro':
-				return new OneEuroExemplarAdapter({
-					minCutoff: smoother.minCutoff,
-					beta: smoother.beta,
-					dCutoff: smoother.dCutoff,
-				});
+			case '1euro': {
+				// Build config object with only defined properties (exactOptionalPropertyTypes)
+				const config: import('./one-euro-exemplar.adapter.js').OneEuroConfig = {};
+				if (smoother.minCutoff !== undefined) config.minCutoff = smoother.minCutoff;
+				if (smoother.beta !== undefined) config.beta = smoother.beta;
+				if (smoother.dCutoff !== undefined) config.dCutoff = smoother.dCutoff;
+				return new OneEuroExemplarAdapter(config);
+			}
 
-			case 'rapier-smooth':
-				// Wrap RapierPhysicsAdapter to match SmootherPort interface
-				return new RapierSmootherAdapter(
-					new RapierPhysicsAdapter({
-						mode: 'smoothed',
-						stiffness: smoother.stiffness,
-						damping: smoother.damping,
-					}),
-				);
+			case 'rapier-smooth': {
+				// Build config object with only defined properties
+				const config: Partial<import('./rapier-physics.adapter.js').RapierConfig> = { mode: 'smoothed' };
+				if (smoother.stiffness !== undefined) config.stiffness = smoother.stiffness;
+				if (smoother.damping !== undefined) config.damping = smoother.damping;
+				return new RapierSmootherAdapter(new RapierPhysicsAdapter(config));
+			}
 
-			case 'rapier-predict':
-				// Wrap RapierPhysicsAdapter to match SmootherPort interface
-				return new RapierSmootherAdapter(
-					new RapierPhysicsAdapter({
-						mode: 'predictive',
-						stiffness: smoother.stiffness,
-						damping: smoother.damping,
-						predictionMs: smoother.predictionMs,
-					}),
-				);
+			case 'rapier-predict': {
+				// Build config object with only defined properties
+				const config: Partial<import('./rapier-physics.adapter.js').RapierConfig> = { mode: 'predictive' };
+				if (smoother.stiffness !== undefined) config.stiffness = smoother.stiffness;
+				if (smoother.damping !== undefined) config.damping = smoother.damping;
+				if (smoother.predictionMs !== undefined) config.predictionMs = smoother.predictionMs;
+				return new RapierSmootherAdapter(new RapierPhysicsAdapter(config));
+			}
 
-			case 'rapier-adaptive':
+			case 'rapier-adaptive': {
 				// 1€ PHYSICS: Rapier with velocity-adaptive stiffness
-				return new RapierSmootherAdapter(
-					new RapierPhysicsAdapter({
-						mode: 'adaptive',
-						minStiffness: smoother.minStiffness,
-						speedCoefficient: smoother.speedCoefficient,
-						maxStiffness: smoother.maxStiffness,
-						damping: smoother.damping,
-					}),
-				);
+				const config: Partial<import('./rapier-physics.adapter.js').RapierConfig> = { mode: 'adaptive' };
+				if (smoother.minStiffness !== undefined) config.minStiffness = smoother.minStiffness;
+				if (smoother.speedCoefficient !== undefined) config.speedCoefficient = smoother.speedCoefficient;
+				if (smoother.maxStiffness !== undefined) config.maxStiffness = smoother.maxStiffness;
+				if (smoother.damping !== undefined) config.damping = smoother.damping;
+				return new RapierSmootherAdapter(new RapierPhysicsAdapter(config));
+			}
 
 			default: {
 				// TypeScript exhaustiveness check

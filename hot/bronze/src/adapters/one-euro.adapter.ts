@@ -87,11 +87,11 @@ export class OneEuroAdapter implements SmootherPort {
 		mincutoff = 1.0,
 		beta = 0.007,
 		dcutoff = 1.0,
-		private readonly frequency = 60, // Assumed frame rate
+		private readonly _frequency = 60, // Assumed frame rate (stored for future use)
 		predictionMs = 16, // One frame ahead prediction
 	) {
-		this.filterX = new OneEuroFilterWithVelocity(frequency, mincutoff, beta, dcutoff);
-		this.filterY = new OneEuroFilterWithVelocity(frequency, mincutoff, beta, dcutoff);
+		this.filterX = new OneEuroFilterWithVelocity(this._frequency, mincutoff, beta, dcutoff);
+		this.filterY = new OneEuroFilterWithVelocity(this._frequency, mincutoff, beta, dcutoff);
 		this.predictionMs = predictionMs;
 	}
 

@@ -43,6 +43,11 @@ function isPalmFacing(landmarks: Array<{ x: number; y: number; z: number }>): bo
 	const indexMcp = landmarks[5];
 	const middleMcp = landmarks[9];
 
+	// Guard against undefined landmarks
+	if (!wrist || !indexMcp || !middleMcp) {
+		return false;
+	}
+
 	// Vector from wrist to index MCP
 	const v1 = {
 		x: indexMcp.x - wrist.x,
@@ -142,8 +147,34 @@ export class MediaPipeAdapter implements SensorPort {
 		const gesture = result.gestures[0]?.[0];
 		const handedness = result.handedness[0]?.[0];
 
+		// Guard against missing landmarks
+		if (!landmarks || landmarks.length < 21) {
+			return {
+				ts: timestamp,
+				handId: 'none',
+				trackingOk: false,
+				palmFacing: false,
+				label: 'None',
+				confidence: 0,
+				indexTip: null,
+				landmarks: null,
+			};
+		}
+
 		// Index finger tip is landmark 8
 		const indexTip = landmarks[8];
+		if (!indexTip) {
+			return {
+				ts: timestamp,
+				handId: 'none',
+				trackingOk: false,
+				palmFacing: false,
+				label: 'None',
+				confidence: 0,
+				indexTip: null,
+				landmarks: null,
+			};
+		}
 
 		// Determine gesture label (map MediaPipe names to our enum)
 		const label = (gesture?.categoryName as GestureLabel) || 'None';

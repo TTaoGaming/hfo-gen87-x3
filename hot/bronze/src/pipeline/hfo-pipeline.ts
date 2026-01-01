@@ -272,8 +272,10 @@ export function calculateJitterReduction(
 function calculateTotalJitter(points: Array<{ x: number; y: number }>): number {
 	let total = 0;
 	for (let i = 1; i < points.length; i++) {
-		const dx = points[i].x - points[i - 1].x;
-		const dy = points[i].y - points[i - 1].y;
+		const curr = points[i]!;
+		const prev = points[i - 1]!;
+		const dx = curr.x - prev.x;
+		const dy = curr.y - prev.y;
 		total += Math.sqrt(dx * dx + dy * dy);
 	}
 	return total;

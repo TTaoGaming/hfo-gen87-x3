@@ -114,6 +114,18 @@ export class PointerEventAdapter implements EmitterPort {
 }
 
 /**
+ * AdapterPort interface - DOM injection abstraction
+ * This is defined locally since we need it for injection adapters
+ */
+export interface AdapterPort {
+	inject(event: PointerEventOut): boolean;
+	getBounds(): { width: number; height: number; left: number; top: number };
+	setCapture(): void;
+	releaseCapture(): void;
+	hasCapture(): boolean;
+}
+
+/**
  * DOM Adapter - Injects PointerEvents into DOM elements
  * Implements AdapterPort interface
  */

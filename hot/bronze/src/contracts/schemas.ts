@@ -462,7 +462,7 @@ export type LayoutNode =
 			direction: 'row' | 'column';
 			first: LayoutNode;
 			second: LayoutNode;
-			splitPercentage?: number;
+			splitPercentage?: number | undefined;
 	  };
 
 /**

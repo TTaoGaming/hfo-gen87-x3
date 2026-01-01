@@ -154,12 +154,17 @@ export class TileComposer implements ComposerPort {
 	// Component factories registered by user
 	private componentFactories = new Map<string, ComponentFactory>();
 
+	/** ComposerPort: Check if initialized */
+	get isInitialized(): boolean {
+		return this.initialized;
+	}
+
 	constructor(config: TileComposerConfig) {
 		this.config = config;
 		this.factory = new HFOPortFactory({
 			smoother: config.defaultSmoother,
 			shell: config.shell,
-			sensor: config.sensor,
+			...(config.sensor && { sensor: config.sensor }),
 		});
 	}
 

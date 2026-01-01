@@ -70,7 +70,12 @@ export class GoldenLayoutShellAdapter implements UIShellPort {
 	// Private state
 	private initialized = false;
 	private rootContainer: HTMLElement | null = null;
-	private config: UIShellConfig | null = null;
+	private _config: UIShellConfig | null = null;
+
+	/** Get current configuration (for hot-swapping and inspection) */
+	get config(): UIShellConfig | null {
+		return this._config;
+	}
 
 	// Component registry - maps tile type to factory
 	private componentRegistry = new Map<TileType, ComponentFactory>();
@@ -118,7 +123,7 @@ export class GoldenLayoutShellAdapter implements UIShellPort {
 		}
 
 		this.rootContainer = container;
-		this.config = validatedConfig;
+		this._config = validatedConfig;
 		this.initialized = true;
 
 		// Apply initial layout if provided
@@ -321,7 +326,7 @@ export class GoldenLayoutShellAdapter implements UIShellPort {
 		// Reset state
 		this.arrangement = '';
 		this.rootContainer = null;
-		this.config = null;
+		this._config = null;
 		this.initialized = false;
 	}
 
