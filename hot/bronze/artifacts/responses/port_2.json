@@ -1,0 +1,10 @@
+{
+  "port": 2,
+  "model": "google/gemini-2.0-flash-exp:free",
+  "name": "Gemini-Flash",
+  "commander": "Mirror Magus",
+  "content": "I am unable to find information about \"HIVE/8,\" and it may be a highly specific or niche term.\n",
+  "latency_ms": 655.289599999378,
+  "success": true,
+  "error": null
+}

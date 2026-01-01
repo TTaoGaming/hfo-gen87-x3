@@ -1,0 +1,10 @@
+{
+  "port": 4,
+  "model": "mistralai/mistral-small-3.1-24b-instruct:free",
+  "name": "Mistral-24B",
+  "commander": "Red Regnant",
+  "content": "HIVE/8 is a digital currency dedicated to the development of the Hive blockchain and its ecosystem, launched in 2026.",
+  "latency_ms": 570.5643999990571,
+  "success": true,
+  "error": null
+}
