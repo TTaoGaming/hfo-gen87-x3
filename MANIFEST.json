@@ -1,19 +1,47 @@
 {
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
-	"version": "87.X3",
-	"timestamp": "2025-12-31T08:00:00Z",
+	"version": "87.X3.1",
+	"timestamp": "2025-12-31T20:00:00Z",
 	"generation": 87,
-	"iteration": "X3",
+	"iteration": "X3.1",
 	"nextGeneration": 88,
+
+	"structure": {
+		"_comment": "Hot/Cold + Medallion PARA structure (X3.1 reorganization)",
+		"hot": {
+			"purpose": "ACTIVE work - everything touched daily",
+			"location": "hot/",
+			"contents": ["specs/", "src/", "demos/", "tests/", "scripts/", "blackboard.jsonl"]
+		},
+		"cold": {
+			"purpose": "REFERENCE - Medallion tiers for processed content",
+			"bronze": {
+				"purpose": "Unprocessed - everything starts here",
+				"location": "cold/bronze/"
+			},
+			"silver": {
+				"purpose": "Processed handoffs - EARNED via INTERLOCK",
+				"location": "cold/silver/"
+			},
+			"gold": {
+				"purpose": "Authoritative specs - EARNED via VALIDATE",
+				"location": "cold/gold/"
+			}
+		},
+		"build": {
+			"purpose": "Build artifacts - hidden",
+			"location": ".build/"
+		}
+	},
 
 	"authoritative": {
 		"agentInstructions": "AGENTS.md",
 		"quickContext": "llms.txt",
-		"dailySpec": "hfo_daily_specs/W3C_POINTER_GESTURE_CONTROL_PLANE_20251231.md",
-		"swarmSpec": "hfo_daily_specs/HARD_GATED_SWARM_SCATTER_GATHER_20251230.md",
-		"contracts": "sandbox/src/contracts/",
-		"adapters": "sandbox/src/adapters/",
-		"blackboard": "sandbox/obsidianblackboard.jsonl",
+		"dailySpec": "hot/specs/W3C_POINTER_GESTURE_CONTROL_PLANE_20251231.md",
+		"swarmSpec": "hot/specs/HARD_GATED_SWARM_SCATTER_GATHER_20251230.md",
+		"contracts": "hot/src/contracts/",
+		"adapters": "hot/src/adapters/",
+		"blackboard": "hot/blackboard.jsonl",
 		"memoryBank": "../portable_hfo_memory_pre_hfo_to_gen84_2025-12-27T21-46-52/hfo_memory.duckdb",
 		"referenceImpl": "../hfo_kiro_gen85/",
 		"incidentLog": "CRITICAL_INCIDENT_LOG.md",
@@ -21,64 +49,35 @@
 		"devDashboard": "HFO_DEV_DASHBOARD.html"
 	},
 
-	"documentation": {
-		"_comment": "Three-tier documentation structure aligned with Medallion architecture",
-		"bronze": {
-			"purpose": "HUNT phase research - ephemeral explorations",
-			"location": "sandbox/research/",
-			"subfolders": ["explorations/", "notes/", "_archive/"]
-		},
-		"silver": {
-			"purpose": "Session handoffs - continuity between agents",
-			"location": "sandbox/handoffs/",
-			"subfolders": ["templates/"]
-		},
-		"gold": {
-			"purpose": "Finalized architectural specs - authoritative",
-			"location": "sandbox/specs/"
-		},
-		"audits": {
-			"purpose": "Compliance audits and structural reviews",
-			"location": "sandbox/audits/"
-		}
-	},
-
 	"active": {
 		"specs": [
-			"hfo_daily_specs/W3C_POINTER_GESTURE_CONTROL_PLANE_20251231.md",
-			"hfo_daily_specs/HARD_GATED_SWARM_SCATTER_GATHER_20251230.md",
-			"sandbox/specs/HIVE_SWARM_MCP_SERVER_ARCHITECTURE.md",
-			"sandbox/specs/OBSIDIAN_LEGENDARY_COMMANDERS_VSCODE_AGENTS.md",
-			"sandbox/specs/EXEMPLAR_COMPOSITION.md",
-			"sandbox/specs/PRE_CREATE_CHECKLIST.md",
-			"sandbox/specs/VSCODE_AGENTS_CAPABILITY_CHECKLIST.md"
+			"hot/specs/W3C_POINTER_GESTURE_CONTROL_PLANE_20251231.md",
+			"hot/specs/HARD_GATED_SWARM_SCATTER_GATHER_20251230.md",
+			"hot/specs/HIVE_SWARM_MCP_SERVER_ARCHITECTURE.md",
+			"hot/specs/OBSIDIAN_LEGENDARY_COMMANDERS_VSCODE_AGENTS.md",
+			"hot/specs/EXEMPLAR_COMPOSITION.md",
+			"hot/specs/PRE_CREATE_CHECKLIST.md",
+			"hot/specs/VSCODE_AGENTS_CAPABILITY_CHECKLIST.md"
 		],
-		"contextPayload": "sandbox/specs/GEN87_X3_CONTEXT_PAYLOAD_V1_20251230Z.md",
-		"grimoire": "sandbox/specs/OBSIDIAN_GRIMOIRE_GALOIS_LATTICE.md",
-		"commanders": "sandbox/specs/OBSIDIAN_LEGENDARY_COMMANDERS.md",
-		"activeDemo": "sandbox/demos/main/",
-		"dinoDemo": "sandbox/demos/main/index-dino.html"
+		"contextPayload": "hot/specs/GEN87_X3_CONTEXT_PAYLOAD_V1_20251230Z.md",
+		"grimoire": "hot/specs/OBSIDIAN_GRIMOIRE_GALOIS_LATTICE.md",
+		"commanders": "hot/specs/OBSIDIAN_LEGENDARY_COMMANDERS.md",
+		"activeDemo": "hot/demos/production/",
+		"productionDemo": "hot/demos/production/index.html"
 	},
 
 	"archived": {
-		"v1Specs": "sandbox/specs/_archived_v1/",
-		"v2Specs": "sandbox/specs/_archived_v2/",
-		"sessionLogs": "sandbox/_archive/session_logs/",
-		"legacyDemos": "sandbox/demos/_legacy/"
-	},
-
-	"stagingForRemoval": {
-		"reason": "Content verified copied to demos/main/ and demos/_legacy/. Safe to delete after confirmation.",
-		"folder": "sandbox/_staging_for_removal/",
-		"items": ["demo/", "demo-daedalos/", "demo-golden/", "demo-puter/", "demo-real/"]
+		"v1Specs": "cold/bronze/archived-specs/v1/",
+		"v2Specs": "cold/bronze/archived-specs/v2/",
+		"legacyDemos": "cold/bronze/legacy-demos/"
 	},
 
 	"enforcement": {
 		"preCommitHooks": ".husky/pre-commit",
-		"architectureGate": "scripts/enforce-architecture.ts",
-		"vPhaseGate": "scripts/v-phase-gate.ts",
-		"stubDetector": "scripts/detect-stubs.ts",
-		"theaterDetector": "scripts/theater-detector.ts"
+		"architectureGate": "hot/scripts/enforce-architecture.ts",
+		"vPhaseGate": "hot/scripts/v-phase-gate.ts",
+		"stubDetector": "hot/scripts/detect-stubs.ts",
+		"theaterDetector": "hot/scripts/theater-detector.ts"
 	},
 
 	"hive": {
