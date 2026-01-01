@@ -14,12 +14,12 @@
  * - Test with mock adapters, deploy with real ones
  */
 import type {
+	AdapterPort,
+	EmitterPort,
+	FSMPort,
+	OverlayPort,
 	SensorPort,
 	SmootherPort,
-	FSMPort,
-	EmitterPort,
-	AdapterPort,
-	OverlayPort,
 	UIShellPort,
 } from './ports.js';
 
@@ -320,7 +320,7 @@ export function createFactoryFromClass<TPort, TConfig>(
 	AdapterClass: new (config?: TConfig) => TPort,
 	metadata: AdapterMetadata,
 	defaultConfig: TConfig = {} as TConfig,
-	configValidator?: (config?: TConfig) => { valid: boolean; errors?: string[] }
+	configValidator?: (config?: TConfig) => { valid: boolean; errors?: string[] },
 ): AdapterFactory<TPort, TConfig> {
 	return {
 		metadata,

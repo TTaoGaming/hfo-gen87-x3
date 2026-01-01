@@ -23,6 +23,8 @@ export {
     RapierPhysicsAdapter, createPredictiveRapierAdapter, createSmoothedRapierAdapter, type RapierConfig
 } from './rapier-physics.adapter.js';
 export { XStateFSMAdapter } from './xstate-fsm.adapter.js';
+export { GoldenLayoutShellAdapter, type ComponentFactory } from './golden-layout-shell.adapter.js';
+export { HFOPortFactory, RawHTMLShellAdapter, type PortFactoryConfig } from './port-factory.js';
 
 // Re-export ports for type checking
 export type { EmitterPort, W3CPointerEvent } from '../ports/emitter.port.js';
@@ -55,6 +57,11 @@ const HFO = {
 	GesturePipeline: undefined as any,
 	createDefaultPipeline: undefined as any,
 
+	// UI Shell adapters (Gen87.X3 - Polymorphic UIShellPort)
+	GoldenLayoutShellAdapter: undefined as any,
+	RawHTMLShellAdapter: undefined as any,
+	HFOPortFactory: undefined as any,
+
 	// Meta
 	VERSION: '87.3.0',
 	BUILD_DATE: '',
@@ -67,6 +74,8 @@ async function initHFO() {
 	const { XStateFSMAdapter } = await import('./xstate-fsm.adapter.js');
 	const { PointerEventAdapter, DOMAdapter, MockDOMAdapter } = await import('./pointer-event.adapter.js');
 	const { GesturePipeline, createDefaultPipeline } = await import('./pipeline.js');
+	const { GoldenLayoutShellAdapter } = await import('./golden-layout-shell.adapter.js');
+	const { HFOPortFactory, RawHTMLShellAdapter } = await import('./port-factory.js');
 
 	HFO.OneEuroExemplarAdapter = OneEuroExemplarAdapter;
 	HFO.RapierPhysicsAdapter = RapierPhysicsAdapter;
@@ -78,6 +87,9 @@ async function initHFO() {
 	HFO.MockDOMAdapter = MockDOMAdapter;
 	HFO.GesturePipeline = GesturePipeline;
 	HFO.createDefaultPipeline = createDefaultPipeline;
+	HFO.GoldenLayoutShellAdapter = GoldenLayoutShellAdapter;
+	HFO.RawHTMLShellAdapter = RawHTMLShellAdapter;
+	HFO.HFOPortFactory = HFOPortFactory;
 	HFO.BUILD_DATE = new Date().toISOString();
 
 	return HFO;

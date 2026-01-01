@@ -20,7 +20,7 @@
 import { z } from 'zod';
 import { OneEuroAdapter } from '../adapters/one-euro.adapter.js';
 import { XStateFSMAdapter } from '../adapters/xstate-fsm.adapter.js';
-import type { FSMPort, SmootherPort } from '../contracts/ports.js';
+import type { FSMPort, PortFactory, SmootherPort } from '../contracts/ports.js';
 import type { FSMAction, SensorFrame, SmoothedFrame } from '../contracts/schemas.js';
 import {
 	DOMEventDispatcher,
@@ -48,6 +48,12 @@ export const PipelineConfigSchema = z.object({
 });
 
 export type PipelineConfig = z.infer<typeof PipelineConfigSchema>;
+
+/** Extended config with optional factory for DI */
+export interface PipelineOptions extends PipelineConfig {
+	/** Optional PortFactory for dependency injection. If provided, smoother and fsm are created via factory */
+	factory?: PortFactory;
+}
 
 // ============================================================================
 // PIPELINE EVENT TYPES
@@ -93,16 +99,28 @@ export class W3CCursorPipeline {
 	private listeners: Set<PipelineListener> = new Set();
 	private lastState = 'DISARMED';
 
-	constructor(config: Partial<PipelineConfig> = {}) {
-		this.config = PipelineConfigSchema.parse(config) as Required<PipelineConfig>;
+	/**
+	 * Create pipeline with optional DI factory
+	 * @param options - Config with optional factory for DI
+	 */
+	constructor(options: Partial<PipelineOptions> = {}) {
+		const { factory, ...configRest } = options;
+		this.config = PipelineConfigSchema.parse(configRest) as Required<PipelineConfig>;
 
-		// Initialize REAL adapters (not inline copies)
-		this.smoother = new OneEuroAdapter({
-			mincutoff: this.config.filterMincutoff,
-			beta: this.config.filterBeta,
-		});
-
-		this.fsm = new XStateFSMAdapter();
+		// Use DI factory if provided, otherwise create adapters directly
+		if (factory) {
+			this.smoother = factory.createSmoother();
+			this.fsm = factory.createFSM();
+			this.log('Pipeline initialized with factory-injected adapters');
+		} else {
+			// Fallback: direct instantiation (legacy path)
+			this.smoother = new OneEuroAdapter({
+				mincutoff: this.config.filterMincutoff,
+				beta: this.config.filterBeta,
+			});
+			this.fsm = new XStateFSMAdapter();
+			this.log('Pipeline initialized with direct adapters (legacy)');
+		}
 
 		this.factory = new W3CPointerEventFactory({
 			viewportWidth: this.config.viewportWidth,

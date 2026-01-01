@@ -17,8 +17,18 @@ export default defineConfig({
 	test: {
 		globals: true,
 		environment: 'node',
-		include: ['src/**/*.{test,spec}.{ts,tsx}', 'sandbox/src/**/*.{test,spec}.{ts,tsx}'],
-		exclude: ['**/node_modules/**', '**/dist/**', '**/e2e/**'],
+		include: [
+			'src/**/*.{test,spec}.{ts,tsx}',
+			'sandbox/src/**/*.{test,spec}.{ts,tsx}',
+			'hot/**/*.{test,spec}.{ts,tsx}',
+		],
+		exclude: [
+			'**/node_modules/**',
+			'**/dist/**',
+			'**/e2e/**',
+			'**/_stale_tests/**',
+			'**/_archived/**',
+		],
 
 		// Define test projects (buckets) for targeted execution
 		typecheck: {

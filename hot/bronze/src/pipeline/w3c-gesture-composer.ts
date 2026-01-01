@@ -1,3 +1,23 @@
+import type { PipelineComposition, ResolvedPipeline } from '../contracts/adapter-factory.js';
+import {
+	EmitterRegistry,
+	FSMRegistry,
+	OverlayRegistry,
+	PredictorRegistry,
+	SensorRegistry,
+	SmootherRegistry,
+	TargetRegistry,
+} from '../contracts/adapter-factory.js';
+import type {
+	EmitEnvelope,
+	FSMEnvelope,
+	PredictEnvelope,
+	SenseEnvelope,
+	SmoothEnvelope,
+	TargetEnvelope,
+	UIEnvelope,
+	UIShellPortEnhanced,
+} from '../contracts/ports-extended.js';
 /**
  * W3C Gesture Pipeline Composer - Dependency Injection Wiring
  *
@@ -13,54 +33,16 @@
  * - ASSIMILATES stage outputs into next stage input
  * - ROUTES to NATS subjects for distributed processing (optional)
  */
-import type {
-	SensorPort,
-	SmootherPort,
-	FSMPort,
-	EmitterPort,
-	AdapterPort,
-	OverlayPort,
-} from '../contracts/ports.js';
-import type {
-	PredictorPort,
-	PipelineComposition,
-	ResolvedPipeline,
-} from '../contracts/adapter-factory.js';
+import type { PipelineStats, PredictedFrame } from '../contracts/schemas-extended.js';
+import type { AdapterTarget, SmoothedFrame } from '../contracts/schemas.js';
 import {
-	SensorRegistry,
-	SmootherRegistry,
-	PredictorRegistry,
-	FSMRegistry,
-	EmitterRegistry,
-	TargetRegistry,
-	OverlayRegistry,
-} from '../contracts/adapter-factory.js';
-import {
-	wrapInVacuole,
-	propagateVacuole,
 	PIPELINE_EVENT_TYPES,
 	PIPELINE_NATS_SUBJECTS,
-	type VacuoleEnvelope,
 	type Traceparent,
+	type VacuoleEnvelope,
+	propagateVacuole,
+	wrapInVacuole,
 } from '../contracts/vacuole-envelope.js';
-import type {
-	SensorFrame,
-	SmoothedFrame,
-	FSMAction,
-	PointerEventOut,
-	AdapterTarget,
-} from '../contracts/schemas.js';
-import type { PredictedFrame, LayoutAction, PipelineStats } from '../contracts/schemas-extended.js';
-import type {
-	SenseEnvelope,
-	SmoothEnvelope,
-	PredictEnvelope,
-	FSMEnvelope,
-	EmitEnvelope,
-	TargetEnvelope,
-	UIEnvelope,
-	UIShellPortEnhanced,
-} from '../contracts/ports-extended.js';
 
 // ============================================================================
 // COMPOSER CONFIGURATION
@@ -190,7 +172,7 @@ export class W3CGestureComposer {
 	private resolveAdapter<T>(
 		adapterOrId: string | T,
 		registry: { create: (id: string, config?: unknown) => T },
-		portName: string
+		portName: string,
 	): T {
 		if (typeof adapterOrId === 'string') {
 			try {
@@ -243,9 +225,10 @@ export class W3CGestureComposer {
 			const smoothedFrame = this.pipeline.smoother.smooth(sensorFrame);
 			this.stats.stageLatencies.smooth = performance.now() - smoothStart;
 
-			const smoothEnvelope = this.config.enableEnvelopes && senseEnvelope
-				? propagateVacuole(senseEnvelope, smoothedFrame, 2, 2)
-				: null;
+			const smoothEnvelope =
+				this.config.enableEnvelopes && senseEnvelope
+					? propagateVacuole(senseEnvelope, smoothedFrame, 2, 2)
+					: null;
 
 			this.lastEnvelopes.smooth = smoothEnvelope ?? undefined;
 			this.notifyStageComplete('smooth', smoothEnvelope);
@@ -261,9 +244,10 @@ export class W3CGestureComposer {
 				predictedFrame = this.pipeline.predictor.predict(smoothedFrame);
 				this.stats.stageLatencies.predict = performance.now() - predictStart;
 
-				predictEnvelope = this.config.enableEnvelopes && smoothEnvelope
-					? propagateVacuole(smoothEnvelope, predictedFrame, 3, 2)
-					: null;
+				predictEnvelope =
+					this.config.enableEnvelopes && smoothEnvelope
+						? propagateVacuole(smoothEnvelope, predictedFrame, 3, 2)
+						: null;
 
 				this.lastEnvelopes.predict = predictEnvelope ?? undefined;
 				this.notifyStageComplete('predict', predictEnvelope);
@@ -281,9 +265,10 @@ export class W3CGestureComposer {
 			this.stats.stageLatencies.fsm = performance.now() - fsmStart;
 
 			// FSM envelope uses smoothed frame as source (PredictedFrame is extension data)
-			const fsmEnvelope = this.config.enableEnvelopes && smoothEnvelope
-				? propagateVacuole(smoothEnvelope, fsmAction, 4, 3)
-				: null;
+			const fsmEnvelope =
+				this.config.enableEnvelopes && smoothEnvelope
+					? propagateVacuole(smoothEnvelope, fsmAction, 4, 3)
+					: null;
 
 			this.lastEnvelopes.fsm = fsmEnvelope ?? undefined;
 			this.notifyStageComplete('fsm', fsmEnvelope);
@@ -309,9 +294,10 @@ export class W3CGestureComposer {
 				return null;
 			}
 
-			const emitEnvelope = this.config.enableEnvelopes && fsmEnvelope
-				? propagateVacuole(fsmEnvelope, pointerEvent, 5, 5)
-				: null;
+			const emitEnvelope =
+				this.config.enableEnvelopes && fsmEnvelope
+					? propagateVacuole(fsmEnvelope, pointerEvent, 5, 5)
+					: null;
 
 			this.lastEnvelopes.emit = emitEnvelope ?? undefined;
 			this.notifyStageComplete('emit', emitEnvelope);
@@ -323,14 +309,15 @@ export class W3CGestureComposer {
 			const dispatched = this.pipeline.target.inject(pointerEvent);
 			this.stats.stageLatencies.target = performance.now() - targetStart;
 
-			const targetEnvelope = this.config.enableEnvelopes && emitEnvelope
-				? propagateVacuole(
-						emitEnvelope,
-						{ event: pointerEvent, targets: dispatched ? ['primary'] : [] },
-						6,
-						1
-					)
-				: null;
+			const targetEnvelope =
+				this.config.enableEnvelopes && emitEnvelope
+					? propagateVacuole(
+							emitEnvelope,
+							{ event: pointerEvent, targets: dispatched ? ['primary'] : [] },
+							6,
+							1,
+						)
+					: null;
 
 			this.lastEnvelopes.target = targetEnvelope ?? undefined;
 			this.notifyStageComplete('target', targetEnvelope);
@@ -345,9 +332,10 @@ export class W3CGestureComposer {
 				const layoutActions = this.uiShell.processGesture(pointerEvent, fsmAction);
 				this.stats.stageLatencies.ui = performance.now() - uiStart;
 
-				uiEnvelope = this.config.enableEnvelopes && targetEnvelope
-					? propagateVacuole(targetEnvelope, layoutActions, 7, 7)
-					: null;
+				uiEnvelope =
+					this.config.enableEnvelopes && targetEnvelope
+						? propagateVacuole(targetEnvelope, layoutActions, 7, 7)
+						: null;
 
 				this.lastEnvelopes.ui = uiEnvelope ?? undefined;
 				this.notifyStageComplete('ui', uiEnvelope);
@@ -380,7 +368,7 @@ export class W3CGestureComposer {
 	 */
 	onStageComplete(
 		stage: 'sense' | 'smooth' | 'predict' | 'fsm' | 'emit' | 'target' | 'ui',
-		callback: (envelope: VacuoleEnvelope<unknown>) => void
+		callback: (envelope: VacuoleEnvelope<unknown>) => void,
 	): () => void {
 		if (!this.stageCallbacks.has(stage)) {
 			this.stageCallbacks.set(stage, []);

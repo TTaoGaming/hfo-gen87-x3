@@ -38,16 +38,22 @@ class OneEuroFilterWithVelocity {
 
 	filterValue(x: number, timestamp: number): number {
 		// Track derivative manually since npm package doesn't expose it
+		// Guard: dt must be > 0 to avoid NaN (property test: identical timestamps)
 		if (this.lastValue !== undefined && this.lastTime !== undefined) {
 			const dt = (timestamp - this.lastTime) / 1000;
-			if (dt > 0) {
+			if (dt > 0.0001) {
+				// Minimum 0.1ms between samples
 				this.derivative = (x - this.lastValue) / dt;
 			}
+			// If dt <= 0.0001, keep previous derivative (avoid NaN)
 		}
 		this.lastValue = x;
 		this.lastTime = timestamp;
 
-		return this.filter.filter(x, timestamp);
+		// npm 1eurofilter can return NaN on edge cases (same timestamp)
+		// Guard against it by checking and returning last value if NaN
+		const result = this.filter.filter(x, timestamp);
+		return Number.isNaN(result) ? x : result;
 	}
 
 	getDerivative(): number {
@@ -108,8 +114,9 @@ export class OneEuroAdapter implements SmootherPort {
 		}
 
 		// Apply 1€ filter to x and y coordinates
-		const smoothedX = this.filterX.filterValue(frame.indexTip.x, frame.ts);
-		const smoothedY = this.filterY.filterValue(frame.indexTip.y, frame.ts);
+		// Clamp to [0,1] - filter can overshoot on rapid direction changes (REQ-PBT-003)
+		const smoothedX = Math.max(0, Math.min(1, this.filterX.filterValue(frame.indexTip.x, frame.ts)));
+		const smoothedY = Math.max(0, Math.min(1, this.filterY.filterValue(frame.indexTip.y, frame.ts)));
 
 		// Get velocity estimates from filter derivatives
 		const velocityX = this.filterX.getDerivative();

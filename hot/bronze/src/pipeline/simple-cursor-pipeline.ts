@@ -17,6 +17,7 @@ import { OneEuroExemplarAdapter, type OneEuroConfig } from '../adapters/one-euro
 import { XStateFSMAdapter } from '../adapters/xstate-fsm.adapter.js';
 import { W3CPointerEventFactory } from '../phase1-w3c-cursor/w3c-pointer-factory.js';
 import type { SensorFrame, SmoothedFrame, FSMAction } from '../contracts/schemas.js';
+import type { FSMPort, PortFactory, SmootherPort } from '../contracts/ports.js';
 
 // ============================================================================
 // CONFIGURATION
@@ -29,6 +30,8 @@ export interface SimpleCursorPipelineConfig {
 	viewportHeight: number;
 	/** 1€ filter parameters */
 	oneEuro?: OneEuroConfig;
+	/** Optional PortFactory for dependency injection */
+	factory?: PortFactory;
 }
 
 const DEFAULT_CONFIG: SimpleCursorPipelineConfig = {
@@ -80,16 +83,22 @@ export interface PipelineResult {
  */
 export class SimpleCursorPipeline {
 	private readonly config: SimpleCursorPipelineConfig;
-	private readonly smoother: OneEuroExemplarAdapter;
-	private readonly fsm: XStateFSMAdapter;
+	private readonly smoother: SmootherPort;
+	private readonly fsm: FSMPort;
 	private readonly pointerFactory: W3CPointerEventFactory;
 
 	constructor(config: Partial<SimpleCursorPipelineConfig> = {}) {
 		this.config = { ...DEFAULT_CONFIG, ...config };
 
-		// Initialize adapters
-		this.smoother = new OneEuroExemplarAdapter(this.config.oneEuro);
-		this.fsm = new XStateFSMAdapter();
+		// Use DI factory if provided, otherwise create adapters directly
+		if (this.config.factory) {
+			this.smoother = this.config.factory.createSmoother();
+			this.fsm = this.config.factory.createFSM();
+		} else {
+			// Fallback: direct instantiation (legacy path)
+			this.smoother = new OneEuroExemplarAdapter(this.config.oneEuro);
+			this.fsm = new XStateFSMAdapter();
+		}
 		this.pointerFactory = new W3CPointerEventFactory({
 			viewportWidth: this.config.viewportWidth,
 			viewportHeight: this.config.viewportHeight,

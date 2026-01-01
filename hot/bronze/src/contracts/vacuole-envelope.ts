@@ -31,8 +31,12 @@ export type Traceparent = z.infer<typeof TraceparentSchema>;
  * Generate a new W3C traceparent
  */
 export function generateTraceparent(): Traceparent {
-	const traceId = Array.from({ length: 32 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
-	const parentId = Array.from({ length: 16 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+	const traceId = Array.from({ length: 32 }, () =>
+		Math.floor(Math.random() * 16).toString(16),
+	).join('');
+	const parentId = Array.from({ length: 16 }, () =>
+		Math.floor(Math.random() * 16).toString(16),
+	).join('');
 	return `00-${traceId}-${parentId}-01` as Traceparent;
 }
 
@@ -41,7 +45,9 @@ export function generateTraceparent(): Traceparent {
  */
 export function propagateTraceparent(parent: Traceparent): Traceparent {
 	const [version, traceId, _parentId, flags] = parent.split('-');
-	const newParentId = Array.from({ length: 16 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+	const newParentId = Array.from({ length: 16 }, () =>
+		Math.floor(Math.random() * 16).toString(16),
+	).join('');
 	return `${version}-${traceId}-${newParentId}-${flags}` as Traceparent;
 }
 
@@ -182,7 +188,9 @@ export interface VacuoleOptions {
  * ```
  */
 export function wrapInVacuole<T>(data: T, options: VacuoleOptions): VacuoleEnvelope<T> {
-	const traceparent = options.parentTrace ? propagateTraceparent(options.parentTrace) : generateTraceparent();
+	const traceparent = options.parentTrace
+		? propagateTraceparent(options.parentTrace)
+		: generateTraceparent();
 
 	return {
 		// CloudEvents required
@@ -226,7 +234,7 @@ export function propagateVacuole<T, U>(
 	source: VacuoleEnvelope<T>,
 	newData: U,
 	newStage: number,
-	newPort: number
+	newPort: number,
 ): VacuoleEnvelope<U> {
 	return wrapInVacuole(newData, {
 		type: source.type.replace(/stage\d/, `stage${newStage}`),

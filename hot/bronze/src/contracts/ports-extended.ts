@@ -1,3 +1,13 @@
+import type { PredictedFrame } from './adapter-factory.js';
+import type {
+	AdapterTarget,
+	FSMAction,
+	LayoutState,
+	PointerEventOut,
+	SensorFrame,
+	SmoothedFrame,
+	TileConfig,
+} from './schemas.js';
 /**
  * Extended Port Interfaces - Complete W3C Gesture Pipeline
  *
@@ -15,16 +25,6 @@
  * Plus Vacuole-aware wrappers for stigmergy integration.
  */
 import type { VacuoleEnvelope } from './vacuole-envelope.js';
-import type {
-	SensorFrame,
-	SmoothedFrame,
-	FSMAction,
-	PointerEventOut,
-	LayoutState,
-	TileConfig,
-	AdapterTarget,
-} from './schemas.js';
-import type { PredictedFrame } from './adapter-factory.js';
 
 // ============================================================================
 // PREDICTOR PORT (Stage 3 - Port 2.5)
@@ -61,7 +61,7 @@ export interface PredictorPortVacuole {
 	 */
 	predictWithEnvelope(
 		envelope: VacuoleEnvelope<SmoothedFrame>,
-		lookAheadMs?: number
+		lookAheadMs?: number,
 	): VacuoleEnvelope<PredictedFrame>;
 
 	/**
@@ -248,7 +248,7 @@ export interface UIShellPortEnhanced {
 	 * Process with vacuole envelope
 	 */
 	processGestureWithEnvelope(
-		envelope: VacuoleEnvelope<{ event: PointerEventOut; gestures: FSMAction }>
+		envelope: VacuoleEnvelope<{ event: PointerEventOut; gestures: FSMAction }>,
 	): VacuoleEnvelope<LayoutAction[]>;
 
 	/**
@@ -357,7 +357,7 @@ export interface VacuolePipelinePort {
 	 */
 	onStageComplete(
 		stage: 'sense' | 'smooth' | 'predict' | 'fsm' | 'emit' | 'target' | 'ui',
-		callback: (envelope: VacuoleEnvelope<unknown>) => void
+		callback: (envelope: VacuoleEnvelope<unknown>) => void,
 	): () => void;
 
 	/**
@@ -433,7 +433,7 @@ export interface NATSSubstratePort {
 	request<TReq, TRes>(
 		subject: string,
 		envelope: VacuoleEnvelope<TReq>,
-		timeoutMs?: number
+		timeoutMs?: number,
 	): Promise<VacuoleEnvelope<TRes>>;
 
 	/**

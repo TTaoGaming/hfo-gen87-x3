@@ -25,3 +25,26 @@ export { DOMAdapter, MockDOMAdapter, PointerEventAdapter } from './pointer-event
 
 // Pipeline
 export { GesturePipeline, createDefaultPipeline, type PipelineConfig } from './pipeline.js';
+
+// UI Shell adapters
+export { GoldenLayoutShellAdapter, type ComponentFactory } from './golden-layout-shell.adapter.js';
+
+// Port Factory (DI wiring)
+export {
+	HFOPortFactory,
+	RawHTMLShellAdapter,
+	type PortFactoryConfig,
+	type SmootherConfig,
+	type ShellConfig,
+	type SensorConfig,
+} from './port-factory.js';
+
+// Tile Composer (Per-Tile Pipeline DI)
+export {
+	TileComposer,
+	createTileComposer,
+	type TileComposerConfig,
+	type TileComposerTileConfig,
+	type TileFrameResult,
+	type ComposerState,
+} from './tile-composer.js';

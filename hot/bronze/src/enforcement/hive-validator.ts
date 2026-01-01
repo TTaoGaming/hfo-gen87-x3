@@ -26,16 +26,66 @@ import { z } from 'zod';
 export const HIVEPhaseSchema = z.enum(['H', 'I', 'V', 'E', 'X']);
 export type HIVEPhase = z.infer<typeof HIVEPhaseSchema>;
 
-export const SignalSchema = z.object({
-	ts: z.string().datetime(),
-	mark: z.number().min(0).max(1),
-	pull: z.enum(['upstream', 'downstream', 'lateral']),
-	msg: z.string().min(1),
-	type: z.enum(['signal', 'event', 'error', 'metric', 'handoff']),
-	hive: HIVEPhaseSchema,
-	gen: z.number().int().min(1),
-	port: z.number().int().min(0).max(7),
-});
+// <<<<<<< STATE_MERGE_MARKER: G0_TIMESTAMP_VALIDATION_FIX_20251231
+// AUDIT FIX: Priority 0 - Timestamp validation to prevent FAKE_TIMESTAMP violations
+// Source: W3C_GESTURE_CONTROL_PLANE_AUDIT_20251231.md Section 3.1
+// Issue: Blackboard showed ts="2026-01-01" which is impossible (future date)
+const MAX_FUTURE_DRIFT_MS = 60_000; // Allow 60s clock drift
+const MAX_STALENESS_MS = 300_000; // Reject signals >5 minutes old
+
+/**
+ * Validate timestamp is not fake (future) or stale (>5 min old)
+ * G0 Gate: Temporal sanity check
+ */
+export function validateTimestamp(ts: string): { valid: boolean; error?: string } {
+	const timestamp = new Date(ts).getTime();
+	const now = Date.now();
+
+	if (Number.isNaN(timestamp)) {
+		return { valid: false, error: 'G0_INVALID_TIMESTAMP: Cannot parse timestamp' };
+	}
+
+	if (timestamp > now + MAX_FUTURE_DRIFT_MS) {
+		return {
+			valid: false,
+			error: `G0_FAKE_TIMESTAMP: ${ts} is in the future (>${MAX_FUTURE_DRIFT_MS}ms ahead)`,
+		};
+	}
+
+	if (timestamp < now - MAX_STALENESS_MS) {
+		return {
+			valid: false,
+			error: `G0_STALE_TIMESTAMP: ${ts} is too old (>${MAX_STALENESS_MS}ms ago)`,
+		};
+	}
+
+	return { valid: true };
+}
+// >>>>>>> STATE_MERGE_MARKER: G0_TIMESTAMP_VALIDATION_FIX_20251231
+
+export const SignalSchema = z
+	.object({
+		ts: z.string().datetime(),
+		mark: z.number().min(0).max(1),
+		pull: z.enum(['upstream', 'downstream', 'lateral']),
+		msg: z.string().min(1),
+		type: z.enum(['signal', 'event', 'error', 'metric', 'handoff']),
+		hive: HIVEPhaseSchema,
+		gen: z.number().int().min(1),
+		port: z.number().int().min(0).max(7),
+	})
+	// <<<<<<< STATE_MERGE_MARKER: G0_TIMESTAMP_REFINEMENT_20251231
+	.refine(
+		(signal) => {
+			const result = validateTimestamp(signal.ts);
+			return result.valid;
+		},
+		{
+			message: 'G0_TIMESTAMP_VIOLATION: Timestamp is fake (future) or stale (>5 min)',
+			path: ['ts'],
+		},
+	);
+// >>>>>>> STATE_MERGE_MARKER: G0_TIMESTAMP_REFINEMENT_20251231
 
 export type Signal = z.infer<typeof SignalSchema>;
 

@@ -43,45 +43,45 @@ export {
 // EXTENDED SCHEMAS (Predictor, Layout, Gesture Binding)
 // ============================================================================
 export {
-	// Predictor schemas
-	Position3DSchema,
-	Velocity3DSchema,
-	PredictionSchema,
-	PredictedFrameSchema,
-	PredictorConfigSchema,
-	// Target router schemas
-	TargetTypeSchema,
-	TargetDefinitionSchema,
-	RoutingResultSchema,
+	// Adapter metadata
+	AdapterMetadataSchema,
+	DEFAULT_GESTURE_BINDINGS,
+	GestureBindingSchema,
+	GestureModifierSchema,
+	GestureTypeSchema,
+	LayoutActionSchema,
 	// UI Shell schemas
 	LayoutActionTypeSchema,
-	LayoutActionSchema,
-	GestureTypeSchema,
-	GestureModifierSchema,
-	GestureBindingSchema,
-	DEFAULT_GESTURE_BINDINGS,
 	// Pipeline stats
 	PipelineStatsSchema,
 	// Extended pointer events
 	PointerEventOutExtendedSchema,
-	// Adapter metadata
-	AdapterMetadataSchema,
-	type Position3D,
-	type Velocity3D,
-	type Prediction,
-	type PredictedFrame,
-	type PredictorConfig,
-	type TargetType,
-	type TargetDefinition,
-	type RoutingResult,
-	type LayoutActionType,
-	type LayoutAction,
-	type GestureType,
-	type GestureModifier,
+	// Predictor schemas
+	Position3DSchema,
+	PredictedFrameSchema,
+	PredictionSchema,
+	PredictorConfigSchema,
+	RoutingResultSchema,
+	TargetDefinitionSchema,
+	// Target router schemas
+	TargetTypeSchema,
+	Velocity3DSchema,
+	type AdapterMetadata,
 	type GestureBinding,
+	type GestureModifier,
+	type GestureType,
+	type LayoutAction,
+	type LayoutActionType,
 	type PipelineStats,
 	type PointerEventOutExtended,
-	type AdapterMetadata,
+	type Position3D,
+	type PredictedFrame,
+	type Prediction,
+	type PredictorConfig,
+	type RoutingResult,
+	type TargetDefinition,
+	type TargetType,
+	type Velocity3D,
 } from './schemas-extended.js';
 
 // ============================================================================
@@ -91,11 +91,11 @@ export type {
 	AdapterPort,
 	EmitterPort,
 	FSMPort,
+	OverlayPort,
 	PipelinePort,
 	PortFactory,
 	SensorPort,
 	SmootherPort,
-	OverlayPort,
 	UIShellPort,
 } from './ports.js';
 
@@ -103,20 +103,20 @@ export type {
 // EXTENDED PORT INTERFACES (Vacuole-aware)
 // ============================================================================
 export type {
+	EmitEnvelope,
+	FSMEnvelope,
+	NATSSubstratePort,
+	PredictEnvelope,
 	PredictorConfig as PredictorPortConfig,
 	PredictorPortVacuole,
-	TargetRouterPort,
-	UIShellPortEnhanced,
-	VacuolePipelinePort,
-	NATSSubstratePort,
 	// Envelope types
 	SenseEnvelope,
 	SmoothEnvelope,
-	PredictEnvelope,
-	FSMEnvelope,
-	EmitEnvelope,
 	TargetEnvelope,
+	TargetRouterPort,
 	UIEnvelope,
+	UIShellPortEnhanced,
+	VacuolePipelinePort,
 } from './ports-extended.js';
 
 // ============================================================================
@@ -124,19 +124,19 @@ export type {
 // ============================================================================
 export {
 	AdapterRegistry,
+	EmitterRegistry,
+	FSMRegistry,
+	OverlayRegistry,
+	PredictorRegistry,
 	SensorRegistry,
 	SmootherRegistry,
-	PredictorRegistry,
-	FSMRegistry,
-	EmitterRegistry,
 	TargetRegistry,
-	OverlayRegistry,
 	UIShellRegistry,
 	createFactoryFromClass,
 	type AdapterFactory,
 	type AdapterMetadata as FactoryAdapterMetadata,
-	type PredictorPort,
 	type PipelineComposition,
+	type PredictorPort,
 	type ResolvedPipeline,
 } from './adapter-factory.js';
 
@@ -144,19 +144,19 @@ export {
 // VACUOLE ENVELOPE (CloudEvents + W3C Trace Context)
 // ============================================================================
 export {
-	TraceparentSchema,
 	CloudEventsBaseSchema,
 	HFOExtensionsSchema,
+	PIPELINE_EVENT_TYPES,
+	PIPELINE_NATS_SUBJECTS,
+	TraceparentSchema,
 	VacuoleEnvelopeSchema,
 	generateTraceparent,
 	propagateTraceparent,
-	wrapInVacuole,
-	unwrapVacuole,
 	propagateVacuole,
-	PIPELINE_EVENT_TYPES,
-	PIPELINE_NATS_SUBJECTS,
-	type Traceparent,
+	unwrapVacuole,
+	wrapInVacuole,
 	type HFOExtensions,
+	type Traceparent,
 	type VacuoleEnvelope,
 	type VacuoleOptions,
 } from './vacuole-envelope.js';

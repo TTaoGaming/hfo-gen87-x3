@@ -149,9 +149,11 @@ export class OneEuroExemplarAdapter implements SmootherPort {
 
 		// filter() takes (value, timestamp) where timestamp is ABSOLUTE time in seconds
 		// The npm 1eurofilter internally calculates dt from consecutive timestamps
+		// NOTE: 1€ filter can overshoot [0,1] range due to derivative response
+		// Clamp to normalized coordinate space (REQ-PBT-003)
 		return {
-			x: filter.x.filter(landmark.x, timestampSec),
-			y: filter.y.filter(landmark.y, timestampSec),
+			x: Math.max(0, Math.min(1, filter.x.filter(landmark.x, timestampSec))),
+			y: Math.max(0, Math.min(1, filter.y.filter(landmark.y, timestampSec))),
 			z: landmark.z,
 			visibility: landmark.visibility,
 		};

@@ -10,12 +10,7 @@
  * - Vacuole-typed versions of all stage outputs
  */
 import { z } from 'zod';
-import {
-	SmoothedFrameSchema,
-	FSMActionSchema,
-	PointerEventOutSchema,
-	NormalizedLandmarkSchema,
-} from './schemas.js';
+import { NormalizedLandmarkSchema, PointerEventOutSchema, SmoothedFrameSchema } from './schemas.js';
 
 // ============================================================================
 // PREDICTOR SCHEMAS (Stage 3)
@@ -95,7 +90,14 @@ export type PredictorConfig = z.infer<typeof PredictorConfigSchema>;
 /**
  * Target type enumeration
  */
-export const TargetTypeSchema = z.enum(['dom', 'canvas', 'iframe', 'golden-layout', 'nats', 'webxr']);
+export const TargetTypeSchema = z.enum([
+	'dom',
+	'canvas',
+	'iframe',
+	'golden-layout',
+	'nats',
+	'webxr',
+]);
 export type TargetType = z.infer<typeof TargetTypeSchema>;
 
 /**
@@ -283,8 +285,16 @@ export const PointerEventOutExtendedSchema = z.object({
 	tiltX: z.number().min(-90).max(90).default(0),
 	tiltY: z.number().min(-90).max(90).default(0),
 	twist: z.number().min(0).max(359).default(0),
-	altitudeAngle: z.number().min(0).max(Math.PI / 2).optional(),
-	azimuthAngle: z.number().min(0).max(2 * Math.PI).optional(),
+	altitudeAngle: z
+		.number()
+		.min(0)
+		.max(Math.PI / 2)
+		.optional(),
+	azimuthAngle: z
+		.number()
+		.min(0)
+		.max(2 * Math.PI)
+		.optional(),
 
 	// === State ===
 	isPrimary: z.boolean(),
@@ -339,23 +349,23 @@ export type AdapterMetadata = z.infer<typeof AdapterMetadataSchema>;
 // ============================================================================
 
 export {
+	FSMActionSchema,
+	FSMStates,
+	GestureLabels,
+	NormalizedLandmarkSchema,
+	PointerEventOutSchema,
 	SensorFrameSchema,
 	SmoothedFrameSchema,
-	FSMActionSchema,
-	PointerEventOutSchema,
-	NormalizedLandmarkSchema,
 	VideoFrameSchema,
-	GestureLabels,
-	FSMStates,
 } from './schemas.js';
 
 export type {
+	FSMAction,
+	FSMState,
+	GestureLabel,
+	NormalizedLandmark,
+	PointerEventOut,
 	SensorFrame,
 	SmoothedFrame,
-	FSMAction,
-	PointerEventOut,
-	NormalizedLandmark,
 	VideoFrame,
-	GestureLabel,
-	FSMState,
 } from './schemas.js';

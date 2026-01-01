@@ -322,3 +322,95 @@ describe('Port-Phase Mapping', () => {
 		expect(getRecommendedPort('E')).toBe(3);
 	});
 });
+
+// <<<<<<< STATE_MERGE_MARKER: G0_TIMESTAMP_VALIDATION_TESTS_20251231
+// AUDIT FIX: Property tests for timestamp validation
+// Source: W3C_GESTURE_CONTROL_PLANE_AUDIT_20251231.md Section 3.1
+import { SignalSchema, validateTimestamp } from './hive-validator.js';
+
+describe('G0 Timestamp Validation', () => {
+	describe('validateTimestamp', () => {
+		it('should accept current timestamp', () => {
+			const now = new Date().toISOString();
+			const result = validateTimestamp(now);
+			expect(result.valid).toBe(true);
+		});
+
+		it('should accept timestamp within clock drift tolerance (60s future)', () => {
+			const nearFuture = new Date(Date.now() + 30_000).toISOString();
+			const result = validateTimestamp(nearFuture);
+			expect(result.valid).toBe(true);
+		});
+
+		it('should REJECT future timestamp beyond tolerance', () => {
+			const fakeFuture = new Date(Date.now() + 120_000).toISOString(); // 2 min ahead
+			const result = validateTimestamp(fakeFuture);
+			expect(result.valid).toBe(false);
+			expect(result.error).toContain('G0_FAKE_TIMESTAMP');
+		});
+
+		it('should REJECT future timestamp beyond tolerance (genuine future date)', () => {
+			// Use a date that is DEFINITELY in the future relative to any reasonable system clock
+			const farFuture = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(); // 1 year ahead
+			const result = validateTimestamp(farFuture);
+			expect(result.valid).toBe(false);
+			expect(result.error).toContain('G0_FAKE_TIMESTAMP');
+		});
+
+		it('should accept timestamp within staleness tolerance (5 min ago)', () => {
+			const recent = new Date(Date.now() - 60_000).toISOString(); // 1 min ago
+			const result = validateTimestamp(recent);
+			expect(result.valid).toBe(true);
+		});
+
+		it('should REJECT stale timestamp beyond tolerance', () => {
+			const stale = new Date(Date.now() - 600_000).toISOString(); // 10 min ago
+			const result = validateTimestamp(stale);
+			expect(result.valid).toBe(false);
+			expect(result.error).toContain('G0_STALE_TIMESTAMP');
+		});
+
+		it('should REJECT invalid timestamp format', () => {
+			const result = validateTimestamp('not-a-date');
+			expect(result.valid).toBe(false);
+			expect(result.error).toContain('G0_INVALID_TIMESTAMP');
+		});
+	});
+
+	describe('SignalSchema timestamp refinement', () => {
+		const validSignalBase = {
+			mark: 1.0,
+			pull: 'downstream' as const,
+			msg: 'Test signal',
+			type: 'signal' as const,
+			hive: 'H' as const,
+			gen: 87,
+			port: 0,
+		};
+
+		it('should accept signal with current timestamp', () => {
+			const signal = { ...validSignalBase, ts: new Date().toISOString() };
+			const result = SignalSchema.safeParse(signal);
+			expect(result.success).toBe(true);
+		});
+
+		it('should REJECT signal with fake future timestamp', () => {
+			const signal = { ...validSignalBase, ts: '2026-01-01T00:00:00Z' };
+			const result = SignalSchema.safeParse(signal);
+			expect(result.success).toBe(false);
+			if (!result.success) {
+				expect(result.error.issues[0].message).toContain('G0_TIMESTAMP_VIOLATION');
+			}
+		});
+
+		it('should REJECT signal with stale timestamp', () => {
+			const signal = {
+				...validSignalBase,
+				ts: new Date(Date.now() - 600_000).toISOString(),
+			};
+			const result = SignalSchema.safeParse(signal);
+			expect(result.success).toBe(false);
+		});
+	});
+});
+// >>>>>>> STATE_MERGE_MARKER: G0_TIMESTAMP_VALIDATION_TESTS_20251231

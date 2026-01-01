@@ -24,8 +24,11 @@ import {
 	getCommander,
 	isValidSignal,
 	safeDeserializeSignal,
+	safeParseSignal,
 	serializeSignal,
 	validateSignal,
+	validateSignalStrict,
+	validateSignalWithArchetypes,
 } from './stigmergy.contract.js';
 
 // ============================================================================
@@ -444,5 +447,212 @@ describe('Commander Mapping', () => {
 	it('should have correct commander names', () => {
 		expect(getCommander(0)?.name).toBe('Lidless Legion');
 		expect(getCommander(7)?.name).toBe('Spider Sovereign');
+	});
+
+	it('should return undefined for boundary edge cases (mutation killer)', () => {
+		// These specifically kill the port < 0 || port > 7 mutations
+		expect(getCommander(-1)).toBeUndefined();
+		expect(getCommander(-100)).toBeUndefined();
+		expect(getCommander(8)).toBeUndefined();
+		expect(getCommander(100)).toBeUndefined();
+		// Verify boundary is exactly 0-7
+		expect(getCommander(0)).toBeDefined();
+		expect(getCommander(7)).toBeDefined();
+	});
+});
+
+// ============================================================================
+// STRICT VALIDATION TESTS (mutation killers for uncovered functions)
+// ============================================================================
+
+describe('Strict Validation (validateSignalStrict)', () => {
+	it('should return valid signal when all gates pass', () => {
+		const input = createSignal({ msg: 'Valid signal' });
+		const result = validateSignalStrict(input);
+		expect(result).toBeDefined();
+		expect(result.msg).toBe('Valid signal');
+	});
+
+	it('should throw GATE_VIOLATION on invalid input', () => {
+		const invalid = { ...createSignal({ msg: 'test' }), ts: 'invalid-timestamp' };
+		expect(() => validateSignalStrict(invalid)).toThrow('GATE_VIOLATION');
+	});
+
+	it('should include gate details in error message', () => {
+		const invalid = { ...createSignal({ msg: 'test' }), ts: 'bad', mark: -1 };
+		try {
+			validateSignalStrict(invalid);
+			expect.fail('Should have thrown');
+		} catch (e) {
+			const msg = (e as Error).message;
+			expect(msg).toContain('G0');
+			expect(msg).toContain('G1');
+			expect(msg).toContain('ts');
+			expect(msg).toContain('mark');
+		}
+	});
+
+	it('should filter and map failed gates correctly (mutation killer)', () => {
+		const invalid = { ...createSignal({ msg: 'test' }), port: 99 };
+		try {
+			validateSignalStrict(invalid);
+			expect.fail('Should have thrown');
+		} catch (e) {
+			const msg = (e as Error).message;
+			// Verify the filter/map chain produces correct output format
+			expect(msg).toMatch(/G7.*port/);
+		}
+	});
+});
+
+// ============================================================================
+// FULL VALIDATION TESTS (mutation killers for validateSignalWithArchetypes)
+// ============================================================================
+
+describe('Full Validation (validateSignalWithArchetypes)', () => {
+	it('should return complete validation result for valid signal', () => {
+		const input = createSignal({ msg: 'Valid', hive: 'H', port: 0 });
+		const result = validateSignalWithArchetypes(input);
+		
+		expect(result.gateResult).toBeDefined();
+		expect(result.archetypeResult).toBeDefined();
+		expect(result.fullyValid).toBe(true);
+		expect(result.enforcementReport).toBeDefined();
+	});
+
+	it('should return fullyValid=false when gates fail', () => {
+		const invalid = { ...createSignal({ msg: 'test' }), ts: 'invalid' };
+		const result = validateSignalWithArchetypes(invalid);
+		
+		expect(result.fullyValid).toBe(false);
+		expect(result.gateResult.valid).toBe(false);
+	});
+
+	it('should return fullyValid=false when archetype validation fails', () => {
+		// Invalid gen (below MIN_GENERATION) will fail archetype validation
+		const invalid = { ...createSignal({ msg: 'test' }), gen: 50 };
+		const result = validateSignalWithArchetypes(invalid);
+		
+		// Both gates and archetype should fail for invalid gen
+		expect(result.fullyValid).toBe(false);
+	});
+
+	it('should use AND logic for fullyValid (mutation killer)', () => {
+		// This kills the && to || mutation
+		const gatesPass = createSignal({ msg: 'test', hive: 'H', port: 0 });
+		const resultBothPass = validateSignalWithArchetypes(gatesPass);
+		expect(resultBothPass.fullyValid).toBe(true);
+		
+		const gatesFail = { ...createSignal({ msg: 'test' }), ts: 'bad' };
+		const resultGatesFail = validateSignalWithArchetypes(gatesFail);
+		expect(resultGatesFail.fullyValid).toBe(false);
+	});
+});
+
+// ============================================================================
+// SAFE PARSE TESTS (mutation killers for safeParseSignal)
+// ============================================================================
+
+describe('Safe Parse (safeParseSignal)', () => {
+	it('should return success for valid signals', () => {
+		const signal = createSignal({ msg: 'Test' });
+		const result = safeParseSignal(signal);
+		expect(result.success).toBe(true);
+		if (result.success) {
+			expect(result.data.msg).toBe('Test');
+		}
+	});
+
+	it('should return error for invalid signals', () => {
+		const invalid = { ts: 'bad', mark: 'not a number' };
+		const result = safeParseSignal(invalid);
+		expect(result.success).toBe(false);
+		if (!result.success) {
+			expect(result.error.errors.length).toBeGreaterThan(0);
+		}
+	});
+});
+
+// ============================================================================
+// TIMESTAMP REGEX EDGE CASES (mutation killers for regex anchors)
+// ============================================================================
+
+describe('Timestamp Regex Edge Cases', () => {
+	it('should reject timestamps with garbage prefix (kills ^ anchor mutation)', () => {
+		const invalidWithPrefix = 'garbage2025-12-30T16:00:00Z';
+		const result = validateSignal({ ...createSignal({ msg: 'test' }), ts: invalidWithPrefix });
+		expect(result.gates.find((g) => g.gate === 'G0')?.passed).toBe(false);
+	});
+
+	it('should reject timestamps with garbage suffix (kills $ anchor mutation)', () => {
+		const invalidWithSuffix = '2025-12-30T16:00:00Zgarbage';
+		const result = validateSignal({ ...createSignal({ msg: 'test' }), ts: invalidWithSuffix });
+		expect(result.gates.find((g) => g.gate === 'G0')?.passed).toBe(false);
+	});
+
+	it('should reject timestamps with wrong millisecond format', () => {
+		// This kills the \\d{3} to \\d and \\D{3} mutations
+		const invalidMs = '2025-12-30T16:00:00.XZ'; // non-digit
+		const result = validateSignal({ ...createSignal({ msg: 'test' }), ts: invalidMs });
+		expect(result.gates.find((g) => g.gate === 'G0')?.passed).toBe(false);
+	});
+});
+
+// ============================================================================
+// ERROR MESSAGE ASSERTIONS (mutation killers for errorMap mutations)
+// ============================================================================
+
+describe('Error Messages (mutation killers)', () => {
+	it('should include gate identifier in G2 error', () => {
+		const result = validateSignal({ ...createSignal({ msg: 'test' }), pull: 'invalid' });
+		const g2 = result.gates.find((g) => g.gate === 'G2');
+		expect(g2?.error).toContain('G2');
+	});
+
+	it('should include gate identifier in G4 error', () => {
+		const result = validateSignal({ ...createSignal({ msg: 'test' }), type: 'invalid' });
+		const g4 = result.gates.find((g) => g.gate === 'G4');
+		expect(g4?.error).toContain('G4');
+	});
+
+	it('should include gate identifier in G5 error', () => {
+		const result = validateSignal({ ...createSignal({ msg: 'test' }), hive: 'Z' });
+		const g5 = result.gates.find((g) => g.gate === 'G5');
+		expect(g5?.error).toContain('G5');
+	});
+
+	it('should include valid options in error messages', () => {
+		const result = validateSignal({ ...createSignal({ msg: 'test' }), pull: 'wrong' });
+		const g2 = result.gates.find((g) => g.gate === 'G2');
+		expect(g2?.error).toContain('upstream');
+		expect(g2?.error).toContain('downstream');
+		expect(g2?.error).toContain('lateral');
+	});
+});
+
+// ============================================================================
+// GATES ARRAY STRUCTURE (mutation killers for filter/passedCount)
+// ============================================================================
+
+describe('Gates Array Structure', () => {
+	it('should correctly count passed gates', () => {
+		const valid = createSignal({ msg: 'test' });
+		const result = validateSignal(valid);
+		expect(result.passedCount).toBe(8);
+		expect(result.failedCount).toBe(0);
+		expect(result.gates.filter((g) => g.passed).length).toBe(8);
+	});
+
+	it('should correctly count failed gates', () => {
+		const invalid = { ts: 'bad', mark: -1, pull: 'x', msg: '', type: 'x', hive: 'Z', gen: 1, port: 99 };
+		const result = validateSignal(invalid);
+		expect(result.passedCount).toBe(0);
+		expect(result.failedCount).toBe(8);
+		expect(result.gates.filter((g) => !g.passed).length).toBe(8);
+	});
+
+	it('should have exactly 8 gates in result', () => {
+		const result = validateSignal(createSignal({ msg: 'test' }));
+		expect(result.gates.length).toBe(8);
 	});
 });

@@ -19,6 +19,7 @@ import { OneEuroExemplarAdapter } from '../adapters/one-euro-exemplar.adapter.js
 import { XStateFSMAdapter } from '../adapters/xstate-fsm.adapter.js';
 import { NatsSubjects, type StageGateConfig } from '../contracts/nats-substrate.js';
 import type { SensorFrame, SmoothedFrame } from '../contracts/schemas.js';
+import type { FSMPort, PortFactory, SmootherPort } from '../contracts/ports.js';
 
 // ============================================================================
 // STAGE SCHEMAS (Hard Gate Boundaries)
@@ -202,18 +203,21 @@ export class PipelineOrchestrator {
 	private pointerIds: Map<string, number> = new Map();
 	private lastPositions: Map<string, { x: number; y: number }> = new Map();
 
-	// Production adapters (npm 1eurofilter + XState)
-	private smoother: OneEuroExemplarAdapter | null = null;
-	private fsmAdapters: Map<string, XStateFSMAdapter> = new Map();
+	// Production adapters via PortFactory or direct instantiation
+	private smoother: SmootherPort | null = null;
+	private fsmAdapters: Map<string, FSMPort> = new Map();
+	private factory: PortFactory | null = null;
 
-	constructor(options: PipelineOrchestratorOptions) {
+	constructor(options: PipelineOrchestratorOptions & { factory?: PortFactory }) {
+		const { factory, ...restOptions } = options;
 		this.options = {
 			streamName: 'HFO_PIPELINE',
 			kvBucket: 'hfo-state',
 			objStore: 'hfo-recordings',
 			debug: false,
-			...options,
+			...restOptions,
 		};
+		this.factory = factory || null;
 		this.substrate = new NatsSubstrateAdapter(this.options);
 	}
 
@@ -224,23 +228,34 @@ export class PipelineOrchestrator {
 		await this.substrate.connect();
 		this.log('NATS connected, setting up pipeline gates...');
 
-		// Initialize production adapters with error handling
+		// Initialize production adapters with DI factory or direct instantiation
 		try {
-			this.smoother = new OneEuroExemplarAdapter({
-				frequency: 60,
-				minCutoff: 1.0,
-				beta: 0.007,
-			});
-			this.log('OneEuroExemplarAdapter initialized (npm 1eurofilter)');
+			if (this.factory) {
+				this.smoother = this.factory.createSmoother();
+				this.log('Smoother initialized via factory');
+			} else {
+				this.smoother = new OneEuroExemplarAdapter({
+					frequency: 60,
+					minCutoff: 1.0,
+					beta: 0.007,
+				});
+				this.log('OneEuroExemplarAdapter initialized (legacy direct)');
+			}
 		} catch (err) {
-			this.log(`Warning: OneEuroExemplarAdapter failed to init, using passthrough: ${err}`);
+			this.log(`Warning: Smoother failed to init, using passthrough: ${err}`);
 			this.smoother = null;
 		}
 
 		try {
-			this.fsmAdapters.set('left', new XStateFSMAdapter());
-			this.fsmAdapters.set('right', new XStateFSMAdapter());
-			this.log('XStateFSMAdapter initialized (XState v5 gesture FSM)');
+			if (this.factory) {
+				this.fsmAdapters.set('left', this.factory.createFSM());
+				this.fsmAdapters.set('right', this.factory.createFSM());
+				this.log('FSM adapters initialized via factory');
+			} else {
+				this.fsmAdapters.set('left', new XStateFSMAdapter());
+				this.fsmAdapters.set('right', new XStateFSMAdapter());
+				this.log('XStateFSMAdapter initialized (legacy direct)');
+			}
 		} catch (err) {
 			this.log(`Warning: XStateFSMAdapter failed to init, using fallback: ${err}`);
 			this.fsmAdapters.clear();
