@@ -102,3 +102,18 @@ export {
   // Factory
   OrchestratorFactory,
 } from './adapters.js';
+
+// ============================================================================
+// MEDIAPIPE ADAPTER (Anti-Theater)
+// ============================================================================
+
+export {
+  MediaPipeAdapter,
+  DEFAULT_ANTI_THEATER,
+  type AntiTheaterConfig,
+  type ViolationType,
+  type TheaterViolation,
+  type HandLandmark,
+  type HandGesture,
+  type HandLandmarkerResult,
+} from './mediapipe-adapter.js';

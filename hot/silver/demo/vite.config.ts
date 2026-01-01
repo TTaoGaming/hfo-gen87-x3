@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite';
+import { resolve } from 'path';
 
 /**
  * Vite Config for REAL Silver Demo
@@ -21,15 +22,20 @@ export default defineConfig({
       'Cross-Origin-Embedder-Policy': 'require-corp',
     },
     fs: {
-      // Allow serving from project root for adapter imports
-      allow: ['../../..'],
+      // Allow serving from ENTIRE project root for adapter imports
+      allow: [
+        resolve(__dirname, '../../..'),  // Project root
+        resolve(__dirname, '.'),          // Demo folder
+      ],
+      strict: false,
     },
   },
   resolve: {
     alias: {
-      // Map imports to real adapter paths
-      '/hot/bronze': '../../../hot/bronze',
+      // Map @hfo to bronze adapters
+      '@hfo': resolve(__dirname, '../../bronze/src'),
     },
+    extensions: ['.ts', '.js', '.tsx', '.jsx'],
   },
   optimizeDeps: {
     include: [
