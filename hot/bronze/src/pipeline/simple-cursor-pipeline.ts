@@ -13,11 +13,14 @@
  * Data Flow:
  * SensorFrame → 1€ Filter → FSM → W3C PointerEvents
  */
-import { OneEuroExemplarAdapter, type OneEuroConfig } from '../adapters/one-euro-exemplar.adapter.js';
+import {
+	type OneEuroConfig,
+	OneEuroExemplarAdapter,
+} from '../adapters/one-euro-exemplar.adapter.js';
 import { XStateFSMAdapter } from '../adapters/xstate-fsm.adapter.js';
-import { W3CPointerEventFactory } from '../phase1-w3c-cursor/w3c-pointer-factory.js';
-import type { SensorFrame, SmoothedFrame, FSMAction } from '../contracts/schemas.js';
 import type { FSMPort, PortFactory, SmootherPort } from '../contracts/ports.js';
+import type { FSMAction, SensorFrame, SmoothedFrame } from '../contracts/schemas.js';
+import { W3CPointerEventFactory } from '../phase1-w3c-cursor/w3c-pointer-factory.js';
 
 // ============================================================================
 // CONFIGURATION
@@ -140,10 +143,12 @@ export class SimpleCursorPipeline {
 				return [this.pointerFactory.createMoveEvent({ x: action.x, y: action.y })];
 
 			case 'down':
-				return [this.pointerFactory.createDownEvent(
-					{ x: action.x, y: action.y },
-					action.button === 0 ? 0.5 : 0.25
-				)];
+				return [
+					this.pointerFactory.createDownEvent(
+						{ x: action.x, y: action.y },
+						action.button === 0 ? 0.5 : 0.25,
+					),
+				];
 
 			case 'up':
 				return [this.pointerFactory.createUpEvent({ x: action.x, y: action.y })];

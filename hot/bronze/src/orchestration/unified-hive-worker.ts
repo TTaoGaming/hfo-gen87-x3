@@ -1,3 +1,5 @@
+import * as path from 'node:path';
+import { fileURLToPath } from 'node:url';
 /**
  * Unified HIVE/8 Worker
  *
@@ -9,8 +11,6 @@
  * - Connects to Temporal on localhost:7233
  */
 import { Worker, bundleWorkflowCode } from '@temporalio/worker';
-import * as path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import * as unifiedActivities from './unified-hive-activities.js';
 
 const __filename = fileURLToPath(import.meta.url);

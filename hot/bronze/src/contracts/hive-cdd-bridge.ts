@@ -21,21 +21,18 @@
  * @hive I (Interlock) - Integration layer
  */
 
-import { z } from 'zod';
 import * as fs from 'fs';
 import * as path from 'path';
 
 import {
-	StigmergySignalSchema,
-	type StigmergySignal,
+	HIVE_PHASES,
 	type HivePhase,
+	type StigmergySignal,
+	StigmergySignalSchema,
 	type ValidationResult,
+	createSignal,
 	validateSignal,
 	validateTransition,
-	createSignal,
-	COMMANDERS,
-	HIVE_PHASES,
-	CURRENT_GEN,
 } from './hive-cdd.contract.js';
 
 // =============================================================================
@@ -83,7 +80,10 @@ export class HivePhaseTracker {
 		const result = validateTransition(this.currentPhase, toPhase);
 
 		if (!result.valid) {
-			return { valid: false, reason: result.reason || `Invalid transition: ${this.currentPhase} → ${toPhase}` };
+			return {
+				valid: false,
+				reason: result.reason || `Invalid transition: ${this.currentPhase} → ${toPhase}`,
+			};
 		}
 
 		// Track N+1 cycle on E→H transition
@@ -141,7 +141,10 @@ export interface EmitOptions {
 /**
  * Emit a validated signal to the blackboard
  */
-export function emitToBlackboard(signal: StigmergySignal, options: EmitOptions = {}): ValidationResult {
+export function emitToBlackboard(
+	signal: StigmergySignal,
+	options: EmitOptions = {},
+): ValidationResult {
 	const { validate = true, toConsole = false } = options;
 
 	// Validate through G0-G7
@@ -224,7 +227,7 @@ export function getLastPhase(): HivePhase | null {
 export function createTemporalSignal(
 	phase: HivePhase,
 	message: string,
-	workflowId?: string
+	workflowId?: string,
 ): StigmergySignal {
 	const port = phase === 'H' ? 0 : phase === 'I' ? 1 : phase === 'V' ? 2 : 3;
 
@@ -232,7 +235,7 @@ export function createTemporalSignal(
 		workflowId ? `[Temporal:${workflowId}] ${message}` : message,
 		port,
 		phase,
-		'signal'
+		'signal',
 	);
 }
 
@@ -242,7 +245,7 @@ export function createTemporalSignal(
 export function emitTemporalPhase(
 	phase: HivePhase,
 	message: string,
-	workflowId?: string
+	workflowId?: string,
 ): ValidationResult {
 	const signal = createTemporalSignal(phase, message, workflowId);
 	return emitToBlackboard(signal, { toConsole: true });
@@ -258,7 +261,7 @@ export function emitTemporalPhase(
 export function createLangGraphSignal(
 	phase: HivePhase,
 	agentOutput: string,
-	graphId?: string
+	graphId?: string,
 ): StigmergySignal {
 	const port = phase === 'H' ? 7 : phase === 'I' ? 6 : phase === 'V' ? 5 : 4;
 
@@ -266,7 +269,7 @@ export function createLangGraphSignal(
 		graphId ? `[LangGraph:${graphId}] ${agentOutput.slice(0, 200)}` : agentOutput.slice(0, 200),
 		port,
 		phase,
-		'event'
+		'event',
 	);
 }
 
@@ -276,7 +279,7 @@ export function createLangGraphSignal(
 export function emitLangGraphPhase(
 	phase: HivePhase,
 	agentOutput: string,
-	graphId?: string
+	graphId?: string,
 ): ValidationResult {
 	const signal = createLangGraphSignal(phase, agentOutput, graphId);
 	return emitToBlackboard(signal, { toConsole: true });
@@ -293,10 +296,18 @@ export function createMCPSignal(
 	toolName: string,
 	port: number,
 	result: string,
-	phase?: HivePhase
+	phase?: HivePhase,
 ): StigmergySignal {
 	// Infer phase from port if not provided
-	const inferredPhase = phase || (port <= 1 || port === 7 ? 'H' : port <= 2 || port === 6 ? 'I' : port <= 3 || port === 5 ? 'V' : 'E');
+	const inferredPhase =
+		phase ||
+		(port <= 1 || port === 7
+			? 'H'
+			: port <= 2 || port === 6
+				? 'I'
+				: port <= 3 || port === 5
+					? 'V'
+					: 'E');
 
 	return createSignal(`[MCP:${toolName}] ${result.slice(0, 150)}`, port, inferredPhase, 'event');
 }
@@ -308,7 +319,7 @@ export function emitMCPResult(
 	toolName: string,
 	port: number,
 	result: string,
-	phase?: HivePhase
+	phase?: HivePhase,
 ): ValidationResult {
 	const signal = createMCPSignal(toolName, port, result, phase);
 	return emitToBlackboard(signal, { toConsole: true });
@@ -360,7 +371,7 @@ export async function executeHiveCycle<T>(
 		interlock: (huntResult: T) => Promise<T>;
 		validate: (interlockResult: T) => Promise<T>;
 		evolve: (validateResult: T) => Promise<T>;
-	}
+	},
 ): Promise<{ success: boolean; result?: T; error?: string }> {
 	const tracker = new HivePhaseTracker();
 
@@ -399,12 +410,16 @@ export async function executeHiveCycle<T>(
 		}
 		emitToBlackboard(createSignal(`EVOLVE START: ${task}`, 3, 'E'), { toConsole: true });
 		const evolveResult = await handlers.evolve(validateResult);
-		emitToBlackboard(createSignal('EVOLVE COMPLETE - CYCLE DONE', 3, 'E', 'event'), { toConsole: true });
+		emitToBlackboard(createSignal('EVOLVE COMPLETE - CYCLE DONE', 3, 'E', 'event'), {
+			toConsole: true,
+		});
 
 		return { success: true, result: evolveResult };
 	} catch (error) {
 		const errorMsg = error instanceof Error ? error.message : String(error);
-		emitToBlackboard(createSignal(`CYCLE ERROR: ${errorMsg}`, 5, 'X', 'error'), { toConsole: true });
+		emitToBlackboard(createSignal(`CYCLE ERROR: ${errorMsg}`, 5, 'X', 'error'), {
+			toConsole: true,
+		});
 		return { success: false, error: errorMsg };
 	}
 }
@@ -414,16 +429,16 @@ export async function executeHiveCycle<T>(
 // =============================================================================
 
 export {
+	COMMANDERS,
+	CURRENT_GEN,
+	HIVE_PHASES,
 	StigmergySignalSchema,
-	type StigmergySignal,
-	type HivePhase,
-	type ValidationResult,
+	createSignal,
 	validateSignal,
 	validateTransition,
-	createSignal,
-	COMMANDERS,
-	HIVE_PHASES,
-	CURRENT_GEN,
+	type HivePhase,
+	type StigmergySignal,
+	type ValidationResult,
 } from './hive-cdd.contract.js';
 
 export default {

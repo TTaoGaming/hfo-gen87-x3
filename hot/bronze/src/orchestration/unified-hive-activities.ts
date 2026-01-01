@@ -6,8 +6,8 @@
  * This file provides Temporal activities that bridge to all external systems,
  * creating a truly unified orchestration layer.
  */
+import { type NatsConnection, StringCodec, connect } from 'nats';
 import { spawn } from 'node:child_process';
-import { connect, type NatsConnection, StringCodec } from 'nats';
 import { generateCompletion } from './openrouter.config.js';
 
 // ============================================================================
@@ -195,7 +195,12 @@ const sc = StringCodec();
 export async function natsActivity(input: NATSInput): Promise<UnifiedPhaseOutput> {
 	const start = Date.now();
 
-	const output = await publishToNATS(input.subject, input.payload, input.waitForReply, input.timeoutMs);
+	const output = await publishToNATS(
+		input.subject,
+		input.payload,
+		input.waitForReply,
+		input.timeoutMs,
+	);
 
 	return {
 		phase: 'E', // NATS typically used for Evolve (emit/deliver)
@@ -317,7 +322,10 @@ export async function unifiedHIVEActivity(input: UnifiedHIVEInput): Promise<Unif
 /**
  * Select best system based on phase and port
  */
-function selectSystem(phase: 'H' | 'I' | 'V' | 'E', port: number): 'langgraph' | 'crewai' | 'mcp' | 'nats' {
+function selectSystem(
+	phase: 'H' | 'I' | 'V' | 'E',
+	port: number,
+): 'langgraph' | 'crewai' | 'mcp' | 'nats' {
 	// Hunt phase (H) - use MCP for search, CrewAI for research
 	if (phase === 'H') {
 		return port === 0 ? 'mcp' : 'crewai';

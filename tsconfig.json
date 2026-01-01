@@ -23,5 +23,5 @@
 		"noUncheckedIndexedAccess": true
 	},
 	"include": ["src/**/*"],
-	"exclude": ["node_modules", "dist", "sandbox"]
+	"exclude": ["node_modules", "dist", "sandbox", "src/**/*.test.ts", "src/tests/**/*"]
 }

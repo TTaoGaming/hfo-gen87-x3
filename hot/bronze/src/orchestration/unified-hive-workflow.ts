@@ -50,26 +50,23 @@ export const skipPhaseSignal = workflow.defineSignal<['H' | 'I' | 'V' | 'E']>('s
 // PROXY ACTIVITIES
 // ============================================================================
 
-const {
-	langGraphActivity,
-	crewaiActivity,
-	mcpActivity,
-	natsActivity,
-	unifiedHIVEActivity,
-} = workflow.proxyActivities<typeof activities>({
-	startToCloseTimeout: '5 minutes',
-	retry: {
-		maximumAttempts: 3,
-		initialInterval: '1 second',
-		backoffCoefficient: 2,
-	},
-});
+const { langGraphActivity, crewaiActivity, mcpActivity, natsActivity, unifiedHIVEActivity } =
+	workflow.proxyActivities<typeof activities>({
+		startToCloseTimeout: '5 minutes',
+		retry: {
+			maximumAttempts: 3,
+			initialInterval: '1 second',
+			backoffCoefficient: 2,
+		},
+	});
 
 // ============================================================================
 // UNIFIED HIVE WORKFLOW
 // ============================================================================
 
-export async function UnifiedHIVEWorkflow(config: UnifiedWorkflowConfig): Promise<UnifiedWorkflowState> {
+export async function UnifiedHIVEWorkflow(
+	config: UnifiedWorkflowConfig,
+): Promise<UnifiedWorkflowState> {
 	const state: UnifiedWorkflowState = {
 		phase: 'H',
 		cycle: 0,
@@ -237,7 +234,9 @@ export interface SimpleHIVEConfig {
 /**
  * Simple single-phase workflow for testing
  */
-export async function SimpleHIVEWorkflow(config: SimpleHIVEConfig): Promise<activities.UnifiedPhaseOutput> {
+export async function SimpleHIVEWorkflow(
+	config: SimpleHIVEConfig,
+): Promise<activities.UnifiedPhaseOutput> {
 	const result = await langGraphActivity({
 		phase: 'H',
 		task: config.task,

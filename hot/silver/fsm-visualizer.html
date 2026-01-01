@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>W3C Pointer FSM Visualizer | Gen87.X3</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      color: #e8e8e8;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #00d9ff;
+      text-shadow: 0 0 10px rgba(0, 217, 255, 0.5);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 400px;
+      gap: 20px;
+    }
+    .panel {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 20px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .mermaid {
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 8px;
+      padding: 20px;
+    }
+    .controls {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    label {
+      font-size: 0.85rem;
+      color: #88a4bc;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    input[type="range"] {
+      width: 100%;
+      accent-color: #00d9ff;
+    }
+    .value {
+      font-family: 'Consolas', monospace;
+      color: #00d9ff;
+      font-size: 1.1rem;
+    }
+    .state-indicator {
+      padding: 15px;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+      transition: all 0.3s ease;
+    }
+    .state-IDLE { background: linear-gradient(135deg, #404040, #2a2a2a); }
+    .state-TRACKING { background: linear-gradient(135deg, #2d5a27, #1a3d15); color: #7fff7f; }
+    .state-ARMED { background: linear-gradient(135deg, #5a5a27, #3d3d15); color: #ffff7f; }
+    .state-ENGAGED { background: linear-gradient(135deg, #5a2727, #3d1515); color: #ff7f7f; }
+    .state-COASTING { background: linear-gradient(135deg, #27375a, #152340); color: #7f9fff; }
+    
+    .event-log {
+      max-height: 200px;
+      overflow-y: auto;
+      font-family: 'Consolas', monospace;
+      font-size: 0.85rem;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 8px;
+      padding: 10px;
+    }
+    .event-log div {
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .event-enter { color: #7fff7f; }
+    .event-move { color: #7f9fff; }
+    .event-down { color: #ff7f7f; }
+    .event-up { color: #ffff7f; }
+    .event-leave, .event-cancel { color: #888; }
+    
+    .gesture-buttons {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    .gesture-btn {
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: rgba(255, 255, 255, 0.1);
+      color: #e8e8e8;
+    }
+    .gesture-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    .gesture-btn.active {
+      background: #00d9ff;
+      color: #1a1a2e;
+    }
+    
+    .thresholds {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      font-size: 0.8rem;
+    }
+    .threshold-item {
+      text-align: center;
+      padding: 10px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 6px;
+    }
+    .threshold-item .name { color: #88a4bc; }
+    .threshold-item .value { font-size: 1.2rem; }
+    
+    h3 {
+      margin-bottom: 10px;
+      color: #00d9ff;
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🕸️ W3C Pointer FSM Visualizer</h1>
+    
+    <div class="grid">
+      <div class="panel">
+        <h3>State Machine Diagram</h3>
+        <div class="mermaid" id="mermaidDiagram">
+stateDiagram-v2
+    [*] --> IDLE
+    
+    IDLE --> TRACKING : palmAngle < 30° + trackingOk
+    
+    TRACKING --> IDLE : palmAngle > 45° (hysteresis exit)
+    TRACKING --> IDLE : palmAngle > 70° (cancel)
+    TRACKING --> ARMED : Open_Palm + stable (150ms)
+    TRACKING --> COASTING : trackingOk = false
+    
+    ARMED --> TRACKING : gesture ≠ Open_Palm
+    ARMED --> IDLE : palmAngle > 70° (cancel)
+    ARMED --> ENGAGED : Pointing_Up
+    ARMED --> COASTING : trackingOk = false
+    
+    ENGAGED --> ARMED : Open_Palm (up)
+    ENGAGED --> IDLE : palmAngle > 70° (cancel)
+    ENGAGED --> COASTING : trackingOk = false
+    
+    COASTING --> TRACKING : trackingOk + palmAngle < 45°
+    COASTING --> IDLE : timeout (2s) OR velocity depleted
+    
+    note right of IDLE : No cursor active
+    note right of TRACKING : pointermove
+    note right of ARMED : Ready for gestures
+    note right of ENGAGED : pointerdown active
+    note right of COASTING : Physics prediction
+        </div>
+        
+        <div style="margin-top: 20px;">
+          <h3>Schmitt Trigger Hysteresis</h3>
+          <div class="thresholds">
+            <div class="threshold-item">
+              <div class="name">Enter</div>
+              <div class="value" id="enterThreshold">< 30°</div>
+            </div>
+            <div class="threshold-item">
+              <div class="name">Exit</div>
+              <div class="value" id="exitThreshold">> 45°</div>
+            </div>
+            <div class="threshold-item">
+              <div class="name">Cancel</div>
+              <div class="value" id="cancelThreshold">> 70°</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="panel controls">
+        <h3>Live Simulation</h3>
+        
+        <div class="state-indicator state-IDLE" id="stateIndicator">
+          IDLE
+        </div>
+        
+        <div class="control-group">
+          <label>Palm Angle: <span class="value" id="palmAngleValue">45°</span></label>
+          <input type="range" id="palmAngle" min="0" max="180" value="45" />
+          <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: #88a4bc;">
+            <span>0° (facing)</span>
+            <span>90° (side)</span>
+            <span>180° (away)</span>
+          </div>
+        </div>
+        
+        <div class="control-group">
+          <label>Gesture</label>
+          <div class="gesture-buttons">
+            <button class="gesture-btn active" data-gesture="Open_Palm">✋ Open Palm</button>
+            <button class="gesture-btn" data-gesture="Pointing_Up">☝️ Pointing</button>
+            <button class="gesture-btn" data-gesture="Closed_Fist">✊ Fist</button>
+            <button class="gesture-btn" data-gesture="None">❌ None</button>
+          </div>
+        </div>
+        
+        <div class="control-group">
+          <label>Tracking Status</label>
+          <div class="gesture-buttons">
+            <button class="gesture-btn active" data-tracking="true">✅ Tracking OK</button>
+            <button class="gesture-btn" data-tracking="false">❌ Lost</button>
+          </div>
+        </div>
+        
+        <div class="control-group">
+          <label>Confidence: <span class="value" id="confidenceValue">90%</span></label>
+          <input type="range" id="confidence" min="0" max="100" value="90" />
+        </div>
+        
+        <div>
+          <h3>Event Log</h3>
+          <div class="event-log" id="eventLog">
+            <div class="event-move">Waiting for input...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // Initialize Mermaid
+    mermaid.initialize({ 
+      startOnLoad: true, 
+      theme: 'dark',
+      themeVariables: {
+        primaryColor: '#00d9ff',
+        primaryTextColor: '#fff',
+        primaryBorderColor: '#00d9ff',
+        lineColor: '#88a4bc',
+        secondaryColor: '#1a1a2e',
+        tertiaryColor: '#16213e'
+      }
+    });
+    
+    // Simple FSM simulator
+    const config = {
+      palm: {
+        enterThreshold: 30,
+        exitThreshold: 45,
+        cancelThreshold: 70
+      },
+      confidence: {
+        armThreshold: 0.7
+      },
+      timing: {
+        armStableMs: 150
+      }
+    };
+    
+    let state = 'IDLE';
+    let wasFacing = false;
+    let palmStableAt = null;
+    let currentGesture = 'Open_Palm';
+    let trackingOk = true;
+    
+    function isPalmFacing(palmAngle) {
+      if (wasFacing) {
+        return palmAngle < config.palm.exitThreshold;
+      }
+      return palmAngle < config.palm.enterThreshold;
+    }
+    
+    function updateState() {
+      const palmAngle = parseInt(document.getElementById('palmAngle').value);
+      const confidence = parseInt(document.getElementById('confidence').value) / 100;
+      
+      const previousState = state;
+      let event = null;
+      
+      // State machine logic
+      switch (state) {
+        case 'IDLE':
+          if (trackingOk && palmAngle < config.palm.enterThreshold) {
+            state = 'TRACKING';
+            wasFacing = true;
+            palmStableAt = Date.now();
+            event = { type: 'enter' };
+          }
+          break;
+          
+        case 'TRACKING':
+          if (palmAngle >= config.palm.cancelThreshold) {
+            state = 'IDLE';
+            wasFacing = false;
+            event = { type: 'leave' };
+          } else if (!trackingOk) {
+            state = 'COASTING';
+            event = { type: 'none' };
+          } else if (palmAngle >= config.palm.exitThreshold) {
+            state = 'IDLE';
+            wasFacing = false;
+            event = { type: 'leave' };
+          } else if (currentGesture === 'Open_Palm' && confidence >= config.confidence.armThreshold) {
+            if (palmStableAt && (Date.now() - palmStableAt) >= config.timing.armStableMs) {
+              state = 'ARMED';
+            }
+            event = { type: 'move' };
+          } else {
+            palmStableAt = Date.now();
+            event = { type: 'move' };
+          }
+          break;
+          
+        case 'ARMED':
+          if (palmAngle >= config.palm.cancelThreshold) {
+            state = 'IDLE';
+            wasFacing = false;
+            event = { type: 'leave' };
+          } else if (!trackingOk) {
+            state = 'COASTING';
+            event = { type: 'none' };
+          } else if (palmAngle >= config.palm.exitThreshold) {
+            state = 'IDLE';
+            wasFacing = false;
+            event = { type: 'leave' };
+          } else if (currentGesture === 'Pointing_Up' && confidence >= config.confidence.armThreshold) {
+            state = 'ENGAGED';
+            event = { type: 'down' };
+          } else {
+            event = { type: 'move' };
+          }
+          break;
+          
+        case 'ENGAGED':
+          if (palmAngle >= config.palm.cancelThreshold) {
+            state = 'IDLE';
+            wasFacing = false;
+            event = { type: 'cancel' };
+          } else if (!trackingOk) {
+            state = 'COASTING';
+            event = { type: 'none' };
+          } else if (palmAngle >= config.palm.exitThreshold) {
+            state = 'IDLE';
+            wasFacing = false;
+            event = { type: 'cancel' };
+          } else if (currentGesture === 'Open_Palm' && confidence >= config.confidence.armThreshold) {
+            state = 'ARMED';
+            event = { type: 'up' };
+          } else {
+            event = { type: 'move' };
+          }
+          break;
+          
+        case 'COASTING':
+          if (trackingOk && palmAngle < config.palm.exitThreshold) {
+            state = 'TRACKING';
+            wasFacing = true;
+            palmStableAt = Date.now();
+            event = { type: 'move' };
+          }
+          break;
+      }
+      
+      // Update UI
+      const indicator = document.getElementById('stateIndicator');
+      indicator.textContent = state;
+      indicator.className = `state-indicator state-${state}`;
+      
+      // Log event if state changed
+      if (event && (previousState !== state || event.type !== 'move' && event.type !== 'none')) {
+        logEvent(`${previousState} → ${state}: ${event.type}`);
+      }
+    }
+    
+    function logEvent(message) {
+      const log = document.getElementById('eventLog');
+      const eventType = message.split(': ')[1] || 'move';
+      const div = document.createElement('div');
+      div.className = `event-${eventType}`;
+      div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      log.insertBefore(div, log.firstChild);
+      
+      // Keep only last 20 events
+      while (log.children.length > 20) {
+        log.removeChild(log.lastChild);
+      }
+    }
+    
+    // Event listeners
+    document.getElementById('palmAngle').addEventListener('input', (e) => {
+      document.getElementById('palmAngleValue').textContent = e.target.value + '°';
+      updateState();
+    });
+    
+    document.getElementById('confidence').addEventListener('input', (e) => {
+      document.getElementById('confidenceValue').textContent = e.target.value + '%';
+      updateState();
+    });
+    
+    document.querySelectorAll('[data-gesture]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('[data-gesture]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentGesture = btn.dataset.gesture;
+        updateState();
+      });
+    });
+    
+    document.querySelectorAll('[data-tracking]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('[data-tracking]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        trackingOk = btn.dataset.tracking === 'true';
+        updateState();
+      });
+    });
+    
+    // Initial state
+    logEvent('FSM initialized in IDLE state');
+  </script>
+</body>
+</html>

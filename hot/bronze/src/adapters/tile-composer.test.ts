@@ -7,29 +7,23 @@
  *
  * @vitest-environment jsdom
  */
-import { describe, it, expect, beforeEach, afterEach, vi, type Mock } from 'vitest';
-import {
-	TileComposer,
-	createTileComposer,
-	type TileComposerConfig,
-	type TileComposerTileConfig,
-	type ComposerState,
-} from '../adapters/tile-composer.js';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { type ComposerState, TileComposer, createTileComposer } from '../adapters/tile-composer.js';
 import type {
+	AdapterPort,
+	EmitterPort,
+	FSMPort,
 	SensorPort,
 	SmootherPort,
-	FSMPort,
-	EmitterPort,
-	AdapterPort,
 	UIShellPort,
 } from '../contracts/ports.js';
 import type {
+	AdapterTarget,
+	FSMAction,
+	LayoutState,
+	PointerEventOut,
 	SensorFrame,
 	SmoothedFrame,
-	FSMAction,
-	PointerEventOut,
-	LayoutState,
-	AdapterTarget,
 } from '../contracts/schemas.js';
 
 // ============================================================================
@@ -317,9 +311,7 @@ describe('TileComposer', () => {
 			const composer = createTileComposer();
 			const video = document.createElement('video');
 
-			await expect(composer.processFrame(video, 0)).rejects.toThrow(
-				'Sensor not initialized',
-			);
+			await expect(composer.processFrame(video, 0)).rejects.toThrow('Sensor not initialized');
 		});
 
 		it('throws if addTile called before init', () => {
@@ -334,9 +326,7 @@ describe('TileComposer', () => {
 			const composer = createTileComposer({ shell: { type: 'raw' } });
 
 			await composer.initialize(container);
-			await expect(composer.initialize(container)).rejects.toThrow(
-				'already initialized',
-			);
+			await expect(composer.initialize(container)).rejects.toThrow('already initialized');
 
 			composer.dispose();
 		});
@@ -485,8 +475,16 @@ describe('TileComposer', () => {
 			const state: ComposerState = {
 				layout: createMockLayoutState(),
 				tiles: [
-					{ id: 'restored1', config: { id: 'restored1', type: 'dom', title: 'R1', config: {} }, fsmState: 'DISARMED' },
-					{ id: 'restored2', config: { id: 'restored2', type: 'canvas', title: 'R2', config: {} }, fsmState: 'DISARMED' },
+					{
+						id: 'restored1',
+						config: { id: 'restored1', type: 'dom', title: 'R1', config: {} },
+						fsmState: 'DISARMED',
+					},
+					{
+						id: 'restored2',
+						config: { id: 'restored2', type: 'canvas', title: 'R2', config: {} },
+						fsmState: 'DISARMED',
+					},
 				],
 				defaultSmoother: { type: '1euro', minCutoff: 2.0, beta: 0.01 },
 			};
@@ -569,9 +567,7 @@ describe('TileComposer', () => {
 			const composer = createTileComposer();
 
 			const mockFactory = vi.fn().mockReturnValue(document.createElement('div'));
-			expect(() =>
-				composer.registerComponent('custom', mockFactory),
-			).not.toThrow();
+			expect(() => composer.registerComponent('custom', mockFactory)).not.toThrow();
 		});
 
 		it('throws if component registered after init', async () => {

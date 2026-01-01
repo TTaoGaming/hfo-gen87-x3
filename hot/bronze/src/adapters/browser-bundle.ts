@@ -16,15 +16,18 @@
  */
 
 // Re-export adapter classes (they wrap npm packages internally)
+export { GoldenLayoutShellAdapter, type ComponentFactory } from './golden-layout-shell.adapter.js';
 export { OneEuroExemplarAdapter } from './one-euro-exemplar.adapter.js';
 export { GesturePipeline, createDefaultPipeline, type PipelineConfig } from './pipeline.js';
 export { DOMAdapter, MockDOMAdapter, PointerEventAdapter } from './pointer-event.adapter.js';
+export { HFOPortFactory, RawHTMLShellAdapter, type PortFactoryConfig } from './port-factory.js';
 export {
-    RapierPhysicsAdapter, createPredictiveRapierAdapter, createSmoothedRapierAdapter, type RapierConfig
+	RapierPhysicsAdapter,
+	createPredictiveRapierAdapter,
+	createSmoothedRapierAdapter,
+	type RapierConfig,
 } from './rapier-physics.adapter.js';
 export { XStateFSMAdapter } from './xstate-fsm.adapter.js';
-export { GoldenLayoutShellAdapter, type ComponentFactory } from './golden-layout-shell.adapter.js';
-export { HFOPortFactory, RawHTMLShellAdapter, type PortFactoryConfig } from './port-factory.js';
 
 // Re-export ports for type checking
 export type { EmitterPort, W3CPointerEvent } from '../ports/emitter.port.js';
@@ -70,9 +73,12 @@ const HFO = {
 // Lazy init to avoid circular deps in bundler
 async function initHFO() {
 	const { OneEuroExemplarAdapter } = await import('./one-euro-exemplar.adapter.js');
-	const { RapierPhysicsAdapter, createSmoothedRapierAdapter, createPredictiveRapierAdapter } = await import('./rapier-physics.adapter.js');
+	const { RapierPhysicsAdapter, createSmoothedRapierAdapter, createPredictiveRapierAdapter } =
+		await import('./rapier-physics.adapter.js');
 	const { XStateFSMAdapter } = await import('./xstate-fsm.adapter.js');
-	const { PointerEventAdapter, DOMAdapter, MockDOMAdapter } = await import('./pointer-event.adapter.js');
+	const { PointerEventAdapter, DOMAdapter, MockDOMAdapter } = await import(
+		'./pointer-event.adapter.js'
+	);
 	const { GesturePipeline, createDefaultPipeline } = await import('./pipeline.js');
 	const { GoldenLayoutShellAdapter } = await import('./golden-layout-shell.adapter.js');
 	const { HFOPortFactory, RawHTMLShellAdapter } = await import('./port-factory.js');
@@ -102,4 +108,3 @@ if (typeof window !== 'undefined') {
 }
 
 export default HFO;
-

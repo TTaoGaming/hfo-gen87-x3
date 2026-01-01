@@ -11,8 +11,8 @@
  *   parallel - Run all systems in parallel per phase
  */
 import { Client, Connection } from '@temporalio/client';
-import { UnifiedHIVEWorkflow, SimpleHIVEWorkflow } from './unified-hive-workflow.js';
 import type { UnifiedWorkflowConfig } from './unified-hive-workflow.js';
+import { UnifiedHIVEWorkflow } from './unified-hive-workflow.js';
 
 async function main() {
 	const task = process.argv[2] || 'Test unified HIVE workflow';

@@ -10,12 +10,15 @@
  * @see W3C_POINTER_GESTURE_CONTROL_PLANE_20251230.md Section 11
  */
 import type { UIShellPort } from '../contracts/ports.js';
-import type { AdapterTarget, LayoutNode, LayoutState, TileConfig, TileType, UIShellConfig } from '../contracts/schemas.js';
-import {
-	LayoutStateSchema,
-	TileConfigSchema,
-	UIShellConfigSchema,
+import type {
+	AdapterTarget,
+	LayoutNode,
+	LayoutState,
+	TileConfig,
+	TileType,
+	UIShellConfig,
 } from '../contracts/schemas.js';
+import { LayoutStateSchema, TileConfigSchema, UIShellConfigSchema } from '../contracts/schemas.js';
 
 // ============================================================================
 // TYPES
@@ -29,7 +32,7 @@ import {
  */
 export type ComponentFactory = (
 	container: HTMLElement,
-	config: Record<string, unknown>
+	config: Record<string, unknown>,
 ) => HTMLElement | undefined;
 
 /**
@@ -166,7 +169,9 @@ export class GoldenLayoutShellAdapter implements UIShellPort {
 
 		// Check for duplicate
 		if (this.tiles.has(validatedConfig.id)) {
-			throw new Error(`GoldenLayoutShellAdapter: Tile already exists with ID "${validatedConfig.id}"`);
+			throw new Error(
+				`GoldenLayoutShellAdapter: Tile already exists with ID "${validatedConfig.id}"`,
+			);
 		}
 
 		// Create tile container
@@ -215,11 +220,7 @@ export class GoldenLayoutShellAdapter implements UIShellPort {
 	 * Split a tile in the given direction
 	 * @throws If source tile not found or new tile config invalid
 	 */
-	splitTile(
-		tileId: string,
-		direction: 'horizontal' | 'vertical',
-		newTile: TileConfig
-	): void {
+	splitTile(tileId: string, direction: 'horizontal' | 'vertical', newTile: TileConfig): void {
 		// Validate source exists
 		if (!this.tiles.has(tileId)) {
 			throw new Error(`GoldenLayoutShellAdapter: Tile not found with ID "${tileId}"`);
@@ -230,7 +231,9 @@ export class GoldenLayoutShellAdapter implements UIShellPort {
 
 		// Check for duplicate
 		if (this.tiles.has(validatedNewTile.id)) {
-			throw new Error(`GoldenLayoutShellAdapter: Tile already exists with ID "${validatedNewTile.id}"`);
+			throw new Error(
+				`GoldenLayoutShellAdapter: Tile already exists with ID "${validatedNewTile.id}"`,
+			);
 		}
 
 		// Create new tile container
@@ -249,7 +252,7 @@ export class GoldenLayoutShellAdapter implements UIShellPort {
 			this.arrangement,
 			tileId,
 			validatedNewTile.id,
-			layoutDirection
+			layoutDirection,
 		);
 
 		// Emit layout change
@@ -260,7 +263,7 @@ export class GoldenLayoutShellAdapter implements UIShellPort {
 	 * Get current layout state (for serialization)
 	 */
 	getLayout(): LayoutState {
-		const tiles = Array.from(this.tiles.values()).map(s => s.config);
+		const tiles = Array.from(this.tiles.values()).map((s) => s.config);
 
 		return {
 			tiles,
@@ -466,7 +469,7 @@ export class GoldenLayoutShellAdapter implements UIShellPort {
 		node: LayoutNode,
 		sourceTileId: string,
 		newTileId: string,
-		direction: 'row' | 'column'
+		direction: 'row' | 'column',
 	): LayoutNode {
 		if (typeof node === 'string') {
 			if (node === sourceTileId) {

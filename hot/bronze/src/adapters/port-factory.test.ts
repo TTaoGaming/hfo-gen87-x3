@@ -6,26 +6,21 @@
  * TDD: Tests written BEFORE implementation
  * Tests factory returns correct adapter types and handles configuration
  */
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import type {
 	EmitterPort,
 	FSMPort,
-	OverlayPort,
 	PortFactory,
 	SensorPort,
 	SmootherPort,
 	UIShellPort,
 } from '../contracts/ports.js';
-import type { AdapterTarget, OverlayConfig, ShellType } from '../contracts/schemas.js';
+import type { AdapterTarget, OverlayConfig } from '../contracts/schemas.js';
 import { GoldenLayoutShellAdapter } from './golden-layout-shell.adapter.js';
 import { MediaPipeAdapter } from './mediapipe.adapter.js';
 import { OneEuroExemplarAdapter } from './one-euro-exemplar.adapter.js';
 import { PointerEventAdapter } from './pointer-event.adapter.js';
-import {
-	HFOPortFactory,
-	type PortFactoryConfig,
-	RawHTMLShellAdapter,
-} from './port-factory.js';
+import { HFOPortFactory, type PortFactoryConfig, RawHTMLShellAdapter } from './port-factory.js';
 import { XStateFSMAdapter } from './xstate-fsm.adapter.js';
 
 // ============================================================================
@@ -43,9 +38,7 @@ const createDefaultConfig = (): PortFactoryConfig => ({
 	},
 });
 
-const createRapierConfig = (
-	mode: 'rapier-smooth' | 'rapier-predict',
-): PortFactoryConfig => ({
+const createRapierConfig = (mode: 'rapier-smooth' | 'rapier-predict'): PortFactoryConfig => ({
 	smoother: {
 		type: mode,
 		stiffness: 400,

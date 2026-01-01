@@ -56,13 +56,11 @@ import type {
 	AdapterPort,
 	EmitterPort,
 	FSMPort,
-	OverlayPort,
 	SensorPort,
 	SmootherPort,
 	UIShellPort,
 } from '../contracts/ports.js';
 import type {
-	AdapterTarget,
 	FSMAction,
 	LayoutState,
 	PointerEventOut,
@@ -71,14 +69,8 @@ import type {
 	SmoothedFrame,
 	TileConfig,
 } from '../contracts/schemas.js';
-import { GoldenLayoutShellAdapter, type ComponentFactory } from './golden-layout-shell.adapter.js';
-import {
-	HFOPortFactory,
-	RawHTMLShellAdapter,
-	type PortFactoryConfig,
-	type ShellConfig,
-	type SmootherConfig,
-} from './port-factory.js';
+import { type ComponentFactory, GoldenLayoutShellAdapter } from './golden-layout-shell.adapter.js';
+import { HFOPortFactory, type ShellConfig, type SmootherConfig } from './port-factory.js';
 
 // ============================================================================
 // TYPES
@@ -316,10 +308,7 @@ export class TileComposer {
 	 * Process a video frame through all enabled tile pipelines
 	 * @returns Results for each tile
 	 */
-	async processFrame(
-		video: HTMLVideoElement,
-		timestamp: number,
-	): Promise<TileFrameResult[]> {
+	async processFrame(video: HTMLVideoElement, timestamp: number): Promise<TileFrameResult[]> {
 		if (!this.sensor?.isReady) {
 			throw new Error('Sensor not initialized');
 		}
@@ -531,9 +520,7 @@ export class TileComposer {
 /**
  * Create a TileComposer with sensible defaults
  */
-export function createTileComposer(
-	options: Partial<TileComposerConfig> = {},
-): TileComposer {
+export function createTileComposer(options: Partial<TileComposerConfig> = {}): TileComposer {
 	const defaultConfig: TileComposerConfig = {
 		shell: { type: 'golden' },
 		defaultSmoother: { type: '1euro', minCutoff: 1.0, beta: 0.007 },

@@ -4,7 +4,7 @@
  * Gen87.X3 | Phase: INTERLOCK (I)
  *
  * Export all adapter implementations
- * 
+ *
  * RULE: All adapters MUST wrap npm exemplars, not hand-roll algorithms.
  */
 
@@ -14,7 +14,11 @@ export { MediaPipeAdapter, MockSensorAdapter } from './mediapipe.adapter.js';
 // Smoother adapters (EXEMPLAR COMPOSITION)
 export { OneEuroExemplarAdapter } from './one-euro-exemplar.adapter.js';
 export { OneEuroAdapter, PassthroughSmootherAdapter } from './one-euro.adapter.js';
-export { RapierPhysicsAdapter, createPredictiveRapierAdapter, createSmoothedRapierAdapter } from './rapier-physics.adapter.js';
+export {
+	RapierPhysicsAdapter,
+	createPredictiveRapierAdapter,
+	createSmoothedRapierAdapter,
+} from './rapier-physics.adapter.js';
 export type { RapierConfig } from './rapier-physics.adapter.js';
 
 // FSM adapter
@@ -34,17 +38,17 @@ export {
 	HFOPortFactory,
 	RawHTMLShellAdapter,
 	type PortFactoryConfig,
-	type SmootherConfig,
-	type ShellConfig,
 	type SensorConfig,
+	type ShellConfig,
+	type SmootherConfig,
 } from './port-factory.js';
 
 // Tile Composer (Per-Tile Pipeline DI)
 export {
 	TileComposer,
 	createTileComposer,
+	type ComposerState,
 	type TileComposerConfig,
 	type TileComposerTileConfig,
 	type TileFrameResult,
-	type ComposerState,
 } from './tile-composer.js';

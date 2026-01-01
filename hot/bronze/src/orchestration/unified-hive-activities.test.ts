@@ -1,3 +1,4 @@
+import * as fc from 'fast-check';
 /**
  * Unified HIVE/8 Activities Tests
  *
@@ -6,8 +7,7 @@
  * These tests verify the unified activities work correctly
  * and are designed to catch mutations.
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import * as fc from 'fast-check';
+import { describe, expect, it, vi } from 'vitest';
 
 // Mock the external dependencies
 vi.mock('nats', () => ({
@@ -28,14 +28,13 @@ vi.mock('./openrouter.config.js', () => ({
 
 // Import after mocking
 import {
+	type MCPInput,
+	type NATSInput,
+	type UnifiedPhaseInput,
 	langGraphActivity,
 	mcpActivity,
 	natsActivity,
 	unifiedHIVEActivity,
-	type UnifiedPhaseInput,
-	type UnifiedPhaseOutput,
-	type MCPInput,
-	type NATSInput,
 } from './unified-hive-activities.js';
 
 // ============================================================================

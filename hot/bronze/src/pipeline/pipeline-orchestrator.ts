@@ -18,8 +18,8 @@ import {
 import { OneEuroExemplarAdapter } from '../adapters/one-euro-exemplar.adapter.js';
 import { XStateFSMAdapter } from '../adapters/xstate-fsm.adapter.js';
 import { NatsSubjects, type StageGateConfig } from '../contracts/nats-substrate.js';
-import type { SensorFrame, SmoothedFrame } from '../contracts/schemas.js';
 import type { FSMPort, PortFactory, SmootherPort } from '../contracts/ports.js';
+import type { SensorFrame, SmoothedFrame } from '../contracts/schemas.js';
 
 // ============================================================================
 // STAGE SCHEMAS (Hard Gate Boundaries)

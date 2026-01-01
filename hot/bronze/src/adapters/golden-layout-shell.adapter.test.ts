@@ -9,9 +9,9 @@
  * @vitest-environment jsdom
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { UIShellPort } from '../contracts/ports.js';
 import type { LayoutState, TileConfig, UIShellConfig } from '../contracts/schemas.js';
 import { LayoutStateSchema, TileConfigSchema, UIShellConfigSchema } from '../contracts/schemas.js';
-import type { UIShellPort } from '../contracts/ports.js';
 import { GoldenLayoutShellAdapter } from './golden-layout-shell.adapter.js';
 
 // ============================================================================
@@ -154,9 +154,7 @@ describe('GoldenLayoutShellAdapter', () => {
 			const config = createShellConfig();
 			await adapter.initialize(container, config);
 
-			await expect(adapter.initialize(container, config)).rejects.toThrow(
-				/already initialized/i
-			);
+			await expect(adapter.initialize(container, config)).rejects.toThrow(/already initialized/i);
 		});
 	});
 
@@ -338,9 +336,7 @@ describe('GoldenLayoutShellAdapter', () => {
 		it('throws for non-existent source tile', () => {
 			const newTile = createTileConfig({ id: 'new' });
 
-			expect(() => adapter.splitTile('non-existent', 'horizontal', newTile)).toThrow(
-				/not found/i
-			);
+			expect(() => adapter.splitTile('non-existent', 'horizontal', newTile)).toThrow(/not found/i);
 		});
 
 		it('validates new tile config', () => {

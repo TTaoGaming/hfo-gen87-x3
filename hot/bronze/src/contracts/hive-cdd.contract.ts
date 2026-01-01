@@ -144,7 +144,13 @@ export const PhaseTransitionSchema = z.object({
 	to: G5_HiveSchema,
 	valid: z.boolean(),
 	violation: z
-		.enum(['SKIPPED_HUNT', 'SKIPPED_INTERLOCK', 'SKIPPED_VALIDATE', 'REWARD_HACK', 'INVALID_HANDOFF'])
+		.enum([
+			'SKIPPED_HUNT',
+			'SKIPPED_INTERLOCK',
+			'SKIPPED_VALIDATE',
+			'REWARD_HACK',
+			'INVALID_HANDOFF',
+		])
 		.optional(),
 	reason: z.string().optional(),
 });
@@ -292,7 +298,13 @@ export function validateTransition(from: HivePhase | null, to: HivePhase): Phase
 		if (to === 'H') {
 			return { from: null, to, valid: true, reason: 'Starting HIVE cycle with Hunt' };
 		}
-		return { from: null, to, valid: false, violation: 'SKIPPED_HUNT', reason: 'Must start with Hunt phase' };
+		return {
+			from: null,
+			to,
+			valid: false,
+			violation: 'SKIPPED_HUNT',
+			reason: 'Must start with Hunt phase',
+		};
 	}
 
 	// Check allowed transitions
@@ -321,7 +333,7 @@ export function createSignal(
 	port: number,
 	hive: HivePhase,
 	type: SignalType = 'signal',
-	mark = 1.0
+	mark = 1.0,
 ): StigmergySignal {
 	return {
 		ts: new Date().toISOString(),

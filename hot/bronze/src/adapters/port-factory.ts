@@ -35,7 +35,7 @@ import { GoldenLayoutShellAdapter } from './golden-layout-shell.adapter.js';
 import { MediaPipeAdapter } from './mediapipe.adapter.js';
 import { OneEuroExemplarAdapter } from './one-euro-exemplar.adapter.js';
 import { PointerEventAdapter } from './pointer-event.adapter.js';
-import { type RapierConfig, RapierPhysicsAdapter } from './rapier-physics.adapter.js';
+import { RapierPhysicsAdapter } from './rapier-physics.adapter.js';
 import { XStateFSMAdapter } from './xstate-fsm.adapter.js';
 
 // ============================================================================
@@ -47,7 +47,7 @@ import { XStateFSMAdapter } from './xstate-fsm.adapter.js';
  */
 export interface SmootherConfig {
 	/** Smoother algorithm type */
-	type: '1euro' | 'rapier-smooth' | 'rapier-predict';
+	type: '1euro' | 'rapier-smooth' | 'rapier-predict' | 'rapier-adaptive';
 
 	// 1€ filter options
 	/** Minimum cutoff frequency (1€ filter) - lower = more smoothing at low speeds */
@@ -64,6 +64,14 @@ export interface SmootherConfig {
 	damping?: number;
 	/** Prediction lookahead in ms (Rapier predictive mode only) */
 	predictionMs?: number;
+
+	// Rapier adaptive mode options (1€ physics)
+	/** Minimum stiffness at rest (Rapier adaptive mode) */
+	minStiffness?: number;
+	/** Speed coefficient for adaptive stiffness (Rapier adaptive mode) */
+	speedCoefficient?: number;
+	/** Maximum stiffness cap (Rapier adaptive mode) */
+	maxStiffness?: number;
 }
 
 /**
@@ -109,7 +117,9 @@ export interface PortFactoryConfig {
 class RapierSmootherAdapter implements SmootherPort {
 	constructor(private readonly rapier: RapierPhysicsAdapter) {}
 
-	smooth(frame: import('../contracts/schemas.js').SensorFrame): import('../contracts/schemas.js').SmoothedFrame {
+	smooth(
+		frame: import('../contracts/schemas.js').SensorFrame,
+	): import('../contracts/schemas.js').SmoothedFrame {
 		return this.rapier.smooth(frame);
 	}
 
@@ -119,17 +129,11 @@ class RapierSmootherAdapter implements SmootherPort {
 
 	/**
 	 * Map 1€ filter params to Rapier physics params
-	 * - mincutoff → inverse of stiffness (lower cutoff = higher stiffness)
-	 * - beta → inverse of damping (higher beta = lower damping for responsiveness)
+	 * Delegates to RapierPhysicsAdapter.setParams which handles mode-specific mapping
 	 */
 	setParams(mincutoff: number, beta: number): void {
-		// Map 1€ params to Rapier params (approximate mapping)
-		// Lower mincutoff = more smoothing = higher stiffness in physics
-		const stiffness = 100 / Math.max(mincutoff, 0.1);
-		// Higher beta = more responsive = lower damping
-		const damping = 1.0 - Math.min(beta * 10, 0.9);
-
-		this.rapier.setParams({ stiffness, damping });
+		// RapierPhysicsAdapter.setParams handles mode-specific mapping internally
+		this.rapier.setParams(mincutoff, beta);
 	}
 }
 
@@ -191,10 +195,7 @@ export class RawHTMLShellAdapter implements UIShellPort {
 	private tileFocusCallbacks = new Set<(tileId: string) => void>();
 	private arrangement: LayoutNode = '';
 
-	async initialize(
-		container: HTMLElement,
-		config: UIShellConfig,
-	): Promise<void> {
+	async initialize(container: HTMLElement, config: UIShellConfig): Promise<void> {
 		this.container = container;
 		this.container.style.position = 'relative';
 		this.container.style.width = '100%';
@@ -261,11 +262,7 @@ export class RawHTMLShellAdapter implements UIShellPort {
 		}
 	}
 
-	splitTile(
-		tileId: string,
-		direction: 'horizontal' | 'vertical',
-		newTile: TileConfig,
-	): void {
+	splitTile(tileId: string, direction: 'horizontal' | 'vertical', newTile: TileConfig): void {
 		// Simple implementation: just add new tile
 		this.addTile(newTile);
 	}
@@ -348,9 +345,7 @@ class StubOverlayAdapter implements OverlayPort {
 		// Stub - no-op
 	}
 
-	setLandmarks(
-		_landmarks: import('../contracts/schemas.js').NormalizedLandmark[] | null,
-	): void {
+	setLandmarks(_landmarks: import('../contracts/schemas.js').NormalizedLandmark[] | null): void {
 		// Stub - no-op
 	}
 
@@ -419,6 +414,7 @@ export class HFOPortFactory implements PortFactory {
 	 * - '1euro': OneEuroExemplarAdapter (npm exemplar)
 	 * - 'rapier-smooth': RapierPhysicsAdapter in smoothed mode
 	 * - 'rapier-predict': RapierPhysicsAdapter in predictive mode
+	 * - 'rapier-adaptive': RapierPhysicsAdapter with 1€-inspired adaptive physics
 	 */
 	createSmoother(): SmootherPort {
 		const { smoother } = this.config;
@@ -449,6 +445,18 @@ export class HFOPortFactory implements PortFactory {
 						stiffness: smoother.stiffness,
 						damping: smoother.damping,
 						predictionMs: smoother.predictionMs,
+					}),
+				);
+
+			case 'rapier-adaptive':
+				// 1€ PHYSICS: Rapier with velocity-adaptive stiffness
+				return new RapierSmootherAdapter(
+					new RapierPhysicsAdapter({
+						mode: 'adaptive',
+						minStiffness: smoother.minStiffness,
+						speedCoefficient: smoother.speedCoefficient,
+						maxStiffness: smoother.maxStiffness,
+						damping: smoother.damping,
 					}),
 				);
 
@@ -507,9 +515,7 @@ export class HFOPortFactory implements PortFactory {
 			case 'mosaic':
 			case 'daedalos':
 				// Not implemented yet - fallback to raw
-				console.warn(
-					`Shell type '${type}' not implemented, falling back to 'raw'`,
-				);
+				console.warn(`Shell type '${type}' not implemented, falling back to 'raw'`);
 				return new RawHTMLShellAdapter();
 
 			default: {
