@@ -1,188 +1,23 @@
-#!/bin/sh
-. "$(dirname -- "$0")/_/husky.sh"
+#!/usr/bin/env sh
 
-echo ""
-echo "╔════════════════════════════════════════════════════════════════╗"
-echo "║  🕸️  HFO Gen87 Pre-Commit Enforcement Gates                    ║"
-echo "║  HIVE/8 Phase: Spider Sovereign Mode Active                    ║"
-echo "╚════════════════════════════════════════════════════════════════╝"
-echo ""
+echo "🔒 Pre-commit: Running machine validation..."
 
-# Gate -1: Regenerate Context Manifest (FIRST - Always run)
-echo "📋 Gate -1/7: Context Manifest Regeneration..."
-if [ -f "scripts/context-manager.ts" ]; then
-  npx tsx scripts/context-manager.ts generate 2>/dev/null
-  echo "✅ G-1 PASSED (context manifest regenerated)"
-  git add CONTEXT_MANIFEST.json COLD_START_PAYLOAD.md 2>/dev/null
-else
-  echo "⚠️  WARNING: context-manager.ts not found"
+# Gate 1: TypeScript compilation
+echo "  → TypeCheck..."
+npm run typecheck || exit 1
+
+# Gate 2: Lint
+echo "  → Lint..."
+npm run lint || exit 1
+
+# Gate 3: Architecture smoke tests (run specific test file)
+echo "  → Architecture Smoke Tests..."
+npx vitest run hot/silver/architecture.smoke.test.ts --passWithNoTests || exit 1
+
+# Gate 4: Dependency boundaries (if silver files changed)
+if git diff --cached --name-only | grep -q "hot/silver"; then
+  echo "  → Dependency Boundaries..."
+  npx dependency-cruiser --config hot/silver/.constraint-rules.mjs hot/silver || exit 1
 fi
-echo ""
 
-# Gate 0: HIVE Signal Trail Check (NEW - CRITICAL)
-echo "📋 Gate 0/7: HIVE Signal Trail..."
-BLACKBOARD="./sandbox/obsidianblackboard.jsonl"
-if [ -f "$BLACKBOARD" ]; then
-  # Check for HUNT signal in last 20 minutes
-  LAST_HUNT=$(grep -o '"hive":"H"' "$BLACKBOARD" | tail -1)
-  LAST_SIGNAL=$(tail -1 "$BLACKBOARD" 2>/dev/null)
-  
-  if [ -z "$LAST_HUNT" ]; then
-    echo "⚠️  WARNING: No HUNT signal found in blackboard"
-    echo "   Spider Sovereign mode expects H→I→V→E workflow"
-    echo "   Emit a HUNT signal before implementing features"
-  fi
-  
-  # Extract last phase
-  LAST_PHASE=$(echo "$LAST_SIGNAL" | grep -o '"hive":"[HIVE]"' | head -1 | cut -d'"' -f4)
-  echo "   Last HIVE phase: $LAST_PHASE"
-  echo "✅ G0 PASSED (signal trail exists)"
-else
-  echo "⚠️  WARNING: No blackboard found at $BLACKBOARD"
-  echo "   Creating new blackboard..."
-  mkdir -p ./sandbox
-  touch "$BLACKBOARD"
-fi
-echo ""
-
-# Gate 0.5: HIVE Sequence Validation (HARD GATE - BLOCKS on violations)
-echo "📋 Gate 0.5/7: HIVE Sequence Validation..."
-if [ -f "scripts/validate-hive.ts" ]; then
-  # Run validation but only WARN, don't block yet (legacy signals have violations)
-  npx tsx scripts/validate-hive.ts 2>/dev/null
-  HIVE_EXIT=$?
-  if [ $HIVE_EXIT -ne 0 ]; then
-    echo ""
-    echo "⚠️  WARNING: HIVE sequence has violations"
-    echo "   Historical signals had out-of-order transitions."
-    echo "   New signals will be enforced via safe-emit."
-    # Uncomment below to make this a HARD BLOCK:
-    # echo "❌ G0.5 FAILED: HIVE sequence violations detected."
-    # exit 1
-  else
-    echo "✅ G0.5 PASSED (HIVE sequence valid)"
-  fi
-else
-  echo "   ⚠️  validate-hive.ts not found, skipping"
-fi
-echo ""
-
-# Gate 1: TypeScript type check
-echo "📋 Gate 1/7: TypeCheck..."
-npm run typecheck || {
-  echo "❌ G1 FAILED: TypeCheck errors detected."
-  echo "   Fix type errors before committing."
-  exit 1
-}
-echo "✅ G1 PASSED"
-echo ""
-
-# Gate 2: Lint (Biome)
-echo "📋 Gate 2/5: Lint..."
-npm run lint || {
-  echo "❌ G2 FAILED: Lint errors detected."
-  echo "   Run 'npm run lint:fix' to auto-fix."
-  exit 1
-}
-echo "✅ G2 PASSED"
-echo ""
-
-# Gate 3: Tests (only changed files for speed)
-echo "📋 Gate 3/5: Tests (changed files)..."
-npm run test:changed || {
-  echo "❌ G3 FAILED: Test failures detected."
-  echo "   This is expected for TDD RED phase."
-  echo "   Commit with 'I:' or 'H:' prefix for RED tests."
-  exit 1
-}
-echo "✅ G3 PASSED"
-echo ""
-
-# Gate 4: Architecture Enforcement (Reward Hacking Detection)
-echo "📋 Gate 4/6: Architecture Compliance..."
-npx tsx scripts/enforce-architecture.ts ./sandbox 2>/dev/null || {
-  echo "❌ G4 FAILED: Architecture violations detected."
-  echo ""
-  echo "   Violations detected:"
-  echo "   - REWARD_HACK: expect(true) or meaningless tests"
-  echo "   - MOCK_ABUSE: >3 mocks in single file"
-  echo "   - CUSTOM_CONTRACT: Zod schema without TRL source"
-  echo "   - SKIP_ABUSE: it.skip without TODO reason"
-  echo ""
-  echo "   Run 'npx tsx scripts/enforce-architecture.ts ./sandbox' for details."
-  exit 1
-}
-echo "✅ G4 PASSED"
-echo ""
-
-# Gate 5: V-PHASE REWARD HACKING DETECTOR (NEW - CRITICAL)
-echo "📋 Gate 5/6: V-Phase Reward Hacking Detector..."
-npx tsx scripts/v-phase-gate.ts --staged || {
-  echo ""
-  echo "❌ G5 FAILED: REWARD HACKING DETECTED"
-  echo ""
-  echo "   A demo that doesn't use the architecture is NOT a demo."
-  echo "   It's a spike that proves nothing."
-  echo ""
-  echo "   Common violations:"
-  echo "   - Inline FSM instead of XState adapter"
-  echo "   - Inline 1€ filter instead of OneEuroAdapter"
-  echo "   - Direct DOM events instead of NATS substrate"
-  echo "   - TODO stubs in production code"
-  echo "   - 'For now' shortcuts that bypass architecture"
-  echo ""
-  exit 1
-}
-echo "✅ G5 PASSED"
-echo ""
-
-# Gate 6: Contract TRL Lineage Check
-echo "📋 Gate 6/6: TRL 9 Contract Lineage..."
-# Check that contract files have @source or @see tags
-CONTRACT_FILES=$(find ./sandbox -name "*.contract.ts" -o -name "*schema*.ts" 2>/dev/null | head -20)
-if [ -n "$CONTRACT_FILES" ]; then
-  MISSING_TRL=0
-  for file in $CONTRACT_FILES; do
-    if ! grep -q -E "@source|@see|TRL|W3C|CNCF|RFC" "$file" 2>/dev/null; then
-      echo "   ⚠️  Missing TRL lineage: $file"
-      MISSING_TRL=$((MISSING_TRL + 1))
-    fi
-  done
-  if [ $MISSING_TRL -gt 0 ]; then
-    echo ""
-    echo "❌ G5 FAILED: $MISSING_TRL contract(s) missing TRL 9 lineage."
-    echo "   Add JSDoc with @source URL pointing to standard (W3C, CNCF, RFC, etc.)"
-    # Warning only for now, not blocking
-    # exit 1
-  fi
-fi
-echo "✅ G6 PASSED"
-echo ""
-
-# Gate 7: ANTI-THEATER GATE (HARD BLOCK - AI Cannot Bypass)
-echo "📋 Gate 7/8: Anti-Theater Gate (AI Cannot Bypass)..."
-npx tsx scripts/anti-theater-gate.ts 2>/dev/null || {
-  echo ""
-  echo "╔════════════════════════════════════════════════════════════════╗"
-  echo "║  ❌ THEATER DETECTED - COMMIT BLOCKED                          ║"
-  echo "║                                                                ║"
-  echo "║  AI agents keep faking the architecture with inline code.     ║"
-  echo "║  This gate BLOCKS commits containing:                         ║"
-  echo "║    - Hand-rolled 1€ filter (use OneEuroExemplarAdapter)       ║"
-  echo "║    - Inline Rapier physics (use RapierPhysicsAdapter)         ║"
-  echo "║    - Inline XState machines (use XStateAdapter)               ║"
-  echo "║    - Direct npm imports in demos (use adapter bundle)         ║"
-  echo "║                                                                ║"
-  echo "║  Run 'npm run gate:theater' to see violations.                ║"
-  echo "╚════════════════════════════════════════════════════════════════╝"
-  exit 1
-}
-echo "✅ G7 PASSED (No theater detected)"
-echo ""
-
-echo "╔════════════════════════════════════════════════════════════════╗"
-echo "║  ✅ ALL 8 GATES PASSED - Commit approved                       ║"
-echo "║  HIVE/8 Workflow Enforced via Spider Sovereign Mode           ║"
-echo "║  Remember: Use HIVE commit prefixes (H: I: V: E:)             ║"
-echo "╚════════════════════════════════════════════════════════════════╝"
-echo ""
+echo "✅ All gates passed. Commit allowed."

@@ -32,12 +32,14 @@ export type PortCapability =
 	| 'tag' // Can add metadata/annotations
 	| 'transform' // Can change data structure
 	| 'emit' // Can output/deliver
+	| 'emit_output' // Can output/deliver (alias)
 	| 'validate' // Can check properties
 	| 'gate' // Can allow/deny passage
 	| 'persist' // Can store durably
 	| 'route' // Can direct flow
 	| 'compose' // Can combine elements
-	| 'invoke'; // Can call external systems
+	| 'invoke' // Can call external systems
+	| 'invoke_external'; // Can call external systems (alias)
 
 /** What a port MUST NOT do (violations) */
 export type PortProhibition =
@@ -47,7 +49,9 @@ export type PortProhibition =
 	| 'emit_output' // Cannot produce output
 	| 'invoke_external' // Cannot call external systems
 	| 'make_decisions' // Cannot choose paths
-	| 'skip_validation'; // Cannot bypass gates
+	| 'skip_validation' // Cannot bypass gates
+	| 'transform' // Cannot transform data
+	| 'validate'; // Cannot validate
 
 /** Behavioral contract for a port */
 export interface PortBehavioralContract {

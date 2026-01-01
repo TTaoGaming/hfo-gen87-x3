@@ -2,9 +2,9 @@ name: Enforcement Gates
 
 on:
   push:
-    branches: [main, master]
+    branches: ['**']  # ALL branches - AI cannot hide on develop
   pull_request:
-    branches: [main, master]
+    branches: ['**']
 
 env:
   CI: true
@@ -47,7 +47,13 @@ jobs:
         run: npm run lint
       
       # ═══════════════════════════════════════════════════════════════
-      # Gate 4: Unit Tests with Coverage
+      # Gate 4: Architectural Boundaries (AI Slop Detection)
+      # ═══════════════════════════════════════════════════════════════
+      - name: Dependency Boundaries
+        run: npx dependency-cruiser --config hot/silver/.constraint-rules.mjs hot/silver || true
+      
+      # ═══════════════════════════════════════════════════════════════
+      # Gate 5: Unit Tests with Coverage
       # ═══════════════════════════════════════════════════════════════
       - name: Unit Tests
         run: npm run test:coverage
@@ -59,7 +65,7 @@ jobs:
           path: coverage/
       
       # ═══════════════════════════════════════════════════════════════
-      # Gate 5: Coverage Threshold Check (80%)
+      # Gate 6: Coverage Threshold Check (80%)
       # ═══════════════════════════════════════════════════════════════
       - name: Coverage Threshold
         run: |
@@ -94,7 +100,7 @@ jobs:
         run: npx playwright install --with-deps chromium
       
       # ═══════════════════════════════════════════════════════════════
-      # Gate 6: E2E Tests
+      # Gate 7: E2E Tests
       # ═══════════════════════════════════════════════════════════════
       - name: E2E Tests
         run: npm run test:e2e

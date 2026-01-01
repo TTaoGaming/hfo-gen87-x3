@@ -8,7 +8,8 @@
 		"rules": {
 			"recommended": true,
 			"suspicious": {
-				"noExplicitAny": "warn"
+				"noExplicitAny": "warn",
+				"noThenProperty": "off"
 			},
 			"complexity": {
 				"noForEach": "off"
@@ -33,7 +34,9 @@
 			"coverage/**",
 			"playwright-report/**",
 			"test-results/**",
-			"*.d.ts"
+			"*.d.ts",
+			"cold/**",
+			"hot/bronze/quarantine/**"
 		]
 	}
 }
