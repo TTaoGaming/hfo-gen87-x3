@@ -326,7 +326,7 @@ describe('TileComposer', () => {
 			const composer = createTileComposer();
 
 			expect(() =>
-				composer.addTile({ id: 'test', type: 'dom', title: 'Test' }),
+				composer.addTile({ id: 'test', type: 'dom', title: 'Test', config: {} }),
 			).toThrow('TileComposer not initialized');
 		});
 
@@ -355,13 +355,13 @@ describe('TileComposer', () => {
 		});
 
 		it('adds a tile', () => {
-			composer.addTile({ id: 'tile1', type: 'dom', title: 'Tile 1' });
+			composer.addTile({ id: 'tile1', type: 'dom', title: 'Tile 1', config: {} });
 
 			expect(composer.getTileIds()).toContain('tile1');
 		});
 
 		it('removes a tile', () => {
-			composer.addTile({ id: 'tile1', type: 'dom', title: 'Tile 1' });
+			composer.addTile({ id: 'tile1', type: 'dom', title: 'Tile 1', config: {} });
 			composer.removeTile('tile1');
 
 			expect(composer.getTileIds()).not.toContain('tile1');
@@ -372,6 +372,7 @@ describe('TileComposer', () => {
 				id: 'tile1',
 				type: 'dom',
 				title: 'Tile 1',
+				config: {},
 				smootherConfig: { type: 'rapier-smooth', stiffness: 100, damping: 0.5 },
 			});
 
@@ -384,7 +385,7 @@ describe('TileComposer', () => {
 		});
 
 		it('enables/disables tile gesture', () => {
-			composer.addTile({ id: 'tile1', type: 'dom', title: 'Tile 1' });
+			composer.addTile({ id: 'tile1', type: 'dom', title: 'Tile 1', config: {} });
 
 			// Disabled tile should not appear in processing
 			composer.setTileGestureEnabled('tile1', false);
@@ -411,7 +412,7 @@ describe('TileComposer', () => {
 		});
 
 		it('uses default smoother if none specified', () => {
-			composer.addTile({ id: 'tile1', type: 'dom', title: 'Tile 1' });
+			composer.addTile({ id: 'tile1', type: 'dom', title: 'Tile 1', config: {} });
 
 			const config = composer.getTileConfig('tile1');
 			// No smootherConfig means default is used
@@ -423,6 +424,7 @@ describe('TileComposer', () => {
 				id: 'tile1',
 				type: 'dom',
 				title: 'Tile 1',
+				config: {},
 				smootherConfig: { type: 'rapier-smooth', stiffness: 150, damping: 0.6 },
 			});
 
@@ -431,7 +433,7 @@ describe('TileComposer', () => {
 		});
 
 		it('updates tile smoother at runtime', () => {
-			composer.addTile({ id: 'tile1', type: 'dom', title: 'Tile 1' });
+			composer.addTile({ id: 'tile1', type: 'dom', title: 'Tile 1', config: {} });
 
 			composer.updateTileSmoother('tile1', {
 				type: 'rapier-predict',
@@ -463,11 +465,12 @@ describe('TileComposer', () => {
 		});
 
 		it('gets composer state', () => {
-			composer.addTile({ id: 'tile1', type: 'dom', title: 'Tile 1' });
+			composer.addTile({ id: 'tile1', type: 'dom', title: 'Tile 1', config: {} });
 			composer.addTile({
 				id: 'tile2',
 				type: 'canvas',
 				title: 'Tile 2',
+				config: {},
 				smootherConfig: { type: 'rapier-smooth', stiffness: 100, damping: 0.5 },
 			});
 
@@ -482,8 +485,8 @@ describe('TileComposer', () => {
 			const state: ComposerState = {
 				layout: createMockLayoutState(),
 				tiles: [
-					{ id: 'restored1', config: { id: 'restored1', type: 'dom', title: 'R1' }, fsmState: 'idle' },
-					{ id: 'restored2', config: { id: 'restored2', type: 'canvas', title: 'R2' }, fsmState: 'idle' },
+					{ id: 'restored1', config: { id: 'restored1', type: 'dom', title: 'R1', config: {} }, fsmState: 'DISARMED' },
+					{ id: 'restored2', config: { id: 'restored2', type: 'canvas', title: 'R2', config: {} }, fsmState: 'DISARMED' },
 				],
 				defaultSmoother: { type: '1euro', minCutoff: 2.0, beta: 0.01 },
 			};
@@ -521,12 +524,13 @@ describe('TileComposer', () => {
 		});
 
 		it('splits a tile', () => {
-			composer.addTile({ id: 'tile1', type: 'dom', title: 'Tile 1' });
+			composer.addTile({ id: 'tile1', type: 'dom', title: 'Tile 1', config: {} });
 
 			composer.splitTile('tile1', 'horizontal', {
 				id: 'tile2',
 				type: 'dom',
 				title: 'Tile 2',
+				config: {},
 			});
 
 			expect(composer.getTileIds()).toContain('tile2');
@@ -538,13 +542,13 @@ describe('TileComposer', () => {
 			const composer = createTileComposer({ shell: { type: 'raw' } });
 			await composer.initialize(container);
 
-			composer.addTile({ id: 'tile1', type: 'dom', title: 'Tile 1' });
+			composer.addTile({ id: 'tile1', type: 'dom', title: 'Tile 1', config: {} });
 
 			composer.dispose();
 
 			// After dispose, adding tiles should fail
 			expect(() =>
-				composer.addTile({ id: 'tile2', type: 'dom', title: 'Tile 2' }),
+				composer.addTile({ id: 'tile2', type: 'dom', title: 'Tile 2', config: {} }),
 			).toThrow();
 		});
 

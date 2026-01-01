@@ -198,6 +198,9 @@ export class TileComposer {
 		// Initialize shell
 		await this.shell.initialize(container, {
 			shell: this.config.shell.type as ShellType,
+			allowDragDrop: true,
+			allowSplit: true,
+			allowClose: true,
 		});
 
 		// Subscribe to tile focus changes
