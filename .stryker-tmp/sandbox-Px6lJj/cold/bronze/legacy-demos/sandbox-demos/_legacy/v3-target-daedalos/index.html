@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>daedalOS Gesture Controller | Gen87.X3</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: #16213e;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #0f3460;
+        }
+        
+        .header h1 {
+            font-size: 1.5rem;
+            background: linear-gradient(90deg, #00d9ff, #ff00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .status {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .status-badge.ready { background: #10b981; }
+        .status-badge.tracking { background: #3b82f6; }
+        .status-badge.armed { background: #f59e0b; }
+        .status-badge.clicking { background: #ef4444; }
+        .status-badge.error { background: #ef4444; }
+        
+        .main {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 0;
+        }
+        
+        .sidebar {
+            background: #16213e;
+            padding: 1rem;
+            border-right: 2px solid #0f3460;
+            overflow-y: auto;
+        }
+        
+        .sidebar h2 {
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        
+        .control-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .control-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+        
+        .control-group input[type="range"] {
+            width: 100%;
+            accent-color: #00d9ff;
+        }
+        
+        .control-group input[type="text"] {
+            width: 100%;
+            padding: 0.5rem;
+            background: #0f3460;
+            border: 1px solid #1e3a5f;
+            border-radius: 4px;
+            color: #eee;
+            font-family: monospace;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #00d9ff, #0080ff);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 217, 255, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #0f3460;
+            color: #ddd;
+        }
+        
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .iframe-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: #000;
+        }
+        
+        .iframe-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .overlay-cursor {
+            position: fixed;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: rgba(0, 217, 255, 0.5);
+            border: 2px solid #00d9ff;
+            pointer-events: none;
+            z-index: 999999;
+            transform: translate(-50%, -50%);
+            transition: background 0.1s, transform 0.05s;
+            display: none;
+        }
+        
+        .overlay-cursor.active {
+            display: block;
+        }
+        
+        .overlay-cursor.armed {
+            background: rgba(245, 158, 11, 0.5);
+            border-color: #f59e0b;
+        }
+        
+        .overlay-cursor.clicking {
+            background: rgba(239, 68, 68, 0.7);
+            border-color: #ef4444;
+            transform: translate(-50%, -50%) scale(0.8);
+        }
+        
+        .video-preview {
+            width: 100%;
+            max-width: 280px;
+            border-radius: 8px;
+            background: #000;
+            margin-bottom: 1rem;
+        }
+        
+        .stats {
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: #888;
+            margin-top: 1rem;
+        }
+        
+        .stats div {
+            margin-bottom: 0.25rem;
+        }
+        
+        .gesture-visual {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+        
+        .gesture-badge {
+            padding: 0.25rem 0.5rem;
+            background: #0f3460;
+            border-radius: 4px;
+            font-size: 0.75rem;
+        }
+        
+        .gesture-badge.active {
+            background: #00d9ff;
+            color: #000;
+        }
+        
+        .instructions {
+            background: #0f3460;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
+        
+        .instructions h3 {
+            margin-bottom: 0.5rem;
+            color: #00d9ff;
+        }
+        
+        .instructions ul {
+            padding-left: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>🕷️ daedalOS Gesture Controller</h1>
+        <div class="status">
+            <span class="status-badge" id="statusBadge">Initializing...</span>
+            <span id="fsmState">IDLE</span>
+        </div>
+    </header>
+    
+    <main class="main">
+        <aside class="sidebar">
+            <h2>Webcam</h2>
+            <video id="webcam" class="video-preview" autoplay playsinline muted></video>
+            
+            <div class="control-group">
+                <button class="btn btn-primary" id="startBtn" onclick="startPipeline()">
+                    ▶ Start Gesture Control
+                </button>
+                <button class="btn btn-secondary" id="stopBtn" onclick="stopPipeline()" disabled>
+                    ⏹ Stop
+                </button>
+            </div>
+            
+            <div class="instructions">
+                <h3>Gestures</h3>
+                <ul>
+                    <li><strong>Open Palm</strong> - Arm cursor (ready to click)</li>
+                    <li><strong>Pointing Up</strong> - Click/drag</li>
+                    <li><strong>Victory</strong> - Scroll mode</li>
+                    <li><strong>Closed Fist</strong> - Disarm</li>
+                </ul>
+            </div>
+            
+            <h2>Current Gesture</h2>
+            <div class="gesture-visual" id="gestureVisual">
+                <span class="gesture-badge" data-gesture="Open_Palm">🖐 Palm</span>
+                <span class="gesture-badge" data-gesture="Pointing_Up">☝ Point</span>
+                <span class="gesture-badge" data-gesture="Victory">✌ Victory</span>
+                <span class="gesture-badge" data-gesture="Closed_Fist">✊ Fist</span>
+            </div>
+            
+            <h2>Smoothing (1€ Filter)</h2>
+            <div class="control-group">
+                <label>Min Cutoff: <span id="mincutoffValue">1.0</span></label>
+                <input type="range" id="mincutoff" min="0.1" max="5" step="0.1" value="1.0" 
+                       oninput="updateFilter()">
+            </div>
+            <div class="control-group">
+                <label>Beta (Speed Coefficient): <span id="betaValue">0.007</span></label>
+                <input type="range" id="beta" min="0" max="0.05" step="0.001" value="0.007"
+                       oninput="updateFilter()">
+            </div>
+            
+            <h2>Target</h2>
+            <div class="control-group">
+                <label>daedalOS URL</label>
+                <input type="text" id="targetUrl" value="https://dustinbrett.com" 
+                       placeholder="https://dustinbrett.com">
+            </div>
+            <div class="control-group">
+                <button class="btn btn-secondary" onclick="loadTarget()">Load Target</button>
+                <button class="btn btn-secondary" onclick="injectScript()">Inject Controller</button>
+            </div>
+            
+            <div class="stats" id="stats">
+                <div>FPS: <span id="fps">0</span></div>
+                <div>Position: (<span id="posX">0</span>, <span id="posY">0</span>)</div>
+                <div>Confidence: <span id="confidence">0%</span></div>
+                <div>Latency: <span id="latency">0ms</span></div>
+            </div>
+        </aside>
+        
+        <div class="iframe-container">
+            <iframe id="targetFrame" src="about:blank" 
+                    sandbox="allow-scripts allow-same-origin allow-forms allow-popups">
+            </iframe>
+            <div class="overlay-cursor" id="cursor"></div>
+        </div>
+    </main>
+
+    <script type="module">
+// @ts-nocheck
+
+        // ====================================================================
+        // IMPORTS (using CDN for demo)
+        // ====================================================================
+        
+        // MediaPipe Tasks Vision from CDN
+        const MEDIAPIPE_CDN = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.8';
+        
+        // ====================================================================
+        // STATE
+        // ====================================================================
+        
+        const state = {
+            running: false,
+            webcam: null,
+            gestureRecognizer: null,
+            lastGesture: 'None',
+            cursorX: window.innerWidth / 2,
+            cursorY: window.innerHeight / 2,
+            isArmed: false,
+            isClicking: false,
+            frameCount: 0,
+            lastFpsUpdate: 0,
+            
+            // 1€ Filter state
+            filter: {
+                mincutoff: 1.0,
+                beta: 0.007,
+                dcutoff: 1.0,
+                prevX: null,
+                prevY: null,
+                prevDx: null,
+                prevDy: null,
+                prevTs: null,
+            },
+            
+            // FSM state
+            fsm: 'IDLE', // IDLE | TRACKING | ARMED | CLICKING
+            armStartTime: null,
+            ARM_DURATION: 500, // ms
+        };
+        
+        // ====================================================================
+        // DOM ELEMENTS
+        // ====================================================================
+        
+        const elements = {
+            webcam: document.getElementById('webcam'),
+            cursor: document.getElementById('cursor'),
+            targetFrame: document.getElementById('targetFrame'),
+            statusBadge: document.getElementById('statusBadge'),
+            fsmState: document.getElementById('fsmState'),
+            startBtn: document.getElementById('startBtn'),
+            stopBtn: document.getElementById('stopBtn'),
+            gestureVisual: document.getElementById('gestureVisual'),
+            fps: document.getElementById('fps'),
+            posX: document.getElementById('posX'),
+            posY: document.getElementById('posY'),
+            confidence: document.getElementById('confidence'),
+            latency: document.getElementById('latency'),
+            mincutoff: document.getElementById('mincutoff'),
+            mincutoffValue: document.getElementById('mincutoffValue'),
+            beta: document.getElementById('beta'),
+            betaValue: document.getElementById('betaValue'),
+            targetUrl: document.getElementById('targetUrl'),
+        };
+        
+        // ====================================================================
+        // 1€ FILTER IMPLEMENTATION
+        // ====================================================================
+        
+        function smoothingFactor(te, cutoff) {
+            const r = 2 * Math.PI * cutoff * te;
+            return r / (r + 1);
+        }
+        
+        function exponentialSmoothing(a, x, prev) {
+            return a * x + (1 - a) * prev;
+        }
+        
+        function oneEuroFilter(x, y, ts) {
+            const f = state.filter;
+            
+            if (f.prevTs === null) {
+                f.prevX = x;
+                f.prevY = y;
+                f.prevDx = 0;
+                f.prevDy = 0;
+                f.prevTs = ts;
+                return { x, y };
+            }
+            
+            const te = (ts - f.prevTs) / 1000; // Convert to seconds
+            if (te <= 0) return { x: f.prevX, y: f.prevY };
+            
+            // Compute derivatives
+            const dx = (x - f.prevX) / te;
+            const dy = (y - f.prevY) / te;
+            
+            // Filter derivatives
+            const adx = smoothingFactor(te, f.dcutoff);
+            const filteredDx = exponentialSmoothing(adx, dx, f.prevDx);
+            const filteredDy = exponentialSmoothing(adx, dy, f.prevDy);
+            
+            // Compute speed
+            const speed = Math.sqrt(filteredDx * filteredDx + filteredDy * filteredDy);
+            
+            // Compute cutoff
+            const cutoff = f.mincutoff + f.beta * speed;
+            
+            // Filter position
+            const a = smoothingFactor(te, cutoff);
+            const filteredX = exponentialSmoothing(a, x, f.prevX);
+            const filteredY = exponentialSmoothing(a, y, f.prevY);
+            
+            // Update state
+            f.prevX = filteredX;
+            f.prevY = filteredY;
+            f.prevDx = filteredDx;
+            f.prevDy = filteredDy;
+            f.prevTs = ts;
+            
+            return { x: filteredX, y: filteredY };
+        }
+        
+        function resetFilter() {
+            state.filter.prevX = null;
+            state.filter.prevY = null;
+            state.filter.prevDx = null;
+            state.filter.prevDy = null;
+            state.filter.prevTs = null;
+        }
+        
+        // ====================================================================
+        // FSM IMPLEMENTATION
+        // ====================================================================
+        
+        function updateFSM(gesture, confidence) {
+            const now = performance.now();
+            const oldState = state.fsm;
+            
+            switch (state.fsm) {
+                case 'IDLE':
+                    if (gesture === 'Open_Palm' && confidence > 0.7) {
+                        state.fsm = 'TRACKING';
+                    }
+                    break;
+                    
+                case 'TRACKING':
+                    if (gesture === 'Closed_Fist' || gesture === 'None') {
+                        state.fsm = 'IDLE';
+                        resetFilter();
+                    } else if (gesture === 'Open_Palm' && confidence > 0.8) {
+                        state.armStartTime = now;
+                        state.fsm = 'ARMED';
+                    }
+                    break;
+                    
+                case 'ARMED':
+                    if (gesture === 'Closed_Fist' || gesture === 'None') {
+                        state.fsm = 'IDLE';
+                        state.armStartTime = null;
+                        resetFilter();
+                    } else if (gesture === 'Pointing_Up' && confidence > 0.7) {
+                        state.fsm = 'CLICKING';
+                        dispatchPointerEvent('pointerdown');
+                    } else if (now - state.armStartTime > state.ARM_DURATION) {
+                        // Still armed, ready for click
+                    }
+                    break;
+                    
+                case 'CLICKING':
+                    if (gesture !== 'Pointing_Up') {
+                        state.fsm = 'ARMED';
+                        dispatchPointerEvent('pointerup');
+                    }
+                    break;
+            }
+            
+            if (oldState !== state.fsm) {
+                updateStateDisplay();
+            }
+        }
+        
+        // ====================================================================
+        // POINTER EVENT DISPATCH
+        // ====================================================================
+        
+        function dispatchPointerEvent(type) {
+            const iframe = elements.targetFrame;
+            if (!iframe.contentWindow) return;
+            
+            try {
+                // Try to dispatch directly if same-origin
+                const iframeDoc = iframe.contentDocument;
+                if (iframeDoc) {
+                    const rect = iframe.getBoundingClientRect();
+                    const x = state.cursorX - rect.left;
+                    const y = state.cursorY - rect.top;
+                    
+                    const target = iframeDoc.elementFromPoint(x, y);
+                    if (target) {
+                        const event = new PointerEvent(type, {
+                            bubbles: true,
+                            cancelable: true,
+                            clientX: x,
+                            clientY: y,
+                            pointerId: 1,
+                            pointerType: 'pen',
+                            pressure: type === 'pointerdown' ? 0.5 : 0,
+                            button: 0,
+                            buttons: type === 'pointerdown' ? 1 : 0,
+                            isPrimary: true,
+                        });
+                        target.dispatchEvent(event);
+                        
+                        // Also mouse event for compatibility
+                        const mouseType = type.replace('pointer', 'mouse');
+                        if (['mousedown', 'mouseup', 'mousemove'].includes(mouseType)) {
+                            target.dispatchEvent(new MouseEvent(mouseType, {
+                                bubbles: true,
+                                cancelable: true,
+                                clientX: x,
+                                clientY: y,
+                                button: 0,
+                                buttons: type === 'pointerdown' ? 1 : 0,
+                            }));
+                        }
+                    }
+                }
+            } catch (e) {
+                // Cross-origin - use postMessage
+                iframe.contentWindow.postMessage({
+                    type: 'gesture-event',
+                    event: type,
+                    x: state.cursorX,
+                    y: state.cursorY,
+                }, '*');
+            }
+        }
+        
+        // ====================================================================
+        // MEDIAPIPE INITIALIZATION
+        // ====================================================================
+        
+        async function initMediaPipe() {
+            updateStatus('Loading MediaPipe...', 'ready');
+            
+            // Dynamic import from CDN
+            const { GestureRecognizer, FilesetResolver } = await import(
+                `${MEDIAPIPE_CDN}/vision_bundle.mjs`
+            );
+            
+            const vision = await FilesetResolver.forVisionTasks(
+                `${MEDIAPIPE_CDN}/wasm`
+            );
+            
+            state.gestureRecognizer = await GestureRecognizer.createFromOptions(vision, {
+                baseOptions: {
+                    modelAssetPath: `${MEDIAPIPE_CDN}/gesture_recognizer.task`,
+                    delegate: 'GPU',
+                },
+                runningMode: 'VIDEO',
+                numHands: 1,
+            });
+            
+            updateStatus('MediaPipe Ready', 'ready');
+            return state.gestureRecognizer;
+        }
+        
+        // ====================================================================
+        // WEBCAM
+        // ====================================================================
+        
+        async function startWebcam() {
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: 'user', width: 640, height: 480 },
+            });
+            elements.webcam.srcObject = stream;
+            await new Promise(resolve => {
+                elements.webcam.onloadedmetadata = resolve;
+            });
+            state.webcam = elements.webcam;
+        }
+        
+        // ====================================================================
+        // MAIN LOOP
+        // ====================================================================
+        
+        async function processFrame() {
+            if (!state.running || !state.gestureRecognizer || !state.webcam) return;
+            
+            const startTime = performance.now();
+            
+            try {
+                const results = state.gestureRecognizer.recognizeForVideo(
+                    state.webcam,
+                    startTime
+                );
+                
+                if (results.gestures.length > 0 && results.landmarks.length > 0) {
+                    const gesture = results.gestures[0][0];
+                    const landmarks = results.landmarks[0];
+                    
+                    // Get index finger tip (landmark 8)
+                    const indexTip = landmarks[8];
+                    
+                    // Convert to screen coordinates (mirrored)
+                    const rawX = (1 - indexTip.x) * window.innerWidth;
+                    const rawY = indexTip.y * window.innerHeight;
+                    
+                    // Apply 1€ filter
+                    const { x, y } = oneEuroFilter(rawX, rawY, startTime);
+                    
+                    // Clamp to viewport
+                    state.cursorX = Math.max(0, Math.min(window.innerWidth, x));
+                    state.cursorY = Math.max(0, Math.min(window.innerHeight, y));
+                    
+                    // Update FSM
+                    updateFSM(gesture.categoryName, gesture.score);
+                    
+                    // Update cursor
+                    updateCursor();
+                    
+                    // Update gesture display
+                    updateGestureVisual(gesture.categoryName);
+                    
+                    // Update stats
+                    elements.posX.textContent = Math.round(state.cursorX);
+                    elements.posY.textContent = Math.round(state.cursorY);
+                    elements.confidence.textContent = (gesture.score * 100).toFixed(0) + '%';
+                    
+                    // Continuous move events when armed/clicking
+                    if (state.fsm === 'ARMED' || state.fsm === 'CLICKING') {
+                        dispatchPointerEvent('pointermove');
+                    }
+                }
+                
+                // FPS counter
+                state.frameCount++;
+                if (startTime - state.lastFpsUpdate > 1000) {
+                    elements.fps.textContent = state.frameCount;
+                    state.frameCount = 0;
+                    state.lastFpsUpdate = startTime;
+                }
+                
+                // Latency
+                elements.latency.textContent = (performance.now() - startTime).toFixed(1) + 'ms';
+                
+            } catch (e) {
+                console.error('Frame error:', e);
+            }
+            
+            requestAnimationFrame(processFrame);
+        }
+        
+        // ====================================================================
+        // UI UPDATES
+        // ====================================================================
+        
+        function updateCursor() {
+            const cursor = elements.cursor;
+            cursor.style.left = state.cursorX + 'px';
+            cursor.style.top = state.cursorY + 'px';
+            cursor.classList.toggle('armed', state.fsm === 'ARMED');
+            cursor.classList.toggle('clicking', state.fsm === 'CLICKING');
+        }
+        
+        function updateGestureVisual(gesture) {
+            document.querySelectorAll('.gesture-badge').forEach(badge => {
+                badge.classList.toggle('active', badge.dataset.gesture === gesture);
+            });
+        }
+        
+        function updateStatus(text, type) {
+            elements.statusBadge.textContent = text;
+            elements.statusBadge.className = 'status-badge ' + type;
+        }
+        
+        function updateStateDisplay() {
+            elements.fsmState.textContent = state.fsm;
+            updateStatus(state.fsm, state.fsm.toLowerCase());
+        }
+        
+        // ====================================================================
+        // PUBLIC FUNCTIONS
+        // ====================================================================
+        
+        window.startPipeline = async function() {
+            try {
+                elements.startBtn.disabled = true;
+                
+                await initMediaPipe();
+                await startWebcam();
+                
+                state.running = true;
+                elements.cursor.classList.add('active');
+                elements.stopBtn.disabled = false;
+                
+                updateStatus('Running', 'tracking');
+                processFrame();
+                
+            } catch (e) {
+                console.error('Start error:', e);
+                updateStatus('Error: ' + e.message, 'error');
+                elements.startBtn.disabled = false;
+            }
+        };
+        
+        window.stopPipeline = function() {
+            state.running = false;
+            elements.cursor.classList.remove('active');
+            elements.startBtn.disabled = false;
+            elements.stopBtn.disabled = true;
+            resetFilter();
+            updateStatus('Stopped', 'ready');
+        };
+        
+        window.updateFilter = function() {
+            state.filter.mincutoff = parseFloat(elements.mincutoff.value);
+            state.filter.beta = parseFloat(elements.beta.value);
+            elements.mincutoffValue.textContent = state.filter.mincutoff.toFixed(1);
+            elements.betaValue.textContent = state.filter.beta.toFixed(3);
+        };
+        
+        window.loadTarget = function() {
+            const url = elements.targetUrl.value;
+            elements.targetFrame.src = url;
+        };
+        
+        window.injectScript = function() {
+            const script = `
+(function() {
+    let cursorX = window.innerWidth / 2;
+    let cursorY = window.innerHeight / 2;
+    let isDown = false;
+    
+    const cursor = document.createElement('div');
+    cursor.id = 'gesture-cursor';
+    cursor.style.cssText = 'position:fixed;width:24px;height:24px;border-radius:50%;background:rgba(0,217,255,0.5);border:2px solid #00d9ff;pointer-events:none;z-index:999999;transform:translate(-50%,-50%);';
+    document.body.appendChild(cursor);
+    
+    function dispatch(type) {
+        const target = document.elementFromPoint(cursorX, cursorY);
+        if (!target) return;
+        target.dispatchEvent(new PointerEvent(type, {
+            bubbles: true, cancelable: true, clientX: cursorX, clientY: cursorY,
+            pointerId: 1, pointerType: 'pen', pressure: isDown ? 0.5 : 0,
+            button: 0, buttons: isDown ? 1 : 0, isPrimary: true
+        }));
+    }
+    
+    window.addEventListener('message', e => {
+        if (e.data.type !== 'gesture-event') return;
+        cursorX = e.data.x; cursorY = e.data.y;
+        cursor.style.left = cursorX + 'px'; cursor.style.top = cursorY + 'px';
+        if (e.data.event === 'pointerdown') { isDown = true; cursor.style.background = 'rgba(255,100,0,0.7)'; }
+        if (e.data.event === 'pointerup') { isDown = false; cursor.style.background = 'rgba(0,217,255,0.5)'; }
+        dispatch(e.data.event);
+    });
+    
+    console.log('[Gesture Control] Injected!');
+})();
+            `;
+            
+            try {
+                elements.targetFrame.contentWindow.eval(script);
+                updateStatus('Script Injected', 'ready');
+            } catch (e) {
+                // Cross-origin, try postMessage
+                elements.targetFrame.contentWindow.postMessage({
+                    type: 'inject-script',
+                    script: script,
+                }, '*');
+                updateStatus('Attempted injection via postMessage', 'ready');
+            }
+        };
+        
+        // Initialize
+        updateStatus('Ready', 'ready');
+        updateStateDisplay();
+    
+</script>
+</body>
+</html>

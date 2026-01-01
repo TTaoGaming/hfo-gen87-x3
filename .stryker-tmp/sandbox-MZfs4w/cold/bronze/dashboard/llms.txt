@@ -1,0 +1,58 @@
+# Gen87.X3 Dashboard - LLM Quick Context
+
+> **REAL PROGRESS**: 38% (3/8 milestones)
+> **CURRENT PHASE**: I (INTERLOCK) - starting
+> **LAST VERIFIED**: 2025-12-30T08:42:20Z
+
+## ✅ VERIFIED COMPLETE (with evidence)
+
+1. **Workspace Setup** - 10 git commits, branch `gen87-x3/develop`
+2. **Hunt Specs** - 4 documents in `sandbox/specs/` (1,902 total lines)
+3. **Blackboard Active** - 30 signals emitted (29 H-phase, 1 I-phase)
+
+## ❌ NOT YET CREATED (0 lines each)
+
+- `sandbox/src/contracts/gesture-frame.ts` - GestureFrame Zod schema
+- `sandbox/src/contracts/pointer-event.ts` - PointerEvent output contract
+- `sandbox/src/smoothing/one-euro.ts` - 1€ Filter implementation
+- `sandbox/src/fsm/gesture-machine.ts` - XState FSM definition
+- `sandbox/src/adapters/dom-adapter.ts` - DOM injection adapter
+- `sandbox/src/adapters/v86-adapter.ts` - v86 emulator adapter
+
+## 📋 NEXT ACTIONS (INTERLOCK PHASE)
+
+1. Create Zod contracts in `sandbox/src/contracts/`
+2. Write failing tests (TDD RED)
+3. Implement 1€ Filter
+4. Implement XState FSM
+5. Create DOM adapter
+
+## 🔍 VERIFICATION COMMANDS
+
+```bash
+# Check real progress
+python sandbox/dashboard/generate_dashboard.py
+
+# Check git
+git log --oneline -10
+
+# Check tests
+npm test
+
+# Check blackboard
+wc -l sandbox/obsidianblackboard.jsonl
+grep '"hive"' sandbox/obsidianblackboard.jsonl | sort | uniq -c
+```
+
+## ⚠️ HALLUCINATION WARNINGS
+
+| Claim | Reality |
+|-------|---------|
+| "HUNT complete" | ✅ TRUE - 4 spec docs, 29 H-signals |
+| "Contracts ready" | ❌ FALSE - No files exist yet |
+| "TDD in progress" | ❌ FALSE - Only boilerplate tests |
+| "Adapters built" | ❌ FALSE - Only research docs |
+
+---
+
+*Trust verifiable evidence over handoff claims.*

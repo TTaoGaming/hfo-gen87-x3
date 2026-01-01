@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gen87.X3 Real Progress Dashboard</title>
+    <style>
+        :root {
+            --bg: #1a1a2e;
+            --card-bg: #16213e;
+            --accent: #e94560;
+            --success: #4ade80;
+            --warning: #fbbf24;
+            --danger: #ef4444;
+            --text: #f1f5f9;
+            --muted: #94a3b8;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            padding: 2rem;
+            min-height: 100vh;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, var(--accent), #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+        
+        .timestamp {
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+        
+        .warning-banner {
+            background: linear-gradient(135deg, #7c3aed, #a855f7);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .card h2 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .metric:last-child { border-bottom: none; }
+        
+        .metric-label { color: var(--muted); }
+        
+        .metric-value { font-weight: 600; }
+        
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .status-complete { background: rgba(74, 222, 128, 0.2); color: var(--success); }
+        .status-progress { background: rgba(251, 191, 36, 0.2); color: var(--warning); }
+        .status-pending { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+        
+        .progress-bar {
+            height: 1rem;
+            background: rgba(255,255,255,0.1);
+            border-radius: 0.5rem;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success), #22c55e);
+            transition: width 0.5s ease;
+        }
+        
+        .hive-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .hive-phase {
+            text-align: center;
+            padding: 1rem;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.05);
+        }
+        
+        .hive-phase.active {
+            background: linear-gradient(135deg, var(--accent), #ff6b6b);
+        }
+        
+        .hive-phase.complete {
+            background: linear-gradient(135deg, var(--success), #22c55e);
+        }
+        
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0;
+        }
+        
+        .check-icon { font-size: 1.2rem; }
+        .check-yes { color: var(--success); }
+        .check-no { color: var(--danger); }
+        
+        code {
+            background: rgba(0,0,0,0.3);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-family: 'Cascadia Code', monospace;
+            font-size: 0.9rem;
+        }
+        
+        .verification-cmd {
+            background: rgba(0,0,0,0.4);
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: monospace;
+            margin: 0.5rem 0;
+            color: var(--success);
+        }
+        
+        footer {
+            text-align: center;
+            color: var(--muted);
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        #refresh-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+        
+        #refresh-btn:hover { transform: scale(1.05); }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>📊 Gen87.X3 Real Progress Dashboard</h1>
+        <p class="timestamp">Generated: <span id="timestamp">--</span></p>
+        <button id="refresh-btn" onclick="refreshDashboard()">🔄 Refresh Metrics</button>
+    </header>
+    
+    <div class="warning-banner">
+        ⚠️ <strong>ANTI-HALLUCINATION NOTICE</strong>: All metrics on this dashboard are derived from verifiable sources (git, files, test output). AI agents should VERIFY claims, not trust handoffs blindly.
+    </div>
+    
+    <div class="grid">
+        <!-- Overall Progress -->
+        <div class="card">
+            <h2>🎯 Overall Progress</h2>
+            <div style="font-size: 3rem; text-align: center; margin: 1rem 0;">
+                <span id="progress-percent">37%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-bar" style="width: 37%;"></div>
+            </div>
+            <p style="text-align: center; color: var(--muted);">
+                <span id="completed-count">3</span>/<span id="total-count">8</span> milestones complete
+            </p>
+        </div>
+        
+        <!-- HIVE Phase Status -->
+        <div class="card">
+            <h2>🔴🟢🔵 HIVE Phase Status</h2>
+            <div class="hive-grid">
+                <div class="hive-phase complete">
+                    <div style="font-size: 1.5rem;">H</div>
+                    <div style="font-size: 0.8rem;">HUNT</div>
+                    <div style="font-size: 0.7rem;">✅ Done</div>
+                </div>
+                <div class="hive-phase active">
+                    <div style="font-size: 1.5rem;">I</div>
+                    <div style="font-size: 0.8rem;">INTER</div>
+                    <div style="font-size: 0.7rem;">🔄 Active</div>
+                </div>
+                <div class="hive-phase">
+                    <div style="font-size: 1.5rem;">V</div>
+                    <div style="font-size: 0.8rem;">VALID</div>
+                    <div style="font-size: 0.7rem;">⏳ Pending</div>
+                </div>
+                <div class="hive-phase">
+                    <div style="font-size: 1.5rem;">E</div>
+                    <div style="font-size: 0.8rem;">EVOLVE</div>
+                    <div style="font-size: 0.7rem;">⏳ Pending</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Git Metrics -->
+        <div class="card">
+            <h2>📝 Git Metrics</h2>
+            <div class="metric">
+                <span class="metric-label">Branch</span>
+                <span class="metric-value"><code id="git-branch">gen87-x3/develop</code></span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">Total Commits</span>
+                <span class="metric-value" id="git-commits">9</span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">Since Main</span>
+                <span class="metric-value" id="git-since-main">5</span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">Latest Commit</span>
+                <span class="metric-value"><code id="git-latest">01e4000</code></span>
+            </div>
+            <div class="verification-cmd">
+                $ git log --oneline -5
+            </div>
+        </div>
+        
+        <!-- Test Results -->
+        <div class="card">
+            <h2>🧪 Test Results</h2>
+            <div class="metric">
+                <span class="metric-label">Tests Passing</span>
+                <span class="metric-value" style="color: var(--success);"><span id="tests-passed">10</span>/<span id="tests-total">10</span></span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">Success Rate</span>
+                <span class="metric-value" id="test-rate">100%</span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">Duration</span>
+                <span class="metric-value" id="test-duration">383ms</span>
+            </div>
+            <div class="verification-cmd">
+                $ npm test
+            </div>
+        </div>
+        
+        <!-- Spec Documents -->
+        <div class="card">
+            <h2>📋 Spec Documents</h2>
+            <div id="spec-list">
+                <div class="checklist-item">
+                    <span class="check-icon check-yes">✓</span>
+                    <span>W3C_GESTURE_CONTROL_PLANE_SPEC.md</span>
+                </div>
+                <div class="checklist-item">
+                    <span class="check-icon check-yes">✓</span>
+                    <span>PIPELINE_TRADE_STUDY.md</span>
+                </div>
+                <div class="checklist-item">
+                    <span class="check-icon check-yes">✓</span>
+                    <span>HEXAGONAL_CDD_EARS_SPEC.md</span>
+                </div>
+                <div class="checklist-item">
+                    <span class="check-icon check-yes">✓</span>
+                    <span>TOOLING_RECOMMENDATIONS.md</span>
+                </div>
+            </div>
+            <div class="verification-cmd">
+                $ ls sandbox/specs/
+            </div>
+        </div>
+        
+        <!-- Blackboard Signals -->
+        <div class="card">
+            <h2>📡 Blackboard Signals</h2>
+            <div class="metric">
+                <span class="metric-label">Total Signals</span>
+                <span class="metric-value" id="bb-total">31</span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">H (Hunt)</span>
+                <span class="metric-value" id="bb-hunt">25</span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">I (Interlock)</span>
+                <span class="metric-value" id="bb-inter">3</span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">V (Validate)</span>
+                <span class="metric-value" id="bb-valid">1</span>
+            </div>
+            <div class="verification-cmd">
+                $ wc -l sandbox/obsidianblackboard.jsonl
+            </div>
+        </div>
+    </div>
+    
+    <!-- Implementation Status -->
+    <div class="card" style="margin-bottom: 2rem;">
+        <h2>🔧 Implementation Checklist (NOT YET CREATED)</h2>
+        <p style="color: var(--muted); margin-bottom: 1rem;">
+            These components need to be implemented during INTERLOCK phase:
+        </p>
+        <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));">
+            <div class="checklist-item">
+                <span class="check-icon check-no">✗</span>
+                <span>contracts/gesture-frame.ts</span>
+            </div>
+            <div class="checklist-item">
+                <span class="check-icon check-no">✗</span>
+                <span>contracts/pointer-event.ts</span>
+            </div>
+            <div class="checklist-item">
+                <span class="check-icon check-no">✗</span>
+                <span>smoothing/one-euro.ts</span>
+            </div>
+            <div class="checklist-item">
+                <span class="check-icon check-no">✗</span>
+                <span>fsm/gesture-machine.ts</span>
+            </div>
+            <div class="checklist-item">
+                <span class="check-icon check-no">✗</span>
+                <span>adapters/dom-adapter.ts</span>
+            </div>
+            <div class="checklist-item">
+                <span class="check-icon check-no">✗</span>
+                <span>adapters/v86-adapter.ts</span>
+            </div>
+        </div>
+        <div class="verification-cmd">
+            $ ls -la sandbox/src/
+        </div>
+    </div>
+    
+    <footer>
+        <p><strong>"Trust, but verify."</strong></p>
+        <p style="margin-top: 0.5rem;">All progress must be machine-verifiable. Run <code>python dashboard/generate_dashboard.py</code> for fresh metrics.</p>
+        <p style="margin-top: 1rem; font-size: 0.8rem;">Gen87.X3 | Anti-Hallucination Dashboard | 2025-12-30</p>
+    </footer>
+    
+    <script>
+// @ts-nocheck
+
+        // Update timestamp
+        document.getElementById('timestamp').textContent = new Date().toISOString();
+        
+        function refreshDashboard() {
+            document.getElementById('timestamp').textContent = new Date().toISOString();
+            alert('In a real setup, this would call the Python script via API.\n\nFor now, run:\npython dashboard/generate_dashboard.py --json');
+        }
+        
+        // This would be populated by the Python script in a real setup
+        // For now it shows the static snapshot
+    
+</script>
+</body>
+</html>

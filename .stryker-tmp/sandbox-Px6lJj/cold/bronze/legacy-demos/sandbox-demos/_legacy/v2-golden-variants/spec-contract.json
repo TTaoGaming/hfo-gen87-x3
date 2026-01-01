@@ -1,0 +1,164 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "demo-spec-contract",
+  "title": "W3C Gesture Control Plane Demo Spec Contract",
+  "description": "Machine-readable specification for validating demo files. Used by automated gates to BLOCK invalid outputs.",
+  "version": "1.0.0",
+  "generatedAt": "2025-12-31T05:30:00Z",
+  "generation": 87,
+  
+  "baseFile": "index.html",
+  "validDerivedFiles": [
+    "index_*.html"
+  ],
+  
+  "requiredImports": {
+    "goldenLayout": {
+      "required": true,
+      "version": "2.6.0",
+      "patterns": [
+        "golden-layout@2.6.0",
+        "GoldenLayout"
+      ],
+      "errorMessage": "Golden Layout v2.6.0 is REQUIRED. Do not use v1.5.9 (requires jQuery)."
+    },
+    "mediaPipe": {
+      "required": true,
+      "version": "0.10.8",
+      "patterns": [
+        "@mediapipe/tasks-vision",
+        "GestureRecognizer",
+        "FilesetResolver"
+      ],
+      "errorMessage": "MediaPipe Tasks Vision is REQUIRED for gesture recognition."
+    }
+  },
+  
+  "requiredFeatures": {
+    "oneEuroFilter": {
+      "required": true,
+      "patterns": [
+        "oneEuroFilter",
+        "computeAlpha",
+        "minCutoff",
+        "beta"
+      ],
+      "errorMessage": "1€ Filter is REQUIRED for position smoothing."
+    },
+    "fsmStateMachine": {
+      "required": true,
+      "states": ["DISARMED", "ARMING", "ARMED", "ACTIVE"],
+      "patterns": [
+        "fsmState",
+        "DISARMED",
+        "ARMING", 
+        "ARMED",
+        "ACTIVE"
+      ],
+      "errorMessage": "FSM with 4 states (DISARMED, ARMING, ARMED, ACTIVE) is REQUIRED."
+    },
+    "w3cPointerEvents": {
+      "required": true,
+      "patterns": [
+        "PointerEvent",
+        "pointerdown",
+        "pointermove",
+        "pointerup",
+        "dispatchEvent"
+      ],
+      "errorMessage": "W3C Pointer Events are REQUIRED for output dispatch."
+    },
+    "interactionZone": {
+      "required": true,
+      "patterns": [
+        "interaction-zone",
+        "target-overlay",
+        "virtual-cursor",
+        "click-target"
+      ],
+      "errorMessage": "Interaction zone with layered targets is REQUIRED."
+    }
+  },
+  
+  "requiredCSS": {
+    "goldenLayoutTheme": {
+      "required": true,
+      "patterns": [
+        "goldenlayout-base.css",
+        "goldenlayout-dark-theme.css"
+      ],
+      "errorMessage": "Golden Layout CSS theme files are REQUIRED."
+    }
+  },
+  
+  "forbiddenPatterns": {
+    "jqueryDependency": {
+      "patterns": ["jquery", "jQuery", "\\$\\("],
+      "errorMessage": "jQuery dependency is FORBIDDEN. Use Golden Layout v2.6.0 which has no jQuery dependency."
+    },
+    "wrongGoldenLayoutVersion": {
+      "patterns": ["golden-layout@1", "goldenlayout@1"],
+      "errorMessage": "Golden Layout v1.x is FORBIDDEN. Use v2.6.0."
+    }
+  },
+  
+  "validationRules": [
+    {
+      "id": "GL-001",
+      "name": "Golden Layout Present",
+      "severity": "CRITICAL",
+      "check": "requiredImports.goldenLayout"
+    },
+    {
+      "id": "GL-002", 
+      "name": "Golden Layout Version",
+      "severity": "CRITICAL",
+      "check": "Verify version is 2.6.0, not 1.x"
+    },
+    {
+      "id": "MP-001",
+      "name": "MediaPipe Present",
+      "severity": "CRITICAL", 
+      "check": "requiredImports.mediaPipe"
+    },
+    {
+      "id": "1E-001",
+      "name": "1€ Filter Present",
+      "severity": "HIGH",
+      "check": "requiredFeatures.oneEuroFilter"
+    },
+    {
+      "id": "FSM-001",
+      "name": "FSM States Present",
+      "severity": "CRITICAL",
+      "check": "All 4 states defined and used"
+    },
+    {
+      "id": "W3C-001",
+      "name": "W3C Pointer Events",
+      "severity": "CRITICAL",
+      "check": "requiredFeatures.w3cPointerEvents"
+    },
+    {
+      "id": "NO-JQ",
+      "name": "No jQuery",
+      "severity": "CRITICAL",
+      "check": "forbiddenPatterns.jqueryDependency"
+    }
+  ],
+  
+  "enforcement": {
+    "preCommitHook": true,
+    "blockOnFailure": true,
+    "requireExplicitOverride": true,
+    "overrideFlag": "--allow-regression",
+    "logToBlackboard": true
+  },
+  
+  "notes": [
+    "This contract is MACHINE-READABLE and used by automated validators",
+    "Violations BLOCK commits unless explicitly overridden",
+    "Any file derived from index.html MUST pass all validations",
+    "MVP/POC exceptions are NOT allowed in V (Validate) phase"
+  ]
+}

@@ -1,0 +1,111 @@
+# Context Policy Configuration - HFO Gen87.X3
+# 
+# This file controls what gets included in the cold start payload.
+# Based on Anthropic's "Effective context engineering for AI agents" (Sep 2025)
+
+# Budget allocation (tokens)
+budget:
+  total: 15000              # ~7.5% of 200k context for cold start
+  conversation_reserve: 150000  # Reserve for actual work
+  
+  tiers:
+    critical: 3000          # Always include (AGENTS.md summary, HIVE state)
+    active: 5000            # Recently changed files  
+    retrievable: 5000       # Hints for RAG retrieval
+    archived: 2000          # Counts only, no content
+
+# Critical files - ALWAYS include (summary if large)
+critical:
+  - pattern: "MANIFEST.json"
+    max_tokens: 500
+    strategy: "extract_essential"  # Only structure + hive state
+    
+  - pattern: "obsidianblackboard.jsonl"
+    max_tokens: 300
+    strategy: "last_n_signals"
+    n: 3
+    
+  - pattern: "ttao-notes-*.md"
+    max_tokens: 800
+    strategy: "recent_only"        # Only most recent file
+    
+  - pattern: "AGENTS.md"
+    max_tokens: 0
+    strategy: "skip"               # Use Memory MCP instead
+    
+# Active files - include if recently changed (git diff HEAD~10)
+active:
+  max_files: 5
+  max_tokens_per_file: 500
+  summarize_over: 300
+  prefer_patterns:
+    - "hot/silver/*.md"           # Earned documentation
+    - "hot/src/**/*.ts"           # Active code
+    - "hot/specs/*.md"            # Active specs
+
+# Exclude patterns - NEVER include
+exclude:
+  - "node_modules/**"
+  - ".git/**"
+  - "**/*.lock"
+  - ".build/**"
+  - "cold/bronze/**"              # Bronze tier is unprocessed
+  - ".stryker-tmp/**"             # Mutation testing artifacts
+  - "**/__pycache__/**"           # Python cache
+  - "**/*.pyc"                    # Compiled Python
+  - "hot/blackboard.jsonl"        # Use root blackboard only
+
+# Staleness rules
+staleness:
+  threshold_hours: 24
+  action: "demote"                 # Move to next lower tier
+  
+# Auto-summarization rules
+summarization:
+  threshold_tokens: 500
+  target_ratio: 0.2               # 5x compression
+  preserve:
+    - "## "                        # Headers
+    - "```"                        # Code blocks
+    - "- [ ]"                      # TODOs
+    - "- [x]"                      # Completed items
+    - "⚠️"                         # Warnings
+    - "✅"                         # Success markers
+    - "❌"                         # Failure markers
+
+# Memory MCP integration
+memory_mcp:
+  # These get stored externally, not in context
+  offload:
+    - "AGENTS.md full content"
+    - "Historical HIVE phases"
+    - "Resolved violations"
+    - "Archived specs"
+    
+  # These get queried on-demand
+  retrieval_hints:
+    - entity: "TTao"
+      trigger_words: ["ttao", "user", "preferences"]
+    - entity: "HFO_System"
+      trigger_words: ["architecture", "hive", "ports"]
+    - entity: "Gen87_X3_Session_State"
+      trigger_words: ["current", "session", "status"]
+
+# HIVE state extraction
+hive_state:
+  include_in_critical: true
+  extract:
+    - "currentPhase"
+    - "last_3_signals"
+    - "active_ports"
+  format: |
+    **HIVE**: {phase} | Ports: {active_ports}
+    **Last**: {last_signal_msg}
+
+# Refresh policy (re-inject during long conversations)
+refresh:
+  every_n_turns: 20               # Re-inject critical after 20 exchanges
+  triggers:
+    - "topic_drift_detected"      # When conversation drifts from task
+    - "user_asks_about_state"     # "What were we doing?"
+    - "new_hive_phase"            # On phase transition

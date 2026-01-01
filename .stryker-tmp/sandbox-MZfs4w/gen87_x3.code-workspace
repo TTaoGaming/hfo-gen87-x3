@@ -1,0 +1,160 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"name": "📚 Memory Bank (READ-ONLY)",
+			"path": "../portable_hfo_memory_pre_hfo_to_gen84_2025-12-27T21-46-52"
+		},
+		{
+			"name": "🏗️ Gen85 Codebase (Reference)",
+			"path": "../hfo_kiro_gen85"
+		},
+		{
+			"name": "📋 Context Payloads",
+			"path": "../context_payload_gen85"
+		}
+	],
+	"settings": {
+		// ═══════════════════════════════════════════════════════════════
+		// GITHUB COPILOT - AUTO APPROVE EVERYTHING
+		// ═══════════════════════════════════════════════════════════════
+		"chat.tools.autoApprove": true,
+		"github.copilot.chat.agent.autoApprove": true,
+		"github.copilot.chat.tools.autoApprove": true,
+		"chat.agent.autoApprove": true,
+		"chat.mcp.autoApprove": true,
+
+		// ═══════════════════════════════════════════════════════════════
+		// TERMINAL - AUTO APPROVE COMMANDS
+		// ═══════════════════════════════════════════════════════════════
+		"github.copilot.chat.runCommand.enabled": true,
+		"github.copilot.chat.terminalChatLocation": "terminal",
+
+		// ═══════════════════════════════════════════════════════════════
+		// MCP SERVERS - WORKSPACE-SPECIFIC ONLY
+		// ═══════════════════════════════════════════════════════════════
+		// Global servers inherited from %APPDATA%\Code\User\mcp.json:
+		//   - github (HTTP via api.githubcopilot.com)
+		//   - playwright (browser automation)
+		//   - context7 (library docs)
+		//   - sequential-thinking (chain-of-thought)
+		//   - memory (knowledge graph)
+		//   - tavily (web search)
+		//
+		// Workspace-specific additions:
+		"mcp": {
+			"servers": {
+				"filesystem": {
+					"command": "npx",
+					"args": ["-y", "@modelcontextprotocol/server-filesystem", "C:/Dev/active"]
+				},
+				"gitkraken": {
+					"command": "npx",
+					"args": ["-y", "@anthropic/mcp-gitkraken-server"]
+				}
+			}
+		},
+
+		// ═══════════════════════════════════════════════════════════════
+		// EDITOR SETTINGS
+		// ═══════════════════════════════════════════════════════════════
+		"editor.formatOnSave": true,
+		"editor.defaultFormatter": "biomejs.biome",
+		"editor.codeActionsOnSave": {
+			"source.organizeImports": "explicit"
+		},
+
+		// ═══════════════════════════════════════════════════════════════
+		// TYPESCRIPT
+		// ═══════════════════════════════════════════════════════════════
+		"typescript.preferences.importModuleSpecifier": "relative",
+		"typescript.suggest.autoImports": true,
+		"typescript.updateImportsOnFileMove.enabled": "always",
+
+		// ═══════════════════════════════════════════════════════════════
+		// FILE ASSOCIATIONS
+		// ═══════════════════════════════════════════════════════════════
+		"files.associations": {
+			"*.jsonl": "json",
+			"llms.txt": "markdown"
+		},
+
+		// ═══════════════════════════════════════════════════════════════
+		// SEARCH EXCLUSIONS
+		// ═══════════════════════════════════════════════════════════════
+		"search.exclude": {
+			"**/node_modules": true,
+			"**/dist": true,
+			"**/.history": true,
+			"**/playwright-report": true,
+			"**/test-results": true
+		},
+
+		// ═══════════════════════════════════════════════════════════════
+		// TERMINAL
+		// ═══════════════════════════════════════════════════════════════
+		"terminal.integrated.defaultProfile.windows": "PowerShell",
+		"terminal.integrated.cwd": "${workspaceFolder}",
+		"liveServer.settings.multiRootWorkspaceName": "hfo_gen87_x3"
+	},
+	"extensions": {
+		"recommendations": [
+			"github.copilot",
+			"github.copilot-chat",
+			"biomejs.biome",
+			"ms-playwright.playwright",
+			"dbaeumer.vscode-eslint",
+			"esbenp.prettier-vscode",
+			"bradlc.vscode-tailwindcss",
+			"ms-python.python",
+			"ms-vscode.vscode-typescript-next"
+		]
+	},
+	"tasks": {
+		"version": "2.0.0",
+		"tasks": [
+			{
+				"label": "🔍 Query Memory",
+				"type": "shell",
+				"command": "python",
+				"args": [
+					"-c",
+					"import duckdb; con = duckdb.connect('../portable_hfo_memory_pre_hfo_to_gen84_2025-12-27T21-46-52/hfo_memory.duckdb', read_only=True); con.execute('LOAD fts'); print('Memory ready:', con.execute('SELECT COUNT(*) FROM artifacts').fetchone()[0], 'artifacts')"
+				],
+				"problemMatcher": []
+			},
+			{
+				"label": "🧪 Run Gen85 Tests",
+				"type": "shell",
+				"command": "npm",
+				"args": ["test"],
+				"options": {
+					"cwd": "${workspaceFolder}/../hfo_kiro_gen85"
+				},
+				"problemMatcher": []
+			},
+			{
+				"label": "🏗️ Build",
+				"type": "shell",
+				"command": "npm",
+				"args": ["run", "build"],
+				"group": "build",
+				"problemMatcher": ["$tsc"]
+			}
+		]
+	},
+	"launch": {
+		"version": "0.2.0",
+		"configurations": [
+			{
+				"name": "Run Current File",
+				"type": "node",
+				"request": "launch",
+				"program": "${file}",
+				"runtimeArgs": ["--import", "tsx"]
+			}
+		]
+	}
+}

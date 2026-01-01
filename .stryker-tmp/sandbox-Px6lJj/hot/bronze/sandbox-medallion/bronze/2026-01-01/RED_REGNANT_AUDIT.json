@@ -1,0 +1,3224 @@
+{
+  "timestamp": "2026-01-01T03:08:09.451Z",
+  "generation": "87.X3",
+  "port": 4,
+  "commander": "Red Regnant",
+  "totalTestFiles": 32,
+  "totalTests": 853,
+  "trueGreen": 679,
+  "fakeGreen": 160,
+  "honestTodo": 7,
+  "honestSkip": 7,
+  "honestFail": 178,
+  "fakeGreenRatio": 0.1907032181168057,
+  "truthRatio": 0.7960140679953107,
+  "filesWithPropertyTests": 13,
+  "totalPropertyTests": 69,
+  "filesNeedingPropertyTests": [
+    "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\physics-check.test.ts",
+    "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\index.test.ts",
+    "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\test-fixtures\\golden-input.test.ts",
+    "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\reputation\\trust-score.test.ts",
+    "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\pipeline\\w3c-cursor-pipeline.test.ts",
+    "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\pipeline\\simple-cursor-pipeline.test.ts",
+    "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\phase1-w3c-cursor\\multi-hand.test.ts",
+    "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\enforcement\\hive-validator.test.ts",
+    "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\observability-standards.test.ts",
+    "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\golden-master.test.ts",
+    "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\arming\\palm-orientation.test.ts",
+    "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\xstate-fsm.adapter.test.ts",
+    "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+    "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\pipeline.test.ts",
+    "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\one-euro-exemplar.adapter.test.ts",
+    "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\fsm.test.ts",
+    "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+    "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\daedalos-target.test.ts"
+  ],
+  "violations": [
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\smoothers\\evolutionary-tuner.test.ts",
+      "line": 101,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('Not implemented - TDD RED phase')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\smoothers\\evolutionary-tuner.test.ts",
+      "line": 105,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('Not implemented - TDD RED phase')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\smoothers\\evolutionary-tuner.test.ts",
+      "line": 109,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('Not implemented - TDD RED phase')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\smoothers\\evolutionary-tuner.test.ts",
+      "line": 113,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('Not implemented - TDD RED phase')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\smoothers\\evolutionary-tuner.test.ts",
+      "line": 117,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('Not implemented - TDD RED phase')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\smoothers\\evolutionary-tuner.test.ts",
+      "line": 121,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('Not implemented - TDD RED phase')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\smoothers\\evolutionary-tuner.test.ts",
+      "line": 125,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('Not implemented - TDD RED phase')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\phase1-w3c-cursor\\multi-hand.test.ts",
+      "line": 148,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('MultiHandManager not implemented')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\phase1-w3c-cursor\\multi-hand.test.ts",
+      "line": 158,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('HandIdTracker not implemented')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\phase1-w3c-cursor\\multi-hand.test.ts",
+      "line": 168,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('PerformanceMonitor not implemented')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\phase1-w3c-cursor\\multi-hand.test.ts",
+      "line": 178,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('DegradationStrategy not implemented')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\phase1-w3c-cursor\\cursor-pipeline.test.ts",
+      "line": 218,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('IndexFingerNormalizer not implemented')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\phase1-w3c-cursor\\cursor-pipeline.test.ts",
+      "line": 241,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('SpringDamperFilter not implemented')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\phase1-w3c-cursor\\cursor-pipeline.test.ts",
+      "line": 251,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('SmootherChain not implemented')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\phase1-w3c-cursor\\cursor-pipeline.test.ts",
+      "line": 261,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('TrackingStateManager not implemented')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\phase1-w3c-cursor\\cursor-pipeline.test.ts",
+      "line": 271,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('W3CPointerEventFactory not implemented')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\phase1-w3c-cursor\\cursor-pipeline.test.ts",
+      "line": 281,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('DOMEventDispatcher not implemented')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\phase1-w3c-cursor\\cursor-pipeline.test.ts",
+      "line": 291,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('CursorPipeline not implemented')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\gesture\\commit-gesture.test.ts",
+      "line": 132,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('ThumbMiddlePinchDetector not implemented')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\gesture\\commit-gesture.test.ts",
+      "line": 142,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('PointerStabilityTracker not implemented')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\gesture\\commit-gesture.test.ts",
+      "line": 152,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('StickyArmedFSM not implemented')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\gesture\\commit-gesture.test.ts",
+      "line": 162,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('CommitHysteresis not implemented')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\gesture\\commit-gesture.test.ts",
+      "line": 172,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('ResetConditionDetector not implemented')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\gesture\\commit-gesture.test.ts",
+      "line": 182,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('CommitGestureAdapter not implemented')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\w3c-pointer-compliance.test.ts",
+      "line": 89,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('Not implemented - TDD RED phase')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\w3c-pointer-compliance.test.ts",
+      "line": 94,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('Not implemented - TDD RED phase')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\w3c-pointer-compliance.test.ts",
+      "line": 99,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('Not implemented - TDD RED phase')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\w3c-pointer-compliance.test.ts",
+      "line": 104,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('Not implemented - TDD RED phase')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\observability-standards.test.ts",
+      "line": 89,
+      "testName": "should reject non-1.0 specversion",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"UUID generation not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\observability-standards.test.ts",
+      "line": 160,
+      "testName": "should generate event type from pipeline stage",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"Event type generation not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\observability-standards.test.ts",
+      "line": 220,
+      "testName": "should create CloudEvent from pipeline output",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"CloudEvent factory not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\observability-standards.test.ts",
+      "line": 231,
+      "testName": "should auto-generate id and time",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"CloudEvent defaults not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\observability-standards.test.ts",
+      "line": 262,
+      "testName": "should reject invalid traceparent",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"Traceparent generation not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\observability-standards.test.ts",
+      "line": 276,
+      "testName": "should propagate trace context through pipeline",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"Context propagation not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\observability-standards.test.ts",
+      "line": 294,
+      "testName": "should create span for each pipeline stage",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"Span creation not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\observability-standards.test.ts",
+      "line": 316,
+      "testName": "should nest spans correctly",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"Span nesting not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\observability-standards.test.ts",
+      "line": 331,
+      "testName": "should record stage latency as span attribute",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"Attribute recording not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\observability-standards.test.ts",
+      "line": 345,
+      "testName": "should record error status on failure",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"Error status not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\observability-standards.test.ts",
+      "line": 379,
+      "testName": "should record gesture-specific attributes",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"Gesture attributes not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\observability-standards.test.ts",
+      "line": 394,
+      "testName": "should define gesture/pointer channel",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"Channel schema not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\observability-standards.test.ts",
+      "line": 404,
+      "testName": "should define gesture/pointer channel",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"Channel schema not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\observability-standards.test.ts",
+      "line": 414,
+      "testName": "should define gesture/state channel",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"Channel schema not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\observability-standards.test.ts",
+      "line": 430,
+      "testName": "should validate PointerEventInit message",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"AsyncAPI validation not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\observability-standards.test.ts",
+      "line": 443,
+      "testName": "should validate FSMStateChange message",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"AsyncAPI validation not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\observability-standards.test.ts",
+      "line": 459,
+      "testName": "should validate PipelineLatency message",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"AsyncAPI validation not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\observability-standards.test.ts",
+      "line": 478,
+      "testName": "should generate AsyncAPI document from pipeline",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"AsyncAPI document generation not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\observability-standards.test.ts",
+      "line": 494,
+      "testName": "should include version 3.0.0",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"Protocol binding not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\observability-standards.test.ts",
+      "line": 513,
+      "testName": "should include traceparent in CloudEvent extension",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"Traced CloudEvent not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\observability-standards.test.ts",
+      "line": 528,
+      "testName": "should correlate events across pipeline stages",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"Event correlation not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\observability-standards.test.ts",
+      "line": 543,
+      "testName": "should store traces in IndexedDB",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"Local trace storage not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\observability-standards.test.ts",
+      "line": 557,
+      "testName": "should export traces for debugging",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"Trace export not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\observability-standards.test.ts",
+      "line": 570,
+      "testName": "should respect user privacy settings",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"Privacy configuration not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\golden-master.test.ts",
+      "line": 90,
+      "testName": "should load FreiHAND sample by ID",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"FreiHAND loader not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\golden-master.test.ts",
+      "line": 123,
+      "testName": "should load all 21 MediaPipe-compatible keypoints",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"FreiHAND to MediaPipe mapping not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\golden-master.test.ts",
+      "line": 142,
+      "testName": "should load HaGRID sample by ID",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"HaGRID loader not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\golden-master.test.ts",
+      "line": 167,
+      "testName": "should map HaGRID gestures to FSM states",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"HaGRID to FSM mapping not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\golden-master.test.ts",
+      "line": 183,
+      "testName": "should compare MediaPipe output to FreiHAND ground truth",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"Ground truth comparison not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\golden-master.test.ts",
+      "line": 197,
+      "testName": "should calculate per-keypoint error",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"Keypoint error calculation not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\golden-master.test.ts",
+      "line": 214,
+      "testName": "should calculate MSE across all keypoints",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"MSE calculation not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\golden-master.test.ts",
+      "line": 230,
+      "testName": "should identify worst-performing keypoint",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"Worst keypoint identification not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\golden-master.test.ts",
+      "line": 245,
+      "testName": "should emit CloudEvent with golden master result",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"CloudEvent emission not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\golden-master.test.ts",
+      "line": 272,
+      "testName": "should include all required CloudEvent attributes",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"CloudEvent validation not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\golden-master.test.ts",
+      "line": 287,
+      "testName": "should create test case from user annotation",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"User annotation parser not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\golden-master.test.ts",
+      "line": 319,
+      "testName": "should replay user test case through pipeline",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"Test case replay not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\golden-master.test.ts",
+      "line": 335,
+      "testName": "should allow configurable tolerance per keypoint",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"Tolerance config not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\golden-master.test.ts",
+      "line": 366,
+      "testName": "should run golden master tests in batch",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"Batch testing not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\golden-master.test.ts",
+      "line": 379,
+      "testName": "should generate test report",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"Report generation not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\golden-master.test.ts",
+      "line": 399,
+      "testName": "should include specversion 1.0",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"UUID generation not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\golden-master.test.ts",
+      "line": 419,
+      "testName": "should format time as ISO8601",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"OpenTelemetry integration not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\golden-master.test.ts",
+      "line": 433,
+      "testName": "should include test metrics as span attributes",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"Span attributes not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+      "line": 81,
+      "testName": "should define UIShellPort interface with all required methods",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('UIShellFactory not implemented')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+      "line": 89,
+      "testName": "should define UIShellPort interface with all required methods",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('UIShell not implemented')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+      "line": 101,
+      "testName": "should create window with mosaic tile",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('MosaicShell not implemented')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+      "line": 118,
+      "testName": "should return mosaic as shell type",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('MosaicShell split not implemented')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+      "line": 129,
+      "testName": "should handle mosaic drag to rearrange",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('MosaicShell drag not implemented')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+      "line": 142,
+      "testName": "should route pointer events to correct mosaic tile",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('MosaicShell routing not implemented')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+      "line": 153,
+      "testName": "should support per-tile gesture targets",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('Per-tile targets not implemented')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+      "line": 168,
+      "testName": "should create window with golden-layout component",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('GoldenLayoutShell not implemented')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+      "line": 182,
+      "testName": "should return golden-layout as shell type",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('GoldenLayout stacks not implemented')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+      "line": 193,
+      "testName": "should support row/column layouts",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('GoldenLayout layouts not implemented')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+      "line": 204,
+      "testName": "should support floating windows (popouts)",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('GoldenLayout popouts not implemented')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+      "line": 215,
+      "testName": "should route pointer events based on golden-layout hierarchy",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('GoldenLayout routing not implemented')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+      "line": 226,
+      "testName": "should handle tab header vs content area differently",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('Tab header detection not implemented')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+      "line": 241,
+      "testName": "should create floating window with title bar",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('PuterShell not implemented')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+      "line": 255,
+      "testName": "should return puter as shell type",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('PuterShell z-index not implemented')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+      "line": 266,
+      "testName": "should support window minimize to taskbar",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('PuterShell minimize not implemented')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+      "line": 277,
+      "testName": "should support window maximize/restore",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('PuterShell maximize not implemented')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+      "line": 291,
+      "testName": "should support snap to screen edges",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('PuterShell snap not implemented')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+      "line": 307,
+      "testName": "should support desktop icon layout",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('PuterShell desktop icons not implemented')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+      "line": 316,
+      "testName": "should handle double-click to launch app",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('PuterShell icon launch not implemented')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+      "line": 327,
+      "testName": "should route pointer events to topmost window at coordinates",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('PuterShell routing not implemented')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+      "line": 338,
+      "testName": "should detect title bar for window dragging",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('Title bar detection not implemented')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+      "line": 352,
+      "testName": "should detect resize handles",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('Resize handle detection not implemented')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+      "line": 369,
+      "testName": "should support gesture-based window drag",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('Gesture window drag not implemented')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+      "line": 382,
+      "testName": "should show taskbar with running applications",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('PuterShell taskbar not implemented')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+      "line": 391,
+      "testName": "should handle gesture click on taskbar item",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('Taskbar click not implemented')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+      "line": 403,
+      "testName": "should route same gesture event to any shell type",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('Cross-shell routing not implemented')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+      "line": 414,
+      "testName": "should serialize shell state for persistence",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('Shell serialization not implemented')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+      "line": 425,
+      "testName": "should restore shell state from serialized data",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('Shell restoration not implemented')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\puter-target.test.ts",
+      "line": 148,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('PuterShellAdapter not implemented')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\overlay-port.test.ts",
+      "line": 91,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('Not implemented - TDD RED phase')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\overlay-port.test.ts",
+      "line": 100,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('Not implemented - TDD RED phase')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\overlay-port.test.ts",
+      "line": 104,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('Not implemented - TDD RED phase')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\overlay-port.test.ts",
+      "line": 108,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('Not implemented - TDD RED phase')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\overlay-port.test.ts",
+      "line": 112,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('Not implemented - TDD RED phase')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\overlay-port.test.ts",
+      "line": 116,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('Not implemented - TDD RED phase')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\overlay-port.test.ts",
+      "line": 120,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('Not implemented - TDD RED phase')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\overlay-port.test.ts",
+      "line": 130,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('Not implemented - TDD RED phase')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\overlay-port.test.ts",
+      "line": 139,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('Not implemented - TDD RED phase')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\overlay-port.test.ts",
+      "line": 143,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('Not implemented - TDD RED phase')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\overlay-port.test.ts",
+      "line": 147,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('Not implemented - TDD RED phase')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\overlay-port.test.ts",
+      "line": 151,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('Not implemented - TDD RED phase')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\overlay-port.test.ts",
+      "line": 155,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('Not implemented - TDD RED phase')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\overlay-port.test.ts",
+      "line": 159,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('Not implemented - TDD RED phase')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\overlay-port.test.ts",
+      "line": 169,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('Not implemented - TDD RED phase')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\overlay-port.test.ts",
+      "line": 178,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('Not implemented - TDD RED phase')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\overlay-port.test.ts",
+      "line": 182,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('Not implemented - TDD RED phase')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\overlay-port.test.ts",
+      "line": 186,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('Not implemented - TDD RED phase')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\overlay-port.test.ts",
+      "line": 190,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('Not implemented - TDD RED phase')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\overlay-port.test.ts",
+      "line": 194,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('Not implemented - TDD RED phase')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\overlay-port.test.ts",
+      "line": 198,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('Not implemented - TDD RED phase')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\fsm-state-transitions.test.ts",
+      "line": 117,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('Not implemented - TDD RED phase')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\fsm-state-transitions.test.ts",
+      "line": 121,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('Not implemented - TDD RED phase')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\fsm-state-transitions.test.ts",
+      "line": 130,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('Not implemented - TDD RED phase')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\fsm-state-transitions.test.ts",
+      "line": 134,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('Not implemented - TDD RED phase')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\fsm-state-transitions.test.ts",
+      "line": 138,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('Not implemented - TDD RED phase')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\fsm-state-transitions.test.ts",
+      "line": 142,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('Not implemented - TDD RED phase')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\fsm-state-transitions.test.ts",
+      "line": 146,
+      "testName": "unknown",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error('Not implemented - TDD RED phase')",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+      "line": 52,
+      "testName": "should define EmulatorAdapterPort interface",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"EmulatorAdapterFactory not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+      "line": 64,
+      "testName": "should create adapter via factory pattern",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"EmulatorAdapter not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+      "line": 78,
+      "testName": "should connect to v86 emulator instance",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"v86Adapter not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+      "line": 89,
+      "testName": "should access v86 bus for input events",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"v86 bus access not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+      "line": 100,
+      "testName": "should send mouse-delta via v86 bus",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"v86 mouse-delta not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+      "line": 111,
+      "testName": "should send mouse-click via v86 bus",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"v86 mouse-click not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+      "line": 122,
+      "testName": "should send mouse-wheel via v86 bus",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"v86 mouse-wheel not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+      "line": 144,
+      "testName": "should send keyboard-code via v86 bus",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"v86 keyboard not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+      "line": 155,
+      "testName": "should map key names to PS/2 scancodes",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"Scancode mapping not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+      "line": 168,
+      "testName": "should query v86 screen resolution",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"v86 resolution query not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+      "line": 182,
+      "testName": "should map normalized coords to v86 screen",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"v86 coordinate mapping not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+      "line": 197,
+      "testName": "should connect to js-dos emulator instance",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"JsDosAdapter not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+      "line": 210,
+      "testName": "should access js-dos CI (command interface)",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"js-dos CI access not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+      "line": 221,
+      "testName": "should set mouse sensitivity via js-dos API",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"js-dos sensitivity not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+      "line": 236,
+      "testName": "should send mouse events via js-dos CI",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"js-dos mouse events not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+      "line": 259,
+      "testName": "should send key events via js-dos CI",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"js-dos keyboard not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+      "line": 274,
+      "testName": "should connect to EmulatorJS instance",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"EmulatorJSAdapter not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+      "line": 285,
+      "testName": "should detect emulator core type (nes, snes, etc)",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"EmulatorJS core detection not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+      "line": 298,
+      "testName": "should map gestures to EJS_defaultControls",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"EmulatorJS control mapping not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+      "line": 311,
+      "testName": "should support custom control schemes per core",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"Per-core control schemes not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+      "line": 325,
+      "testName": "should map hand position to analog stick",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"Analog mapping not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+      "line": 336,
+      "testName": "should map pinch gesture to button press",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"Gesture to button mapping not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+      "line": 349,
+      "testName": "should support light gun mode for supported games",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"Light gun mode not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+      "line": 363,
+      "testName": "should map hand position to light gun coordinates",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"Light gun coordinate mapping not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+      "line": 374,
+      "testName": "should trigger light gun shot on pinch",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"Light gun trigger not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+      "line": 391,
+      "testName": "should route same gesture to any emulator type",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"Cross-emulator routing not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+      "line": 409,
+      "testName": "should normalize sensitivity across emulator types",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"Sensitivity normalization not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+      "line": 420,
+      "testName": "should handle emulator pause/resume uniformly",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"Pause/resume not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+      "line": 438,
+      "testName": "should map normalized hand position (0-1) to screen coordinates",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"Position mapping not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+      "line": 451,
+      "testName": "should map Closed_Fist to left mouse button",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"Gesture mapping not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+      "line": 461,
+      "testName": "should map Victory to right mouse button",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"Gesture mapping not implemented\")",
+      "severity": "HIGH"
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+      "line": 471,
+      "testName": "should map Victory to right mouse button",
+      "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+      "evidence": "throw new Error(\"Gesture mapping not implemented\")",
+      "severity": "HIGH"
+    }
+  ],
+  "mutationReady": false,
+  "mutationBlockers": [
+    "No Stryker config found - run: npx stryker init"
+  ],
+  "fileAnalysis": [
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\physics-check.test.ts",
+      "trueGreen": 15,
+      "fakeGreen": 0,
+      "honestTodo": 0,
+      "honestSkip": 0,
+      "honestFail": 0,
+      "emptyTests": 0,
+      "violations": []
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\index.test.ts",
+      "trueGreen": 10,
+      "fakeGreen": 0,
+      "honestTodo": 0,
+      "honestSkip": 0,
+      "honestFail": 0,
+      "emptyTests": 0,
+      "violations": []
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\test-fixtures\\golden-input.test.ts",
+      "trueGreen": 36,
+      "fakeGreen": 0,
+      "honestTodo": 0,
+      "honestSkip": 0,
+      "honestFail": 0,
+      "emptyTests": 0,
+      "violations": []
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\smoothers\\smoother-pipeline.test.ts",
+      "trueGreen": 18,
+      "fakeGreen": 0,
+      "honestTodo": 0,
+      "honestSkip": 1,
+      "honestFail": 0,
+      "emptyTests": 0,
+      "violations": []
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\smoothers\\evolutionary-tuner.test.ts",
+      "trueGreen": 15,
+      "fakeGreen": 7,
+      "honestTodo": 0,
+      "honestSkip": 2,
+      "honestFail": 0,
+      "emptyTests": 0,
+      "violations": [
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\smoothers\\evolutionary-tuner.test.ts",
+          "line": 101,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('Not implemented - TDD RED phase')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\smoothers\\evolutionary-tuner.test.ts",
+          "line": 105,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('Not implemented - TDD RED phase')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\smoothers\\evolutionary-tuner.test.ts",
+          "line": 109,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('Not implemented - TDD RED phase')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\smoothers\\evolutionary-tuner.test.ts",
+          "line": 113,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('Not implemented - TDD RED phase')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\smoothers\\evolutionary-tuner.test.ts",
+          "line": 117,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('Not implemented - TDD RED phase')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\smoothers\\evolutionary-tuner.test.ts",
+          "line": 121,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('Not implemented - TDD RED phase')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\smoothers\\evolutionary-tuner.test.ts",
+          "line": 125,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('Not implemented - TDD RED phase')",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\reputation\\trust-score.test.ts",
+      "trueGreen": 21,
+      "fakeGreen": 0,
+      "honestTodo": 0,
+      "honestSkip": 0,
+      "honestFail": 0,
+      "emptyTests": 0,
+      "violations": []
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\pipeline\\w3c-cursor-pipeline.test.ts",
+      "trueGreen": 27,
+      "fakeGreen": 0,
+      "honestTodo": 0,
+      "honestSkip": 0,
+      "honestFail": 0,
+      "emptyTests": 0,
+      "violations": []
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\pipeline\\simple-cursor-pipeline.test.ts",
+      "trueGreen": 13,
+      "fakeGreen": 0,
+      "honestTodo": 0,
+      "honestSkip": 0,
+      "honestFail": 0,
+      "emptyTests": 0,
+      "violations": []
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\physics\\rapier-wasm-simulator.test.ts",
+      "trueGreen": 23,
+      "fakeGreen": 0,
+      "honestTodo": 0,
+      "honestSkip": 0,
+      "honestFail": 0,
+      "emptyTests": 0,
+      "violations": []
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\physics\\gesture-transition-model.test.ts",
+      "trueGreen": 17,
+      "fakeGreen": 0,
+      "honestTodo": 0,
+      "honestSkip": 0,
+      "honestFail": 0,
+      "emptyTests": 0,
+      "violations": []
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\phase1-w3c-cursor\\w3c-pointer-factory.test.ts",
+      "trueGreen": 37,
+      "fakeGreen": 0,
+      "honestTodo": 0,
+      "honestSkip": 0,
+      "honestFail": 0,
+      "emptyTests": 0,
+      "violations": []
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\phase1-w3c-cursor\\multi-hand.test.ts",
+      "trueGreen": 26,
+      "fakeGreen": 4,
+      "honestTodo": 0,
+      "honestSkip": 0,
+      "honestFail": 0,
+      "emptyTests": 0,
+      "violations": [
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\phase1-w3c-cursor\\multi-hand.test.ts",
+          "line": 148,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('MultiHandManager not implemented')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\phase1-w3c-cursor\\multi-hand.test.ts",
+          "line": 158,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('HandIdTracker not implemented')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\phase1-w3c-cursor\\multi-hand.test.ts",
+          "line": 168,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('PerformanceMonitor not implemented')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\phase1-w3c-cursor\\multi-hand.test.ts",
+          "line": 178,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('DegradationStrategy not implemented')",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\phase1-w3c-cursor\\cursor-pipeline.test.ts",
+      "trueGreen": 56,
+      "fakeGreen": 7,
+      "honestTodo": 0,
+      "honestSkip": 0,
+      "honestFail": 0,
+      "emptyTests": 0,
+      "violations": [
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\phase1-w3c-cursor\\cursor-pipeline.test.ts",
+          "line": 218,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('IndexFingerNormalizer not implemented')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\phase1-w3c-cursor\\cursor-pipeline.test.ts",
+          "line": 241,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('SpringDamperFilter not implemented')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\phase1-w3c-cursor\\cursor-pipeline.test.ts",
+          "line": 251,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('SmootherChain not implemented')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\phase1-w3c-cursor\\cursor-pipeline.test.ts",
+          "line": 261,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('TrackingStateManager not implemented')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\phase1-w3c-cursor\\cursor-pipeline.test.ts",
+          "line": 271,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('W3CPointerEventFactory not implemented')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\phase1-w3c-cursor\\cursor-pipeline.test.ts",
+          "line": 281,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('DOMEventDispatcher not implemented')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\phase1-w3c-cursor\\cursor-pipeline.test.ts",
+          "line": 291,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('CursorPipeline not implemented')",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\gesture\\palm-orientation-gate.test.ts",
+      "trueGreen": 18,
+      "fakeGreen": 0,
+      "honestTodo": 0,
+      "honestSkip": 0,
+      "honestFail": 0,
+      "emptyTests": 0,
+      "violations": []
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\gesture\\commit-gesture.test.ts",
+      "trueGreen": 37,
+      "fakeGreen": 6,
+      "honestTodo": 0,
+      "honestSkip": 0,
+      "honestFail": 0,
+      "emptyTests": 0,
+      "violations": [
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\gesture\\commit-gesture.test.ts",
+          "line": 132,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('ThumbMiddlePinchDetector not implemented')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\gesture\\commit-gesture.test.ts",
+          "line": 142,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('PointerStabilityTracker not implemented')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\gesture\\commit-gesture.test.ts",
+          "line": 152,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('StickyArmedFSM not implemented')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\gesture\\commit-gesture.test.ts",
+          "line": 162,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('CommitHysteresis not implemented')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\gesture\\commit-gesture.test.ts",
+          "line": 172,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('ResetConditionDetector not implemented')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\gesture\\commit-gesture.test.ts",
+          "line": 182,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('CommitGestureAdapter not implemented')",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\enforcement\\hive-validator.test.ts",
+      "trueGreen": 38,
+      "fakeGreen": 0,
+      "honestTodo": 0,
+      "honestSkip": 0,
+      "honestFail": 0,
+      "emptyTests": 0,
+      "violations": []
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\w3c-pointer-compliance.test.ts",
+      "trueGreen": 16,
+      "fakeGreen": 4,
+      "honestTodo": 0,
+      "honestSkip": 2,
+      "honestFail": 0,
+      "emptyTests": 0,
+      "violations": [
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\w3c-pointer-compliance.test.ts",
+          "line": 89,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('Not implemented - TDD RED phase')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\w3c-pointer-compliance.test.ts",
+          "line": 94,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('Not implemented - TDD RED phase')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\w3c-pointer-compliance.test.ts",
+          "line": 99,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('Not implemented - TDD RED phase')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\w3c-pointer-compliance.test.ts",
+          "line": 104,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('Not implemented - TDD RED phase')",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\stigmergy.contract.test.ts",
+      "trueGreen": 34,
+      "fakeGreen": 0,
+      "honestTodo": 0,
+      "honestSkip": 0,
+      "honestFail": 0,
+      "emptyTests": 0,
+      "violations": []
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\observability-standards.test.ts",
+      "trueGreen": 12,
+      "fakeGreen": 24,
+      "honestTodo": 0,
+      "honestSkip": 0,
+      "honestFail": 0,
+      "emptyTests": 0,
+      "violations": [
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\observability-standards.test.ts",
+          "line": 89,
+          "testName": "should reject non-1.0 specversion",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"UUID generation not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\observability-standards.test.ts",
+          "line": 160,
+          "testName": "should generate event type from pipeline stage",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"Event type generation not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\observability-standards.test.ts",
+          "line": 220,
+          "testName": "should create CloudEvent from pipeline output",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"CloudEvent factory not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\observability-standards.test.ts",
+          "line": 231,
+          "testName": "should auto-generate id and time",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"CloudEvent defaults not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\observability-standards.test.ts",
+          "line": 262,
+          "testName": "should reject invalid traceparent",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"Traceparent generation not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\observability-standards.test.ts",
+          "line": 276,
+          "testName": "should propagate trace context through pipeline",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"Context propagation not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\observability-standards.test.ts",
+          "line": 294,
+          "testName": "should create span for each pipeline stage",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"Span creation not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\observability-standards.test.ts",
+          "line": 316,
+          "testName": "should nest spans correctly",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"Span nesting not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\observability-standards.test.ts",
+          "line": 331,
+          "testName": "should record stage latency as span attribute",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"Attribute recording not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\observability-standards.test.ts",
+          "line": 345,
+          "testName": "should record error status on failure",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"Error status not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\observability-standards.test.ts",
+          "line": 379,
+          "testName": "should record gesture-specific attributes",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"Gesture attributes not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\observability-standards.test.ts",
+          "line": 394,
+          "testName": "should define gesture/pointer channel",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"Channel schema not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\observability-standards.test.ts",
+          "line": 404,
+          "testName": "should define gesture/pointer channel",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"Channel schema not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\observability-standards.test.ts",
+          "line": 414,
+          "testName": "should define gesture/state channel",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"Channel schema not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\observability-standards.test.ts",
+          "line": 430,
+          "testName": "should validate PointerEventInit message",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"AsyncAPI validation not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\observability-standards.test.ts",
+          "line": 443,
+          "testName": "should validate FSMStateChange message",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"AsyncAPI validation not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\observability-standards.test.ts",
+          "line": 459,
+          "testName": "should validate PipelineLatency message",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"AsyncAPI validation not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\observability-standards.test.ts",
+          "line": 478,
+          "testName": "should generate AsyncAPI document from pipeline",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"AsyncAPI document generation not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\observability-standards.test.ts",
+          "line": 494,
+          "testName": "should include version 3.0.0",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"Protocol binding not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\observability-standards.test.ts",
+          "line": 513,
+          "testName": "should include traceparent in CloudEvent extension",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"Traced CloudEvent not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\observability-standards.test.ts",
+          "line": 528,
+          "testName": "should correlate events across pipeline stages",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"Event correlation not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\observability-standards.test.ts",
+          "line": 543,
+          "testName": "should store traces in IndexedDB",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"Local trace storage not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\observability-standards.test.ts",
+          "line": 557,
+          "testName": "should export traces for debugging",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"Trace export not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\observability-standards.test.ts",
+          "line": 570,
+          "testName": "should respect user privacy settings",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"Privacy configuration not implemented\")",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\golden-master.test.ts",
+      "trueGreen": 8,
+      "fakeGreen": 18,
+      "honestTodo": 0,
+      "honestSkip": 0,
+      "honestFail": 0,
+      "emptyTests": 0,
+      "violations": [
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\golden-master.test.ts",
+          "line": 90,
+          "testName": "should load FreiHAND sample by ID",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"FreiHAND loader not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\golden-master.test.ts",
+          "line": 123,
+          "testName": "should load all 21 MediaPipe-compatible keypoints",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"FreiHAND to MediaPipe mapping not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\golden-master.test.ts",
+          "line": 142,
+          "testName": "should load HaGRID sample by ID",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"HaGRID loader not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\golden-master.test.ts",
+          "line": 167,
+          "testName": "should map HaGRID gestures to FSM states",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"HaGRID to FSM mapping not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\golden-master.test.ts",
+          "line": 183,
+          "testName": "should compare MediaPipe output to FreiHAND ground truth",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"Ground truth comparison not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\golden-master.test.ts",
+          "line": 197,
+          "testName": "should calculate per-keypoint error",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"Keypoint error calculation not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\golden-master.test.ts",
+          "line": 214,
+          "testName": "should calculate MSE across all keypoints",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"MSE calculation not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\golden-master.test.ts",
+          "line": 230,
+          "testName": "should identify worst-performing keypoint",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"Worst keypoint identification not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\golden-master.test.ts",
+          "line": 245,
+          "testName": "should emit CloudEvent with golden master result",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"CloudEvent emission not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\golden-master.test.ts",
+          "line": 272,
+          "testName": "should include all required CloudEvent attributes",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"CloudEvent validation not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\golden-master.test.ts",
+          "line": 287,
+          "testName": "should create test case from user annotation",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"User annotation parser not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\golden-master.test.ts",
+          "line": 319,
+          "testName": "should replay user test case through pipeline",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"Test case replay not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\golden-master.test.ts",
+          "line": 335,
+          "testName": "should allow configurable tolerance per keypoint",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"Tolerance config not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\golden-master.test.ts",
+          "line": 366,
+          "testName": "should run golden master tests in batch",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"Batch testing not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\golden-master.test.ts",
+          "line": 379,
+          "testName": "should generate test report",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"Report generation not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\golden-master.test.ts",
+          "line": 399,
+          "testName": "should include specversion 1.0",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"UUID generation not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\golden-master.test.ts",
+          "line": 419,
+          "testName": "should format time as ISO8601",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"OpenTelemetry integration not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\golden-master.test.ts",
+          "line": 433,
+          "testName": "should include test metrics as span attributes",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"Span attributes not implemented\")",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\contracts.test.ts",
+      "trueGreen": 13,
+      "fakeGreen": 0,
+      "honestTodo": 0,
+      "honestSkip": 0,
+      "honestFail": 0,
+      "emptyTests": 0,
+      "violations": []
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\arming\\palm-orientation.test.ts",
+      "trueGreen": 30,
+      "fakeGreen": 0,
+      "honestTodo": 0,
+      "honestSkip": 0,
+      "honestFail": 0,
+      "emptyTests": 0,
+      "violations": []
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\xstate-fsm.adapter.test.ts",
+      "trueGreen": 22,
+      "fakeGreen": 0,
+      "honestTodo": 0,
+      "honestSkip": 0,
+      "honestFail": 0,
+      "emptyTests": 0,
+      "violations": []
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+      "trueGreen": 3,
+      "fakeGreen": 29,
+      "honestTodo": 0,
+      "honestSkip": 0,
+      "honestFail": 0,
+      "emptyTests": 0,
+      "violations": [
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+          "line": 81,
+          "testName": "should define UIShellPort interface with all required methods",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('UIShellFactory not implemented')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+          "line": 89,
+          "testName": "should define UIShellPort interface with all required methods",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('UIShell not implemented')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+          "line": 101,
+          "testName": "should create window with mosaic tile",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('MosaicShell not implemented')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+          "line": 118,
+          "testName": "should return mosaic as shell type",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('MosaicShell split not implemented')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+          "line": 129,
+          "testName": "should handle mosaic drag to rearrange",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('MosaicShell drag not implemented')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+          "line": 142,
+          "testName": "should route pointer events to correct mosaic tile",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('MosaicShell routing not implemented')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+          "line": 153,
+          "testName": "should support per-tile gesture targets",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('Per-tile targets not implemented')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+          "line": 168,
+          "testName": "should create window with golden-layout component",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('GoldenLayoutShell not implemented')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+          "line": 182,
+          "testName": "should return golden-layout as shell type",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('GoldenLayout stacks not implemented')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+          "line": 193,
+          "testName": "should support row/column layouts",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('GoldenLayout layouts not implemented')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+          "line": 204,
+          "testName": "should support floating windows (popouts)",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('GoldenLayout popouts not implemented')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+          "line": 215,
+          "testName": "should route pointer events based on golden-layout hierarchy",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('GoldenLayout routing not implemented')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+          "line": 226,
+          "testName": "should handle tab header vs content area differently",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('Tab header detection not implemented')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+          "line": 241,
+          "testName": "should create floating window with title bar",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('PuterShell not implemented')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+          "line": 255,
+          "testName": "should return puter as shell type",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('PuterShell z-index not implemented')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+          "line": 266,
+          "testName": "should support window minimize to taskbar",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('PuterShell minimize not implemented')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+          "line": 277,
+          "testName": "should support window maximize/restore",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('PuterShell maximize not implemented')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+          "line": 291,
+          "testName": "should support snap to screen edges",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('PuterShell snap not implemented')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+          "line": 307,
+          "testName": "should support desktop icon layout",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('PuterShell desktop icons not implemented')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+          "line": 316,
+          "testName": "should handle double-click to launch app",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('PuterShell icon launch not implemented')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+          "line": 327,
+          "testName": "should route pointer events to topmost window at coordinates",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('PuterShell routing not implemented')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+          "line": 338,
+          "testName": "should detect title bar for window dragging",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('Title bar detection not implemented')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+          "line": 352,
+          "testName": "should detect resize handles",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('Resize handle detection not implemented')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+          "line": 369,
+          "testName": "should support gesture-based window drag",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('Gesture window drag not implemented')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+          "line": 382,
+          "testName": "should show taskbar with running applications",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('PuterShell taskbar not implemented')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+          "line": 391,
+          "testName": "should handle gesture click on taskbar item",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('Taskbar click not implemented')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+          "line": 403,
+          "testName": "should route same gesture event to any shell type",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('Cross-shell routing not implemented')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+          "line": 414,
+          "testName": "should serialize shell state for persistence",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('Shell serialization not implemented')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+          "line": 425,
+          "testName": "should restore shell state from serialized data",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('Shell restoration not implemented')",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\puter-target.test.ts",
+      "trueGreen": 37,
+      "fakeGreen": 1,
+      "honestTodo": 0,
+      "honestSkip": 0,
+      "honestFail": 0,
+      "emptyTests": 0,
+      "violations": [
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\puter-target.test.ts",
+          "line": 148,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('PuterShellAdapter not implemented')",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\pipeline.test.ts",
+      "trueGreen": 14,
+      "fakeGreen": 0,
+      "honestTodo": 0,
+      "honestSkip": 0,
+      "honestFail": 0,
+      "emptyTests": 0,
+      "violations": []
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\overlay-port.test.ts",
+      "trueGreen": 0,
+      "fakeGreen": 21,
+      "honestTodo": 7,
+      "honestSkip": 0,
+      "honestFail": 0,
+      "emptyTests": 0,
+      "violations": [
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\overlay-port.test.ts",
+          "line": 91,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('Not implemented - TDD RED phase')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\overlay-port.test.ts",
+          "line": 100,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('Not implemented - TDD RED phase')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\overlay-port.test.ts",
+          "line": 104,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('Not implemented - TDD RED phase')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\overlay-port.test.ts",
+          "line": 108,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('Not implemented - TDD RED phase')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\overlay-port.test.ts",
+          "line": 112,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('Not implemented - TDD RED phase')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\overlay-port.test.ts",
+          "line": 116,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('Not implemented - TDD RED phase')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\overlay-port.test.ts",
+          "line": 120,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('Not implemented - TDD RED phase')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\overlay-port.test.ts",
+          "line": 130,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('Not implemented - TDD RED phase')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\overlay-port.test.ts",
+          "line": 139,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('Not implemented - TDD RED phase')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\overlay-port.test.ts",
+          "line": 143,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('Not implemented - TDD RED phase')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\overlay-port.test.ts",
+          "line": 147,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('Not implemented - TDD RED phase')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\overlay-port.test.ts",
+          "line": 151,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('Not implemented - TDD RED phase')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\overlay-port.test.ts",
+          "line": 155,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('Not implemented - TDD RED phase')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\overlay-port.test.ts",
+          "line": 159,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('Not implemented - TDD RED phase')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\overlay-port.test.ts",
+          "line": 169,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('Not implemented - TDD RED phase')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\overlay-port.test.ts",
+          "line": 178,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('Not implemented - TDD RED phase')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\overlay-port.test.ts",
+          "line": 182,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('Not implemented - TDD RED phase')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\overlay-port.test.ts",
+          "line": 186,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('Not implemented - TDD RED phase')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\overlay-port.test.ts",
+          "line": 190,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('Not implemented - TDD RED phase')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\overlay-port.test.ts",
+          "line": 194,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('Not implemented - TDD RED phase')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\overlay-port.test.ts",
+          "line": 198,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('Not implemented - TDD RED phase')",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\one-euro-exemplar.adapter.test.ts",
+      "trueGreen": 13,
+      "fakeGreen": 0,
+      "honestTodo": 0,
+      "honestSkip": 0,
+      "honestFail": 0,
+      "emptyTests": 0,
+      "violations": []
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\fsm.test.ts",
+      "trueGreen": 20,
+      "fakeGreen": 0,
+      "honestTodo": 0,
+      "honestSkip": 0,
+      "honestFail": 0,
+      "emptyTests": 0,
+      "violations": []
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\fsm-state-transitions.test.ts",
+      "trueGreen": 18,
+      "fakeGreen": 7,
+      "honestTodo": 0,
+      "honestSkip": 2,
+      "honestFail": 0,
+      "emptyTests": 0,
+      "violations": [
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\fsm-state-transitions.test.ts",
+          "line": 117,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('Not implemented - TDD RED phase')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\fsm-state-transitions.test.ts",
+          "line": 121,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('Not implemented - TDD RED phase')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\fsm-state-transitions.test.ts",
+          "line": 130,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('Not implemented - TDD RED phase')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\fsm-state-transitions.test.ts",
+          "line": 134,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('Not implemented - TDD RED phase')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\fsm-state-transitions.test.ts",
+          "line": 138,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('Not implemented - TDD RED phase')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\fsm-state-transitions.test.ts",
+          "line": 142,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('Not implemented - TDD RED phase')",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\fsm-state-transitions.test.ts",
+          "line": 146,
+          "testName": "unknown",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error('Not implemented - TDD RED phase')",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+      "trueGreen": 2,
+      "fakeGreen": 32,
+      "honestTodo": 0,
+      "honestSkip": 0,
+      "honestFail": 0,
+      "emptyTests": 0,
+      "violations": [
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+          "line": 52,
+          "testName": "should define EmulatorAdapterPort interface",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"EmulatorAdapterFactory not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+          "line": 64,
+          "testName": "should create adapter via factory pattern",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"EmulatorAdapter not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+          "line": 78,
+          "testName": "should connect to v86 emulator instance",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"v86Adapter not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+          "line": 89,
+          "testName": "should access v86 bus for input events",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"v86 bus access not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+          "line": 100,
+          "testName": "should send mouse-delta via v86 bus",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"v86 mouse-delta not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+          "line": 111,
+          "testName": "should send mouse-click via v86 bus",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"v86 mouse-click not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+          "line": 122,
+          "testName": "should send mouse-wheel via v86 bus",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"v86 mouse-wheel not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+          "line": 144,
+          "testName": "should send keyboard-code via v86 bus",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"v86 keyboard not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+          "line": 155,
+          "testName": "should map key names to PS/2 scancodes",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"Scancode mapping not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+          "line": 168,
+          "testName": "should query v86 screen resolution",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"v86 resolution query not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+          "line": 182,
+          "testName": "should map normalized coords to v86 screen",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"v86 coordinate mapping not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+          "line": 197,
+          "testName": "should connect to js-dos emulator instance",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"JsDosAdapter not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+          "line": 210,
+          "testName": "should access js-dos CI (command interface)",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"js-dos CI access not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+          "line": 221,
+          "testName": "should set mouse sensitivity via js-dos API",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"js-dos sensitivity not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+          "line": 236,
+          "testName": "should send mouse events via js-dos CI",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"js-dos mouse events not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+          "line": 259,
+          "testName": "should send key events via js-dos CI",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"js-dos keyboard not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+          "line": 274,
+          "testName": "should connect to EmulatorJS instance",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"EmulatorJSAdapter not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+          "line": 285,
+          "testName": "should detect emulator core type (nes, snes, etc)",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"EmulatorJS core detection not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+          "line": 298,
+          "testName": "should map gestures to EJS_defaultControls",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"EmulatorJS control mapping not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+          "line": 311,
+          "testName": "should support custom control schemes per core",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"Per-core control schemes not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+          "line": 325,
+          "testName": "should map hand position to analog stick",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"Analog mapping not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+          "line": 336,
+          "testName": "should map pinch gesture to button press",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"Gesture to button mapping not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+          "line": 349,
+          "testName": "should support light gun mode for supported games",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"Light gun mode not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+          "line": 363,
+          "testName": "should map hand position to light gun coordinates",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"Light gun coordinate mapping not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+          "line": 374,
+          "testName": "should trigger light gun shot on pinch",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"Light gun trigger not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+          "line": 391,
+          "testName": "should route same gesture to any emulator type",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"Cross-emulator routing not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+          "line": 409,
+          "testName": "should normalize sensitivity across emulator types",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"Sensitivity normalization not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+          "line": 420,
+          "testName": "should handle emulator pause/resume uniformly",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"Pause/resume not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+          "line": 438,
+          "testName": "should map normalized hand position (0-1) to screen coordinates",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"Position mapping not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+          "line": 451,
+          "testName": "should map Closed_Fist to left mouse button",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"Gesture mapping not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+          "line": 461,
+          "testName": "should map Victory to right mouse button",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"Gesture mapping not implemented\")",
+          "severity": "HIGH"
+        },
+        {
+          "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+          "line": 471,
+          "testName": "should map Victory to right mouse button",
+          "pattern": "THROW_NOT_IMPLEMENTED_IN_MOCK",
+          "evidence": "throw new Error(\"Gesture mapping not implemented\")",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\daedalos-target.test.ts",
+      "trueGreen": 30,
+      "fakeGreen": 0,
+      "honestTodo": 0,
+      "honestSkip": 0,
+      "honestFail": 0,
+      "emptyTests": 0,
+      "violations": []
+    }
+  ],
+  "propertyAnalysis": [
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\physics-check.test.ts",
+      "hasFastCheck": false,
+      "propertyTestCount": 2,
+      "iterationsConfigured": null,
+      "arbitraries": [
+        "fc.integer"
+      ]
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\index.test.ts",
+      "hasFastCheck": false,
+      "propertyTestCount": 0,
+      "iterationsConfigured": null,
+      "arbitraries": []
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\test-fixtures\\golden-input.test.ts",
+      "hasFastCheck": false,
+      "propertyTestCount": 0,
+      "iterationsConfigured": null,
+      "arbitraries": []
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\smoothers\\smoother-pipeline.test.ts",
+      "hasFastCheck": true,
+      "propertyTestCount": 3,
+      "iterationsConfigured": null,
+      "arbitraries": [
+        "fc.record",
+        "fc.double"
+      ]
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\smoothers\\evolutionary-tuner.test.ts",
+      "hasFastCheck": true,
+      "propertyTestCount": 4,
+      "iterationsConfigured": 100,
+      "arbitraries": [
+        "fc.array",
+        "fc.record",
+        "fc.float",
+        "fc.integer"
+      ]
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\reputation\\trust-score.test.ts",
+      "hasFastCheck": false,
+      "propertyTestCount": 0,
+      "iterationsConfigured": null,
+      "arbitraries": []
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\pipeline\\w3c-cursor-pipeline.test.ts",
+      "hasFastCheck": false,
+      "propertyTestCount": 0,
+      "iterationsConfigured": null,
+      "arbitraries": []
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\pipeline\\simple-cursor-pipeline.test.ts",
+      "hasFastCheck": false,
+      "propertyTestCount": 0,
+      "iterationsConfigured": null,
+      "arbitraries": []
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\physics\\rapier-wasm-simulator.test.ts",
+      "hasFastCheck": true,
+      "propertyTestCount": 8,
+      "iterationsConfigured": 100,
+      "arbitraries": [
+        "fc.float",
+        "fc.integer"
+      ]
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\physics\\gesture-transition-model.test.ts",
+      "hasFastCheck": true,
+      "propertyTestCount": 4,
+      "iterationsConfigured": null,
+      "arbitraries": [
+        "fc.nat",
+        "fc.double",
+        "fc.integer"
+      ]
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\phase1-w3c-cursor\\w3c-pointer-factory.test.ts",
+      "hasFastCheck": true,
+      "propertyTestCount": 6,
+      "iterationsConfigured": 100,
+      "arbitraries": [
+        "fc.float"
+      ]
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\phase1-w3c-cursor\\multi-hand.test.ts",
+      "hasFastCheck": false,
+      "propertyTestCount": 0,
+      "iterationsConfigured": null,
+      "arbitraries": []
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\phase1-w3c-cursor\\cursor-pipeline.test.ts",
+      "hasFastCheck": true,
+      "propertyTestCount": 2,
+      "iterationsConfigured": null,
+      "arbitraries": [
+        "fc.record",
+        "fc.float",
+        "fc.array",
+        "fc.integer"
+      ]
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\gesture\\palm-orientation-gate.test.ts",
+      "hasFastCheck": true,
+      "propertyTestCount": 4,
+      "iterationsConfigured": null,
+      "arbitraries": [
+        "fc.double"
+      ]
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\gesture\\commit-gesture.test.ts",
+      "hasFastCheck": true,
+      "propertyTestCount": 4,
+      "iterationsConfigured": null,
+      "arbitraries": [
+        "fc.record",
+        "fc.float",
+        "fc.integer",
+        "fc.array",
+        "fc.boolean"
+      ]
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\enforcement\\hive-validator.test.ts",
+      "hasFastCheck": false,
+      "propertyTestCount": 0,
+      "iterationsConfigured": null,
+      "arbitraries": []
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\w3c-pointer-compliance.test.ts",
+      "hasFastCheck": true,
+      "propertyTestCount": 4,
+      "iterationsConfigured": 100,
+      "arbitraries": [
+        "fc.float",
+        "fc.integer"
+      ]
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\stigmergy.contract.test.ts",
+      "hasFastCheck": true,
+      "propertyTestCount": 12,
+      "iterationsConfigured": 100,
+      "arbitraries": [
+        "fc.float",
+        "fc.string",
+        "fc.integer",
+        "fc.record"
+      ]
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\observability-standards.test.ts",
+      "hasFastCheck": false,
+      "propertyTestCount": 0,
+      "iterationsConfigured": null,
+      "arbitraries": []
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\golden-master.test.ts",
+      "hasFastCheck": false,
+      "propertyTestCount": 0,
+      "iterationsConfigured": null,
+      "arbitraries": []
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\contracts\\contracts.test.ts",
+      "hasFastCheck": true,
+      "propertyTestCount": 10,
+      "iterationsConfigured": 100,
+      "arbitraries": [
+        "fc.record",
+        "fc.float",
+        "fc.nat",
+        "fc.boolean",
+        "fc.array",
+        "fc.oneof",
+        "fc.constant"
+      ]
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\arming\\palm-orientation.test.ts",
+      "hasFastCheck": false,
+      "propertyTestCount": 0,
+      "iterationsConfigured": null,
+      "arbitraries": []
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\xstate-fsm.adapter.test.ts",
+      "hasFastCheck": false,
+      "propertyTestCount": 0,
+      "iterationsConfigured": null,
+      "arbitraries": []
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\ui-shell-port.test.ts",
+      "hasFastCheck": false,
+      "propertyTestCount": 0,
+      "iterationsConfigured": null,
+      "arbitraries": []
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\puter-target.test.ts",
+      "hasFastCheck": true,
+      "propertyTestCount": 2,
+      "iterationsConfigured": 50,
+      "arbitraries": [
+        "fc.record",
+        "fc.string",
+        "fc.integer",
+        "fc.boolean",
+        "fc.oneof",
+        "fc.constant",
+        "fc.float"
+      ]
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\pipeline.test.ts",
+      "hasFastCheck": false,
+      "propertyTestCount": 0,
+      "iterationsConfigured": null,
+      "arbitraries": []
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\overlay-port.test.ts",
+      "hasFastCheck": false,
+      "propertyTestCount": 0,
+      "iterationsConfigured": null,
+      "arbitraries": []
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\one-euro-exemplar.adapter.test.ts",
+      "hasFastCheck": false,
+      "propertyTestCount": 0,
+      "iterationsConfigured": null,
+      "arbitraries": []
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\fsm.test.ts",
+      "hasFastCheck": false,
+      "propertyTestCount": 0,
+      "iterationsConfigured": null,
+      "arbitraries": []
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\fsm-state-transitions.test.ts",
+      "hasFastCheck": true,
+      "propertyTestCount": 4,
+      "iterationsConfigured": 100,
+      "arbitraries": [
+        "fc.integer",
+        "fc.array"
+      ]
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\emulator-adapters.test.ts",
+      "hasFastCheck": false,
+      "propertyTestCount": 0,
+      "iterationsConfigured": null,
+      "arbitraries": []
+    },
+    {
+      "file": "C:\\Dev\\active\\hfo_gen87_x3\\hot\\bronze\\src\\adapters\\daedalos-target.test.ts",
+      "hasFastCheck": false,
+      "propertyTestCount": 0,
+      "iterationsConfigured": null,
+      "arbitraries": []
+    }
+  ],
+  "verdict": "FAILING",
+  "verdictReason": "19.1% fake green rate is unacceptable."
+}

@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HFO Dev Dashboard — Gen87.X3</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/golden-layout@2.6.0/dist/css/goldenlayout-base.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/golden-layout@2.6.0/dist/css/themes/goldenlayout-dark-theme.css">
+  <style>
+    :root {
+      --bg-dark: #0a0a0f;
+      --bg-panel: #12121a;
+      --bg-card: #1a1a24;
+      --border: #2a2a3a;
+      --accent: #00ff88;
+      --accent-dim: rgba(0, 255, 136, 0.2);
+      --warning: #ffaa00;
+      --warning-dim: rgba(255, 170, 0, 0.2);
+      --error: #ff4444;
+      --error-dim: rgba(255, 68, 68, 0.2);
+      --info: #27aae1;
+      --text: #e0e0e0;
+      --text-dim: #808090;
+      --purple: #8866ff;
+      --phase-h: #4488ff;
+      --phase-i: #ffaa00;
+      --phase-v: #00ff88;
+      --phase-e: #ff66aa;
+    }
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    html, body {
+      font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+      background: var(--bg-dark);
+      color: var(--text);
+      height: 100%;
+      overflow: hidden;
+    }
+    
+    #layout-container { width: 100%; height: 100%; }
+    
+    .lm_header { background: var(--bg-panel) !important; }
+    .lm_tab { background: var(--bg-dark) !important; }
+    .lm_tab.lm_active { background: var(--bg-panel) !important; border-bottom: 2px solid var(--accent) !important; }
+    .lm_content { background: var(--bg-panel) !important; overflow: hidden !important; }
+    .lm_splitter { background: var(--border) !important; }
+    
+    .panel-content {
+      padding: 1rem;
+      height: 100%;
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      flex-shrink: 0;
+    }
+    
+    .panel-header h2 {
+      font-size: 0.9rem;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+    
+    .panel-header .timestamp {
+      font-size: 0.65rem;
+      color: var(--text-dim);
+    }
+    
+    /* Status Cards */
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    
+    .status-card {
+      background: var(--bg-card);
+      border-radius: 8px;
+      padding: 0.75rem;
+      text-align: center;
+      border: 1px solid var(--border);
+    }
+    
+    .status-card .value {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: var(--accent);
+    }
+    
+    .status-card .label {
+      font-size: 0.6rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      margin-top: 0.25rem;
+    }
+    
+    .status-card.warning .value { color: var(--warning); }
+    .status-card.error .value { color: var(--error); }
+    .status-card.info .value { color: var(--info); }
+    
+    /* Progress Bars */
+    .progress-item {
+      margin-bottom: 0.75rem;
+    }
+    
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.7rem;
+      margin-bottom: 0.25rem;
+    }
+    
+    .progress-bar {
+      height: 8px;
+      background: var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.3s;
+    }
+    
+    .progress-fill.green { background: var(--accent); }
+    .progress-fill.red { background: var(--error); }
+    .progress-fill.yellow { background: var(--warning); }
+    
+    /* HIVE Phase Indicators */
+    .hive-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    
+    .hive-phase {
+      padding: 0.5rem;
+      border-radius: 6px;
+      text-align: center;
+      border: 2px solid var(--border);
+      opacity: 0.5;
+      transition: all 0.3s;
+    }
+    
+    .hive-phase.active {
+      opacity: 1;
+      transform: scale(1.05);
+    }
+    
+    .hive-phase.H { border-color: var(--phase-h); }
+    .hive-phase.H.active { background: rgba(68, 136, 255, 0.2); }
+    .hive-phase.I { border-color: var(--phase-i); }
+    .hive-phase.I.active { background: rgba(255, 170, 0, 0.2); }
+    .hive-phase.V { border-color: var(--phase-v); }
+    .hive-phase.V.active { background: rgba(0, 255, 136, 0.2); }
+    .hive-phase.E { border-color: var(--phase-e); }
+    .hive-phase.E.active { background: rgba(255, 102, 170, 0.2); }
+    
+    .hive-phase .letter {
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+    
+    .hive-phase .name {
+      font-size: 0.55rem;
+      color: var(--text-dim);
+    }
+    
+    .hive-phase.H .letter { color: var(--phase-h); }
+    .hive-phase.I .letter { color: var(--phase-i); }
+    .hive-phase.V .letter { color: var(--phase-v); }
+    .hive-phase.E .letter { color: var(--phase-e); }
+    
+    /* Commander Status */
+    .commander-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.5rem;
+    }
+    
+    .commander-card {
+      background: var(--bg-card);
+      border-radius: 6px;
+      padding: 0.5rem;
+      border-left: 3px solid var(--border);
+      font-size: 0.65rem;
+    }
+    
+    .commander-card.active { border-left-color: var(--accent); }
+    .commander-card.standby { border-left-color: var(--text-dim); }
+    
+    .commander-card .port {
+      font-weight: bold;
+      color: var(--accent);
+    }
+    
+    .commander-card .name {
+      color: var(--text);
+    }
+    
+    .commander-card .verb {
+      color: var(--text-dim);
+      font-size: 0.55rem;
+    }
+    
+    /* Checklist */
+    .checklist {
+      flex: 1;
+      overflow: auto;
+    }
+    
+    .check-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+      padding: 0.5rem;
+      margin-bottom: 0.25rem;
+      background: var(--bg-card);
+      border-radius: 4px;
+      font-size: 0.7rem;
+    }
+    
+    .check-item .icon {
+      font-size: 0.9rem;
+      flex-shrink: 0;
+    }
+    
+    .check-item.pass { border-left: 3px solid var(--accent); }
+    .check-item.warn { border-left: 3px solid var(--warning); }
+    .check-item.fail { border-left: 3px solid var(--error); }
+    .check-item.info { border-left: 3px solid var(--info); }
+    
+    .check-item .text strong {
+      display: block;
+      margin-bottom: 0.15rem;
+    }
+    
+    .check-item .text span {
+      color: var(--text-dim);
+      font-size: 0.6rem;
+    }
+    
+    /* Script Runner */
+    .script-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    
+    button {
+      padding: 0.4rem 0.75rem;
+      border: 1px solid var(--accent);
+      background: transparent;
+      color: var(--accent);
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.65rem;
+      transition: all 0.2s;
+    }
+    
+    button:hover { background: var(--accent); color: var(--bg-dark); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    button.running { background: var(--warning); color: var(--bg-dark); border-color: var(--warning); }
+    
+    /* Console Output */
+    .console {
+      flex: 1;
+      background: var(--bg-dark);
+      border-radius: 4px;
+      padding: 0.5rem;
+      font-size: 0.6rem;
+      overflow: auto;
+      white-space: pre-wrap;
+      font-family: monospace;
+    }
+    
+    .console .line { padding: 0.1rem 0; }
+    .console .line.info { color: var(--text); }
+    .console .line.success { color: var(--accent); }
+    .console .line.error { color: var(--error); }
+    .console .line.warn { color: var(--warning); }
+    
+    /* Blackboard */
+    .signal-list {
+      flex: 1;
+      overflow: auto;
+    }
+    
+    .signal-item {
+      padding: 0.4rem;
+      margin-bottom: 0.25rem;
+      background: var(--bg-card);
+      border-radius: 4px;
+      border-left: 3px solid var(--border);
+      font-size: 0.6rem;
+    }
+    
+    .signal-item.H { border-left-color: var(--phase-h); }
+    .signal-item.I { border-left-color: var(--phase-i); }
+    .signal-item.V { border-left-color: var(--phase-v); }
+    .signal-item.E { border-left-color: var(--phase-e); }
+    
+    .signal-item .header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.2rem;
+    }
+    
+    .signal-item .phase {
+      font-weight: bold;
+      padding: 0.1rem 0.3rem;
+      border-radius: 2px;
+      font-size: 0.55rem;
+    }
+    
+    .signal-item.H .phase { background: var(--phase-h); color: white; }
+    .signal-item.I .phase { background: var(--phase-i); color: black; }
+    .signal-item.V .phase { background: var(--phase-v); color: black; }
+    .signal-item.E .phase { background: var(--phase-e); color: white; }
+    
+    .signal-item .timestamp { color: var(--text-dim); }
+    .signal-item .msg { color: var(--text); }
+    
+    /* File Tree */
+    .file-tree {
+      flex: 1;
+      overflow: auto;
+      font-size: 0.65rem;
+    }
+    
+    .tree-item {
+      padding: 0.2rem 0;
+      padding-left: 1rem;
+      border-left: 1px solid var(--border);
+    }
+    
+    .tree-item.folder { color: var(--info); }
+    .tree-item.file { color: var(--text); }
+    .tree-item.active { color: var(--accent); font-weight: bold; }
+    .tree-item.deprecated { color: var(--text-dim); text-decoration: line-through; }
+    
+    /* Quick Links */
+    .quick-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    
+    .quick-link {
+      padding: 0.4rem 0.75rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 0.65rem;
+      color: var(--text);
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    
+    .quick-link:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    
+    /* Metrics Table */
+    .metrics-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.65rem;
+    }
+    
+    .metrics-table th,
+    .metrics-table td {
+      padding: 0.4rem;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+    
+    .metrics-table th {
+      color: var(--text-dim);
+      text-transform: uppercase;
+      font-size: 0.55rem;
+    }
+    
+    .metrics-table td.value {
+      font-weight: bold;
+      text-align: right;
+    }
+    
+    .metrics-table td.pass { color: var(--accent); }
+    .metrics-table td.warn { color: var(--warning); }
+    .metrics-table td.fail { color: var(--error); }
+  </style>
+</head>
+<body>
+  <div id="layout-container"></div>
+  
+  <script type="module">
+// @ts-nocheck
+
+    import { GoldenLayout } from 'https://esm.sh/golden-layout@2.6.0';
+    
+    // ============================================================
+    // DASHBOARD DATA (Loaded from dashboard-data.json)
+    // ============================================================
+    
+    // Try to load from JSON file, fallback to embedded data
+    let DASHBOARD_DATA;
+    try {
+      const response = await fetch('./dashboard-data.json');
+      if (response.ok) {
+        DASHBOARD_DATA = await response.json();
+        console.log('📊 Loaded dashboard data from JSON file');
+      } else {
+        throw new Error('JSON file not available');
+      }
+    } catch (e) {
+      console.log('📊 Using embedded dashboard data (run dashboard:update to refresh)');
+      DASHBOARD_DATA = {
+        "lastUpdated": "2025-12-31T07:06:52.996Z",
+        "generation": 87,
+        "iteration": "X3",
+        "version": "87.X3",
+        "hive": {
+          "currentPhase": "E",
+          "phases": {
+            "H": {
+              "name": "HUNT",
+              "active": false,
+              "description": "Research & Planning"
+            },
+            "I": {
+              "name": "INTERLOCK",
+              "active": false,
+              "description": "Contracts & Tests (TDD RED)"
+            },
+            "V": {
+              "name": "VALIDATE",
+              "active": false,
+              "description": "Implementation (TDD GREEN)"
+            },
+            "E": {
+              "name": "EVOLVE",
+              "active": true,
+              "description": "Refactor & Ship"
+            }
+          }
+        },
+        "commanders": [
+          {
+            "port": 0,
+            "name": "Lidless Legion",
+            "verb": "SENSE",
+            "status": "active"
+          },
+          {
+            "port": 1,
+            "name": "Web Weaver",
+            "verb": "FUSE",
+            "status": "standby"
+          },
+          {
+            "port": 2,
+            "name": "Mirror Magus",
+            "verb": "SHAPE",
+            "status": "standby"
+          },
+          {
+            "port": 3,
+            "name": "Spore Storm",
+            "verb": "DELIVER",
+            "status": "active"
+          },
+          {
+            "port": 4,
+            "name": "Red Regnant",
+            "verb": "TEST",
+            "status": "active"
+          },
+          {
+            "port": 5,
+            "name": "Pyre Praetorian",
+            "verb": "DEFEND",
+            "status": "active"
+          },
+          {
+            "port": 6,
+            "name": "Kraken Keeper",
+            "verb": "STORE",
+            "status": "active"
+          },
+          {
+            "port": 7,
+            "name": "Spider Sovereign",
+            "verb": "DECIDE",
+            "status": "active"
+          }
+        ],
+        "tests": {
+          "total": 506,
+          "passing": 270,
+          "failing": 229,
+          "skipped": 7,
+          "coverage": 53,
+          "stubs": 23
+        },
+        "gaps": {
+          "design": 8.75,
+          "enforcement": 3.5,
+          "delta": -5.25
+        },
+        "productionChecks": [
+          {
+            "id": "w3c-pointer",
+            "status": "pass",
+            "title": "W3C Pointer Events",
+            "desc": "Events properly typed and dispatched"
+          },
+          {
+            "id": "cloudevents",
+            "status": "pass",
+            "title": "CloudEvents Envelopes",
+            "desc": "Spec 1.0 compliant with HFO extensions"
+          },
+          {
+            "id": "zod",
+            "status": "pass",
+            "title": "Zod Validation",
+            "desc": "Runtime contract enforcement"
+          },
+          {
+            "id": "fsm",
+            "status": "pass",
+            "title": "XState FSM",
+            "desc": "State machine with debounce"
+          },
+          {
+            "id": "mediapipe",
+            "status": "pass",
+            "title": "MediaPipe Integration",
+            "desc": "Gesture recognition working"
+          },
+          {
+            "id": "golden-layout",
+            "status": "pass",
+            "title": "Golden Layout",
+            "desc": "Dockable panels implemented"
+          },
+          {
+            "id": "single-hand",
+            "status": "warn",
+            "title": "Single Hand Only",
+            "desc": "Multi-hand support not implemented"
+          },
+          {
+            "id": "no-nats",
+            "status": "warn",
+            "title": "No NATS in Browser",
+            "desc": "Direct DOM injection (no event bus)"
+          },
+          {
+            "id": "confidence",
+            "status": "warn",
+            "title": "Gesture Confidence",
+            "desc": "70% threshold may cause false positives"
+          },
+          {
+            "id": "rapier",
+            "status": "warn",
+            "title": "No Rapier Physics",
+            "desc": "Using 1€ only (no trajectory prediction)"
+          },
+          {
+            "id": "stubs",
+            "status": "warn",
+            "title": "23 Stub Tests",
+            "desc": "Emulator adapters not implemented"
+          },
+          {
+            "id": "e2e",
+            "status": "warn",
+            "title": "E2E Tests",
+            "desc": "Playwright tests need MediaPipe mock"
+          }
+        ],
+        "scripts": [
+          {
+            "id": "test",
+            "name": "🧪 Run Tests",
+            "cmd": "npm test"
+          },
+          {
+            "id": "lint",
+            "name": "🔍 Lint",
+            "cmd": "npm run lint"
+          },
+          {
+            "id": "typecheck",
+            "name": "📝 Typecheck",
+            "cmd": "npm run typecheck"
+          },
+          {
+            "id": "stubs",
+            "name": "🔎 Detect Stubs",
+            "cmd": "npm run detect:stubs"
+          },
+          {
+            "id": "enforce",
+            "name": "🏛️ Enforce Arch",
+            "cmd": "npm run enforce"
+          },
+          {
+            "id": "coverage",
+            "name": "📊 Coverage",
+            "cmd": "npm run test:coverage"
+          },
+          {
+            "id": "dashboard",
+            "name": "🖥️ Update Dashboard",
+            "cmd": "npm run dashboard:update"
+          }
+        ],
+        "signals": [
+          {
+            "ts": "2025-12-31T07:06:36Z",
+            "hive": "E",
+            "msg": "DECIDE: Created HFO_DEV_DASHBOARD.html - Golden Layout dev dashboard with auto-update scripts",
+            "port": 7
+          },
+          {
+            "ts": "2025-12-31T00:00:06Z",
+            "hive": "V",
+            "msg": "VALIDATE: Created index-dino.html - Dino Runner mini-game with gesture control. Tests W3C pointer events, CloudEvents envelopes, production metrics. Use Closed_Fist to jump!",
+            "port": 7
+          },
+          {
+            "ts": "2025-12-30T23:48:53Z",
+            "hive": "H",
+            "msg": "COLD START: Spider Sovereign awakened. Memory graph loaded (50+ entities). Blackboard tail analyzed (25 signals). Git status: 11 unstaged files (Lidless Legion MCP + detect-stubs.ts). Current phase: POST-HUNT, preparing for I-phase.",
+            "port": 7
+          },
+          {
+            "ts": "2025-12-31T06:42:59Z",
+            "hive": "H",
+            "msg": "HUNT: Created MANIFEST.json (SSOT pointer) + detect-stubs.ts. Stub scan: 461 patterns found across 22 files. Top offenders: emulator-adapters(93), ui-shell-port(86), observability-standards(68). Priority: Convert to .todo() for honest RED.",
+            "port": 7
+          },
+          {
+            "ts": "2025-12-30T23:41:18Z",
+            "hive": "H",
+            "msg": "HUNT COMPLETE: Lidless Legion MCP server implemented - Port 0 sensor mesh ready (web/memory/code/graph). 208 deps installed. Server added to mcp.json. Ready for I-phase testing.",
+            "port": 7
+          },
+          {
+            "ts": "2025-12-31T06:40:01Z",
+            "hive": "H",
+            "msg": "HUNT: Spider Sovereign cold start. Memory loaded (50+ entities). Gap analysis complete: FSM incorrect mappings, MediaPipe viz missing, settings panel absent, demo folder chaos. Action plan: 1) Archive demos 2) Fix FSM 3) Add viz 4) Settings panel.",
+            "port": 7
+          },
+          {
+            "ts": "2025-12-30T23:45:00Z",
+            "hive": "H",
+            "msg": "HUNT (N+1): Cold start complete. Memory graph loaded (50+ entities). Blackboard analyzed (200 signals, 20+ incidents). Created WORKFLOW_IMPROVEMENT_VARIANT_3. Key insight: Gap is DESIGN-ENFORCEMENT not architecture. 4-phase action plan ready.",
+            "port": 7
+          },
+          {
+            "ts": "2025-12-30T23:33:00Z",
+            "hive": "H",
+            "msg": "HUNT (N+1): Starting new cycle. Grounded in 2 daily specs. Sequential thinking complete. Exploring Commander MCP facade pattern - 8 unified tools mapping to existing MCPs. Options: A) hive-enforcer server, B) Custom agents, C) Spec-first. Memory graph loaded (50+ entities).",
+            "port": 0
+          },
+          {
+            "ts": "2025-12-30T23:17:09Z",
+            "hive": "E",
+            "msg": "EVOLVE-HANDOFF: Gen87.X3 session COMPLETE. Full HIVE cycle executed. Memory MCP updated with session learnings (50+ entities, 40+ relations). Key wins: demo-real validated (19/19 GREEN), V-phase gate operational, spider-sovereign enforcement active, pre-commit 7 gates. Next session: Continue E-phase or fresh HUNT. The spider weaves the web that weaves the spider.",
+            "port": 7
+          },
+          {
+            "ts": "2025-12-31T06:16:24Z",
+            "hive": "E",
+            "msg": "HANDOFF: Gen87.X3 V-Phase Complete. demo-real with Golden Layout + NATS validated (19/19 E2E GREEN). Commit cd62973. Memory MCP updated. Next agent: Continue to E-Phase (EVOLVE) - refactor, document lessons, prepare for next HUNT cycle. Key files: sandbox/demo-real/index.html, e2e/real-architecture-demo.spec.ts, scripts/v-phase-gate.ts. The spider weaves the web that weaves the spider.",
+            "port": 7
+          },
+          {
+            "ts": "2025-12-31T06:16:08Z",
+            "hive": "E",
+            "msg": "EVOLVE-HANDOFF: Memory MCP upgraded. Added rag-memory-mcp (hybrid KG+Vector) alongside existing memory server. Three-tier architecture: MCP Memory (facts) + rag-memory-mcp (semantic search) + DuckDB (6,423 artifacts). Data dir: sandbox/.rag-memory. Reload VS Code to activate. Future: Build hive_cold_start, hive_search_exemplars, hive_validate_phase bridge tools (~7h). The spider weaves the web that weaves the spider.",
+            "port": 3
+          },
+          {
+            "ts": "2025-12-31T06:13:13Z",
+            "hive": "I",
+            "msg": "INTERLOCK: Spider Sovereign mode updated with HIVE/8 enforcement. Cold start protocol added (memory read + blackboard check + signal emit). Phase-specific tool blocking. Pre-commit Gate 0 checks signal trail. 7 gates total. Architecture is now ENFORCED when in spider mode.",
+            "port": 7
+          },
+          {
+            "ts": "2025-12-31T06:11:26Z",
+            "hive": "V",
+            "msg": "VALIDATE: demo-real E2E validation COMPLETE. 19/19 tests GREEN. Golden Layout working. NATS fallback working. All 6 adapter classes verified. Zod/XState/GoldenLayout/NATS.ws imports confirmed. V-phase gate PASSED.",
+            "port": 5
+          },
+          {
+            "ts": "2025-12-31T06:07:31Z",
+            "hive": "H",
+            "msg": "HUNT: Memory persistence complete. Created TTao_Spider_Symbiosis relationship entity. We now remember: TTao=Warlock (intent), Spider=Swarmlord (execution). Protocol: prove-not-assume, challenge when wrong, persist what we learn. The spider weaves the web that weaves the spider.",
+            "port": 7
+          }
+        ]
+      };
+    } // end fallback data
+    
+    // ============================================================
+    // GOLDEN LAYOUT CONFIG
+    // ============================================================
+    
+    const layoutConfig = {
+      root: {
+        type: 'row',
+        content: [
+          {
+            type: 'column',
+            width: 25,
+            content: [
+              { type: 'component', componentType: 'overview', title: '🎯 Gen87.X3 Overview', height: 35 },
+              { type: 'component', componentType: 'hive', title: '🐝 HIVE/8 Status', height: 35 },
+              { type: 'component', componentType: 'commanders', title: '⚔️ Commanders', height: 30 },
+            ]
+          },
+          {
+            type: 'column',
+            width: 35,
+            content: [
+              { type: 'component', componentType: 'tests', title: '🧪 Test Status', height: 40 },
+              { type: 'component', componentType: 'production', title: '✅ Production Readiness', height: 60 },
+            ]
+          },
+          {
+            type: 'column',
+            width: 40,
+            content: [
+              { type: 'component', componentType: 'scripts', title: '⚡ Script Runner', height: 50 },
+              { type: 'component', componentType: 'blackboard', title: '📡 Blackboard Signals', height: 50 },
+            ]
+          }
+        ]
+      }
+    };
+    
+    // ============================================================
+    // PANEL FACTORIES
+    // ============================================================
+    
+    function createOverviewPanel(container) {
+      const d = DASHBOARD_DATA;
+      container.element.innerHTML = `
+        <div class="panel-content">
+          <div class="panel-header">
+            <h2>Generation ${d.generation}.${d.iteration}</h2>
+            <span class="timestamp">v${d.version}</span>
+          </div>
+          
+          <div class="status-grid">
+            <div class="status-card">
+              <div class="value">${d.tests.passing}</div>
+              <div class="label">Tests Passing</div>
+            </div>
+            <div class="status-card error">
+              <div class="value">${d.tests.failing}</div>
+              <div class="label">Tests Failing</div>
+            </div>
+            <div class="status-card warning">
+              <div class="value">${d.tests.stubs}</div>
+              <div class="label">Stub Tests</div>
+            </div>
+            <div class="status-card info">
+              <div class="value">${d.tests.coverage}%</div>
+              <div class="label">Coverage</div>
+            </div>
+          </div>
+          
+          <div class="progress-item">
+            <div class="progress-header">
+              <span>Test Progress</span>
+              <span>${d.tests.passing}/${d.tests.total} (${Math.round(d.tests.passing/d.tests.total*100)}%)</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill green" style="width: ${d.tests.passing/d.tests.total*100}%"></div>
+            </div>
+          </div>
+          
+          <div class="progress-item">
+            <div class="progress-header">
+              <span>Design vs Enforcement Gap</span>
+              <span>${d.gaps.design}/10 vs ${d.gaps.enforcement}/10</span>
+            </div>
+            <div class="progress-bar" style="display: flex;">
+              <div class="progress-fill green" style="width: ${d.gaps.enforcement*10}%"></div>
+              <div class="progress-fill yellow" style="width: ${(d.gaps.design - d.gaps.enforcement)*10}%"></div>
+            </div>
+          </div>
+          
+          <div style="margin-top: 1rem;">
+            <div class="quick-links">
+              <a href="sandbox/demos/main/index.html" class="quick-link">🎯 Main Demo</a>
+              <a href="sandbox/demos/main/index-dino.html" class="quick-link">🦖 Dino Test</a>
+              <a href="MANIFEST.json" class="quick-link">📋 MANIFEST</a>
+              <a href="sandbox/WORKING_SURFACE.md" class="quick-link">📁 Working Surface</a>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    
+    function createHivePanel(container) {
+      const d = DASHBOARD_DATA;
+      container.element.innerHTML = `
+        <div class="panel-content">
+          <div class="panel-header">
+            <h2>Current: ${d.hive.currentPhase} Phase</h2>
+          </div>
+          
+          <div class="hive-grid">
+            ${Object.entries(d.hive.phases).map(([key, phase]) => `
+              <div class="hive-phase ${key} ${phase.active ? 'active' : ''}">
+                <div class="letter">${key}</div>
+                <div class="name">${phase.name}</div>
+              </div>
+            `).join('')}
+          </div>
+          
+          <div style="font-size: 0.7rem; color: var(--text-dim); text-align: center;">
+            <strong>HIVE/8 = TDD</strong><br>
+            H:Research → I:RED → V:GREEN → E:REFACTOR
+          </div>
+          
+          <div style="margin-top: 1rem; padding: 0.75rem; background: var(--bg-card); border-radius: 6px; font-size: 0.65rem;">
+            <div style="color: var(--phase-${d.hive.currentPhase.toLowerCase()}); font-weight: bold; margin-bottom: 0.25rem;">
+              ${d.hive.phases[d.hive.currentPhase].name}
+            </div>
+            <div style="color: var(--text-dim);">
+              ${d.hive.phases[d.hive.currentPhase].description}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    
+    function createCommandersPanel(container) {
+      const d = DASHBOARD_DATA;
+      container.element.innerHTML = `
+        <div class="panel-content">
+          <div class="panel-header">
+            <h2>8 Ports</h2>
+          </div>
+          
+          <div class="commander-grid">
+            ${d.commanders.map(c => `
+              <div class="commander-card ${c.status}">
+                <span class="port">${c.port}</span>
+                <span class="name">${c.name}</span>
+                <div class="verb">${c.verb}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+    
+    function createTestsPanel(container) {
+      const d = DASHBOARD_DATA;
+      container.element.innerHTML = `
+        <div class="panel-content">
+          <div class="panel-header">
+            <h2>Test Metrics</h2>
+            <span class="timestamp">vitest</span>
+          </div>
+          
+          <table class="metrics-table">
+            <tr>
+              <th>Metric</th>
+              <th>Value</th>
+              <th>Status</th>
+            </tr>
+            <tr>
+              <td>Total Tests</td>
+              <td class="value">${d.tests.total}</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td>Passing (GREEN)</td>
+              <td class="value pass">${d.tests.passing}</td>
+              <td class="pass">✓</td>
+            </tr>
+            <tr>
+              <td>Failing (RED)</td>
+              <td class="value fail">${d.tests.failing}</td>
+              <td class="fail">✗</td>
+            </tr>
+            <tr>
+              <td>Skipped</td>
+              <td class="value warn">${d.tests.skipped}</td>
+              <td class="warn">⊘</td>
+            </tr>
+            <tr>
+              <td>Stub Patterns</td>
+              <td class="value fail">${d.tests.stubs}</td>
+              <td class="fail">⚠</td>
+            </tr>
+            <tr>
+              <td>Coverage</td>
+              <td class="value ${d.tests.coverage >= 80 ? 'pass' : 'warn'}">${d.tests.coverage}%</td>
+              <td class="${d.tests.coverage >= 80 ? 'pass' : 'warn'}">${d.tests.coverage >= 80 ? '✓' : '⚠'}</td>
+            </tr>
+          </table>
+          
+          <div style="margin-top: 1rem;">
+            <div class="progress-item">
+              <div class="progress-header">
+                <span>Pass Rate</span>
+                <span>${Math.round(d.tests.passing / d.tests.total * 100)}%</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill green" style="width: ${d.tests.passing / d.tests.total * 100}%"></div>
+              </div>
+            </div>
+            
+            <div class="progress-item">
+              <div class="progress-header">
+                <span>Stub Debt</span>
+                <span>${d.tests.stubs} patterns</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill red" style="width: ${Math.min(100, d.tests.stubs / 5)}%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    
+    function createProductionPanel(container) {
+      const d = DASHBOARD_DATA;
+      const statusIcons = { pass: '✅', warn: '⚠️', fail: '🔴', info: 'ℹ️' };
+      
+      // Check if we have realVsTheater data (new format)
+      const hasRealVsTheater = d.realVsTheater && d.realVsTheater.real;
+      
+      if (hasRealVsTheater) {
+        container.element.innerHTML = `
+          <div class="panel-content">
+            <div class="panel-header">
+              <h2>🎭 REAL vs THEATER</h2>
+              <span class="timestamp">${d.realVsTheater.real.length} real / ${d.realVsTheater.theater.length} theater</span>
+            </div>
+            
+            <div style="margin-bottom: 1rem;">
+              <h3 style="color: var(--accent); font-size: 0.75rem; margin-bottom: 0.5rem;">✅ REAL (Validated)</h3>
+              <div class="checklist">
+                ${d.realVsTheater.real.map(item => `
+                  <div class="check-item pass">
+                    <span class="icon">✅</span>
+                    <div class="text">
+                      <strong>${item.id}</strong>
+                      <span>${item.tests || item.desc || ''}</span>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+            
+            <div>
+              <h3 style="color: var(--warning); font-size: 0.75rem; margin-bottom: 0.5rem;">🎭 THEATER (Pending)</h3>
+              <div class="checklist">
+                ${d.realVsTheater.theater.map(item => `
+                  <div class="check-item warn">
+                    <span class="icon">⚠️</span>
+                    <div class="text">
+                      <strong>${item.id}${item.count !== undefined ? ` (${item.count})` : ''}</strong>
+                      <span>${item.desc || ''}</span>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+        `;
+      } else {
+        // Fallback to old format
+        container.element.innerHTML = `
+          <div class="panel-content">
+            <div class="panel-header">
+              <h2>Checklist</h2>
+              <span class="timestamp">${d.productionChecks?.filter(c => c.status === 'pass').length || 0}/${d.productionChecks?.length || 0} passing</span>
+            </div>
+            
+            <div class="checklist">
+              ${(d.productionChecks || []).map(check => `
+                <div class="check-item ${check.status}">
+                  <span class="icon">${statusIcons[check.status]}</span>
+                  <div class="text">
+                    <strong>${check.title}</strong>
+                    <span>${check.desc}</span>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+    }
+    
+    function createScriptsPanel(container) {
+      const d = DASHBOARD_DATA;
+      container.element.innerHTML = `
+        <div class="panel-content">
+          <div class="panel-header">
+            <h2>NPM Scripts</h2>
+          </div>
+          
+          <div class="script-buttons">
+            ${d.scripts.map(s => `
+              <button id="btn-${s.id}" data-cmd="${s.cmd}">${s.name}</button>
+            `).join('')}
+          </div>
+          
+          <div class="console" id="console-output">
+            <div class="line info">Ready to run scripts...</div>
+            <div class="line info">Scripts execute in terminal (open DevTools to see output)</div>
+          </div>
+        </div>
+      `;
+      
+      // Script button handlers
+      d.scripts.forEach(s => {
+        const btn = container.element.querySelector(`#btn-${s.id}`);
+        btn.addEventListener('click', () => {
+          const console = container.element.querySelector('#console-output');
+          console.innerHTML += `<div class="line warn">\n> ${s.cmd}</div>`;
+          console.innerHTML += `<div class="line info">Running in terminal... Check VS Code terminal for output.</div>`;
+          console.scrollTop = console.scrollHeight;
+          
+          // Copy command to clipboard for easy paste
+          navigator.clipboard?.writeText(s.cmd);
+        });
+      });
+    }
+    
+    function createBlackboardPanel(container) {
+      container.element.innerHTML = `
+        <div class="panel-content">
+          <div class="panel-header">
+            <h2>Recent Signals</h2>
+            <button id="btn-refresh-bb">↻ Refresh</button>
+          </div>
+          
+          <div class="signal-list" id="signal-list">
+            <div style="color: var(--text-dim); font-size: 0.7rem; padding: 1rem; text-align: center;">
+              Load blackboard signals from:<br>
+              <code>sandbox/obsidianblackboard.jsonl</code>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      // Try to load blackboard signals
+      loadBlackboardSignals(container.element.querySelector('#signal-list'));
+      
+      container.element.querySelector('#btn-refresh-bb').addEventListener('click', () => {
+        loadBlackboardSignals(container.element.querySelector('#signal-list'));
+      });
+    }
+    
+    async function loadBlackboardSignals(container) {
+      try {
+        const response = await fetch('sandbox/obsidianblackboard.jsonl');
+        const text = await response.text();
+        const lines = text.trim().split('\n').filter(Boolean);
+        const signals = lines.slice(-20).reverse().map(line => {
+          try { return JSON.parse(line); }
+          catch { return null; }
+        }).filter(Boolean);
+        
+        container.innerHTML = signals.map(s => `
+          <div class="signal-item ${s.hive || ''}">
+            <div class="header">
+              <span class="phase">${s.hive || '?'}</span>
+              <span class="timestamp">${s.ts?.slice(11, 19) || 'N/A'}</span>
+            </div>
+            <div class="msg">${s.msg || JSON.stringify(s)}</div>
+          </div>
+        `).join('');
+        
+      } catch (err) {
+        container.innerHTML = `<div style="color: var(--error); padding: 1rem; font-size: 0.7rem;">
+          Could not load blackboard: ${err.message}<br><br>
+          Run from VS Code Live Server or file:// may block fetch.
+        </div>`;
+      }
+    }
+    
+    // ============================================================
+    // INIT
+    // ============================================================
+    
+    function init() {
+      const goldenLayout = new GoldenLayout(document.getElementById('layout-container'));
+      
+      goldenLayout.registerComponentFactoryFunction('overview', createOverviewPanel);
+      goldenLayout.registerComponentFactoryFunction('hive', createHivePanel);
+      goldenLayout.registerComponentFactoryFunction('commanders', createCommandersPanel);
+      goldenLayout.registerComponentFactoryFunction('tests', createTestsPanel);
+      goldenLayout.registerComponentFactoryFunction('production', createProductionPanel);
+      goldenLayout.registerComponentFactoryFunction('scripts', createScriptsPanel);
+      goldenLayout.registerComponentFactoryFunction('blackboard', createBlackboardPanel);
+      
+      goldenLayout.loadLayout(layoutConfig);
+      
+      window.addEventListener('resize', () => goldenLayout.setSize(window.innerWidth, window.innerHeight));
+      
+      console.log('[HFO] Dev Dashboard initialized');
+      console.log('[HFO] Run `npm run dashboard:update` to refresh data');
+    }
+    
+    init();
+  
+</script>
+</body>
+</html>

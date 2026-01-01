@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gen87.X3 — 4-Cursor Smoother Comparison</title>
+  
+  <!-- Golden Layout -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/golden-layout@2.6.0/dist/css/goldenlayout-base.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/golden-layout@2.6.0/dist/css/themes/goldenlayout-dark-theme.css">
+  
+  <style>
+    :root {
+      --bg-dark: #0a0a0f;
+      --bg-panel: #12121a;
+      --border: #2a2a3a;
+      --accent: #00ff88;
+      --text: #e0e0e0;
+      --text-dim: #808090;
+      
+      /* Cursor colors */
+      --cursor-raw: #ff4444;
+      --cursor-euro: #00ff88;
+      --cursor-smooth: #4488ff;
+      --cursor-predict: #ffaa00;
+    }
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    html, body {
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      background: var(--bg-dark);
+      color: var(--text);
+      height: 100%;
+      overflow: hidden;
+    }
+    
+    #layout-container { width: 100%; height: 100%; }
+    
+    /* Golden Layout overrides */
+    .lm_header { background: var(--bg-panel) !important; }
+    .lm_tab { background: var(--bg-dark) !important; }
+    .lm_tab.lm_active { background: var(--bg-panel) !important; border-bottom: 2px solid var(--accent) !important; }
+    .lm_content { background: var(--bg-panel) !important; }
+    .lm_splitter { background: var(--border) !important; }
+    
+    .panel-content {
+      padding: 0.75rem;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    
+    .panel-content h2 {
+      font-size: 0.8rem;
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      flex-shrink: 0;
+    }
+    
+    /* Camera Panel */
+    .camera-container {
+      position: relative;
+      width: 100%;
+      flex: 1;
+      min-height: 0;
+      background: #000;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    
+    #camera {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      transform: scaleX(-1);
+    }
+    
+    #landmarks-canvas {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      transform: scaleX(-1);
+      pointer-events: none;
+    }
+    
+    .camera-overlay {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      background: rgba(0, 0, 0, 0.8);
+      padding: 0.4rem 0.6rem;
+      border-radius: 4px;
+      font-size: 0.65rem;
+    }
+    
+    /* Cursor Tracking Area */
+    .cursor-area {
+      position: relative;
+      width: 100%;
+      flex: 1;
+      min-height: 200px;
+      background: #1a1a2e;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    
+    .cursor {
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      transition: none;
+    }
+    
+    .cursor.raw {
+      background: var(--cursor-raw);
+      border: 2px solid #ff6666;
+      opacity: 0.7;
+      z-index: 1;
+    }
+    
+    .cursor.euro {
+      background: var(--cursor-euro);
+      border: 2px solid #66ffaa;
+      z-index: 2;
+    }
+    
+    .cursor.smooth {
+      background: var(--cursor-smooth);
+      border: 2px solid #66aaff;
+      width: 20px;
+      height: 20px;
+      z-index: 3;
+    }
+    
+    .cursor.predict {
+      background: var(--cursor-predict);
+      border: 2px solid #ffcc44;
+      width: 24px;
+      height: 24px;
+      z-index: 4;
+    }
+    
+    /* Cursor trail */
+    .cursor-trail {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      pointer-events: none;
+      opacity: 0.3;
+    }
+    
+    /* Legend */
+    .cursor-legend {
+      display: flex;
+      gap: 1rem;
+      padding: 0.5rem;
+      background: var(--bg-dark);
+      border-radius: 4px;
+      margin-bottom: 0.5rem;
+      flex-wrap: wrap;
+    }
+    
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.65rem;
+    }
+    
+    .legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+    
+    .legend-dot.raw { background: var(--cursor-raw); }
+    .legend-dot.euro { background: var(--cursor-euro); }
+    .legend-dot.smooth { background: var(--cursor-smooth); }
+    .legend-dot.predict { background: var(--cursor-predict); }
+    
+    /* Metrics Panel */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.5rem;
+      flex: 1;
+      overflow-y: auto;
+    }
+    
+    .metric-card {
+      background: var(--bg-dark);
+      border-radius: 4px;
+      padding: 0.5rem;
+    }
+    
+    .metric-card h4 {
+      font-size: 0.6rem;
+      color: var(--text-dim);
+      margin-bottom: 0.3rem;
+      text-transform: uppercase;
+    }
+    
+    .metric-value {
+      font-size: 1rem;
+      font-weight: bold;
+    }
+    
+    .metric-value.raw { color: var(--cursor-raw); }
+    .metric-value.euro { color: var(--cursor-euro); }
+    .metric-value.smooth { color: var(--cursor-smooth); }
+    .metric-value.predict { color: var(--cursor-predict); }
+    
+    /* Gesture Display */
+    .gesture-display {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.8);
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      font-size: 1rem;
+      font-weight: bold;
+      color: var(--accent);
+    }
+    
+    /* Status */
+    .status-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--bg-dark);
+      border-top: 1px solid var(--border);
+      padding: 0.4rem 1rem;
+      font-size: 0.65rem;
+      display: flex;
+      gap: 1rem;
+    }
+    
+    .status-item { color: var(--text-dim); }
+    .status-item.good { color: var(--accent); }
+    .status-item.bad { color: var(--cursor-raw); }
+  </style>
+</head>
+<body>
+  <div id="layout-container"></div>
+  
+  <div class="status-bar">
+    <span class="status-item" id="status-mediapipe">MediaPipe: Loading...</span>
+    <span class="status-item" id="status-rapier">Rapier: Loading...</span>
+    <span class="status-item" id="status-fps">FPS: --</span>
+    <span class="status-item" id="status-gesture">Gesture: None</span>
+  </div>
+
+  <!-- Golden Layout -->
+  <script src="https://cdn.jsdelivr.net/npm/golden-layout@2.6.0/dist/bundle/umd/golden-layout.js"></script>
+  
+  <!-- Import Maps for ESM -->
+  <script type="importmap">
+  {
+    "imports": {
+      "@mediapipe/tasks-vision": "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22-rc.20250304/+esm",
+      "@dimforge/rapier2d-compat": "https://cdn.jsdelivr.net/npm/@dimforge/rapier2d-compat@0.19.3/+esm",
+      "1eurofilter": "https://cdn.jsdelivr.net/npm/1eurofilter@1.2.2/+esm"
+    }
+  }
+  </script>
+
+  <script type="module">
+// @ts-nocheck
+
+    // =========================================================================
+    // IMPORTS
+    // =========================================================================
+    import { GestureRecognizer, FilesetResolver, DrawingUtils } from '@mediapipe/tasks-vision';
+    import RAPIER from '@dimforge/rapier2d-compat';
+    import { OneEuroFilter } from '1eurofilter';
+
+    // =========================================================================
+    // GLOBALS
+    // =========================================================================
+    let gestureRecognizer = null;
+    let rapierWorld = null;
+    let rapierBody = null;
+    let rapierBodyPredict = null;
+    
+    // Cursor positions
+    const cursors = {
+      raw: { x: 0.5, y: 0.5 },
+      euro: { x: 0.5, y: 0.5 },
+      smooth: { x: 0.5, y: 0.5 },
+      predict: { x: 0.5, y: 0.5 },
+    };
+    
+    // 1€ Filters (x and y for each axis)
+    let euroFilterX = null;
+    let euroFilterY = null;
+    
+    // Metrics
+    const metrics = {
+      fps: 0,
+      latency: { raw: 0, euro: 0, smooth: 0, predict: 0 },
+      jitter: { raw: 0, euro: 0, smooth: 0, predict: 0 },
+    };
+    
+    let lastFrameTime = 0;
+    let lastRawPos = { x: 0.5, y: 0.5 };
+    
+    // DOM elements
+    let camera, landmarksCanvas, ctx;
+    let cursorElements = {};
+    let cursorArea;
+
+    // =========================================================================
+    // GOLDEN LAYOUT CONFIG
+    // =========================================================================
+    const layoutConfig = {
+      root: {
+        type: 'row',
+        content: [
+          {
+            type: 'column',
+            width: 40,
+            content: [
+              {
+                type: 'component',
+                componentType: 'camera',
+                title: '📷 Camera + MediaPipe',
+              },
+              {
+                type: 'component',
+                componentType: 'metrics',
+                title: '📊 Metrics',
+                height: 35,
+              },
+            ],
+          },
+          {
+            type: 'component',
+            componentType: 'cursors',
+            title: '🎯 4-Cursor Comparison',
+          },
+        ],
+      },
+    };
+
+    // =========================================================================
+    // COMPONENT FACTORIES
+    // =========================================================================
+    function createCameraPanel(container) {
+      const el = document.createElement('div');
+      el.className = 'panel-content';
+      el.innerHTML = `
+        <h2>Hand Tracking Input</h2>
+        <div class="camera-container">
+          <video id="camera" autoplay playsinline muted></video>
+          <canvas id="landmarks-canvas"></canvas>
+          <div class="camera-overlay">
+            <span id="gesture-label">Waiting for camera...</span>
+          </div>
+        </div>
+      `;
+      container.element.appendChild(el);
+      
+      camera = el.querySelector('#camera');
+      landmarksCanvas = el.querySelector('#landmarks-canvas');
+      ctx = landmarksCanvas.getContext('2d');
+    }
+
+    function createCursorsPanel(container) {
+      const el = document.createElement('div');
+      el.className = 'panel-content';
+      el.innerHTML = `
+        <h2>Smoother Comparison</h2>
+        <div class="cursor-legend">
+          <div class="legend-item">
+            <div class="legend-dot raw"></div>
+            <span>RAW (no filter)</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot euro"></div>
+            <span>1€ Filter (snappy)</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot smooth"></div>
+            <span>Rapier Smoothed</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot predict"></div>
+            <span>Rapier Predictive</span>
+          </div>
+        </div>
+        <div class="cursor-area" id="cursor-area">
+          <div class="cursor raw" id="cursor-raw"></div>
+          <div class="cursor euro" id="cursor-euro"></div>
+          <div class="cursor smooth" id="cursor-smooth"></div>
+          <div class="cursor predict" id="cursor-predict"></div>
+          <div class="gesture-display" id="gesture-display">Open_Palm</div>
+        </div>
+      `;
+      container.element.appendChild(el);
+      
+      cursorArea = el.querySelector('#cursor-area');
+      cursorElements.raw = el.querySelector('#cursor-raw');
+      cursorElements.euro = el.querySelector('#cursor-euro');
+      cursorElements.smooth = el.querySelector('#cursor-smooth');
+      cursorElements.predict = el.querySelector('#cursor-predict');
+    }
+
+    function createMetricsPanel(container) {
+      const el = document.createElement('div');
+      el.className = 'panel-content';
+      el.innerHTML = `
+        <h2>Performance Metrics</h2>
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <h4>Raw Jitter</h4>
+            <div class="metric-value raw" id="metric-jitter-raw">--</div>
+          </div>
+          <div class="metric-card">
+            <h4>1€ Jitter</h4>
+            <div class="metric-value euro" id="metric-jitter-euro">--</div>
+          </div>
+          <div class="metric-card">
+            <h4>Rapier Smooth Jitter</h4>
+            <div class="metric-value smooth" id="metric-jitter-smooth">--</div>
+          </div>
+          <div class="metric-card">
+            <h4>Rapier Predict Jitter</h4>
+            <div class="metric-value predict" id="metric-jitter-predict">--</div>
+          </div>
+          <div class="metric-card">
+            <h4>Distance from Raw</h4>
+            <div class="metric-value euro" id="metric-dist-euro">--</div>
+          </div>
+          <div class="metric-card">
+            <h4>Distance from Raw</h4>
+            <div class="metric-value smooth" id="metric-dist-smooth">--</div>
+          </div>
+          <div class="metric-card">
+            <h4>Prediction Lead</h4>
+            <div class="metric-value predict" id="metric-predict-lead">--</div>
+          </div>
+          <div class="metric-card">
+            <h4>FPS</h4>
+            <div class="metric-value" id="metric-fps">--</div>
+          </div>
+        </div>
+      `;
+      container.element.appendChild(el);
+    }
+
+    // =========================================================================
+    // INIT GOLDEN LAYOUT
+    // =========================================================================
+    const layout = new goldenLayout.GoldenLayout(layoutConfig, document.getElementById('layout-container'));
+    
+    layout.registerComponentFactoryFunction('camera', createCameraPanel);
+    layout.registerComponentFactoryFunction('cursors', createCursorsPanel);
+    layout.registerComponentFactoryFunction('metrics', createMetricsPanel);
+    
+    layout.init();
+
+    // =========================================================================
+    // INIT MEDIAPIPE
+    // =========================================================================
+    async function initMediaPipe() {
+      try {
+        document.getElementById('status-mediapipe').textContent = 'MediaPipe: Initializing...';
+        
+        const vision = await FilesetResolver.forVisionTasks(
+          'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22-rc.20250304/wasm'
+        );
+        
+        gestureRecognizer = await GestureRecognizer.createFromOptions(vision, {
+          baseOptions: {
+            modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task',
+            delegate: 'GPU',
+          },
+          runningMode: 'VIDEO',
+          numHands: 1,
+        });
+        
+        document.getElementById('status-mediapipe').textContent = 'MediaPipe: Ready';
+        document.getElementById('status-mediapipe').classList.add('good');
+        
+        await startCamera();
+      } catch (err) {
+        console.error('MediaPipe init error:', err);
+        document.getElementById('status-mediapipe').textContent = `MediaPipe: Error - ${err.message}`;
+        document.getElementById('status-mediapipe').classList.add('bad');
+      }
+    }
+
+    // =========================================================================
+    // INIT RAPIER
+    // =========================================================================
+    async function initRapier() {
+      try {
+        document.getElementById('status-rapier').textContent = 'Rapier: Initializing WASM...';
+        
+        await RAPIER.init();
+        
+        // Create world with no gravity
+        rapierWorld = new RAPIER.World({ x: 0.0, y: 0.0 });
+        
+        // Smoothed body (higher damping)
+        const smoothDesc = RAPIER.RigidBodyDesc.dynamic()
+          .setTranslation(0.5, 0.5)
+          .setLinearDamping(8.0);
+        rapierBody = rapierWorld.createRigidBody(smoothDesc);
+        rapierWorld.createCollider(RAPIER.ColliderDesc.ball(0.01), rapierBody);
+        
+        // Predictive body (lower damping for more momentum)
+        const predictDesc = RAPIER.RigidBodyDesc.dynamic()
+          .setTranslation(0.5, 0.5)
+          .setLinearDamping(5.0);
+        rapierBodyPredict = rapierWorld.createRigidBody(predictDesc);
+        rapierWorld.createCollider(RAPIER.ColliderDesc.ball(0.01), rapierBodyPredict);
+        
+        document.getElementById('status-rapier').textContent = 'Rapier: WASM Ready ✓';
+        document.getElementById('status-rapier').classList.add('good');
+      } catch (err) {
+        console.error('Rapier init error:', err);
+        document.getElementById('status-rapier').textContent = `Rapier: Error - ${err.message}`;
+        document.getElementById('status-rapier').classList.add('bad');
+      }
+    }
+
+    // =========================================================================
+    // INIT 1€ FILTERS
+    // =========================================================================
+    function initEuroFilters() {
+      // Parameters from original paper for pointer tracking
+      euroFilterX = new OneEuroFilter({ frequency: 60, minCutoff: 1.0, beta: 0.007, dCutoff: 1.0 });
+      euroFilterY = new OneEuroFilter({ frequency: 60, minCutoff: 1.0, beta: 0.007, dCutoff: 1.0 });
+    }
+
+    // =========================================================================
+    // START CAMERA
+    // =========================================================================
+    async function startCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { width: 640, height: 480, facingMode: 'user' },
+        });
+        camera.srcObject = stream;
+        
+        camera.onloadedmetadata = () => {
+          landmarksCanvas.width = camera.videoWidth;
+          landmarksCanvas.height = camera.videoHeight;
+          processFrame();
+        };
+      } catch (err) {
+        console.error('Camera error:', err);
+        document.getElementById('gesture-label').textContent = 'Camera access denied';
+      }
+    }
+
+    // =========================================================================
+    // PROCESS FRAME
+    // =========================================================================
+    const STIFFNESS = 400; // Spring stiffness
+    const PREDICT_MS = 50; // Prediction lookahead
+    
+    let jitterHistory = { raw: [], euro: [], smooth: [], predict: [] };
+    
+    function processFrame() {
+      if (!gestureRecognizer || camera.readyState < 2) {
+        requestAnimationFrame(processFrame);
+        return;
+      }
+      
+      const now = performance.now();
+      const dt = lastFrameTime ? (now - lastFrameTime) / 1000 : 1/60;
+      lastFrameTime = now;
+      
+      // Update FPS
+      metrics.fps = Math.round(1 / dt);
+      document.getElementById('metric-fps').textContent = metrics.fps;
+      document.getElementById('status-fps').textContent = `FPS: ${metrics.fps}`;
+      
+      // Run gesture recognition
+      const results = gestureRecognizer.recognizeForVideo(camera, now);
+      
+      // Clear canvas
+      ctx.clearRect(0, 0, landmarksCanvas.width, landmarksCanvas.height);
+      
+      if (results.landmarks && results.landmarks.length > 0) {
+        const hand = results.landmarks[0];
+        
+        // Draw landmarks
+        const drawingUtils = new DrawingUtils(ctx);
+        drawingUtils.drawLandmarks(hand, { color: '#00ff88', lineWidth: 1 });
+        drawingUtils.drawConnectors(hand, GestureRecognizer.HAND_CONNECTIONS, { color: '#00aa55' });
+        
+        // Get index tip position (landmark 8)
+        const indexTip = hand[8];
+        const rawX = indexTip.x;
+        const rawY = indexTip.y;
+        
+        // Get gesture
+        const gesture = results.gestures?.[0]?.[0]?.categoryName || 'None';
+        document.getElementById('gesture-display').textContent = gesture;
+        document.getElementById('gesture-label').textContent = gesture;
+        document.getElementById('status-gesture').textContent = `Gesture: ${gesture}`;
+        
+        // =====================================================================
+        // 1. RAW CURSOR
+        // =====================================================================
+        cursors.raw = { x: rawX, y: rawY };
+        
+        // =====================================================================
+        // 2. 1€ FILTERED CURSOR
+        // =====================================================================
+        const euroX = euroFilterX.filter(rawX, now / 1000);
+        const euroY = euroFilterY.filter(rawY, now / 1000);
+        cursors.euro = { x: euroX, y: euroY };
+        
+        // =====================================================================
+        // 3. RAPIER SMOOTHED CURSOR
+        // =====================================================================
+        if (rapierWorld && rapierBody) {
+          const pos = rapierBody.translation();
+          const dx = rawX - pos.x;
+          const dy = rawY - pos.y;
+          
+          // Apply spring force
+          rapierBody.applyImpulse({ x: dx * STIFFNESS * dt, y: dy * STIFFNESS * dt }, true);
+          
+          const smoothPos = rapierBody.translation();
+          cursors.smooth = { x: smoothPos.x, y: smoothPos.y };
+        }
+        
+        // =====================================================================
+        // 4. RAPIER PREDICTIVE CURSOR
+        // =====================================================================
+        if (rapierWorld && rapierBodyPredict) {
+          const pos = rapierBodyPredict.translation();
+          const dx = rawX - pos.x;
+          const dy = rawY - pos.y;
+          
+          rapierBodyPredict.applyImpulse({ x: dx * STIFFNESS * dt, y: dy * STIFFNESS * dt }, true);
+          
+          const predictPos = rapierBodyPredict.translation();
+          const predictVel = rapierBodyPredict.linvel();
+          
+          // Add prediction lookahead
+          const predictSec = PREDICT_MS / 1000;
+          cursors.predict = {
+            x: predictPos.x + predictVel.x * predictSec,
+            y: predictPos.y + predictVel.y * predictSec,
+          };
+        }
+        
+        // Step physics world
+        if (rapierWorld) {
+          rapierWorld.step();
+        }
+        
+        // =====================================================================
+        // CALCULATE JITTER (distance from last position)
+        // =====================================================================
+        const calcJitter = (prev, curr) => Math.sqrt((curr.x - prev.x)**2 + (curr.y - prev.y)**2);
+        
+        for (const type of ['raw', 'euro', 'smooth', 'predict']) {
+          const jitter = calcJitter(lastRawPos, cursors[type]) * 1000; // Scale for display
+          jitterHistory[type].push(jitter);
+          if (jitterHistory[type].length > 30) jitterHistory[type].shift();
+          
+          const avgJitter = jitterHistory[type].reduce((a, b) => a + b, 0) / jitterHistory[type].length;
+          document.getElementById(`metric-jitter-${type}`).textContent = avgJitter.toFixed(2);
+        }
+        
+        lastRawPos = { ...cursors.raw };
+        
+        // Distance from raw
+        const distEuro = Math.sqrt((cursors.euro.x - cursors.raw.x)**2 + (cursors.euro.y - cursors.raw.y)**2);
+        const distSmooth = Math.sqrt((cursors.smooth.x - cursors.raw.x)**2 + (cursors.smooth.y - cursors.raw.y)**2);
+        document.getElementById('metric-dist-euro').textContent = (distEuro * 100).toFixed(1) + '%';
+        document.getElementById('metric-dist-smooth').textContent = (distSmooth * 100).toFixed(1) + '%';
+        
+        // Prediction lead
+        const predictLead = Math.sqrt((cursors.predict.x - cursors.smooth.x)**2 + (cursors.predict.y - cursors.smooth.y)**2);
+        document.getElementById('metric-predict-lead').textContent = (predictLead * 100).toFixed(1) + '%';
+        
+        // =====================================================================
+        // UPDATE CURSOR DOM
+        // =====================================================================
+        updateCursorPositions();
+      }
+      
+      requestAnimationFrame(processFrame);
+    }
+
+    function updateCursorPositions() {
+      if (!cursorArea) return;
+      
+      const rect = cursorArea.getBoundingClientRect();
+      
+      for (const [type, pos] of Object.entries(cursors)) {
+        const el = cursorElements[type];
+        if (!el) continue;
+        
+        // Map normalized (0-1) to pixel position
+        const x = pos.x * rect.width;
+        const y = pos.y * rect.height;
+        
+        el.style.left = `${x}px`;
+        el.style.top = `${y}px`;
+      }
+    }
+
+    // =========================================================================
+    // INITIALIZE EVERYTHING
+    // =========================================================================
+    async function init() {
+      initEuroFilters();
+      await Promise.all([initMediaPipe(), initRapier()]);
+    }
+    
+    init();
+  
+</script>
+</body>
+</html>

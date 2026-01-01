@@ -1,0 +1,110 @@
+{
+	"generated_at": "2025-12-30T20:43:00Z",
+	"workspace": "C:\\Dev\\active\\hfo_gen87_x3",
+	"git": {
+		"latest_commit_hash": "57e8fc0",
+		"latest_commit_message": "feat(phase1.5): add multi-hand architecture RED tests (30 tests)",
+		"branch": "gen87-x3/develop",
+		"recent_commits": [
+			"57e8fc0 feat(phase1.5): add multi-hand architecture RED tests",
+			"e0e51f7 test(phase1): RED tests for W3C Physics Cursor MVP - 63 tests",
+			"ac8721f test(gesture): RED tests for commit gesture system - 43 tests",
+			"e6f9c9c test(arming): RED tests for palm orientation-based arming gate",
+			"24f7590 test(smoothers): RED tests for 4-stage cursor pipeline"
+		]
+	},
+	"tests": {
+		"tests_total": 506,
+		"tests_passed": 270,
+		"tests_failed": 229,
+		"tests_skipped": 7,
+		"test_success_rate": "53%",
+		"tdd_phase": "RED",
+		"test_files": 19,
+		"duration_ms": 1250
+	},
+	"specs": {
+		"total_count": 16,
+		"files": [
+			"W3C_GESTURE_CONTROL_PLANE_SPEC.md",
+			"PIPELINE_TRADE_STUDY.md",
+			"PIPELINE_TRADE_STUDY_V2.md",
+			"HEXAGONAL_CDD_EARS_SPEC.md",
+			"TOOLING_RECOMMENDATIONS.md",
+			"AI_SWARM_DURABLE_WORKFLOW_SPEC.md",
+			"MISSION_FIT_ANALYSIS_20251230T200314Z_V1.md",
+			"TASK_FACTORY_PARETO_ANALYSIS_20251230.md",
+			"ARCHITECTURE_WEAKNESS_ANALYSIS.md",
+			"HANDOFF_GEN87_X3_20251230.md",
+			"SWARM_ORCHESTRATION_GUIDE.md",
+			"COMPOSABILITY_MATRIX.md",
+			"W3C_MISSION_FIT_ANALYSIS_V2_20251230T0000Z.md",
+			"MISSION_FIT_TASK_FACTORY_ANALYSIS_20251230.md",
+			"HANDOFF_PROTOCOL.md",
+			"GEN87_X3_CONTEXT_PAYLOAD_V1_20251230Z.md"
+		]
+	},
+	"blackboard": {
+		"exists": true,
+		"total_signals": 50,
+		"by_phase": { "H": 35, "I": 10, "X": 3, "V": 0, "E": 0 },
+		"latest_timestamp": "2025-12-30T20:42:00Z"
+	},
+	"implementation": {
+		"contracts": {
+			"schemas.ts": { "exists": true, "trl9_documented": true },
+			"ports.ts": { "exists": true },
+			"index.ts": { "exists": true }
+		},
+		"smoothers": {
+			"one-euro-smoother.ts": { "exists": true, "status": "STUB" },
+			"physics-spring-smoother.ts": { "exists": true, "status": "STUB" },
+			"predictive-smoother.ts": { "exists": true, "status": "STUB" },
+			"smoother-chain.ts": { "exists": true, "status": "STUB" },
+			"quad-cursor-pipeline.ts": { "exists": true, "status": "STUB" }
+		},
+		"adapters": {
+			"pipeline.ts": { "exists": true },
+			"xstate-fsm.adapter.ts": { "exists": true, "status": "PARTIAL" },
+			"mediapipe.adapter.ts": { "exists": true },
+			"one-euro.adapter.ts": { "exists": true },
+			"pointer-event.adapter.ts": { "exists": true }
+		}
+	},
+	"test_breakdown": {
+		"emulator_adapters": { "tests": 35, "status": "GREEN" },
+		"ui_shell_port": { "tests": 71, "status": "GREEN" },
+		"fsm_state_transitions": { "tests": 80, "status": "RED" },
+		"w3c_pointer_compliance": { "tests": 60, "status": "RED" },
+		"smoother_pipeline": { "tests": 50, "status": "RED" },
+		"evolutionary_tuner": { "tests": 50, "status": "RED" },
+		"golden_master": { "tests": 40, "status": "RED" },
+		"observability_standards": { "tests": 36, "status": "RED" },
+		"puter_target": { "tests": 38, "status": "RED" },
+		"overlay_port": { "tests": 40, "status": "RED" },
+		"multi_hand": { "tests": 30, "status": "RED" }
+	},
+	"progress": {
+		"hive_phase": "I (INTERLOCK)",
+		"tdd_phase": "RED",
+		"hunt_complete": true,
+		"interlock_progress": "45%",
+		"overall_percentage": "35%",
+		"blocking_items": [
+			"OneEuroSmoother implementation",
+			"SmootherChain pipeline",
+			"XState FSM wiring",
+			"W3C Pointer emission",
+			"MultiHandManager"
+		]
+	},
+	"quality_metrics": {
+		"architecture_enforcement": true,
+		"precommit_hooks": true,
+		"trl9_lineage": true,
+		"known_issues": {
+			"stub_tests_as_green": 50,
+			"smoothers_not_implemented": 5
+		}
+	}
+}

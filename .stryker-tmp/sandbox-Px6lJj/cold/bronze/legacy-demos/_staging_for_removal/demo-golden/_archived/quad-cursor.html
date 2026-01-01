@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quad Cursor Demo - Gen87.X3</title>
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    html, body {
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0a0a1a;
+      color: #eee;
+    }
+    
+    .container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      height: 100vh;
+      gap: 4px;
+      padding: 4px;
+    }
+    
+    .quadrant {
+      position: relative;
+      background: #16213e;
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .quadrant-header {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 8px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    
+    .quadrant-label {
+      font-weight: 600;
+    }
+    
+    .quadrant-badge {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      background: #333;
+    }
+    
+    /* Quadrant-specific colors */
+    .q1 .quadrant-header { border-bottom: 3px solid #ff4444; }
+    .q1 .quadrant-badge { background: #ff4444; color: #000; }
+    
+    .q2 .quadrant-header { border-bottom: 3px solid #44ff44; }
+    .q2 .quadrant-badge { background: #44ff44; color: #000; }
+    
+    .q3 .quadrant-header { border-bottom: 3px solid #4488ff; }
+    .q3 .quadrant-badge { background: #4488ff; color: #000; }
+    
+    .q4 .quadrant-header { border-bottom: 3px solid #ffaa00; }
+    .q4 .quadrant-badge { background: #ffaa00; color: #000; }
+    
+    .cursor-area {
+      flex: 1;
+      position: relative;
+      background: #0f0f23;
+    }
+    
+    .cursor-canvas {
+      width: 100%;
+      height: 100%;
+    }
+    
+    /* Cursor indicators */
+    .cursor-indicator {
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      transition: all 0.05s linear;
+    }
+    
+    .cursor-indicator.raw {
+      width: 12px;
+      height: 12px;
+      border: 2px solid rgba(255, 0, 0, 0.6);
+    }
+    
+    .cursor-indicator.smoothed {
+      width: 24px;
+      height: 24px;
+      background: rgba(0, 255, 136, 0.8);
+    }
+    
+    .cursor-indicator.ring {
+      width: 36px;
+      height: 36px;
+      border: 3px solid #666;
+    }
+    
+    .cursor-indicator.ring.armed {
+      border-color: #00ff88;
+    }
+    
+    .cursor-indicator.ring.active {
+      border-color: #4488ff;
+    }
+    
+    /* Center control panel */
+    .center-panel {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.9);
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+      z-index: 100;
+      min-width: 300px;
+    }
+    
+    .center-panel.hidden {
+      display: none;
+    }
+    
+    .center-panel h2 {
+      margin-bottom: 15px;
+      color: #00ff88;
+    }
+    
+    .center-panel button {
+      background: #00ff88;
+      color: #000;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      margin: 5px;
+    }
+    
+    .center-panel button:hover {
+      background: #00cc66;
+    }
+    
+    .center-panel button.secondary {
+      background: #333;
+      color: #fff;
+    }
+    
+    /* FSM State overlay */
+    .fsm-overlay {
+      position: fixed;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.8);
+      padding: 10px 30px;
+      border-radius: 20px;
+      font-size: 18px;
+      font-weight: bold;
+      z-index: 50;
+    }
+    
+    .fsm-overlay.disarmed { color: #666; }
+    .fsm-overlay.arming { color: #ffcc00; }
+    .fsm-overlay.armed { color: #00ff88; }
+    .fsm-overlay.active { color: #4488ff; }
+    
+    /* Legend */
+    .legend {
+      position: fixed;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.8);
+      padding: 10px 20px;
+      border-radius: 8px;
+      display: flex;
+      gap: 20px;
+      font-size: 12px;
+      z-index: 50;
+    }
+    
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    
+    .legend-dot.raw { background: #ff4444; }
+    .legend-dot.smoothed { background: #00ff88; }
+    .legend-dot.prediction { background: #4488ff; }
+  </style>
+</head>
+<body>
+  <!-- Quad Layout -->
+  <div class="container">
+    <!-- Q1: Top-Left - DOM Target -->
+    <div class="quadrant q1" id="q1">
+      <div class="quadrant-header">
+        <span class="quadrant-label">🎯 DOM Target</span>
+        <span class="quadrant-badge">dispatchEvent</span>
+      </div>
+      <div class="cursor-area" id="cursor-area-q1">
+        <canvas class="cursor-canvas" id="canvas-q1"></canvas>
+      </div>
+    </div>
+    
+    <!-- Q2: Top-Right - Excalidraw/tldraw -->
+    <div class="quadrant q2" id="q2">
+      <div class="quadrant-header">
+        <span class="quadrant-label">✏️ Canvas Apps</span>
+        <span class="quadrant-badge">tldraw/Excalidraw</span>
+      </div>
+      <div class="cursor-area" id="cursor-area-q2">
+        <canvas class="cursor-canvas" id="canvas-q2"></canvas>
+      </div>
+    </div>
+    
+    <!-- Q3: Bottom-Left - Emulators -->
+    <div class="quadrant q3" id="q3">
+      <div class="quadrant-header">
+        <span class="quadrant-label">🎮 Emulators</span>
+        <span class="quadrant-badge">v86/js-dos</span>
+      </div>
+      <div class="cursor-area" id="cursor-area-q3">
+        <canvas class="cursor-canvas" id="canvas-q3"></canvas>
+      </div>
+    </div>
+    
+    <!-- Q4: Bottom-Right - Cloud OS -->
+    <div class="quadrant q4" id="q4">
+      <div class="quadrant-header">
+        <span class="quadrant-label">☁️ Cloud OS</span>
+        <span class="quadrant-badge">daedalOS/Puter</span>
+      </div>
+      <div class="cursor-area" id="cursor-area-q4">
+        <canvas class="cursor-canvas" id="canvas-q4"></canvas>
+      </div>
+    </div>
+  </div>
+  
+  <!-- FSM State Display -->
+  <div class="fsm-overlay disarmed" id="fsm-state">DISARMED</div>
+  
+  <!-- Legend -->
+  <div class="legend">
+    <div class="legend-item">
+      <div class="legend-dot raw"></div>
+      <span>Raw Input</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot smoothed"></div>
+      <span>1€ Filtered</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot prediction"></div>
+      <span>Rapier Prediction</span>
+    </div>
+  </div>
+  
+  <!-- Control Panel -->
+  <div class="center-panel" id="control-panel">
+    <h2>🖐️ Quad Cursor Demo</h2>
+    <p style="margin-bottom: 15px; color: #888;">
+      Tests gesture-to-cursor mapping across 4 target types
+    </p>
+    <button onclick="startDemo()">▶ Start Camera</button>
+    <button class="secondary" onclick="startGoldenPlayback()">🎬 Golden Playback</button>
+  </div>
+
+  <script type="module">
+// @ts-nocheck
+
+    import { GestureRecognizer, FilesetResolver } from 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.8/vision_bundle.mjs';
+    
+    // ========================================================================
+    // State
+    // ========================================================================
+    const state = {
+      gestureRecognizer: null,
+      video: null,
+      isRunning: false,
+      
+      // Canvases for each quadrant
+      canvases: {
+        q1: null,
+        q2: null,
+        q3: null,
+        q4: null,
+      },
+      
+      // 1€ Filter state
+      filter: {
+        x: null,
+        y: null,
+        dx: null,
+        dy: null,
+        lastTime: null,
+        minCutoff: 1.0,
+        beta: 0.007,
+      },
+      
+      // FSM
+      fsmState: 'DISARMED',
+      armingStart: null,
+      ARM_THRESHOLD_MS: 300,
+      
+      // Current position
+      position: {
+        raw: { x: 0.5, y: 0.5 },
+        smoothed: { x: 0.5, y: 0.5 },
+        prediction: { x: 0.5, y: 0.5 },
+      },
+      
+      // Golden playback
+      goldenMode: false,
+      goldenFrames: [],
+      goldenIndex: 0,
+    };
+    
+    // ========================================================================
+    // 1€ Filter
+    // ========================================================================
+    function computeAlpha(cutoff, dt) {
+      const tau = 1.0 / (2 * Math.PI * cutoff);
+      return 1.0 / (1.0 + tau / dt);
+    }
+    
+    function oneEuroFilter(x, y, timestamp) {
+      const f = state.filter;
+      
+      if (f.lastTime === null) {
+        f.x = x;
+        f.y = y;
+        f.dx = 0;
+        f.dy = 0;
+        f.lastTime = timestamp;
+        return { x, y };
+      }
+      
+      const dt = Math.max((timestamp - f.lastTime) / 1000, 0.001);
+      f.lastTime = timestamp;
+      
+      const dx = (x - f.x) / dt;
+      const dy = (y - f.y) / dt;
+      
+      const alphaDeriv = computeAlpha(1.0, dt);
+      f.dx = f.dx + alphaDeriv * (dx - f.dx);
+      f.dy = f.dy + alphaDeriv * (dy - f.dy);
+      
+      const speed = Math.sqrt(f.dx * f.dx + f.dy * f.dy);
+      const cutoff = f.minCutoff + f.beta * speed;
+      
+      const alpha = computeAlpha(cutoff, dt);
+      f.x = f.x + alpha * (x - f.x);
+      f.y = f.y + alpha * (y - f.y);
+      
+      return { x: f.x, y: f.y };
+    }
+    
+    function resetFilter() {
+      state.filter = { x: null, y: null, dx: null, dy: null, lastTime: null, minCutoff: 1.0, beta: 0.007 };
+    }
+    
+    // ========================================================================
+    // FSM
+    // ========================================================================
+    function updateFSM(gesture, palmFacing) {
+      const prev = state.fsmState;
+      let next = prev;
+      
+      if (!palmFacing) {
+        next = 'DISARMED';
+        state.armingStart = null;
+      } else if (gesture === 'Open_Palm') {
+        if (prev === 'DISARMED') {
+          state.armingStart = Date.now();
+          next = 'ARMING';
+        } else if (prev === 'ARMING' && Date.now() - state.armingStart > state.ARM_THRESHOLD_MS) {
+          next = 'ARMED';
+        } else if (prev === 'ACTIVE') {
+          next = 'ARMED';
+        }
+      } else if ((gesture === 'Pointing_Up' || gesture === 'Victory') && (prev === 'ARMED' || prev === 'ACTIVE')) {
+        next = 'ACTIVE';
+      }
+      
+      if (next !== prev) {
+        console.log(`FSM: ${prev} → ${next}`);
+      }
+      
+      state.fsmState = next;
+      
+      // Update display
+      const el = document.getElementById('fsm-state');
+      if (el) {
+        el.textContent = next;
+        el.className = 'fsm-overlay ' + next.toLowerCase();
+      }
+    }
+    
+    // ========================================================================
+    // Canvas Drawing
+    // ========================================================================
+    function initCanvases() {
+      for (const q of ['q1', 'q2', 'q3', 'q4']) {
+        const canvas = document.getElementById(`canvas-${q}`);
+        const rect = canvas.parentElement.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        state.canvases[q] = canvas;
+      }
+      
+      // Handle resize
+      window.addEventListener('resize', () => {
+        for (const q of ['q1', 'q2', 'q3', 'q4']) {
+          const canvas = state.canvases[q];
+          if (canvas) {
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+          }
+        }
+      });
+    }
+    
+    function drawCursors() {
+      const { raw, smoothed, prediction } = state.position;
+      
+      for (const [q, canvas] of Object.entries(state.canvases)) {
+        if (!canvas) continue;
+        
+        const ctx = canvas.getContext('2d');
+        const w = canvas.width;
+        const h = canvas.height;
+        
+        ctx.clearRect(0, 0, w, h);
+        
+        // Mirror X for selfie view
+        const mirrorX = (x) => (1 - x);
+        
+        // Draw crosshairs (subtle)
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+        ctx.beginPath();
+        ctx.moveTo(w/2, 0);
+        ctx.lineTo(w/2, h);
+        ctx.moveTo(0, h/2);
+        ctx.lineTo(w, h/2);
+        ctx.stroke();
+        
+        // Draw quadrant labels (very subtle)
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+        ctx.font = '20px sans-serif';
+        ctx.fillText('TL', 10, 30);
+        ctx.fillText('TR', w - 30, 30);
+        ctx.fillText('BL', 10, h - 10);
+        ctx.fillText('BR', w - 30, h - 10);
+        
+        // Prediction cursor (blue, dashed)
+        ctx.strokeStyle = '#4488ff';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.arc(mirrorX(prediction.x) * w, prediction.y * h, 18, 0, 2 * Math.PI);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        
+        // Raw cursor (red, small)
+        ctx.fillStyle = 'rgba(255, 68, 68, 0.6)';
+        ctx.beginPath();
+        ctx.arc(mirrorX(raw.x) * w, raw.y * h, 6, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        // Smoothed cursor (green, larger)
+        ctx.fillStyle = '#00ff88';
+        ctx.beginPath();
+        ctx.arc(mirrorX(smoothed.x) * w, smoothed.y * h, 12, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        // State ring
+        const stateColors = {
+          DISARMED: '#666',
+          ARMING: '#ffcc00',
+          ARMED: '#00ff88',
+          ACTIVE: '#4488ff',
+        };
+        
+        ctx.strokeStyle = stateColors[state.fsmState] || '#666';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(mirrorX(smoothed.x) * w, smoothed.y * h, 20, 0, 2 * Math.PI);
+        ctx.stroke();
+      }
+    }
+    
+    // ========================================================================
+    // MediaPipe
+    // ========================================================================
+    async function initMediaPipe() {
+      const vision = await FilesetResolver.forVisionTasks(
+        'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.8/wasm'
+      );
+      
+      state.gestureRecognizer = await GestureRecognizer.createFromOptions(vision, {
+        baseOptions: {
+          modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task',
+          delegate: 'GPU',
+        },
+        runningMode: 'VIDEO',
+        numHands: 1,
+      });
+      
+      console.log('MediaPipe initialized');
+    }
+    
+    async function startCamera() {
+      // Create hidden video element
+      state.video = document.createElement('video');
+      state.video.autoplay = true;
+      state.video.playsInline = true;
+      state.video.muted = true;
+      state.video.style.display = 'none';
+      document.body.appendChild(state.video);
+      
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { width: 640, height: 480, facingMode: 'user' },
+      });
+      
+      state.video.srcObject = stream;
+      await state.video.play();
+      
+      state.isRunning = true;
+      processFrame();
+    }
+    
+    let lastTimestamp = 0;
+    function processFrame() {
+      if (!state.isRunning) {
+        requestAnimationFrame(processFrame);
+        return;
+      }
+      
+      const timestamp = performance.now();
+      if (timestamp === lastTimestamp) {
+        requestAnimationFrame(processFrame);
+        return;
+      }
+      lastTimestamp = timestamp;
+      
+      if (state.goldenMode) {
+        // Golden playback mode
+        processGoldenFrame(timestamp);
+      } else if (state.gestureRecognizer && state.video) {
+        // Live camera mode
+        const results = state.gestureRecognizer.recognizeForVideo(state.video, timestamp);
+        
+        if (results.landmarks && results.landmarks.length > 0) {
+          const landmarks = results.landmarks[0];
+          const gestures = results.gestures;
+          
+          let gesture = 'None';
+          if (gestures && gestures.length > 0 && gestures[0].length > 0) {
+            gesture = gestures[0][0].categoryName;
+          }
+          
+          // Get index fingertip
+          const indexTip = landmarks[8];
+          state.position.raw = { x: indexTip.x, y: indexTip.y };
+          
+          // Palm facing
+          const wrist = landmarks[0];
+          const middleMCP = landmarks[9];
+          const palmFacing = -(middleMCP.z - wrist.z) > -0.05;
+          
+          // Apply 1€ filter
+          const smoothed = oneEuroFilter(indexTip.x, indexTip.y, timestamp);
+          state.position.smoothed = smoothed;
+          
+          // Simple prediction (linear extrapolation)
+          state.position.prediction = {
+            x: smoothed.x + state.filter.dx * 0.033,
+            y: smoothed.y + state.filter.dy * 0.033,
+          };
+          
+          // Update FSM
+          updateFSM(gesture, palmFacing);
+        } else {
+          resetFilter();
+          state.fsmState = 'DISARMED';
+          document.getElementById('fsm-state').textContent = 'DISARMED';
+          document.getElementById('fsm-state').className = 'fsm-overlay disarmed';
+        }
+      }
+      
+      drawCursors();
+      requestAnimationFrame(processFrame);
+    }
+    
+    // ========================================================================
+    // Golden Playback
+    // ========================================================================
+    function generateGoldenSequence() {
+      // Generate ARM_AND_CLICK sequence
+      const frames = [];
+      
+      // Phase 1: Arm (0-300ms) - center position
+      for (let t = 0; t < 300; t += 16) {
+        frames.push({
+          ts: t,
+          label: 'Open_Palm',
+          palmFacing: true,
+          position: { x: 0.5, y: 0.5 },
+        });
+      }
+      
+      // Phase 2: Move to top-right (300-600ms)
+      for (let t = 300; t < 600; t += 16) {
+        const p = (t - 300) / 300;
+        frames.push({
+          ts: t,
+          label: 'Open_Palm',
+          palmFacing: true,
+          position: { x: 0.5 + 0.3 * p, y: 0.5 - 0.3 * p },
+        });
+      }
+      
+      // Phase 3: Hold top-right, click (600-800ms)
+      for (let t = 600; t < 700; t += 16) {
+        frames.push({
+          ts: t,
+          label: 'Open_Palm',
+          palmFacing: true,
+          position: { x: 0.8, y: 0.2 },
+        });
+      }
+      for (let t = 700; t < 800; t += 16) {
+        frames.push({
+          ts: t,
+          label: 'Pointing_Up',
+          palmFacing: true,
+          position: { x: 0.8, y: 0.2 },
+        });
+      }
+      
+      // Phase 4: Move to bottom-left (800-1100ms)
+      for (let t = 800; t < 1100; t += 16) {
+        const p = (t - 800) / 300;
+        frames.push({
+          ts: t,
+          label: 'Open_Palm',
+          palmFacing: true,
+          position: { x: 0.8 - 0.6 * p, y: 0.2 + 0.6 * p },
+        });
+      }
+      
+      // Phase 5: Hold bottom-left (1100-1300ms)
+      for (let t = 1100; t < 1300; t += 16) {
+        frames.push({
+          ts: t,
+          label: 'Open_Palm',
+          palmFacing: true,
+          position: { x: 0.2, y: 0.8 },
+        });
+      }
+      
+      // Phase 6: Return to center (1300-1500ms)
+      for (let t = 1300; t < 1500; t += 16) {
+        const p = (t - 1300) / 200;
+        frames.push({
+          ts: t,
+          label: 'Open_Palm',
+          palmFacing: true,
+          position: { x: 0.2 + 0.3 * p, y: 0.8 - 0.3 * p },
+        });
+      }
+      
+      return frames;
+    }
+    
+    function processGoldenFrame(timestamp) {
+      if (state.goldenIndex >= state.goldenFrames.length) {
+        // Loop
+        state.goldenIndex = 0;
+        resetFilter();
+      }
+      
+      const frame = state.goldenFrames[state.goldenIndex];
+      state.goldenIndex++;
+      
+      state.position.raw = frame.position;
+      
+      const smoothed = oneEuroFilter(frame.position.x, frame.position.y, timestamp);
+      state.position.smoothed = smoothed;
+      
+      state.position.prediction = {
+        x: smoothed.x + (state.filter.dx || 0) * 0.033,
+        y: smoothed.y + (state.filter.dy || 0) * 0.033,
+      };
+      
+      updateFSM(frame.label, frame.palmFacing);
+    }
+    
+    // ========================================================================
+    // Init
+    // ========================================================================
+    window.startDemo = async function() {
+      document.getElementById('control-panel').classList.add('hidden');
+      
+      try {
+        await initMediaPipe();
+        await startCamera();
+      } catch (err) {
+        console.error(err);
+        document.getElementById('control-panel').classList.remove('hidden');
+        alert('Camera error: ' + err.message);
+      }
+    };
+    
+    window.startGoldenPlayback = function() {
+      document.getElementById('control-panel').classList.add('hidden');
+      
+      state.goldenFrames = generateGoldenSequence();
+      state.goldenIndex = 0;
+      state.goldenMode = true;
+      state.isRunning = true;
+      resetFilter();
+      processFrame();
+    };
+    
+    // Expose FSM for e2e testing
+    window.gestureFSM = {
+      getState: () => state.fsmState,
+      process: (frame) => {
+        updateFSM(frame.label, frame.palmFacing);
+        return { state: state.fsmState, action: 'none' };
+      },
+    };
+    
+    // Initialize canvases
+    initCanvases();
+    
+    console.log('Quad Cursor Demo loaded - Gen87.X3');
+  
+</script>
+</body>
+</html>

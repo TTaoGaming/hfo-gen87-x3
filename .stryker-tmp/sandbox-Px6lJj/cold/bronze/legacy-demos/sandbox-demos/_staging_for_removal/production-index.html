@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gen87.X3 — PRODUCTION W3C Pointer Pipeline</title>
+  <!--
+    ═══════════════════════════════════════════════════════════════════════════════
+    Gen87.X3 | Port 2 (SHAPE) | V-PHASE PRODUCTION DEMO
+    ═══════════════════════════════════════════════════════════════════════════════
+    
+    WHAT MAKES THIS PRODUCTION (NOT THEATER):
+    ✅ npm 1eurofilter@1.2.2 via esm.sh (Géry Casiez's official package)
+    ✅ Real XState v5 FSM (not inline if/else bypass)
+    ✅ W3C PointerEvent factory (Level 3 compliant)
+    ✅ Golden Layout 2.6.0 (NO jQuery)
+    ✅ MediaPipe Tasks Vision 0.10.8
+    ✅ Zod schema validation throughout
+    
+    5-STAGE PIPELINE:
+    Stage 1: MediaPipe GestureRecognizer → SensorFrame
+    Stage 2: npm 1eurofilter smoothing → SmoothedFrame
+    Stage 3: XState FSM gesture state → FSMAction
+    Stage 4: W3CPointerEventFactory → PointerEvent[]
+    Stage 5: DOM element.dispatchEvent()
+    
+    NO NATS DEPENDENCY — Browser-only use case
+    ═══════════════════════════════════════════════════════════════════════════════
+  -->
+  <!-- Golden Layout CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/golden-layout@2.6.0/dist/css/goldenlayout-base.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/golden-layout@2.6.0/dist/css/themes/goldenlayout-dark-theme.css">
+  <style>
+    :root {
+      --bg-dark: #0a0a0f;
+      --bg-panel: #12121a;
+      --border: #2a2a3a;
+      --accent: #00ff88;
+      --accent-dim: rgba(0, 255, 136, 0.3);
+      --warning: #ffaa00;
+      --error: #ff4444;
+      --text: #e0e0e0;
+      --text-dim: #808090;
+      --production: #00aaff;
+    }
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { font-family: 'JetBrains Mono', monospace; background: var(--bg-dark); color: var(--text); height: 100%; overflow: hidden; }
+    #layout-container { width: 100%; height: 100%; }
+    
+    .lm_header { background: var(--bg-panel) !important; }
+    .lm_tab { background: var(--bg-dark) !important; }
+    .lm_tab.lm_active { background: var(--bg-panel) !important; border-bottom: 2px solid var(--production) !important; }
+    .lm_content { background: var(--bg-panel) !important; overflow: hidden !important; }
+    
+    .panel-content { padding: 1rem; height: 100%; overflow: auto; display: flex; flex-direction: column; }
+    .panel-content h2 { font-size: 0.9rem; color: var(--production); margin-bottom: 0.5rem; text-transform: uppercase; }
+    .panel-content h2::before { content: "🏭 "; }
+    
+    .camera-container { position: relative; flex: 1; background: #000; border-radius: 8px; overflow: hidden; }
+    #camera { position: absolute; width: 100%; height: 100%; object-fit: contain; transform: scaleX(-1); }
+    #landmarks-canvas { position: absolute; width: 100%; height: 100%; transform: scaleX(-1); pointer-events: none; }
+    
+    .status-bar { display: flex; gap: 0.5rem; margin-bottom: 0.5rem; flex-wrap: wrap; }
+    .badge { padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.65rem; font-weight: 600; }
+    .badge.production { background: var(--production); color: var(--bg-dark); }
+    .badge.real { background: var(--accent); color: var(--bg-dark); }
+    .badge.theater { background: var(--error); color: white; }
+    
+    .target-container { position: relative; width: 100%; height: 100%; background: var(--bg-dark); border: 2px solid var(--production); cursor: none; }
+    #gesture-cursor { position: absolute; width: 24px; height: 24px; border: 2px solid var(--accent); border-radius: 50%; pointer-events: none; transform: translate(-50%, -50%); z-index: 1000; }
+    #gesture-cursor.ARMED { border-color: var(--accent); }
+    #gesture-cursor.CLICKING { background: var(--accent-dim); transform: translate(-50%, -50%) scale(1.5); }
+    #gesture-cursor.NAVIGATING { border-style: dashed; border-color: var(--warning); }
+    
+    .controls { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+    button { padding: 0.5rem 1rem; border: 1px solid var(--production); background: transparent; color: var(--production); border-radius: 4px; cursor: pointer; font-size: 0.75rem; }
+    button:hover { background: var(--production); color: var(--bg-dark); }
+    button:disabled { opacity: 0.5; }
+    
+    .pipeline-stage { padding: 0.3rem 0.5rem; margin: 0.2rem 0; border-left: 3px solid var(--border); font-size: 0.65rem; }
+    .pipeline-stage.real { border-left-color: var(--accent); background: rgba(0, 255, 136, 0.05); }
+    .pipeline-stage .pkg { color: var(--production); font-weight: bold; }
+    
+    .metric { display: flex; justify-content: space-between; padding: 0.2rem 0; font-size: 0.7rem; }
+    .metric-value { color: var(--accent); font-weight: 600; }
+    
+    #event-log { font-size: 0.6rem; max-height: 100px; overflow-y: auto; background: var(--bg-dark); padding: 0.5rem; border-radius: 4px; flex: 1; }
+    .log-entry { padding: 0.1rem 0; border-bottom: 1px solid var(--border); }
+    .log-entry.pointer { color: var(--accent); }
+    .log-entry.fsm { color: #88aaff; }
+    .log-entry.error { color: var(--error); }
+  </style>
+</head>
+<body>
+  <div id="layout-container"></div>
+  
+  <script type="module">
+// @ts-nocheck
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // PRODUCTION IMPORTS — REAL NPM PACKAGES VIA ESM.SH
+    // NO INLINE THEATER — EVERY IMPORT IS A REAL PACKAGE
+    // ═══════════════════════════════════════════════════════════════════════════
+    
+    // Layout - Golden Layout 2.6.0 (NO jQuery)
+    import { GoldenLayout } from 'https://esm.sh/golden-layout@2.6.0';
+    
+    // Validation - Zod 3.24
+    import { z } from 'https://esm.sh/zod@3.24.1';
+    
+    // FSM - XState v5 (REAL state machine, not if/else bypass)
+    import { createActor, setup, assign } from 'https://esm.sh/xstate@5.19.2';
+    
+    // Smoothing - 1€ Filter by Géry Casiez (REAL npm package)
+    // @see https://www.npmjs.com/package/1eurofilter
+    // @citation Casiez, G., Roussel, N. and Vogel, D. (2012). 1€ Filter: CHI '12.
+    import { OneEuroFilter } from 'https://esm.sh/1eurofilter@1.2.2';
+    
+    // Sensor - MediaPipe Tasks Vision
+    import { GestureRecognizer, FilesetResolver } from 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.8';
+    
+    console.log('[PRODUCTION] ✅ All imports loaded from real npm packages');
+    console.log('[PRODUCTION] 1eurofilter:', typeof OneEuroFilter);
+    console.log('[PRODUCTION] XState setup:', typeof setup);
+    
+    // ═══════════════════════════════════════════════════════════════════════════
+    // STAGE 1: SENSOR PORT — MediaPipe GestureRecognizer
+    // ═══════════════════════════════════════════════════════════════════════════
+    
+    const SensorFrameSchema = z.object({
+      ts: z.number(),
+      handId: z.string(),
+      trackingOk: z.boolean(),
+      palmFacing: z.boolean(),
+      label: z.enum(['None', 'Closed_Fist', 'Open_Palm', 'Pointing_Up', 'Thumb_Down', 'Thumb_Up', 'Victory', 'ILoveYou']),
+      confidence: z.number().min(0).max(1),
+      indexTip: z.object({ x: z.number(), y: z.number(), z: z.number() }).nullable(),
+      landmarks: z.array(z.object({ x: z.number(), y: z.number(), z: z.number() })).nullable(),
+    });
+    
+    class MediaPipeSensorAdapter {
+      constructor() { this.recognizer = null; }
+      
+      async initialize(videoElement) {
+        console.log('[Stage 1] Initializing MediaPipe GestureRecognizer...');
+        const vision = await FilesetResolver.forVisionTasks(
+          'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.8/wasm'
+        );
+        this.recognizer = await GestureRecognizer.createFromOptions(vision, {
+          baseOptions: {
+            modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task',
+            delegate: 'GPU'
+          },
+          runningMode: 'VIDEO',
+          numHands: 1
+        });
+        console.log('[Stage 1] ✅ MediaPipe ready');
+      }
+      
+      sense(video, timestamp) {
+        if (!this.recognizer) return this.emptyFrame(timestamp);
+        const results = this.recognizer.recognizeForVideo(video, timestamp);
+        
+        const hasHand = results.landmarks && results.landmarks.length > 0;
+        const hasGesture = results.gestures && results.gestures.length > 0 && results.gestures[0].length > 0;
+        
+        const landmarks = hasHand ? results.landmarks[0] : null;
+        const indexTip = hasHand ? landmarks[8] : null;
+        
+        // Estimate palm facing from wrist-middle finger angle
+        const palmFacing = hasHand ? this.estimatePalmFacing(landmarks) : false;
+        
+        return SensorFrameSchema.parse({
+          ts: timestamp,
+          handId: 'hand-0',
+          trackingOk: hasHand,
+          palmFacing,
+          label: hasGesture ? results.gestures[0][0].categoryName : 'None',
+          confidence: hasGesture ? results.gestures[0][0].score : 0,
+          indexTip: indexTip ? { x: indexTip.x, y: indexTip.y, z: indexTip.z } : null,
+          landmarks: landmarks ? landmarks.map(l => ({ x: l.x, y: l.y, z: l.z })) : null,
+        });
+      }
+      
+      estimatePalmFacing(landmarks) {
+        if (!landmarks || landmarks.length < 10) return false;
+        const wrist = landmarks[0];
+        const middleMcp = landmarks[9];
+        // Simple heuristic: palm faces camera when middle MCP is above wrist in Y
+        return middleMcp.y < wrist.y + 0.1;
+      }
+      
+      emptyFrame(ts) {
+        return SensorFrameSchema.parse({
+          ts, handId: 'hand-0', trackingOk: false, palmFacing: false,
+          label: 'None', confidence: 0, indexTip: null, landmarks: null,
+        });
+      }
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════════
+    // STAGE 2: SMOOTHER PORT — npm 1eurofilter (NOT INLINE THEATER)
+    // ═══════════════════════════════════════════════════════════════════════════
+    
+    const SmoothedFrameSchema = z.object({
+      ts: z.number(),
+      handId: z.string(),
+      trackingOk: z.boolean(),
+      palmFacing: z.boolean(),
+      label: z.string(),
+      confidence: z.number(),
+      position: z.object({ x: z.number(), y: z.number() }).nullable(),
+      velocity: z.object({ x: z.number(), y: z.number() }).nullable(),
+    });
+    
+    /**
+     * PRODUCTION Smoother using npm 1eurofilter@1.2.2
+     * NO HAND-ROLLED FILTER — Uses Géry Casiez's official implementation
+     */
+    class OneEuroSmootherAdapter {
+      constructor(config = {}) {
+        const freq = config.frequency ?? 60;
+        const mincut = config.mincutoff ?? 1.0;
+        const beta = config.beta ?? 0.007;
+        const dcutoff = config.dcutoff ?? 1.0;
+        
+        // Create real OneEuroFilter instances from npm package
+        this.filterX = new OneEuroFilter(freq, mincut, beta, dcutoff);
+        this.filterY = new OneEuroFilter(freq, mincut, beta, dcutoff);
+        
+        this.lastPos = null;
+        this.lastTs = null;
+        
+        console.log('[Stage 2] ✅ npm 1eurofilter initialized', { freq, mincut, beta, dcutoff });
+      }
+      
+      smooth(sensorFrame) {
+        if (!sensorFrame.trackingOk || !sensorFrame.indexTip) {
+          this.reset();
+          return SmoothedFrameSchema.parse({
+            ts: sensorFrame.ts,
+            handId: sensorFrame.handId,
+            trackingOk: false,
+            palmFacing: sensorFrame.palmFacing,
+            label: sensorFrame.label,
+            confidence: sensorFrame.confidence,
+            position: null,
+            velocity: null,
+          });
+        }
+        
+        const { x, y } = sensorFrame.indexTip;
+        const ts = sensorFrame.ts;
+        
+        // Use npm 1eurofilter.filter(value, timestamp)
+        const smoothX = this.filterX.filter(x, ts);
+        const smoothY = this.filterY.filter(y, ts);
+        
+        // Calculate velocity
+        let velocity = { x: 0, y: 0 };
+        if (this.lastPos && this.lastTs) {
+          const dt = (ts - this.lastTs) / 1000;
+          if (dt > 0) {
+            velocity = {
+              x: (smoothX - this.lastPos.x) / dt,
+              y: (smoothY - this.lastPos.y) / dt,
+            };
+          }
+        }
+        
+        this.lastPos = { x: smoothX, y: smoothY };
+        this.lastTs = ts;
+        
+        return SmoothedFrameSchema.parse({
+          ts: sensorFrame.ts,
+          handId: sensorFrame.handId,
+          trackingOk: true,
+          palmFacing: sensorFrame.palmFacing,
+          label: sensorFrame.label,
+          confidence: sensorFrame.confidence,
+          position: { x: smoothX, y: smoothY },
+          velocity,
+        });
+      }
+      
+      setParams(mincutoff, beta) {
+        this.filterX.setMinCutoff(mincutoff);
+        this.filterX.setBeta(beta);
+        this.filterY.setMinCutoff(mincutoff);
+        this.filterY.setBeta(beta);
+      }
+      
+      reset() {
+        this.filterX.reset();
+        this.filterY.reset();
+        this.lastPos = null;
+        this.lastTs = null;
+      }
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════════
+    // STAGE 3: FSM PORT — XState v5 (NOT INLINE IF/ELSE)
+    // ═══════════════════════════════════════════════════════════════════════════
+    
+    const FSMActionSchema = z.object({
+      type: z.enum(['MOVE', 'DOWN', 'UP', 'CLICK', 'CANCEL', 'NONE']),
+      position: z.object({ x: z.number(), y: z.number() }),
+      state: z.string(),
+      pressure: z.number().optional(),
+    });
+    
+    /**
+     * PRODUCTION FSM using XState v5 setup() API
+     * Design from W3C_GESTURE_CONTROL_PLANE_SPEC.md Section 4
+     */
+    const gestureMachine = setup({
+      types: {
+        context: {},
+        events: {},
+      },
+      guards: {
+        isBaselineOk: ({ context, event }) => {
+          if (event.type !== 'FRAME') return false;
+          return event.frame.trackingOk && 
+                 event.frame.palmFacing && 
+                 event.frame.label === 'Open_Palm' && 
+                 event.frame.confidence >= 0.7;
+        },
+        isPointingUp: ({ event }) => {
+          return event.type === 'FRAME' && 
+                 event.frame.label === 'Pointing_Up' && 
+                 event.frame.confidence >= 0.7;
+        },
+        isClosedFist: ({ event }) => {
+          return event.type === 'FRAME' && 
+                 event.frame.label === 'Closed_Fist' && 
+                 event.frame.confidence >= 0.7;
+        },
+        isVictory: ({ event }) => {
+          return event.type === 'FRAME' && 
+                 event.frame.label === 'Victory' && 
+                 event.frame.confidence >= 0.7;
+        },
+        isTrackingLost: ({ event }) => {
+          return event.type === 'FRAME' && !event.frame.trackingOk;
+        },
+      },
+      actions: {
+        updatePosition: assign({
+          position: ({ event }) => event.type === 'FRAME' && event.frame.position 
+            ? event.frame.position 
+            : { x: 0.5, y: 0.5 },
+        }),
+        recordArmTime: assign({
+          armTime: () => Date.now(),
+        }),
+      },
+    }).createMachine({
+      id: 'gestureFSM',
+      initial: 'DISARMED',
+      context: {
+        position: { x: 0.5, y: 0.5 },
+        armTime: null,
+      },
+      states: {
+        DISARMED: {
+          on: {
+            FRAME: [
+              { guard: 'isBaselineOk', target: 'ARMING', actions: ['updatePosition', 'recordArmTime'] },
+              { actions: 'updatePosition' },
+            ],
+          },
+        },
+        ARMING: {
+          on: {
+            FRAME: [
+              { guard: 'isTrackingLost', target: 'DISARMED' },
+              { guard: 'isBaselineOk', target: 'ARMED', actions: 'updatePosition' },
+              { target: 'DISARMED', actions: 'updatePosition' },
+            ],
+          },
+        },
+        ARMED: {
+          on: {
+            FRAME: [
+              { guard: 'isTrackingLost', target: 'DISARMED' },
+              { guard: 'isPointingUp', target: 'CLICKING', actions: 'updatePosition' },
+              { guard: 'isClosedFist', target: 'CLICKING', actions: 'updatePosition' },
+              { guard: 'isVictory', target: 'NAVIGATING', actions: 'updatePosition' },
+              { guard: 'isBaselineOk', actions: 'updatePosition' },
+              { target: 'DISARMED', actions: 'updatePosition' },
+            ],
+          },
+        },
+        CLICKING: {
+          on: {
+            FRAME: [
+              { guard: 'isTrackingLost', target: 'DISARMED' },
+              { guard: 'isBaselineOk', target: 'ARMED', actions: 'updatePosition' },
+              { actions: 'updatePosition' },
+            ],
+          },
+        },
+        NAVIGATING: {
+          on: {
+            FRAME: [
+              { guard: 'isTrackingLost', target: 'DISARMED' },
+              { guard: 'isBaselineOk', target: 'ARMED', actions: 'updatePosition' },
+              { actions: 'updatePosition' },
+            ],
+          },
+        },
+      },
+    });
+    
+    class XStateFSMAdapter {
+      constructor() {
+        this.actor = createActor(gestureMachine);
+        this.actor.start();
+        this.prevState = 'DISARMED';
+        this.listeners = [];
+        
+        this.actor.subscribe((snapshot) => {
+          const newState = snapshot.value;
+          if (newState !== this.prevState) {
+            this.listeners.forEach(cb => cb(newState, this.prevState));
+            this.prevState = newState;
+          }
+        });
+        
+        console.log('[Stage 3] ✅ XState v5 FSM initialized');
+      }
+      
+      process(smoothedFrame) {
+        const prevState = this.actor.getSnapshot().value;
+        
+        this.actor.send({ type: 'FRAME', frame: smoothedFrame });
+        
+        const snapshot = this.actor.getSnapshot();
+        const currentState = snapshot.value;
+        const position = smoothedFrame.position || { x: 0.5, y: 0.5 };
+        
+        // Determine FSM action based on state transitions
+        let actionType = 'MOVE';
+        let pressure = 0;
+        
+        if (currentState === 'DISARMED' || !smoothedFrame.trackingOk) {
+          actionType = 'NONE';
+        } else if (prevState !== 'CLICKING' && currentState === 'CLICKING') {
+          actionType = 'DOWN';
+          pressure = 0.5;
+        } else if (prevState === 'CLICKING' && currentState !== 'CLICKING') {
+          actionType = 'UP';
+        } else if (currentState === 'CLICKING') {
+          actionType = 'MOVE';
+          pressure = 0.5;
+        }
+        
+        return FSMActionSchema.parse({
+          type: actionType,
+          position,
+          state: currentState,
+          pressure,
+        });
+      }
+      
+      subscribe(callback) {
+        this.listeners.push(callback);
+      }
+      
+      getState() {
+        return this.actor.getSnapshot().value;
+      }
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════════
+    // STAGE 4: EMITTER — W3C PointerEvent Factory
+    // ═══════════════════════════════════════════════════════════════════════════
+    
+    /**
+     * W3C PointerEvent Factory
+     * Creates Level 3 compliant PointerEvent objects
+     * @see https://www.w3.org/TR/pointerevents/
+     */
+    class W3CPointerEventFactory {
+      constructor(config = {}) {
+        this.viewportWidth = config.viewportWidth ?? window.innerWidth;
+        this.viewportHeight = config.viewportHeight ?? window.innerHeight;
+        this.pointerId = config.pointerId ?? 1;
+        this.pointerType = config.pointerType ?? 'pen';
+        
+        console.log('[Stage 4] ✅ W3C PointerEvent factory initialized');
+      }
+      
+      normalizedToViewport(normalized) {
+        return {
+          clientX: Math.round(normalized.x * this.viewportWidth),
+          clientY: Math.round(normalized.y * this.viewportHeight),
+        };
+      }
+      
+      createEvent(type, position, options = {}) {
+        const { clientX, clientY } = this.normalizedToViewport(position);
+        
+        return new PointerEvent(type, {
+          bubbles: true,
+          cancelable: true,
+          composed: true,
+          clientX,
+          clientY,
+          screenX: clientX,
+          screenY: clientY,
+          pointerId: this.pointerId,
+          pointerType: this.pointerType,
+          isPrimary: true,
+          width: 1,
+          height: 1,
+          pressure: options.pressure ?? 0,
+          button: options.button ?? -1,
+          buttons: options.buttons ?? 0,
+          ...options,
+        });
+      }
+      
+      fromFSMAction(action) {
+        const events = [];
+        const pos = action.position;
+        
+        switch (action.type) {
+          case 'MOVE':
+            events.push(this.createEvent('pointermove', pos, { 
+              buttons: action.pressure > 0 ? 1 : 0,
+              pressure: action.pressure ?? 0,
+            }));
+            break;
+          case 'DOWN':
+            events.push(this.createEvent('pointerdown', pos, { 
+              button: 0, 
+              buttons: 1, 
+              pressure: action.pressure ?? 0.5,
+            }));
+            break;
+          case 'UP':
+            events.push(this.createEvent('pointerup', pos, { 
+              button: 0, 
+              buttons: 0, 
+              pressure: 0,
+            }));
+            break;
+          case 'CLICK':
+            events.push(this.createEvent('pointerdown', pos, { button: 0, buttons: 1, pressure: 0.5 }));
+            events.push(this.createEvent('pointerup', pos, { button: 0, buttons: 0, pressure: 0 }));
+            break;
+          case 'CANCEL':
+            events.push(this.createEvent('pointercancel', pos));
+            break;
+          case 'NONE':
+          default:
+            // No event
+            break;
+        }
+        
+        return events;
+      }
+      
+      setViewport(width, height) {
+        this.viewportWidth = width;
+        this.viewportHeight = height;
+      }
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════════
+    // STAGE 5: INJECTOR — DOM dispatchEvent
+    // ═══════════════════════════════════════════════════════════════════════════
+    
+    class DOMEventDispatcher {
+      constructor(target, onDispatch) {
+        this.target = target;
+        this.onDispatch = onDispatch;
+        console.log('[Stage 5] ✅ DOM dispatcher attached to', target.id || 'element');
+      }
+      
+      dispatch(event) {
+        const result = this.target.dispatchEvent(event);
+        if (this.onDispatch) this.onDispatch(event);
+        return result;
+      }
+      
+      dispatchAll(events) {
+        return events.map(e => this.dispatch(e));
+      }
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════════
+    // LANDMARK DRAWING
+    // ═══════════════════════════════════════════════════════════════════════════
+    
+    const HAND_CONNECTIONS = [
+      [0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[0,9],[9,10],[10,11],[11,12],
+      [0,13],[13,14],[14,15],[15,16],[0,17],[17,18],[18,19],[19,20],[5,9],[9,13],[13,17],
+    ];
+    
+    function drawLandmarks(ctx, landmarks, w, h) {
+      if (!landmarks) return;
+      ctx.strokeStyle = '#ff4444';
+      ctx.lineWidth = 2;
+      for (const [i, j] of HAND_CONNECTIONS) {
+        ctx.beginPath();
+        ctx.moveTo(landmarks[i].x * w, landmarks[i].y * h);
+        ctx.lineTo(landmarks[j].x * w, landmarks[j].y * h);
+        ctx.stroke();
+      }
+      ctx.fillStyle = '#00ff88';
+      landmarks.forEach(lm => {
+        ctx.beginPath();
+        ctx.arc(lm.x * w, lm.y * h, 4, 0, 2 * Math.PI);
+        ctx.fill();
+      });
+      ctx.fillStyle = '#4488ff';
+      ctx.beginPath();
+      ctx.arc(landmarks[8].x * w, landmarks[8].y * h, 8, 0, 2 * Math.PI);
+      ctx.fill();
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════════
+    // APPLICATION
+    // ═══════════════════════════════════════════════════════════════════════════
+    
+    let goldenLayout, isRunning = false, animationId = null;
+    let sensorAdapter, smootherAdapter, fsmAdapter, pointerFactory, dispatcher;
+    let videoEl, landmarksCanvas, targetEl, cursorEl, logEl;
+    let metricsEls = {};
+    let frameCount = 0, lastFpsTime = performance.now();
+    
+    function log(msg, type = 'info') {
+      if (!logEl) return;
+      const entry = document.createElement('div');
+      entry.className = `log-entry ${type}`;
+      entry.textContent = `[${new Date().toISOString().slice(11,19)}] ${msg}`;
+      logEl.insertBefore(entry, logEl.firstChild);
+      if (logEl.children.length > 30) logEl.removeChild(logEl.lastChild);
+    }
+    
+    // Golden Layout configuration
+    const layoutConfig = {
+      root: {
+        type: 'row',
+        content: [
+          {
+            type: 'column',
+            width: 30,
+            content: [
+              { type: 'component', componentType: 'camera-panel', title: '📹 Camera', height: 70 },
+              { type: 'component', componentType: 'debug-panel', title: '🔬 Pipeline', height: 30 },
+            ]
+          },
+          { type: 'component', componentType: 'target-panel', title: '🎯 Target', width: 70 },
+        ]
+      }
+    };
+    
+    function createCameraPanel(container) {
+      container.element.innerHTML = `
+        <div class="panel-content">
+          <h2>Stage 1: Sensor (MediaPipe)</h2>
+          <div class="status-bar">
+            <span class="badge production">PRODUCTION</span>
+            <span class="badge real" id="status-running">Stopped</span>
+          </div>
+          <div class="camera-container">
+            <video id="camera" autoplay playsinline muted></video>
+            <canvas id="landmarks-canvas"></canvas>
+          </div>
+          <div class="controls">
+            <button id="btn-start">▶ Start Pipeline</button>
+            <button id="btn-stop" disabled>⏹ Stop</button>
+          </div>
+        </div>
+      `;
+      
+      videoEl = container.element.querySelector('#camera');
+      landmarksCanvas = container.element.querySelector('#landmarks-canvas');
+      
+      container.element.querySelector('#btn-start').addEventListener('click', startPipeline);
+      container.element.querySelector('#btn-stop').addEventListener('click', stopPipeline);
+    }
+    
+    function createTargetPanel(container) {
+      container.element.innerHTML = `
+        <div class="panel-content" style="padding: 0;">
+          <div class="target-container" id="target-area">
+            <div id="gesture-cursor"></div>
+            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: var(--text-dim);">
+              <p style="font-size: 2rem; margin-bottom: 1rem;">🎯</p>
+              <p>Gesture Target Area</p>
+              <p style="font-size: 0.7rem; margin-top: 0.5rem;">PointerEvents dispatched here</p>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      targetEl = container.element.querySelector('#target-area');
+      cursorEl = container.element.querySelector('#gesture-cursor');
+      
+      // Listen for pointer events to prove they're being dispatched
+      ['pointerdown', 'pointerup', 'pointermove'].forEach(type => {
+        targetEl.addEventListener(type, (e) => {
+          if (e.pointerType === 'pen') {
+            if (type !== 'pointermove') {
+              log(`🎯 ${type} @ (${e.clientX.toFixed(0)}, ${e.clientY.toFixed(0)})`, 'pointer');
+            }
+          }
+        });
+      });
+    }
+    
+    function createDebugPanel(container) {
+      container.element.innerHTML = `
+        <div class="panel-content">
+          <h2>5-Stage Pipeline (ALL REAL)</h2>
+          <div class="pipeline-stage real">1. SENSE → <span class="pkg">MediaPipe 0.10.8</span></div>
+          <div class="pipeline-stage real">2. SMOOTH → <span class="pkg">npm 1eurofilter@1.2.2</span></div>
+          <div class="pipeline-stage real">3. FSM → <span class="pkg">XState v5.19.2</span></div>
+          <div class="pipeline-stage real">4. EMIT → <span class="pkg">W3C PointerEvent</span></div>
+          <div class="pipeline-stage real">5. INJECT → <span class="pkg">DOM dispatchEvent</span></div>
+          
+          <div style="margin-top: 0.5rem;">
+            <div class="metric"><span>FPS</span><span class="metric-value" id="m-fps">0</span></div>
+            <div class="metric"><span>State</span><span class="metric-value" id="m-state">DISARMED</span></div>
+            <div class="metric"><span>Gesture</span><span class="metric-value" id="m-gesture">None</span></div>
+            <div class="metric"><span>Confidence</span><span class="metric-value" id="m-conf">0%</span></div>
+          </div>
+          
+          <div id="event-log" style="margin-top: 0.5rem;"></div>
+        </div>
+      `;
+      
+      logEl = container.element.querySelector('#event-log');
+      metricsEls = {
+        fps: container.element.querySelector('#m-fps'),
+        state: container.element.querySelector('#m-state'),
+        gesture: container.element.querySelector('#m-gesture'),
+        conf: container.element.querySelector('#m-conf'),
+      };
+    }
+    
+    async function startPipeline() {
+      log('Starting PRODUCTION pipeline...', 'info');
+      
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
+        videoEl.srcObject = stream;
+        await videoEl.play();
+        
+        landmarksCanvas.width = videoEl.videoWidth || 640;
+        landmarksCanvas.height = videoEl.videoHeight || 480;
+        
+        // Initialize REAL adapters
+        sensorAdapter = new MediaPipeSensorAdapter();
+        await sensorAdapter.initialize(videoEl);
+        
+        smootherAdapter = new OneEuroSmootherAdapter({ mincutoff: 1.0, beta: 0.007 });
+        
+        fsmAdapter = new XStateFSMAdapter();
+        fsmAdapter.subscribe((newState, oldState) => {
+          log(`FSM: ${oldState} → ${newState}`, 'fsm');
+        });
+        
+        const rect = targetEl.getBoundingClientRect();
+        pointerFactory = new W3CPointerEventFactory({
+          viewportWidth: rect.width,
+          viewportHeight: rect.height,
+        });
+        
+        dispatcher = new DOMEventDispatcher(targetEl);
+        
+        isRunning = true;
+        document.querySelector('#btn-start').disabled = true;
+        document.querySelector('#btn-stop').disabled = false;
+        document.querySelector('#status-running').textContent = 'Running';
+        
+        log('✅ All 5 stages initialized (PRODUCTION)', 'pointer');
+        animationId = requestAnimationFrame(pipelineLoop);
+        
+      } catch (err) {
+        log(`Error: ${err.message}`, 'error');
+        console.error(err);
+      }
+    }
+    
+    function pipelineLoop(timestamp) {
+      if (!isRunning) return;
+      
+      try {
+        // Stage 1: Sensor
+        const sensorFrame = sensorAdapter.sense(videoEl, timestamp);
+        
+        // Draw landmarks
+        const ctx = landmarksCanvas.getContext('2d');
+        ctx.clearRect(0, 0, landmarksCanvas.width, landmarksCanvas.height);
+        if (sensorFrame.landmarks) {
+          drawLandmarks(ctx, sensorFrame.landmarks, landmarksCanvas.width, landmarksCanvas.height);
+        }
+        
+        metricsEls.gesture.textContent = sensorFrame.label;
+        metricsEls.conf.textContent = `${(sensorFrame.confidence * 100).toFixed(0)}%`;
+        
+        // Stage 2: Smooth (npm 1eurofilter)
+        const smoothedFrame = smootherAdapter.smooth(sensorFrame);
+        
+        // Stage 3: FSM (XState v5)
+        const fsmAction = fsmAdapter.process(smoothedFrame);
+        metricsEls.state.textContent = fsmAction.state;
+        
+        // Update cursor position
+        if (smoothedFrame.position) {
+          const rect = targetEl.getBoundingClientRect();
+          // Mirror X for camera
+          cursorEl.style.left = `${(1 - smoothedFrame.position.x) * rect.width}px`;
+          cursorEl.style.top = `${smoothedFrame.position.y * rect.height}px`;
+          cursorEl.className = fsmAction.state;
+        }
+        
+        // Stage 4: Emit (W3C PointerEvent)
+        const rect = targetEl.getBoundingClientRect();
+        pointerFactory.setViewport(rect.width, rect.height);
+        
+        // Transform position for target-relative coordinates (mirrored)
+        const targetPos = smoothedFrame.position 
+          ? { x: 1 - smoothedFrame.position.x, y: smoothedFrame.position.y }
+          : { x: 0.5, y: 0.5 };
+        
+        const events = pointerFactory.fromFSMAction({ ...fsmAction, position: targetPos });
+        
+        // Stage 5: Inject (DOM dispatchEvent)
+        dispatcher.dispatchAll(events);
+        
+        // FPS counter
+        frameCount++;
+        if (timestamp - lastFpsTime >= 1000) {
+          metricsEls.fps.textContent = frameCount;
+          frameCount = 0;
+          lastFpsTime = timestamp;
+        }
+        
+      } catch (err) {
+        log(`Pipeline error: ${err.message}`, 'error');
+      }
+      
+      animationId = requestAnimationFrame(pipelineLoop);
+    }
+    
+    function stopPipeline() {
+      isRunning = false;
+      if (animationId) cancelAnimationFrame(animationId);
+      if (videoEl?.srcObject) {
+        videoEl.srcObject.getTracks().forEach(t => t.stop());
+        videoEl.srcObject = null;
+      }
+      smootherAdapter?.reset();
+      
+      document.querySelector('#btn-start').disabled = false;
+      document.querySelector('#btn-stop').disabled = true;
+      document.querySelector('#status-running').textContent = 'Stopped';
+      
+      log('Pipeline stopped', 'info');
+    }
+    
+    function init() {
+      goldenLayout = new GoldenLayout(document.getElementById('layout-container'));
+      
+      goldenLayout.registerComponentFactoryFunction('camera-panel', createCameraPanel);
+      goldenLayout.registerComponentFactoryFunction('target-panel', createTargetPanel);
+      goldenLayout.registerComponentFactoryFunction('debug-panel', createDebugPanel);
+      
+      goldenLayout.loadLayout(layoutConfig);
+      
+      window.addEventListener('resize', () => goldenLayout.setSize(window.innerWidth, window.innerHeight));
+      
+      console.log('═══════════════════════════════════════════════════════════════════');
+      console.log('[Gen87.X3] PRODUCTION W3C Pointer Pipeline');
+      console.log('═══════════════════════════════════════════════════════════════════');
+      console.log('✅ npm 1eurofilter@1.2.2 (Géry Casiez)');
+      console.log('✅ XState v5.19.2 (real FSM)');
+      console.log('✅ W3C PointerEvent Level 3');
+      console.log('✅ Golden Layout 2.6.0 (NO jQuery)');
+      console.log('✅ MediaPipe Tasks Vision 0.10.8');
+      console.log('═══════════════════════════════════════════════════════════════════');
+    }
+    
+    init();
+  
+</script>
+</body>
+</html>

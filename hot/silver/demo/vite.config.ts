@@ -1,43 +1,48 @@
-import { resolve } from 'path';
-/**
- * Vite Configuration for HFO Silver Demo
- *
- * Gen87.X3 | Silver Layer | Browser Bundle
- *
- * This bundles the REAL adapters from bronze for browser use
- */
 import { defineConfig } from 'vite';
 
+/**
+ * Vite Config for REAL Silver Demo
+ * 
+ * Gen87.X3 | REAL Architecture (NOT mock CSS Grid)
+ * 
+ * Uses:
+ * - GoldenLayoutShellAdapter (not CSS Grid)
+ * - HFOPortFactory for DI
+ * - TileComposer for per-tile pipelines
+ * - Real npm packages: golden-layout, 1eurofilter, xstate, zod
+ */
 export default defineConfig({
-	root: resolve(__dirname),
-	resolve: {
-		alias: {
-			'@bronze': resolve(__dirname, '../../bronze/src'),
-		},
-	},
-	server: {
-		port: 5173,
-		open: true,
-		headers: {
-			// Required for SharedArrayBuffer (needed by some WASM)
-			'Cross-Origin-Opener-Policy': 'same-origin',
-			'Cross-Origin-Embedder-Policy': 'require-corp',
-		},
-	},
-	build: {
-		outDir: resolve(__dirname, '../dist'),
-		emptyOutDir: true,
-		sourcemap: true,
-	},
-	optimizeDeps: {
-		include: [
-			'@dimforge/rapier2d-compat',
-			'xstate',
-			'1eurofilter',
-			'@mediapipe/tasks-vision',
-			'golden-layout',
-		],
-	},
-	// Handle WASM files
-	assetsInclude: ['**/*.wasm'],
+  root: '.',
+  server: {
+    port: 5173,
+    headers: {
+      // Required for SharedArrayBuffer (WASM)
+      'Cross-Origin-Opener-Policy': 'same-origin',
+      'Cross-Origin-Embedder-Policy': 'require-corp',
+    },
+    fs: {
+      // Allow serving from project root for adapter imports
+      allow: ['../../..'],
+    },
+  },
+  resolve: {
+    alias: {
+      // Map imports to real adapter paths
+      '/hot/bronze': '../../../hot/bronze',
+    },
+  },
+  optimizeDeps: {
+    include: [
+      'golden-layout',
+      '1eurofilter',
+      'xstate',
+      'zod',
+    ],
+  },
+  build: {
+    outDir: 'dist',
+    rollupOptions: {
+      input: 'index.html',
+    },
+  },
 });

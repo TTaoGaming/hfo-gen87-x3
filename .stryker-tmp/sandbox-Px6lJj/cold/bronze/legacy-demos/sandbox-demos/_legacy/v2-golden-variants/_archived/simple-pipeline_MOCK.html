@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pipeline Quad-Cursor Demo - Gen87.X3</title>
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    html, body {
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0a0a1a;
+      color: #eee;
+    }
+    
+    /* ================================================================
+       MAIN LAYOUT - CSS Grid based
+       ================================================================ */
+    .main-layout {
+      display: grid;
+      width: 100%;
+      height: 100%;
+      grid-template-columns: 3fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 4px;
+      padding: 4px;
+      background: #1a1a2e;
+    }
+    
+    .panel {
+      background: #0f0f23;
+      border: 1px solid #333;
+      border-radius: 4px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    
+    .panel-header {
+      background: #16213e;
+      padding: 8px 12px;
+      border-bottom: 2px solid #333;
+      flex-shrink: 0;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    
+    .panel-content {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      padding: 10px;
+    }
+    
+    /* Cursor panel takes left side full height */
+    .cursor-panel-wrapper {
+      grid-row: 1 / 3;
+    }
+    
+    /* ================================================================
+       QUAD CURSOR PANEL - The main cursor visualization
+       ================================================================ */
+    .cursor-panel {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(circle at 50% 50%, rgba(15, 52, 96, 0.3) 0%, transparent 70%),
+        linear-gradient(0deg, rgba(0, 0, 0, 0.5) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.5) 1px, transparent 1px);
+      background-size: 100% 100%, 40px 40px, 40px 40px;
+      cursor: none;
+      border-radius: 4px;
+    }
+    
+    /* Cursor base */
+    .cursor {
+      position: absolute;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      transition: opacity 0.2s;
+    }
+    
+    /* 1. RAW CURSOR - Red, jittery, small dot */
+    .cursor-raw {
+      width: 8px;
+      height: 8px;
+      background: #ff4444;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #ff4444;
+      z-index: 10;
+    }
+    
+    /* 2. ONE EURO CURSOR - Yellow, smooth, medium ring */
+    .cursor-euro {
+      width: 20px;
+      height: 20px;
+      border: 3px solid #ffd700;
+      border-radius: 50%;
+      box-shadow: 0 0 12px rgba(255, 215, 0, 0.5);
+      z-index: 20;
+    }
+    
+    /* 3. PHYSICS SMOOTHED CURSOR - Green, very smooth, filled */
+    .cursor-physics {
+      width: 28px;
+      height: 28px;
+      background: radial-gradient(circle, rgba(0, 255, 136, 0.8) 0%, rgba(0, 255, 136, 0.2) 70%, transparent 100%);
+      border: 2px solid #00ff88;
+      border-radius: 50%;
+      box-shadow: 0 0 20px rgba(0, 255, 136, 0.6);
+      z-index: 30;
+    }
+    
+    /* 4. PHYSICS PREDICTION CURSOR - Blue, ahead of position */
+    .cursor-prediction {
+      width: 16px;
+      height: 16px;
+      background: transparent;
+      border: 2px dashed #4488ff;
+      border-radius: 50%;
+      box-shadow: 0 0 15px rgba(68, 136, 255, 0.5);
+      z-index: 40;
+    }
+    
+    /* Legend inside cursor panel */
+    .cursor-legend {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      background: rgba(0, 0, 0, 0.8);
+      padding: 10px 15px;
+      border-radius: 8px;
+      font-size: 11px;
+      z-index: 100;
+    }
+    
+    .cursor-legend .legend-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 4px 0;
+    }
+    
+    .cursor-legend .legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+    
+    .cursor-legend .legend-dot.raw { background: #ff4444; }
+    .cursor-legend .legend-dot.euro { border: 2px solid #ffd700; background: transparent; }
+    .cursor-legend .legend-dot.physics { background: #00ff88; }
+    .cursor-legend .legend-dot.prediction { border: 2px dashed #4488ff; background: transparent; }
+    
+    /* ================================================================
+       DATA PANEL - Telemetry
+       ================================================================ */
+    .data-section {
+      margin-bottom: 12px;
+    }
+    
+    .data-section-title {
+      font-size: 11px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid #333;
+    }
+    
+    .data-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      padding: 2px 0;
+    }
+    
+    .data-row .label { color: #888; }
+    .data-row .value { font-family: 'Consolas', monospace; }
+    .data-row .value.raw { color: #ff4444; }
+    .data-row .value.euro { color: #ffd700; }
+    .data-row .value.physics { color: #00ff88; }
+    .data-row .value.prediction { color: #4488ff; }
+    
+    /* ================================================================
+       FSM STATE PANEL
+       ================================================================ */
+    .fsm-state-display {
+      font-size: 24px;
+      font-weight: bold;
+      text-align: center;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+    }
+    
+    .fsm-state-display.DISARMED { 
+      background: linear-gradient(135deg, #1a1a2e, #2a2a3e);
+      color: #888;
+    }
+    .fsm-state-display.ARMING { 
+      background: linear-gradient(135deg, #2a2000, #3a3000);
+      color: #ffd700;
+      animation: pulse 0.5s ease-in-out infinite alternate;
+    }
+    .fsm-state-display.ARMED { 
+      background: linear-gradient(135deg, #002a1a, #003a2a);
+      color: #00ff88;
+    }
+    .fsm-state-display.DOWN_COMMIT { 
+      background: linear-gradient(135deg, #2a0000, #3a0000);
+      color: #ff4444;
+    }
+    
+    @keyframes pulse {
+      from { opacity: 0.7; }
+      to { opacity: 1; }
+    }
+    
+    .button-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    
+    .button-row button {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: transform 0.1s;
+    }
+    
+    .button-row button:active {
+      transform: scale(0.95);
+    }
+    
+    /* ================================================================
+       PARAMETERS PANEL
+       ================================================================ */
+    .param-section {
+      margin-bottom: 15px;
+    }
+    
+    .param-section-title {
+      font-size: 11px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #888;
+    }
+    
+    .param-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    
+    .param-row label {
+      width: 90px;
+      font-size: 11px;
+    }
+    
+    .param-row input[type="range"] {
+      flex: 1;
+      height: 4px;
+      background: #333;
+      border-radius: 2px;
+    }
+    
+    .param-row .param-value {
+      width: 50px;
+      text-align: right;
+      font-family: 'Consolas', monospace;
+      font-size: 11px;
+    }
+  </style>
+</head>
+<body>
+  <div class="main-layout">
+    <!-- CURSOR PANEL - Full left side -->
+    <div class="panel cursor-panel-wrapper">
+      <div class="panel-header">🎯 Quad Cursor View</div>
+      <div class="panel-content">
+        <div class="cursor-panel" id="cursor-stage">
+          <!-- 4 Cursors -->
+          <div class="cursor cursor-raw" id="cursor-raw"></div>
+          <div class="cursor cursor-euro" id="cursor-euro"></div>
+          <div class="cursor cursor-physics" id="cursor-physics"></div>
+          <div class="cursor cursor-prediction" id="cursor-prediction"></div>
+          
+          <!-- Legend -->
+          <div class="cursor-legend">
+            <div class="legend-row"><div class="legend-dot raw"></div><span>Raw (MediaPipe)</span></div>
+            <div class="legend-row"><div class="legend-dot euro"></div><span>1€ Filter</span></div>
+            <div class="legend-row"><div class="legend-dot physics"></div><span>Physics Smoothed</span></div>
+            <div class="legend-row"><div class="legend-dot prediction"></div><span>Prediction</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- FSM + DATA PANEL - Top right -->
+    <div class="panel">
+      <div class="panel-header">🔄 FSM State & 📊 Data</div>
+      <div class="panel-content">
+        <!-- FSM Display -->
+        <div class="fsm-state-display DISARMED" id="fsm-display">DISARMED</div>
+        
+        <div class="button-row">
+          <button id="btn-arm" style="background: #00ff88; color: #000;">Toggle State</button>
+          <button id="btn-reset" style="background: #ff4444; color: #fff;">Reset</button>
+        </div>
+        
+        <!-- Data Sections -->
+        <div style="margin-top: 15px;">
+          <div class="data-section">
+            <div class="data-section-title">🔴 Raw Input</div>
+            <div class="data-row"><span class="label">X:</span><span class="value raw" id="data-raw-x">0.500</span></div>
+            <div class="data-row"><span class="label">Y:</span><span class="value raw" id="data-raw-y">0.500</span></div>
+          </div>
+          
+          <div class="data-section">
+            <div class="data-section-title">🟡 1€ Filtered</div>
+            <div class="data-row"><span class="label">X:</span><span class="value euro" id="data-euro-x">0.500</span></div>
+            <div class="data-row"><span class="label">Y:</span><span class="value euro" id="data-euro-y">0.500</span></div>
+          </div>
+          
+          <div class="data-section">
+            <div class="data-section-title">🟢 Physics Smoothed</div>
+            <div class="data-row"><span class="label">X:</span><span class="value physics" id="data-physics-x">0.500</span></div>
+            <div class="data-row"><span class="label">Y:</span><span class="value physics" id="data-physics-y">0.500</span></div>
+          </div>
+          
+          <div class="data-section">
+            <div class="data-section-title">🔵 Prediction</div>
+            <div class="data-row"><span class="label">Vel X:</span><span class="value prediction" id="data-vel-x">0.000</span></div>
+            <div class="data-row"><span class="label">Vel Y:</span><span class="value prediction" id="data-vel-y">0.000</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- PARAMETERS PANEL - Bottom right -->
+    <div class="panel">
+      <div class="panel-header">⚙️ Parameters</div>
+      <div class="panel-content">
+        <div class="param-section">
+          <div class="param-section-title">1€ Filter</div>
+          <div class="param-row">
+            <label>Min Cutoff:</label>
+            <input type="range" id="param-mincutoff" min="0.1" max="5" step="0.1" value="1.0">
+            <span class="param-value" id="val-mincutoff">1.0</span>
+          </div>
+          <div class="param-row">
+            <label>Beta:</label>
+            <input type="range" id="param-beta" min="0" max="1" step="0.01" value="0.007">
+            <span class="param-value" id="val-beta">0.007</span>
+          </div>
+        </div>
+        
+        <div class="param-section">
+          <div class="param-section-title">Physics (Spring-Damper)</div>
+          <div class="param-row">
+            <label>Stiffness:</label>
+            <input type="range" id="param-stiffness" min="100" max="1000" step="50" value="300">
+            <span class="param-value" id="val-stiffness">300</span>
+          </div>
+          <div class="param-row">
+            <label>Damping:</label>
+            <input type="range" id="param-damping" min="5" max="50" step="1" value="20">
+            <span class="param-value" id="val-damping">20</span>
+          </div>
+        </div>
+        
+        <div class="param-section">
+          <div class="param-section-title">Prediction</div>
+          <div class="param-row">
+            <label>Lookahead (ms):</label>
+            <input type="range" id="param-prediction" min="0" max="100" step="5" value="50">
+            <span class="param-value" id="val-prediction">50</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+// @ts-nocheck
+
+    // ================================================================
+    // PIPELINE STATE
+    // ================================================================
+    const state = {
+      raw: { x: 0.5, y: 0.5 },
+      euro: { x: 0.5, y: 0.5 },
+      physics: { x: 0.5, y: 0.5 },
+      prediction: { x: 0.5, y: 0.5 },
+      velocity: { x: 0, y: 0 },
+      fsm: 'DISARMED',
+      lastTime: performance.now(),
+      fsmStates: ['DISARMED', 'ARMING', 'ARMED', 'DOWN_COMMIT'],
+      fsmIndex: 0
+    };
+    
+    // ================================================================
+    // 1€ FILTER IMPLEMENTATION
+    // ================================================================
+    class OneEuroFilter {
+      constructor(minCutoff = 1.0, beta = 0.007, dCutoff = 1.0) {
+        this.minCutoff = minCutoff;
+        this.beta = beta;
+        this.dCutoff = dCutoff;
+        this.xPrev = null;
+        this.dxPrev = 0;
+        this.tPrev = null;
+      }
+      
+      smoothingFactor(te, cutoff) {
+        const r = 2 * Math.PI * cutoff * te;
+        return r / (r + 1);
+      }
+      
+      expSmoothing(a, x, xPrev) {
+        return a * x + (1 - a) * xPrev;
+      }
+      
+      filter(x, t) {
+        if (this.tPrev === null) {
+          this.tPrev = t;
+          this.xPrev = x;
+          return x;
+        }
+        
+        const te = t - this.tPrev;
+        if (te <= 0) return this.xPrev;
+        
+        const aD = this.smoothingFactor(te, this.dCutoff);
+        const dx = (x - this.xPrev) / te;
+        const dxHat = this.expSmoothing(aD, dx, this.dxPrev);
+        
+        const cutoff = this.minCutoff + this.beta * Math.abs(dxHat);
+        const a = this.smoothingFactor(te, cutoff);
+        const xHat = this.expSmoothing(a, x, this.xPrev);
+        
+        this.tPrev = t;
+        this.xPrev = xHat;
+        this.dxPrev = dxHat;
+        
+        return xHat;
+      }
+      
+      reset() {
+        this.xPrev = null;
+        this.dxPrev = 0;
+        this.tPrev = null;
+      }
+    }
+    
+    // ================================================================
+    // PHYSICS SPRING-DAMPER
+    // ================================================================
+    class SpringDamper {
+      constructor(stiffness = 300, damping = 20) {
+        this.stiffness = stiffness;
+        this.damping = damping;
+        this.position = { x: 0.5, y: 0.5 };
+        this.velocity = { x: 0, y: 0 };
+      }
+      
+      update(target, dt) {
+        // Spring force: F = -k * (pos - target)
+        // Damping force: F = -c * velocity
+        const fx = -this.stiffness * (this.position.x - target.x) - this.damping * this.velocity.x;
+        const fy = -this.stiffness * (this.position.y - target.y) - this.damping * this.velocity.y;
+        
+        // Update velocity and position (simple Euler integration)
+        this.velocity.x += fx * dt;
+        this.velocity.y += fy * dt;
+        this.position.x += this.velocity.x * dt;
+        this.position.y += this.velocity.y * dt;
+        
+        return { ...this.position };
+      }
+      
+      reset(pos) {
+        this.position = { ...pos };
+        this.velocity = { x: 0, y: 0 };
+      }
+    }
+    
+    // Create filters
+    const euroFilterX = new OneEuroFilter();
+    const euroFilterY = new OneEuroFilter();
+    const springDamper = new SpringDamper();
+    
+    // ================================================================
+    // CURSOR ELEMENTS
+    // ================================================================
+    const cursorStage = document.getElementById('cursor-stage');
+    const cursorRaw = document.getElementById('cursor-raw');
+    const cursorEuro = document.getElementById('cursor-euro');
+    const cursorPhysics = document.getElementById('cursor-physics');
+    const cursorPrediction = document.getElementById('cursor-prediction');
+    
+    // ================================================================
+    // UPDATE CURSORS
+    // ================================================================
+    function updateCursors() {
+      const rect = cursorStage.getBoundingClientRect();
+      
+      // Raw cursor
+      cursorRaw.style.left = (state.raw.x * rect.width) + 'px';
+      cursorRaw.style.top = (state.raw.y * rect.height) + 'px';
+      
+      // 1€ filtered cursor
+      cursorEuro.style.left = (state.euro.x * rect.width) + 'px';
+      cursorEuro.style.top = (state.euro.y * rect.height) + 'px';
+      
+      // Physics smoothed cursor
+      cursorPhysics.style.left = (state.physics.x * rect.width) + 'px';
+      cursorPhysics.style.top = (state.physics.y * rect.height) + 'px';
+      
+      // Prediction cursor
+      cursorPrediction.style.left = (state.prediction.x * rect.width) + 'px';
+      cursorPrediction.style.top = (state.prediction.y * rect.height) + 'px';
+    }
+    
+    // ================================================================
+    // UPDATE DATA DISPLAY
+    // ================================================================
+    function updateDataDisplay() {
+      const fmt = (v) => v.toFixed(3);
+      
+      document.getElementById('data-raw-x').textContent = fmt(state.raw.x);
+      document.getElementById('data-raw-y').textContent = fmt(state.raw.y);
+      
+      document.getElementById('data-euro-x').textContent = fmt(state.euro.x);
+      document.getElementById('data-euro-y').textContent = fmt(state.euro.y);
+      
+      document.getElementById('data-physics-x').textContent = fmt(state.physics.x);
+      document.getElementById('data-physics-y').textContent = fmt(state.physics.y);
+      
+      document.getElementById('data-vel-x').textContent = fmt(state.velocity.x);
+      document.getElementById('data-vel-y').textContent = fmt(state.velocity.y);
+    }
+    
+    // ================================================================
+    // UPDATE FSM DISPLAY
+    // ================================================================
+    function updateFSMDisplay() {
+      const el = document.getElementById('fsm-display');
+      el.textContent = state.fsm;
+      el.className = 'fsm-state-display ' + state.fsm;
+    }
+    
+    // ================================================================
+    // MOUSE MOVE HANDLER
+    // ================================================================
+    cursorStage.addEventListener('mousemove', (e) => {
+      const rect = cursorStage.getBoundingClientRect();
+      const now = performance.now() / 1000; // Convert to seconds
+      const dt = Math.min((now - state.lastTime), 0.1); // Cap dt
+      state.lastTime = now;
+      
+      // Add jitter to simulate MediaPipe noise
+      const jitter = 0.005;
+      const rawX = ((e.clientX - rect.left) / rect.width) + (Math.random() - 0.5) * jitter;
+      const rawY = ((e.clientY - rect.top) / rect.height) + (Math.random() - 0.5) * jitter;
+      
+      // Stage 1: Raw input
+      state.raw.x = Math.max(0, Math.min(1, rawX));
+      state.raw.y = Math.max(0, Math.min(1, rawY));
+      
+      // Stage 2: 1€ Filter
+      state.euro.x = euroFilterX.filter(state.raw.x, now);
+      state.euro.y = euroFilterY.filter(state.raw.y, now);
+      
+      // Stage 3: Physics spring-damper
+      const physResult = springDamper.update(state.euro, dt);
+      state.physics.x = physResult.x;
+      state.physics.y = physResult.y;
+      state.velocity.x = springDamper.velocity.x;
+      state.velocity.y = springDamper.velocity.y;
+      
+      // Stage 4: Prediction (lookahead based on velocity)
+      const lookahead = parseFloat(document.getElementById('param-prediction').value) / 1000;
+      state.prediction.x = state.physics.x + state.velocity.x * lookahead;
+      state.prediction.y = state.physics.y + state.velocity.y * lookahead;
+      
+      // Update UI
+      updateCursors();
+      updateDataDisplay();
+    });
+    
+    // ================================================================
+    // FSM CONTROLS
+    // ================================================================
+    document.getElementById('btn-arm').addEventListener('click', () => {
+      state.fsmIndex = (state.fsmIndex + 1) % state.fsmStates.length;
+      state.fsm = state.fsmStates[state.fsmIndex];
+      updateFSMDisplay();
+    });
+    
+    document.getElementById('btn-reset').addEventListener('click', () => {
+      state.fsmIndex = 0;
+      state.fsm = 'DISARMED';
+      updateFSMDisplay();
+      euroFilterX.reset();
+      euroFilterY.reset();
+      springDamper.reset({ x: 0.5, y: 0.5 });
+      state.raw = { x: 0.5, y: 0.5 };
+      state.euro = { x: 0.5, y: 0.5 };
+      state.physics = { x: 0.5, y: 0.5 };
+      state.prediction = { x: 0.5, y: 0.5 };
+      state.velocity = { x: 0, y: 0 };
+      updateCursors();
+      updateDataDisplay();
+    });
+    
+    // ================================================================
+    // PARAMETER SLIDERS
+    // ================================================================
+    const paramSliders = [
+      { id: 'param-mincutoff', val: 'val-mincutoff', update: (v) => { euroFilterX.minCutoff = v; euroFilterY.minCutoff = v; } },
+      { id: 'param-beta', val: 'val-beta', update: (v) => { euroFilterX.beta = v; euroFilterY.beta = v; } },
+      { id: 'param-stiffness', val: 'val-stiffness', update: (v) => { springDamper.stiffness = v; } },
+      { id: 'param-damping', val: 'val-damping', update: (v) => { springDamper.damping = v; } },
+      { id: 'param-prediction', val: 'val-prediction', update: () => {} }
+    ];
+    
+    paramSliders.forEach(({ id, val, update }) => {
+      const slider = document.getElementById(id);
+      const valEl = document.getElementById(val);
+      slider.addEventListener('input', () => {
+        const v = parseFloat(slider.value);
+        valEl.textContent = v;
+        update(v);
+      });
+    });
+    
+    // ================================================================
+    // INITIAL RENDER
+    // ================================================================
+    updateCursors();
+    updateDataDisplay();
+    updateFSMDisplay();
+    
+    console.log('🎯 Pipeline Quad-Cursor Demo initialized');
+    console.log('📊 Stages: Raw → 1€ Filter → Physics → Prediction');
+  
+</script>
+</body>
+</html>

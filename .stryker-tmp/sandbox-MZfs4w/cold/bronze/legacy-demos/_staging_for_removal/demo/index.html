@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gen87.X3 - W3C Gesture Control Plane Demo</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🕷️</text></svg>">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #0a0a14;
+      color: #eee;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       DOM LAYERS (z-index stack)
+       ═══════════════════════════════════════════════════════════════════════
+       Layer 0: Video background (camera feed)
+       Layer 1: MediaPipe overlay canvas (hand landmarks)
+       Layer 2: Application layer (windows, UI)
+       Layer 3: Cursor canvas (gesture pointer)
+       Layer 4: Control bar (always on top)
+    */
+    
+    /* Layer 0: Fullscreen video background */
+    #videoLayer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover;
+      transform: scaleX(-1); /* Mirror for natural interaction */
+      z-index: 0;
+      background: #111;
+    }
+    
+    /* Layer 1: MediaPipe landmark overlay */
+    #landmarkLayer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 1;
+    }
+    
+    /* Layer 2: Application layer (for windows/targets) */
+    #appLayer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 2;
+      pointer-events: none; /* Pass through until we have targets */
+    }
+    
+    /* Layer 3: Cursor canvas */
+    #cursorLayer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 1000;
+    }
+    
+    /* Layer 4: Control bar */
+    .control-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 20px;
+      background: linear-gradient(180deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%);
+      z-index: 9999;
+    }
+    
+    .logo {
+      font-size: 1.1rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .logo-gen {
+      color: #e94560;
+      text-shadow: 0 0 10px rgba(233,69,96,0.5);
+    }
+    
+    .logo-phase {
+      font-size: 0.75rem;
+      padding: 3px 8px;
+      background: rgba(74,222,128,0.2);
+      color: #4ade80;
+      border-radius: 4px;
+    }
+    
+    .controls {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+    
+    button:hover { transform: translateY(-1px); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    
+    .btn-primary {
+      background: rgba(233,69,96,0.9);
+      color: white;
+    }
+    
+    .btn-secondary {
+      background: rgba(255,255,255,0.1);
+      color: #eee;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       STATUS PANEL (bottom left)
+    */
+    .status-panel {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      padding: 16px;
+      min-width: 280px;
+      z-index: 100;
+      font-size: 0.85rem;
+    }
+    
+    .status-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .status-title {
+      font-weight: 700;
+      color: #e94560;
+    }
+    
+    .status-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 0;
+    }
+    
+    .status-label { color: #888; }
+    .status-value { 
+      font-family: 'SF Mono', Monaco, monospace;
+      color: #4ade80;
+    }
+    .status-value.warning { color: #fbbf24; }
+    .status-value.error { color: #f87171; }
+    .status-value.off { color: #666; }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       GESTURE DISPLAY (bottom right)
+    */
+    .gesture-panel {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      min-width: 180px;
+      z-index: 100;
+    }
+    
+    .gesture-icon {
+      font-size: 3rem;
+      margin-bottom: 8px;
+    }
+    
+    .gesture-label {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #e94560;
+    }
+    
+    .gesture-confidence {
+      font-size: 0.85rem;
+      color: #888;
+      margin-top: 4px;
+    }
+    
+    .fsm-state {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-weight: 600;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+    }
+    
+    .fsm-state.OFFLINE { background: rgba(100,100,100,0.3); color: #666; }
+    .fsm-state.DISARMED { background: rgba(100,100,100,0.3); color: #888; }
+    .fsm-state.ARMING { background: rgba(251,191,36,0.2); color: #fbbf24; }
+    .fsm-state.ARMED { background: rgba(74,222,128,0.2); color: #4ade80; }
+    .fsm-state.DOWN_DRAW { background: rgba(248,113,113,0.2); color: #f87171; }
+    .fsm-state.DOWN_PAN { background: rgba(96,165,250,0.2); color: #60a5fa; }
+    .fsm-state.DOWN_ZOOM { background: rgba(192,132,252,0.2); color: #c084fc; }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       PIPELINE DIAGRAM (top right)
+    */
+    .pipeline-diagram {
+      position: fixed;
+      top: 60px;
+      right: 20px;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      padding: 12px 16px;
+      z-index: 100;
+      font-size: 0.7rem;
+      font-family: 'SF Mono', Monaco, monospace;
+    }
+    
+    .pipeline-flow {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .pipeline-stage {
+      padding: 4px 8px;
+      border-radius: 4px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .pipeline-stage.active {
+      background: rgba(74,222,128,0.2);
+      border-color: #4ade80;
+      color: #4ade80;
+    }
+    
+    .pipeline-arrow {
+      color: #444;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       LOADING OVERLAY
+    */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(10,10,20,0.95);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 10000;
+      transition: opacity 0.5s;
+    }
+    
+    .loading-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    
+    .loading-spinner {
+      width: 60px;
+      height: 60px;
+      border: 3px solid rgba(233,69,96,0.2);
+      border-top-color: #e94560;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .loading-text {
+      margin-top: 20px;
+      font-size: 1rem;
+      color: #888;
+    }
+    
+    .loading-status {
+      margin-top: 8px;
+      font-size: 0.85rem;
+      color: #e94560;
+    }
+  </style>
+</head>
+<body>
+  <!-- Loading Overlay -->
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Initializing W3C Gesture Control Plane</div>
+    <div id="loadingStatus" class="loading-status">Loading MediaPipe...</div>
+  </div>
+
+  <!-- DOM LAYERS -->
+  <video id="videoLayer" playsinline autoplay muted></video>
+  <canvas id="landmarkLayer"></canvas>
+  <div id="appLayer"></div>
+  <canvas id="cursorLayer"></canvas>
+  
+  <!-- Control Bar (Layer 4) -->
+  <div class="control-bar">
+    <div class="logo">
+      <span class="logo-gen">🕷️ Gen87.X3</span>
+      <span class="logo-phase">HUNT</span>
+    </div>
+    <div class="controls">
+      <button id="startBtn" class="btn-primary">▶ Start Camera</button>
+      <button id="toggleLandmarks" class="btn-secondary">👁️ Landmarks</button>
+      <button id="toggleMirror" class="btn-secondary">🔄 Mirror</button>
+    </div>
+  </div>
+  
+  <!-- Pipeline Diagram -->
+  <div class="pipeline-diagram">
+    <div class="pipeline-flow">
+      <span class="pipeline-stage" id="stageSensor">SENSOR</span>
+      <span class="pipeline-arrow">→</span>
+      <span class="pipeline-stage" id="stageSmoother">SMOOTHER</span>
+      <span class="pipeline-arrow">→</span>
+      <span class="pipeline-stage" id="stageFSM">FSM</span>
+      <span class="pipeline-arrow">→</span>
+      <span class="pipeline-stage" id="stageEmitter">EMITTER</span>
+      <span class="pipeline-arrow">→</span>
+      <span class="pipeline-stage" id="stageTarget">TARGET</span>
+    </div>
+  </div>
+  
+  <!-- Status Panel -->
+  <div class="status-panel">
+    <div class="status-header">
+      <span class="status-title">📊 Pipeline Status</span>
+      <span id="fpsCounter" class="status-value">-- fps</span>
+    </div>
+    <div class="status-row">
+      <span class="status-label">Camera</span>
+      <span id="cameraStatus" class="status-value off">OFF</span>
+    </div>
+    <div class="status-row">
+      <span class="status-label">MediaPipe</span>
+      <span id="mediapipeStatus" class="status-value off">NOT LOADED</span>
+    </div>
+    <div class="status-row">
+      <span class="status-label">Hand Detected</span>
+      <span id="handStatus" class="status-value off">NO</span>
+    </div>
+    <div class="status-row">
+      <span class="status-label">Index Tip (x, y)</span>
+      <span id="indexPosition" class="status-value off">--, --</span>
+    </div>
+    <div class="status-row">
+      <span class="status-label">Smoothed (x, y)</span>
+      <span id="smoothedPosition" class="status-value off">--, --</span>
+    </div>
+    <div class="status-row">
+      <span class="status-label">Palm Facing</span>
+      <span id="palmStatus" class="status-value off">--</span>
+    </div>
+  </div>
+  
+  <!-- Gesture Panel -->
+  <div class="gesture-panel">
+    <div id="gestureIcon" class="gesture-icon">✋</div>
+    <div id="gestureLabel" class="gesture-label">None</div>
+    <div id="gestureConfidence" class="gesture-confidence">0%</div>
+    <div id="fsmState" class="fsm-state OFFLINE">OFFLINE</div>
+  </div>
+  
+  <script type="module" src="./main.js"></script>
+</body>
+</html>

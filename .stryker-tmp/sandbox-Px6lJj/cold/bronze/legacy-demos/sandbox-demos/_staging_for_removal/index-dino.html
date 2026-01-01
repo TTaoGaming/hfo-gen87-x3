@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gen87.X3 Gesture Control Plane — DINO GAME Test</title>
+  <!-- Golden Layout CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/golden-layout@2.6.0/dist/css/goldenlayout-base.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/golden-layout@2.6.0/dist/css/themes/goldenlayout-dark-theme.css">
+  <style>
+    :root {
+      --bg-dark: #0a0a0f;
+      --bg-panel: #12121a;
+      --border: #2a2a3a;
+      --accent: #00ff88;
+      --accent-dim: rgba(0, 255, 136, 0.3);
+      --warning: #ffaa00;
+      --error: #ff4444;
+      --nats: #27aae1;
+      --text: #e0e0e0;
+      --text-dim: #808090;
+      --game-ground: #535353;
+      --game-sky: #f7f7f7;
+      --dino-color: #535353;
+    }
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    html, body {
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      background: var(--bg-dark);
+      color: var(--text);
+      height: 100%;
+      overflow: hidden;
+    }
+    
+    #layout-container { width: 100%; height: 100%; }
+    
+    /* Golden Layout overrides */
+    .lm_header { background: var(--bg-panel) !important; }
+    .lm_tab { background: var(--bg-dark) !important; }
+    .lm_tab.lm_active { background: var(--bg-panel) !important; border-bottom: 2px solid var(--accent) !important; }
+    .lm_content { background: var(--bg-panel) !important; overflow: hidden !important; }
+    .lm_splitter { background: var(--border) !important; }
+    
+    .panel-content {
+      padding: 0.75rem;
+      height: 100%;
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .panel-content h2 {
+      font-size: 0.8rem;
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      flex-shrink: 0;
+    }
+    
+    /* Camera Panel */
+    .camera-container {
+      position: relative;
+      width: 100%;
+      flex: 1;
+      min-height: 0;
+      background: #000;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    
+    #camera {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      transform: scaleX(-1);
+    }
+    
+    #landmarks-canvas {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      transform: scaleX(-1);
+      pointer-events: none;
+    }
+    
+    .camera-overlay {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      background: rgba(0, 0, 0, 0.8);
+      padding: 0.4rem 0.6rem;
+      border-radius: 4px;
+      font-size: 0.65rem;
+    }
+    
+    .gesture-badge {
+      font-size: 1rem;
+      font-weight: bold;
+    }
+    
+    .gesture-badge.Closed_Fist { color: #ff6666; }
+    .gesture-badge.Open_Palm { color: var(--accent); }
+    .gesture-badge.Pointing_Up { color: var(--warning); }
+    .gesture-badge.None { color: var(--text-dim); }
+    
+    /* Game Panel */
+    .game-container {
+      position: relative;
+      width: 100%;
+      flex: 1;
+      min-height: 200px;
+      background: var(--game-sky);
+      border-radius: 4px;
+      overflow: hidden;
+      cursor: none;
+    }
+    
+    #game-canvas {
+      width: 100%;
+      height: 100%;
+    }
+    
+    .game-overlay {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      display: flex;
+      gap: 1rem;
+      font-size: 0.8rem;
+      color: var(--game-ground);
+      font-weight: bold;
+    }
+    
+    .game-score { font-size: 1.2rem; }
+    
+    .game-status {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      color: var(--game-ground);
+    }
+    
+    .game-status h3 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .game-status p {
+      font-size: 0.8rem;
+      color: #888;
+    }
+    
+    #gesture-cursor {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--accent);
+      border-radius: 50%;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      z-index: 100;
+      transition: all 0.05s;
+    }
+    
+    #gesture-cursor.pressing { 
+      background: var(--accent-dim); 
+      transform: translate(-50%, -50%) scale(1.5); 
+      border-color: #ff6666;
+    }
+    
+    /* Event Envelope Panel */
+    .envelope-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    
+    .envelope-card {
+      background: var(--bg-dark);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.5rem;
+      font-size: 0.6rem;
+      font-family: monospace;
+    }
+    
+    .envelope-card.valid { border-color: var(--accent); }
+    .envelope-card.invalid { border-color: var(--error); }
+    
+    .envelope-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.3rem;
+      font-weight: bold;
+    }
+    
+    .envelope-header .type { color: var(--accent); }
+    .envelope-header .timestamp { color: var(--text-dim); }
+    
+    .envelope-body {
+      white-space: pre-wrap;
+      color: var(--text);
+      max-height: 100px;
+      overflow-y: auto;
+    }
+    
+    #envelope-log {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    
+    /* Metrics Panel */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+    }
+    
+    .metric-box {
+      background: var(--bg-dark);
+      border-radius: 4px;
+      padding: 0.5rem;
+      text-align: center;
+    }
+    
+    .metric-box .value {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: var(--accent);
+    }
+    
+    .metric-box .label {
+      font-size: 0.6rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+    }
+    
+    .metric-box.warning .value { color: var(--warning); }
+    .metric-box.error .value { color: var(--error); }
+    
+    /* Controls */
+    .controls { display: flex; gap: 0.5rem; margin: 0.5rem 0; flex-shrink: 0; flex-wrap: wrap; }
+    button {
+      padding: 0.4rem 0.8rem;
+      border: 1px solid var(--accent);
+      background: transparent;
+      color: var(--accent);
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.7rem;
+      transition: all 0.2s;
+    }
+    button:hover { background: var(--accent); color: var(--bg-dark); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    button.active { background: var(--accent); color: var(--bg-dark); }
+    
+    /* Status badges */
+    .status-bar { display: flex; gap: 0.5rem; margin-bottom: 0.5rem; flex-wrap: wrap; flex-shrink: 0; }
+    .badge { padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.6rem; font-weight: 600; }
+    .badge.connected { background: var(--accent); color: var(--bg-dark); }
+    .badge.disconnected { background: var(--error); color: white; }
+    .badge.active { background: var(--accent); color: var(--bg-dark); }
+    .badge.idle { background: var(--text-dim); color: var(--bg-dark); }
+    
+    /* Limitations Panel */
+    .limitation-item {
+      padding: 0.4rem;
+      margin-bottom: 0.3rem;
+      background: var(--bg-dark);
+      border-radius: 4px;
+      font-size: 0.65rem;
+      border-left: 3px solid var(--border);
+    }
+    
+    .limitation-item.blocker { border-left-color: var(--error); }
+    .limitation-item.warning { border-left-color: var(--warning); }
+    .limitation-item.info { border-left-color: var(--nats); }
+    .limitation-item.ok { border-left-color: var(--accent); }
+    
+    .limitation-item strong {
+      display: block;
+      margin-bottom: 0.2rem;
+    }
+  </style>
+</head>
+<body>
+  <div id="layout-container"></div>
+  
+  <script type="module">
+// @ts-nocheck
+
+    // ============================================================
+    // GEN87.X3 — DINO GAME INTEGRATION TEST
+    // ============================================================
+    // Testing: Can the gesture pipeline control a real game?
+    // W3C Pointer Events → Game Input → Action
+    // ============================================================
+    
+    import { GoldenLayout } from 'https://esm.sh/golden-layout@2.6.0';
+    import { GestureRecognizer, FilesetResolver } from 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.8';
+    import { z } from 'https://esm.sh/zod@3.24.1';
+    import { createActor, createMachine, assign } from 'https://esm.sh/xstate@5.19.2';
+    
+    // ============================================================
+    // ZOD SCHEMAS - CloudEvents Envelope + W3C Pointer
+    // ============================================================
+    
+    const CloudEventEnvelopeSchema = z.object({
+      specversion: z.literal('1.0'),
+      id: z.string().uuid(),
+      source: z.string(),
+      type: z.string(),
+      time: z.string().datetime(),
+      datacontenttype: z.literal('application/json'),
+      // HFO Extensions
+      hfoport: z.number().min(0).max(7),
+      hfohive: z.enum(['H', 'I', 'V', 'E']),
+      hfogen: z.number().min(87),
+      // Payload
+      data: z.unknown(),
+    });
+    
+    const W3CPointerEventSchema = z.object({
+      type: z.enum(['pointerdown', 'pointermove', 'pointerup', 'pointercancel']),
+      pointerId: z.number(),
+      pointerType: z.enum(['mouse', 'pen', 'touch', 'gesture']),
+      clientX: z.number(),
+      clientY: z.number(),
+      pressure: z.number().min(0).max(1),
+      button: z.number(),
+      buttons: z.number(),
+      isPrimary: z.boolean(),
+      timestamp: z.number(),
+    });
+    
+    // ============================================================
+    // CONFIG
+    // ============================================================
+    
+    const CONFIG = {
+      oneEuro: { minCutoff: 1.0, beta: 0.007 },
+      gesture: { confidenceThreshold: 0.7, debounceFrames: 3 },
+    };
+    
+    // ============================================================
+    // DINO RUNNER GAME
+    // ============================================================
+    
+    class DinoGame {
+      constructor(canvas) {
+        this.canvas = canvas;
+        this.ctx = canvas.getContext('2d');
+        this.width = 600;
+        this.height = 150;
+        
+        // Game state
+        this.isRunning = false;
+        this.isGameOver = false;
+        this.score = 0;
+        this.highScore = 0;
+        this.speed = 6;
+        this.gravity = 0.6;
+        this.jumpForce = -12;
+        
+        // Dino
+        this.dino = {
+          x: 50,
+          y: 100,
+          width: 40,
+          height: 44,
+          velocityY: 0,
+          isJumping: false,
+          isDucking: false,
+        };
+        
+        // Ground
+        this.groundY = 120;
+        
+        // Obstacles
+        this.obstacles = [];
+        this.obstacleTimer = 0;
+        this.obstacleInterval = 100;
+        
+        // Clouds
+        this.clouds = [];
+        
+        // Input tracking
+        this.jumpRequested = false;
+        this.gestureJumpCount = 0;
+        this.keyboardJumpCount = 0;
+        
+        this.resize();
+        this.setupInput();
+      }
+      
+      resize() {
+        const rect = this.canvas.parentElement.getBoundingClientRect();
+        this.width = rect.width;
+        this.height = rect.height;
+        this.canvas.width = this.width;
+        this.canvas.height = this.height;
+        this.groundY = this.height - 30;
+        this.dino.y = this.groundY - this.dino.height;
+      }
+      
+      setupInput() {
+        // Keyboard (Space/Up)
+        document.addEventListener('keydown', (e) => {
+          if (e.code === 'Space' || e.code === 'ArrowUp') {
+            e.preventDefault();
+            this.requestJump('keyboard');
+          }
+        });
+        
+        // Mouse click on game area
+        this.canvas.addEventListener('click', () => this.requestJump('mouse'));
+        
+        // W3C Pointer Events (from gesture pipeline)
+        this.canvas.addEventListener('pointerdown', (e) => {
+          if (e.pointerType === 'gesture' || e.pointerType === 'touch') {
+            this.requestJump('gesture');
+          }
+        });
+      }
+      
+      requestJump(source) {
+        if (!this.isRunning) {
+          this.start();
+          return;
+        }
+        
+        if (this.isGameOver) {
+          this.reset();
+          this.start();
+          return;
+        }
+        
+        if (!this.dino.isJumping) {
+          this.jump();
+          if (source === 'gesture') this.gestureJumpCount++;
+          else if (source === 'keyboard') this.keyboardJumpCount++;
+        }
+      }
+      
+      jump() {
+        if (this.dino.isJumping) return;
+        this.dino.velocityY = this.jumpForce;
+        this.dino.isJumping = true;
+      }
+      
+      start() {
+        if (this.isRunning) return;
+        this.isRunning = true;
+        this.isGameOver = false;
+        this.gameLoop();
+      }
+      
+      reset() {
+        this.score = 0;
+        this.speed = 6;
+        this.obstacles = [];
+        this.obstacleTimer = 0;
+        this.dino.y = this.groundY - this.dino.height;
+        this.dino.velocityY = 0;
+        this.dino.isJumping = false;
+        this.isGameOver = false;
+      }
+      
+      gameLoop() {
+        if (!this.isRunning) return;
+        
+        this.update();
+        this.draw();
+        
+        if (!this.isGameOver) {
+          requestAnimationFrame(() => this.gameLoop());
+        }
+      }
+      
+      update() {
+        if (this.isGameOver) return;
+        
+        // Score
+        this.score++;
+        if (this.score > this.highScore) this.highScore = this.score;
+        
+        // Speed increase
+        if (this.score % 500 === 0) this.speed += 0.5;
+        
+        // Dino physics
+        this.dino.velocityY += this.gravity;
+        this.dino.y += this.dino.velocityY;
+        
+        if (this.dino.y >= this.groundY - this.dino.height) {
+          this.dino.y = this.groundY - this.dino.height;
+          this.dino.velocityY = 0;
+          this.dino.isJumping = false;
+        }
+        
+        // Obstacles
+        this.obstacleTimer++;
+        if (this.obstacleTimer >= this.obstacleInterval) {
+          this.spawnObstacle();
+          this.obstacleTimer = 0;
+          this.obstacleInterval = 60 + Math.random() * 60;
+        }
+        
+        for (let i = this.obstacles.length - 1; i >= 0; i--) {
+          this.obstacles[i].x -= this.speed;
+          
+          // Collision
+          if (this.checkCollision(this.dino, this.obstacles[i])) {
+            this.gameOver();
+          }
+          
+          // Remove offscreen
+          if (this.obstacles[i].x + this.obstacles[i].width < 0) {
+            this.obstacles.splice(i, 1);
+          }
+        }
+      }
+      
+      spawnObstacle() {
+        const types = [
+          { width: 20, height: 40 },  // Small cactus
+          { width: 30, height: 50 },  // Medium cactus
+          { width: 50, height: 35 },  // Wide cactus
+        ];
+        const type = types[Math.floor(Math.random() * types.length)];
+        
+        this.obstacles.push({
+          x: this.width,
+          y: this.groundY - type.height,
+          width: type.width,
+          height: type.height,
+        });
+      }
+      
+      checkCollision(a, b) {
+        const padding = 5;
+        return (
+          a.x + padding < b.x + b.width - padding &&
+          a.x + a.width - padding > b.x + padding &&
+          a.y + padding < b.y + b.height - padding &&
+          a.y + a.height - padding > b.y + padding
+        );
+      }
+      
+      gameOver() {
+        this.isGameOver = true;
+        this.isRunning = false;
+      }
+      
+      draw() {
+        const ctx = this.ctx;
+        
+        // Sky
+        ctx.fillStyle = '#f7f7f7';
+        ctx.fillRect(0, 0, this.width, this.height);
+        
+        // Ground
+        ctx.fillStyle = '#535353';
+        ctx.fillRect(0, this.groundY, this.width, 2);
+        
+        // Ground texture
+        ctx.strokeStyle = '#535353';
+        ctx.lineWidth = 1;
+        for (let i = 0; i < this.width; i += 20) {
+          const offset = (this.score * this.speed / 10) % 20;
+          ctx.beginPath();
+          ctx.moveTo(i - offset, this.groundY + 5);
+          ctx.lineTo(i + 5 - offset, this.groundY + 5);
+          ctx.stroke();
+        }
+        
+        // Dino
+        ctx.fillStyle = '#535353';
+        ctx.fillRect(this.dino.x, this.dino.y, this.dino.width, this.dino.height);
+        
+        // Dino eye
+        ctx.fillStyle = '#f7f7f7';
+        ctx.fillRect(this.dino.x + 25, this.dino.y + 5, 8, 8);
+        ctx.fillStyle = '#535353';
+        ctx.fillRect(this.dino.x + 28, this.dino.y + 8, 4, 4);
+        
+        // Dino legs (animated)
+        const legOffset = Math.floor(this.score / 5) % 2;
+        if (!this.dino.isJumping) {
+          ctx.fillRect(this.dino.x + 5, this.dino.y + this.dino.height, 8, legOffset ? 8 : 4);
+          ctx.fillRect(this.dino.x + 20, this.dino.y + this.dino.height, 8, legOffset ? 4 : 8);
+        }
+        
+        // Obstacles (cacti)
+        ctx.fillStyle = '#535353';
+        for (const obs of this.obstacles) {
+          ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+          // Cactus arms
+          if (obs.height > 40) {
+            ctx.fillRect(obs.x - 5, obs.y + 15, 5, 15);
+            ctx.fillRect(obs.x + obs.width, obs.y + 10, 5, 15);
+          }
+        }
+        
+        // Score
+        ctx.fillStyle = '#535353';
+        ctx.font = 'bold 16px monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText(`HI ${String(this.highScore).padStart(5, '0')}  ${String(this.score).padStart(5, '0')}`, this.width - 10, 20);
+        
+        // Game over
+        if (this.isGameOver) {
+          ctx.fillStyle = '#535353';
+          ctx.font = 'bold 20px monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText('GAME OVER', this.width / 2, this.height / 2 - 10);
+          ctx.font = '12px monospace';
+          ctx.fillText('✊ Closed Fist or SPACE to restart', this.width / 2, this.height / 2 + 15);
+        }
+        
+        // Not started
+        if (!this.isRunning && !this.isGameOver) {
+          ctx.fillStyle = '#535353';
+          ctx.font = 'bold 16px monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText('✊ CLOSED FIST to JUMP', this.width / 2, this.height / 2);
+          ctx.font = '12px monospace';
+          ctx.fillText('(or press SPACE)', this.width / 2, this.height / 2 + 20);
+        }
+      }
+      
+      getStats() {
+        return {
+          score: this.score,
+          highScore: this.highScore,
+          isRunning: this.isRunning,
+          isGameOver: this.isGameOver,
+          gestureJumps: this.gestureJumpCount,
+          keyboardJumps: this.keyboardJumpCount,
+          totalJumps: this.gestureJumpCount + this.keyboardJumpCount,
+        };
+      }
+    }
+    
+    // ============================================================
+    // ADAPTERS (Simplified from main demo)
+    // ============================================================
+    
+    class LowPassFilter {
+      constructor() { this.y = null; }
+      filter(value, alpha) {
+        this.y = this.y === null ? value : alpha * value + (1 - alpha) * this.y;
+        return this.y;
+      }
+    }
+    
+    class OneEuroAdapter {
+      constructor() { this.filters = new Map(); this.lastTime = null; }
+      
+      smooth(landmarks, timestamp) {
+        const dt = this.lastTime ? Math.max((timestamp - this.lastTime) / 1000, 0.001) : 1/60;
+        this.lastTime = timestamp;
+        
+        return landmarks.map((hand, hi) => 
+          hand.map((lm, li) => {
+            const key = `${hi}-${li}`;
+            if (!this.filters.has(key)) {
+              this.filters.set(key, { x: new LowPassFilter(), y: new LowPassFilter() });
+            }
+            const f = this.filters.get(key);
+            const speed = f.x.y !== null ? Math.sqrt((lm.x - f.x.y)**2 + (lm.y - f.y.y)**2) / dt : 0;
+            const cutoff = CONFIG.oneEuro.minCutoff + CONFIG.oneEuro.beta * speed;
+            const alpha = 1.0 / (1.0 + 1.0 / (2 * Math.PI * cutoff * dt));
+            return { x: f.x.filter(lm.x, alpha), y: f.y.filter(lm.y, alpha), z: lm.z };
+          })
+        );
+      }
+    }
+    
+    const gestureFSM = createMachine({
+      id: 'gesture',
+      initial: 'idle',
+      context: { x: 0.5, y: 0.5, gesture: 'None' },
+      states: {
+        idle: { on: { HAND: 'tracking' } },
+        tracking: {
+          on: {
+            LOST: 'idle',
+            MOVE: { actions: assign({ x: ({event}) => event.x, y: ({event}) => event.y }) },
+            FIST: 'pressing',
+          }
+        },
+        pressing: {
+          on: {
+            LOST: 'idle',
+            OPEN: 'tracking',
+            MOVE: { actions: assign({ x: ({event}) => event.x, y: ({event}) => event.y }) },
+          }
+        }
+      }
+    });
+    
+    // ============================================================
+    // ENVELOPE FACTORY
+    // ============================================================
+    
+    function createCloudEvent(type, data, port = 4, hive = 'V') {
+      return {
+        specversion: '1.0',
+        id: crypto.randomUUID(),
+        source: '/gen87/gesture-pipeline',
+        type: `hfo.pointer.${type}`,
+        time: new Date().toISOString(),
+        datacontenttype: 'application/json',
+        hfoport: port,
+        hfohive: hive,
+        hfogen: 87,
+        data,
+      };
+    }
+    
+    function createW3CPointerEvent(type, x, y, target, pressure = 0) {
+      const rect = target.getBoundingClientRect();
+      return {
+        type,
+        pointerId: 1,
+        pointerType: 'gesture',
+        clientX: (1 - x) * rect.width + rect.left,
+        clientY: y * rect.height + rect.top,
+        pressure,
+        button: type === 'pointerdown' ? 0 : -1,
+        buttons: type === 'pointerdown' ? 1 : 0,
+        isPrimary: true,
+        timestamp: performance.now(),
+      };
+    }
+    
+    // ============================================================
+    // APP STATE
+    // ============================================================
+    
+    let goldenLayout = null;
+    let game = null;
+    let videoEl = null;
+    let landmarksCanvas = null;
+    let gameCanvas = null;
+    let cursorEl = null;
+    let recognizer = null;
+    let smoother = null;
+    let fsmActor = null;
+    let isRunning = false;
+    let envelopeLog = [];
+    let validationStats = { total: 0, valid: 0, invalid: 0 };
+    let latencyStats = [];
+    
+    // UI elements
+    let uiRefs = {};
+    
+    // ============================================================
+    // GOLDEN LAYOUT CONFIG - IMPROVED
+    // ============================================================
+    
+    const layoutConfig = {
+      root: {
+        type: 'row',
+        content: [
+          {
+            type: 'column',
+            width: 25,
+            content: [
+              { type: 'component', componentType: 'camera', title: '📹 Camera + Hand', height: 50 },
+              { type: 'component', componentType: 'metrics', title: '📊 Production Metrics', height: 50 }
+            ]
+          },
+          {
+            type: 'column',
+            width: 50,
+            content: [
+              { type: 'component', componentType: 'game', title: '🦖 DINO RUNNER (Gesture Test)', height: 70 },
+              { type: 'component', componentType: 'envelopes', title: '📨 Event Envelopes', height: 30 }
+            ]
+          },
+          {
+            type: 'column', 
+            width: 25,
+            content: [
+              { type: 'component', componentType: 'limitations', title: '⚠️ Production Readiness', height: 100 }
+            ]
+          }
+        ]
+      }
+    };
+    
+    // ============================================================
+    // PANEL FACTORIES
+    // ============================================================
+    
+    function createCameraPanel(container) {
+      container.element.innerHTML = `
+        <div class="panel-content">
+          <div class="status-bar">
+            <span class="badge idle" id="status-fsm">FSM: idle</span>
+            <span class="badge idle" id="status-gesture">None</span>
+          </div>
+          <div class="camera-container">
+            <video id="camera" autoplay playsinline muted></video>
+            <canvas id="landmarks-canvas"></canvas>
+            <div class="camera-overlay">
+              <div class="gesture-badge" id="gesture-label">None</div>
+            </div>
+          </div>
+          <div class="controls">
+            <button id="btn-start">▶ Start Pipeline</button>
+            <button id="btn-stop" disabled>⏹ Stop</button>
+          </div>
+        </div>
+      `;
+      
+      videoEl = container.element.querySelector('#camera');
+      landmarksCanvas = container.element.querySelector('#landmarks-canvas');
+      uiRefs.fsmStatus = container.element.querySelector('#status-fsm');
+      uiRefs.gestureStatus = container.element.querySelector('#status-gesture');
+      uiRefs.gestureLabel = container.element.querySelector('#gesture-label');
+      
+      container.element.querySelector('#btn-start').addEventListener('click', startPipeline);
+      container.element.querySelector('#btn-stop').addEventListener('click', stopPipeline);
+    }
+    
+    function createGamePanel(container) {
+      container.element.innerHTML = `
+        <div class="panel-content" style="padding: 0;">
+          <div class="game-container" id="game-area">
+            <canvas id="game-canvas"></canvas>
+            <div id="gesture-cursor"></div>
+          </div>
+        </div>
+      `;
+      
+      gameCanvas = container.element.querySelector('#game-canvas');
+      cursorEl = container.element.querySelector('#gesture-cursor');
+      
+      game = new DinoGame(gameCanvas);
+      
+      // Handle resize
+      const resizeGame = () => {
+        setTimeout(() => game.resize(), 100);
+      };
+      new ResizeObserver(resizeGame).observe(container.element);
+    }
+    
+    function createEnvelopesPanel(container) {
+      container.element.innerHTML = `
+        <div class="panel-content">
+          <h2>CloudEvents Envelope Validation</h2>
+          <div class="status-bar">
+            <span class="badge" id="env-valid">Valid: 0</span>
+            <span class="badge" id="env-invalid">Invalid: 0</span>
+          </div>
+          <div id="envelope-log" class="envelope-container"></div>
+        </div>
+      `;
+      
+      uiRefs.envelopeLog = container.element.querySelector('#envelope-log');
+      uiRefs.envValid = container.element.querySelector('#env-valid');
+      uiRefs.envInvalid = container.element.querySelector('#env-invalid');
+    }
+    
+    function createMetricsPanel(container) {
+      container.element.innerHTML = `
+        <div class="panel-content">
+          <h2>Pipeline Metrics</h2>
+          <div class="metrics-grid">
+            <div class="metric-box">
+              <div class="value" id="metric-fps">0</div>
+              <div class="label">FPS</div>
+            </div>
+            <div class="metric-box">
+              <div class="value" id="metric-latency">0ms</div>
+              <div class="label">Latency</div>
+            </div>
+            <div class="metric-box">
+              <div class="value" id="metric-gesture-jumps">0</div>
+              <div class="label">Gesture Jumps</div>
+            </div>
+            <div class="metric-box">
+              <div class="value" id="metric-keyboard-jumps">0</div>
+              <div class="label">Keyboard Jumps</div>
+            </div>
+            <div class="metric-box">
+              <div class="value" id="metric-score">0</div>
+              <div class="label">Score</div>
+            </div>
+            <div class="metric-box">
+              <div class="value" id="metric-high-score">0</div>
+              <div class="label">High Score</div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      uiRefs.fps = container.element.querySelector('#metric-fps');
+      uiRefs.latency = container.element.querySelector('#metric-latency');
+      uiRefs.gestureJumps = container.element.querySelector('#metric-gesture-jumps');
+      uiRefs.keyboardJumps = container.element.querySelector('#metric-keyboard-jumps');
+      uiRefs.score = container.element.querySelector('#metric-score');
+      uiRefs.highScore = container.element.querySelector('#metric-high-score');
+    }
+    
+    function createLimitationsPanel(container) {
+      container.element.innerHTML = `
+        <div class="panel-content">
+          <h2>Production Readiness Check</h2>
+          <div id="limitations-list">
+            <div class="limitation-item ok">
+              <strong>✅ W3C Pointer Events</strong>
+              Events properly typed and dispatched
+            </div>
+            <div class="limitation-item ok">
+              <strong>✅ CloudEvents Envelopes</strong>
+              Spec 1.0 compliant with HFO extensions
+            </div>
+            <div class="limitation-item ok">
+              <strong>✅ Zod Validation</strong>
+              Runtime contract enforcement
+            </div>
+            <div class="limitation-item warning">
+              <strong>⚠️ Single Hand Only</strong>
+              Multi-hand support not implemented
+            </div>
+            <div class="limitation-item warning">
+              <strong>⚠️ No NATS in Browser</strong>
+              Direct DOM injection (no event bus)
+            </div>
+            <div class="limitation-item warning">
+              <strong>⚠️ Gesture Confidence</strong>
+              70% threshold may cause false positives
+            </div>
+            <div class="limitation-item blocker">
+              <strong>🔴 No Rapier Physics</strong>
+              Using 1€ only (no trajectory prediction)
+            </div>
+            <div class="limitation-item blocker">
+              <strong>🔴 461 Stub Tests</strong>
+              Emulator adapters not implemented
+            </div>
+            <div class="limitation-item info">
+              <strong>ℹ️ Latency Target</strong>
+              <16ms for 60fps (check metrics)
+            </div>
+            <div class="limitation-item info">
+              <strong>ℹ️ Test This Demo</strong>
+              Use ✊ Closed Fist to make dino jump!
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    
+    // ============================================================
+    // HAND DRAWING
+    // ============================================================
+    
+    const HAND_CONNECTIONS = [
+      [0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[0,9],[9,10],[10,11],[11,12],
+      [0,13],[13,14],[14,15],[15,16],[0,17],[17,18],[18,19],[19,20],[5,9],[9,13],[13,17]
+    ];
+    
+    function drawHand(ctx, landmarks, w, h) {
+      if (!landmarks?.[0]) return;
+      const hand = landmarks[0];
+      
+      ctx.strokeStyle = '#ff4444';
+      ctx.lineWidth = 2;
+      for (const [i,j] of HAND_CONNECTIONS) {
+        if (hand[i] && hand[j]) {
+          ctx.beginPath();
+          ctx.moveTo(hand[i].x * w, hand[i].y * h);
+          ctx.lineTo(hand[j].x * w, hand[j].y * h);
+          ctx.stroke();
+        }
+      }
+      
+      ctx.fillStyle = '#00ff88';
+      for (const lm of hand) {
+        ctx.beginPath();
+        ctx.arc(lm.x * w, lm.y * h, 3, 0, 2 * Math.PI);
+        ctx.fill();
+      }
+      
+      // Index tip
+      if (hand[8]) {
+        ctx.fillStyle = '#4488ff';
+        ctx.beginPath();
+        ctx.arc(hand[8].x * w, hand[8].y * h, 6, 0, 2 * Math.PI);
+        ctx.fill();
+      }
+    }
+    
+    // ============================================================
+    // ENVELOPE LOGGING
+    // ============================================================
+    
+    function logEnvelope(envelope, isValid) {
+      validationStats.total++;
+      if (isValid) validationStats.valid++;
+      else validationStats.invalid++;
+      
+      if (!uiRefs.envelopeLog) return;
+      
+      // Update counters
+      uiRefs.envValid.textContent = `Valid: ${validationStats.valid}`;
+      uiRefs.envValid.className = `badge ${validationStats.valid > 0 ? 'connected' : 'idle'}`;
+      uiRefs.envInvalid.textContent = `Invalid: ${validationStats.invalid}`;
+      uiRefs.envInvalid.className = `badge ${validationStats.invalid > 0 ? 'disconnected' : 'idle'}`;
+      
+      // Only log pointerdown/pointerup (not move spam)
+      if (envelope.data?.type === 'pointermove') return;
+      
+      const card = document.createElement('div');
+      card.className = `envelope-card ${isValid ? 'valid' : 'invalid'}`;
+      card.innerHTML = `
+        <div class="envelope-header">
+          <span class="type">${envelope.type}</span>
+          <span class="timestamp">${envelope.time?.slice(11,19) || 'N/A'}</span>
+        </div>
+        <div class="envelope-body">${JSON.stringify(envelope.data, null, 1)}</div>
+      `;
+      
+      uiRefs.envelopeLog.insertBefore(card, uiRefs.envelopeLog.firstChild);
+      
+      // Keep max 10 cards
+      while (uiRefs.envelopeLog.children.length > 10) {
+        uiRefs.envelopeLog.removeChild(uiRefs.envelopeLog.lastChild);
+      }
+    }
+    
+    // ============================================================
+    // PIPELINE
+    // ============================================================
+    
+    let frameCount = 0;
+    let lastFpsTime = performance.now();
+    let gestureBuffer = [];
+    
+    async function initPipeline() {
+      const vision = await FilesetResolver.forVisionTasks(
+        'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.8/wasm'
+      );
+      
+      recognizer = await GestureRecognizer.createFromOptions(vision, {
+        baseOptions: {
+          modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task',
+          delegate: 'GPU'
+        },
+        runningMode: 'VIDEO',
+        numHands: 1
+      });
+      
+      smoother = new OneEuroAdapter();
+      fsmActor = createActor(gestureFSM);
+      fsmActor.start();
+    }
+    
+    async function pipelineLoop(timestamp) {
+      if (!isRunning) return;
+      
+      const loopStart = performance.now();
+      
+      try {
+        // SENSE
+        const results = recognizer.recognizeForVideo(videoEl, timestamp);
+        
+        let gesture = 'None';
+        let confidence = 0;
+        if (results.gestures?.[0]?.[0]) {
+          gesture = results.gestures[0][0].categoryName;
+          confidence = results.gestures[0][0].score;
+        }
+        
+        // Update UI
+        uiRefs.gestureLabel.textContent = gesture;
+        uiRefs.gestureLabel.className = `gesture-badge ${gesture}`;
+        uiRefs.gestureStatus.textContent = gesture;
+        uiRefs.gestureStatus.className = `badge ${gesture === 'None' ? 'idle' : 'active'}`;
+        
+        // Draw landmarks
+        const ctx = landmarksCanvas.getContext('2d');
+        ctx.clearRect(0, 0, landmarksCanvas.width, landmarksCanvas.height);
+        
+        if (results.landmarks?.length > 0) {
+          // SMOOTH
+          const smoothed = smoother.smooth(results.landmarks, timestamp);
+          drawHand(ctx, smoothed, landmarksCanvas.width, landmarksCanvas.height);
+          
+          const tip = smoothed[0]?.[8];
+          if (tip && gameCanvas) {
+            const rect = gameCanvas.getBoundingClientRect();
+            cursorEl.style.left = `${(1 - tip.x) * rect.width}px`;
+            cursorEl.style.top = `${tip.y * rect.height}px`;
+          }
+          
+          // FSM
+          const state = fsmActor.getSnapshot();
+          
+          // Confidence gate + debounce
+          const validGesture = confidence >= CONFIG.gesture.confidenceThreshold ? gesture : 'None';
+          gestureBuffer.push(validGesture);
+          if (gestureBuffer.length > CONFIG.gesture.debounceFrames) gestureBuffer.shift();
+          const stableGesture = gestureBuffer.every(g => g === validGesture) ? validGesture : 'None';
+          
+          // State transitions
+          if (state.value === 'idle' && results.landmarks.length > 0) {
+            fsmActor.send({ type: 'HAND' });
+          } else if (state.value === 'tracking') {
+            fsmActor.send({ type: 'MOVE', x: tip.x, y: tip.y });
+            if (stableGesture === 'Closed_Fist') {
+              fsmActor.send({ type: 'FIST' });
+              
+              // EMIT W3C Pointer Event + CloudEvent Envelope
+              const pointerData = createW3CPointerEvent('pointerdown', tip.x, tip.y, gameCanvas, 0.8);
+              const envelope = createCloudEvent('pointerdown', pointerData);
+              
+              // Validate
+              const envResult = CloudEventEnvelopeSchema.safeParse(envelope);
+              const ptrResult = W3CPointerEventSchema.safeParse(pointerData);
+              const isValid = envResult.success && ptrResult.success;
+              
+              logEnvelope(envelope, isValid);
+              
+              // INJECT to game
+              const event = new PointerEvent('pointerdown', {
+                ...pointerData,
+                bubbles: true,
+                cancelable: true,
+              });
+              gameCanvas.dispatchEvent(event);
+              
+              cursorEl.className = 'pressing';
+            }
+          } else if (state.value === 'pressing') {
+            fsmActor.send({ type: 'MOVE', x: tip.x, y: tip.y });
+            if (stableGesture === 'Open_Palm' || stableGesture === 'Pointing_Up') {
+              fsmActor.send({ type: 'OPEN' });
+              
+              const pointerData = createW3CPointerEvent('pointerup', tip.x, tip.y, gameCanvas, 0);
+              const envelope = createCloudEvent('pointerup', pointerData);
+              
+              const isValid = CloudEventEnvelopeSchema.safeParse(envelope).success;
+              logEnvelope(envelope, isValid);
+              
+              cursorEl.className = '';
+            }
+          }
+          
+          const newState = fsmActor.getSnapshot();
+          uiRefs.fsmStatus.textContent = `FSM: ${newState.value}`;
+          uiRefs.fsmStatus.className = `badge ${newState.value === 'pressing' ? 'active' : 'idle'}`;
+          
+        } else {
+          fsmActor.send({ type: 'LOST' });
+          cursorEl.className = '';
+        }
+        
+        // FPS + Latency
+        frameCount++;
+        const now = performance.now();
+        if (now - lastFpsTime >= 1000) {
+          uiRefs.fps.textContent = frameCount;
+          frameCount = 0;
+          lastFpsTime = now;
+        }
+        
+        const latency = performance.now() - loopStart;
+        latencyStats.push(latency);
+        if (latencyStats.length > 30) latencyStats.shift();
+        const avgLatency = latencyStats.reduce((a,b) => a+b, 0) / latencyStats.length;
+        uiRefs.latency.textContent = `${avgLatency.toFixed(1)}ms`;
+        uiRefs.latency.parentElement.className = `metric-box ${avgLatency > 16 ? 'warning' : ''}`;
+        
+        // Game stats
+        if (game) {
+          const stats = game.getStats();
+          uiRefs.gestureJumps.textContent = stats.gestureJumps;
+          uiRefs.keyboardJumps.textContent = stats.keyboardJumps;
+          uiRefs.score.textContent = stats.score;
+          uiRefs.highScore.textContent = stats.highScore;
+        }
+        
+      } catch (err) {
+        console.error('Pipeline error:', err);
+      }
+      
+      requestAnimationFrame(pipelineLoop);
+    }
+    
+    async function startPipeline() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
+        videoEl.srcObject = stream;
+        await videoEl.play();
+        
+        landmarksCanvas.width = videoEl.videoWidth || 640;
+        landmarksCanvas.height = videoEl.videoHeight || 480;
+        
+        await initPipeline();
+        
+        isRunning = true;
+        
+        document.querySelector('#btn-start').disabled = true;
+        document.querySelector('#btn-stop').disabled = false;
+        
+        requestAnimationFrame(pipelineLoop);
+        
+      } catch (err) {
+        console.error('Start failed:', err);
+      }
+    }
+    
+    function stopPipeline() {
+      isRunning = false;
+      if (videoEl?.srcObject) {
+        videoEl.srcObject.getTracks().forEach(t => t.stop());
+        videoEl.srcObject = null;
+      }
+      
+      document.querySelector('#btn-start').disabled = false;
+      document.querySelector('#btn-stop').disabled = true;
+    }
+    
+    // ============================================================
+    // INIT
+    // ============================================================
+    
+    function init() {
+      goldenLayout = new GoldenLayout(document.getElementById('layout-container'));
+      
+      goldenLayout.registerComponentFactoryFunction('camera', createCameraPanel);
+      goldenLayout.registerComponentFactoryFunction('game', createGamePanel);
+      goldenLayout.registerComponentFactoryFunction('envelopes', createEnvelopesPanel);
+      goldenLayout.registerComponentFactoryFunction('metrics', createMetricsPanel);
+      goldenLayout.registerComponentFactoryFunction('limitations', createLimitationsPanel);
+      
+      goldenLayout.loadLayout(layoutConfig);
+      
+      window.addEventListener('resize', () => goldenLayout.setSize(window.innerWidth, window.innerHeight));
+      
+      console.log('[Gen87.X3] DINO GAME Integration Test');
+      console.log('[Gen87.X3] Use ✊ Closed Fist gesture to make the dino JUMP!');
+    }
+    
+    init();
+  
+</script>
+</body>
+</html>

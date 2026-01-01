@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HFO Gen87.X3 Silver Demo — REAL Adapters</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🕷️</text></svg>">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --bg-primary: #0a0a14;
+      --bg-secondary: #12121f;
+      --border: rgba(255,255,255,0.1);
+      --accent: #e94560;
+      --accent-glow: rgba(233,69,96,0.3);
+      --text: #eee;
+      --text-dim: #888;
+      --success: #4caf50;
+      --warning: #ff9800;
+      --error: #f44336;
+    }
+    
+    body {
+      font-family: 'SF Mono', 'Cascadia Code', Consolas, monospace;
+      background: var(--bg-primary);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    
+    /* Header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 24px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .logo {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--accent);
+      text-shadow: 0 0 10px var(--accent-glow);
+    }
+    
+    .logo-sub {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      margin-left: 12px;
+    }
+    
+    .status-bar {
+      display: flex;
+      gap: 16px;
+      font-size: 0.8rem;
+    }
+    
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--text-dim);
+    }
+    
+    .status-dot.ready { background: var(--success); }
+    .status-dot.loading { background: var(--warning); animation: pulse 1s infinite; }
+    .status-dot.error { background: var(--error); }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    
+    /* Main Grid */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 280px 1fr 280px;
+      grid-template-rows: auto 1fr auto;
+      gap: 1px;
+      background: var(--border);
+      height: calc(100vh - 60px);
+    }
+    
+    .panel {
+      background: var(--bg-secondary);
+      padding: 16px;
+      overflow: auto;
+    }
+    
+    .panel-header {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .port-badge {
+      font-size: 0.65rem;
+      padding: 2px 6px;
+      border-radius: 3px;
+      background: rgba(233,69,96,0.2);
+      border: 1px solid var(--accent);
+    }
+    
+    .real-badge {
+      background: rgba(76,175,80,0.2);
+      border: 1px solid var(--success);
+      color: var(--success);
+    }
+    
+    /* Sensor Panel */
+    .sensor-panel {
+      grid-column: 1;
+      grid-row: 1 / 3;
+    }
+    
+    #videoPreview {
+      width: 100%;
+      aspect-ratio: 4/3;
+      background: #000;
+      border-radius: 4px;
+      transform: scaleX(-1);
+    }
+    
+    .sensor-stats {
+      margin-top: 12px;
+      font-size: 0.75rem;
+    }
+    
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .stat-label { color: var(--text-dim); }
+    .stat-value { font-weight: 600; }
+    
+    /* Smoother Panel */
+    .smoother-panel {
+      grid-column: 2;
+      grid-row: 1;
+    }
+    
+    .smoother-controls {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    
+    .smoother-option {
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+    
+    .smoother-option:hover {
+      border-color: var(--accent);
+    }
+    
+    .smoother-option.active {
+      border-color: var(--accent);
+      background: rgba(233,69,96,0.1);
+    }
+    
+    .smoother-name {
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    
+    .smoother-desc {
+      font-size: 0.7rem;
+      color: var(--text-dim);
+    }
+    
+    .smoother-real {
+      font-size: 0.6rem;
+      color: var(--success);
+      margin-top: 4px;
+    }
+    
+    /* Canvas Area */
+    .canvas-panel {
+      grid-column: 2;
+      grid-row: 2;
+      position: relative;
+      background: #000;
+    }
+    
+    #cursorCanvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+    
+    .canvas-overlay {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      pointer-events: none;
+    }
+    
+    /* FSM Panel */
+    .fsm-panel {
+      grid-column: 3;
+      grid-row: 1;
+    }
+    
+    .fsm-diagram {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .fsm-state {
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 0.8rem;
+      transition: all 0.2s;
+    }
+    
+    .fsm-state.active {
+      border-color: var(--success);
+      background: rgba(76,175,80,0.1);
+    }
+    
+    .fsm-state-name {
+      font-weight: 600;
+    }
+    
+    .fsm-state-desc {
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      margin-top: 2px;
+    }
+    
+    /* Emitter Panel */
+    .emitter-panel {
+      grid-column: 3;
+      grid-row: 2;
+    }
+    
+    .event-log {
+      font-size: 0.7rem;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    
+    .event-item {
+      padding: 4px 0;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: 8px;
+    }
+    
+    .event-type {
+      font-weight: 600;
+      width: 80px;
+    }
+    
+    .event-coords {
+      color: var(--text-dim);
+    }
+    
+    /* Pipeline Controls */
+    .pipeline-panel {
+      grid-column: 1 / 4;
+      grid-row: 3;
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+    
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+    
+    .btn-primary:hover:not(:disabled) {
+      background: #ff5f7a;
+    }
+    
+    .btn-secondary {
+      background: rgba(255,255,255,0.1);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    
+    .pipeline-status {
+      flex: 1;
+      display: flex;
+      gap: 24px;
+      font-size: 0.75rem;
+    }
+    
+    /* Info Panel */
+    .info-panel {
+      background: rgba(33,150,243,0.1);
+      border: 1px solid #2196f3;
+      border-radius: 4px;
+      padding: 12px;
+      margin-top: 12px;
+      font-size: 0.7rem;
+    }
+    
+    .info-title {
+      font-weight: 700;
+      color: #2196f3;
+      margin-bottom: 8px;
+    }
+    
+    .info-item {
+      padding: 2px 0;
+      display: flex;
+      gap: 8px;
+    }
+    
+    .info-item::before {
+      content: "✓";
+      color: var(--success);
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div>
+      <span class="logo">🕷️ HFO Gen87.X3 — Silver Demo</span>
+      <span class="logo-sub">REAL Adapters (not simulation)</span>
+    </div>
+    <div class="status-bar">
+      <div class="status-item">
+        <span class="status-dot" id="wasmStatus"></span>
+        <span>Rapier WASM</span>
+      </div>
+      <div class="status-item">
+        <span class="status-dot" id="cameraStatus"></span>
+        <span>Camera</span>
+      </div>
+      <div class="status-item">
+        <span class="status-dot" id="pipelineStatus"></span>
+        <span>Pipeline</span>
+      </div>
+    </div>
+  </header>
+  
+  <!-- Main Grid -->
+  <main class="main-grid">
+    <!-- Port 0: Sensor Panel -->
+    <section class="panel sensor-panel">
+      <div class="panel-header">
+        Port 0: Sensor
+        <span class="port-badge real-badge">REAL</span>
+      </div>
+      <video id="videoPreview" autoplay playsinline></video>
+      <div class="sensor-stats">
+        <div class="stat-row">
+          <span class="stat-label">Tracking</span>
+          <span class="stat-value" id="trackingStatus">—</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Gesture</span>
+          <span class="stat-value" id="gestureLabel">—</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Confidence</span>
+          <span class="stat-value" id="confidence">—</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Index Tip</span>
+          <span class="stat-value" id="indexTip">—</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Frame Rate</span>
+          <span class="stat-value" id="frameRate">— fps</span>
+        </div>
+      </div>
+      
+      <div class="info-panel">
+        <div class="info-title">Real NPM Packages</div>
+        <div class="info-item">@mediapipe/tasks-vision</div>
+        <div class="info-item">1eurofilter (by Géry Casiez)</div>
+        <div class="info-item">@dimforge/rapier2d-compat</div>
+        <div class="info-item">xstate@5</div>
+      </div>
+    </section>
+    
+    <!-- Port 2: Smoother Panel -->
+    <section class="panel smoother-panel">
+      <div class="panel-header">
+        Port 2: Smoother
+        <span class="port-badge real-badge">REAL WASM</span>
+      </div>
+      <div class="smoother-controls">
+        <div class="smoother-option active" data-smoother="1euro">
+          <div class="smoother-name">1€ Filter</div>
+          <div class="smoother-desc">Adaptive cutoff</div>
+          <div class="smoother-real">1eurofilter@npm</div>
+        </div>
+        <div class="smoother-option" data-smoother="rapier-smooth">
+          <div class="smoother-name">Rapier</div>
+          <div class="smoother-desc">Spring-damper</div>
+          <div class="smoother-real">rapier2d WASM</div>
+        </div>
+        <div class="smoother-option" data-smoother="rapier-predict">
+          <div class="smoother-name">Rapier+</div>
+          <div class="smoother-desc">Predictive 50ms</div>
+          <div class="smoother-real">rapier2d WASM</div>
+        </div>
+      </div>
+      
+      <div class="stat-row" style="margin-top: 12px;">
+        <span class="stat-label">Raw Position</span>
+        <span class="stat-value" id="rawPos">—</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Smoothed</span>
+        <span class="stat-value" id="smoothedPos">—</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Velocity</span>
+        <span class="stat-value" id="velocity">—</span>
+      </div>
+    </section>
+    
+    <!-- Canvas Area -->
+    <section class="panel canvas-panel">
+      <canvas id="cursorCanvas"></canvas>
+      <div class="canvas-overlay">
+        <div>Raw (jittery): <span style="color:#ff6b6b">●</span></div>
+        <div>Smoothed: <span style="color:#4caf50">●</span></div>
+        <div>Predicted: <span style="color:#2196f3">●</span></div>
+        <div>Velocity: <span style="color:#ffeb3b">→</span></div>
+      </div>
+    </section>
+    
+    <!-- Port 3: FSM Panel -->
+    <section class="panel fsm-panel">
+      <div class="panel-header">
+        Port 3: FSM
+        <span class="port-badge real-badge">xstate@5</span>
+      </div>
+      <div class="fsm-diagram">
+        <div class="fsm-state active" data-state="DISARMED">
+          <div class="fsm-state-name">DISARMED</div>
+          <div class="fsm-state-desc">No tracking</div>
+        </div>
+        <div class="fsm-state" data-state="BASELINE">
+          <div class="fsm-state-name">BASELINE</div>
+          <div class="fsm-state-desc">Open_Palm detected</div>
+        </div>
+        <div class="fsm-state" data-state="ARMED">
+          <div class="fsm-state-name">ARMED</div>
+          <div class="fsm-state-desc">Ready (200ms stable)</div>
+        </div>
+        <div class="fsm-state" data-state="COMMAND_CLICK">
+          <div class="fsm-state-name">COMMAND_CLICK</div>
+          <div class="fsm-state-desc">Pointing_Up → click</div>
+        </div>
+        <div class="fsm-state" data-state="COMMAND_NAV">
+          <div class="fsm-state-name">COMMAND_NAV</div>
+          <div class="fsm-state-desc">Victory → pan</div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Port 5: Emitter Panel -->
+    <section class="panel emitter-panel">
+      <div class="panel-header">
+        Port 5: Emitter
+        <span class="port-badge real-badge">W3C Pointer</span>
+      </div>
+      <div class="event-log" id="eventLog">
+        <div class="event-item">
+          <span class="event-type">—</span>
+          <span class="event-coords">Waiting for pipeline...</span>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Pipeline Controls -->
+    <section class="panel pipeline-panel">
+      <button class="btn-primary" id="startBtn">▶ Start Pipeline</button>
+      <button class="btn-secondary" id="resetBtn">↺ Reset</button>
+      <button class="btn-secondary" id="mockBtn">🎭 Use Mock Data</button>
+      
+      <div class="pipeline-status">
+        <span>Frames: <strong id="frameCount">0</strong></span>
+        <span>Events: <strong id="eventCount">0</strong></span>
+        <span>Latency: <strong id="latency">— ms</strong></span>
+      </div>
+    </section>
+  </main>
+  
+  <!-- Load REAL adapters via Vite -->
+  <script type="module" src="./main.ts"></script>
+</body>
+</html>

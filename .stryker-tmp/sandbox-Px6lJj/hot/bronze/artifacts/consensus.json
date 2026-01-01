@@ -1,0 +1,100 @@
+{
+  "query": "What is HIVE/8? Answer in exactly 1 sentence.",
+  "timestamp": "2026-01-01T01:48:37.402779+00:00",
+  "responses": [
+    {
+      "port": 0,
+      "model": "meta-llama/llama-3.3-70b-instruct:free",
+      "name": "Llama-70B",
+      "commander": "Lidless Legion",
+      "content": "HIVE/8 is an artificial intelligence model designed to simulate human-like conversations and answer questions to the best of its knowledge based on its training data.",
+      "latency_ms": 946.1817999999766,
+      "success": true,
+      "error": null
+    },
+    {
+      "port": 1,
+      "model": "deepseek/deepseek-r1-0528:free",
+      "name": "DeepSeek-R1",
+      "commander": "Web Weaver",
+      "content": "HIVE/8 is a variant of the HIVE ransomware, which encrypts victims' files and demands payment for their decryption.",
+      "latency_ms": 742.223200000808,
+      "success": true,
+      "error": null
+    },
+    {
+      "port": 2,
+      "model": "google/gemini-2.0-flash-exp:free",
+      "name": "Gemini-Flash",
+      "commander": "Mirror Magus",
+      "content": "I am unable to find information about \"HIVE/8,\" and it may be a highly specific or niche term.\n",
+      "latency_ms": 655.289599999378,
+      "success": true,
+      "error": null
+    },
+    {
+      "port": 3,
+      "model": "nousresearch/hermes-3-llama-3.1-405b:free",
+      "name": "Hermes-405B",
+      "commander": "Spore Storm",
+      "content": "HIVE/8 is an organized group of hackers that engages in cybercrime activities such as ransomware attacks and data theft.",
+      "latency_ms": 797.5234000005003,
+      "success": true,
+      "error": null
+    },
+    {
+      "port": 4,
+      "model": "mistralai/mistral-small-3.1-24b-instruct:free",
+      "name": "Mistral-24B",
+      "commander": "Red Regnant",
+      "content": "HIVE/8 is a digital currency dedicated to the development of the Hive blockchain and its ecosystem, launched in 2026.",
+      "latency_ms": 570.5643999990571,
+      "success": true,
+      "error": null
+    },
+    {
+      "port": 5,
+      "model": "qwen/qwen3-coder:free",
+      "name": "Qwen3-Coder",
+      "commander": "Pyre Praetorian",
+      "content": "HIVE/8 is a decentralized autonomous organization (DAO) and cryptocurrency project built on the Hive blockchain that focuses on creating a community-driven ecosystem for content creation, social media, and decentralized finance (DeFi) applications.",
+      "latency_ms": 981.2602999991213,
+      "success": true,
+      "error": null
+    },
+    {
+      "port": 6,
+      "model": "nvidia/nemotron-3-nano-30b-a3b:free",
+      "name": "Nemotron-30B",
+      "commander": "Kraken Keeper",
+      "content": "Hive/8 denotes the eighth release or iteration of the Hive platform, commonly used to label a specific version or dataset within the Hive ecosystem.",
+      "latency_ms": 648.7943000011,
+      "success": true,
+      "error": null
+    },
+    {
+      "port": 7,
+      "model": "google/gemma-3-27b-it:free",
+      "name": "Gemma-27B",
+      "commander": "Spider Sovereign",
+      "content": "\nHIVE/8 is a decentralized social media network built on the Solana blockchain, aiming to provide a creator-owned and community-governed platform with features like short-form video, blogging, and tokenized engagement.",
+      "latency_ms": 458.69630000015604,
+      "success": true,
+      "error": null
+    }
+  ],
+  "consensus_claims": [],
+  "agreement_scores": {
+    "hive/8 is an artificial intelligence model designed to simulate human-like conversations and answer questions to the best of its knowledge based on its training data.": 1,
+    "hive/8 is a variant of the hive ransomware, which encrypts victims' files and demands payment for their decryption.": 1,
+    "i am unable to find information about \"hive/8,\" and it may be a highly specific or niche term": 1,
+    "hive/8 is an organized group of hackers that engages in cybercrime activities such as ransomware attacks and data theft.": 1,
+    "hive/8 is a digital currency dedicated to the development of the hive blockchain and its ecosystem, launched in 2026.": 1,
+    "hive/8 is a decentralized autonomous organization (dao) and cryptocurrency project built on the hive blockchain that focuses on creating a community-driven ecosystem for content creation, social media, and decentralized finance (defi) applications.": 1,
+    "hive/8 denotes the eighth release or iteration of the hive platform, commonly used to label a specific version or dataset within the hive ecosystem.": 1,
+    "hive/8 is a decentralized social media network built on the solana blockchain, aiming to provide a creator-owned and community-governed platform with features like short-form video, blogging, and tokenized engagement.": 1
+  },
+  "total_models": 8,
+  "successful_models": 8,
+  "quorum_threshold": 6
+}

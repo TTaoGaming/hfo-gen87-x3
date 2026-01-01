@@ -1,0 +1,25 @@
+#!/bin/sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "📝 Validating commit message format..."
+
+# Run commitlint
+npx --no -- commitlint --edit $1 || {
+  echo ""
+  echo "❌ Commit message format invalid!"
+  echo ""
+  echo "Valid formats:"
+  echo "  HIVE phases: H: description, I: description, V: description, E: description"
+  echo "  Conventional: feat: description, fix: description, docs: description"
+  echo ""
+  echo "Examples:"
+  echo "  H: research authentication patterns"
+  echo "  I: add failing tests for login flow"
+  echo "  V: implement login handler"
+  echo "  E: refactor auth module structure"
+  echo "  feat(port5): add pyre praetorian enforcement"
+  echo ""
+  exit 1
+}
+
+echo "✅ Commit message valid!"
