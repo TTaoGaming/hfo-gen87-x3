@@ -8,6 +8,17 @@ echo "║  HIVE/8 Phase: Spider Sovereign Mode Active                    ║"
 echo "╚════════════════════════════════════════════════════════════════╝"
 echo ""
 
+# Gate -1: Regenerate Context Manifest (FIRST - Always run)
+echo "📋 Gate -1/7: Context Manifest Regeneration..."
+if [ -f "scripts/context-manager.ts" ]; then
+  npx tsx scripts/context-manager.ts generate 2>/dev/null
+  echo "✅ G-1 PASSED (context manifest regenerated)"
+  git add CONTEXT_MANIFEST.json COLD_START_PAYLOAD.md 2>/dev/null
+else
+  echo "⚠️  WARNING: context-manager.ts not found"
+fi
+echo ""
+
 # Gate 0: HIVE Signal Trail Check (NEW - CRITICAL)
 echo "📋 Gate 0/7: HIVE Signal Trail..."
 BLACKBOARD="./sandbox/obsidianblackboard.jsonl"

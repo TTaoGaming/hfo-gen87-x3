@@ -1,24 +1,47 @@
-{"ts": "2026-01-01T01:56:50.665685+00:00", "mark": 1.0, "pull": "downstream", "msg": "HIVE/8 1010 START: What are the 3 most important principles of the HI...", "type": "signal", "hive": "H", "gen": 87, "port": 7}
-{"ts": "2026-01-01T01:56:50.678377+00:00", "mark": 1.0, "pull": "downstream", "msg": "HUNT START: 8x scatter for cycle 0", "type": "signal", "hive": "H", "gen": 87, "port": 7}
-{"ts": "2026-01-01T02:00:04.261656+00:00", "mark": 1.0, "pull": "downstream", "msg": "HIVE/8 1010 START: What are the 3 most important principles of the HI...", "type": "signal", "hive": "H", "gen": 87, "port": 7}
-{"ts": "2026-01-01T02:00:04.271845+00:00", "mark": 1.0, "pull": "downstream", "msg": "HUNT START: 8x scatter for cycle 0", "type": "signal", "hive": "H", "gen": 87, "port": 7}
-{"ts": "2026-01-01T02:00:40.092844+00:00", "mark": 1.0, "pull": "downstream", "msg": "HUNT: Lidless Legion found 969 chars", "type": "signal", "hive": "H", "gen": 87, "port": 0}
-{"ts": "2026-01-01T02:00:40.093237+00:00", "mark": 1.0, "pull": "downstream", "msg": "HUNT: Web Weaver found 1634 chars", "type": "signal", "hive": "H", "gen": 87, "port": 1}
-{"ts": "2026-01-01T02:00:40.093470+00:00", "mark": 1.0, "pull": "downstream", "msg": "HUNT: Mirror Magus found 1218 chars", "type": "signal", "hive": "H", "gen": 87, "port": 2}
-{"ts": "2026-01-01T02:00:40.093687+00:00", "mark": 1.0, "pull": "downstream", "msg": "HUNT: Spore Storm found 2441 chars", "type": "signal", "hive": "H", "gen": 87, "port": 3}
-{"ts": "2026-01-01T02:00:40.093950+00:00", "mark": 1.0, "pull": "downstream", "msg": "HUNT: Red Regnant found 2175 chars", "type": "signal", "hive": "H", "gen": 87, "port": 4}
-{"ts": "2026-01-01T02:00:40.094166+00:00", "mark": 1.0, "pull": "downstream", "msg": "HUNT: Pyre Praetorian found 1014 chars", "type": "signal", "hive": "H", "gen": 87, "port": 5}
-{"ts": "2026-01-01T02:00:40.094427+00:00", "mark": 1.0, "pull": "downstream", "msg": "HUNT: Kraken Keeper found 1669 chars", "type": "signal", "hive": "H", "gen": 87, "port": 6}
-{"ts": "2026-01-01T02:00:40.094649+00:00", "mark": 1.0, "pull": "downstream", "msg": "HUNT: Spider Sovereign found 1627 chars", "type": "signal", "hive": "H", "gen": 87, "port": 7}
-{"ts": "2026-01-01T02:00:40.094862+00:00", "mark": 1.0, "pull": "downstream", "msg": "HUNT COMPLETE: 8/8 responses", "type": "signal", "hive": "H", "gen": 87, "port": 7}
-{"ts": "2026-01-01T02:00:40.095071+00:00", "mark": 1.0, "pull": "downstream", "msg": "HUNT scatter complete: 8/8", "type": "signal", "hive": "H", "gen": 87, "port": 7}
-{"ts": "2026-01-01T02:00:40.096887+00:00", "mark": 1.0, "pull": "downstream", "msg": "INTERLOCK START: Synthesizing 8 hunt results", "type": "signal", "hive": "I", "gen": 87, "port": 1}
-{"ts": "2026-01-01T02:00:53.760749+00:00", "mark": 1.0, "pull": "downstream", "msg": "INTERLOCK COMPLETE: 1936 chars synthesized", "type": "signal", "hive": "I", "gen": 87, "port": 1}
-{"ts": "2026-01-01T02:00:53.761222+00:00", "mark": 1.0, "pull": "downstream", "msg": "INTERLOCK gather complete", "type": "signal", "hive": "I", "gen": 87, "port": 1}
-{"ts": "2026-01-01T02:00:53.762338+00:00", "mark": 1.0, "pull": "downstream", "msg": "VALIDATE START: 8x scatter for contracts", "type": "signal", "hive": "V", "gen": 87, "port": 2}
-{"ts": "2026-01-01T02:01:37.256265+00:00", "mark": 1.0, "pull": "downstream", "msg": "VALIDATE COMPLETE: 5/8, 4 PASS, 5 FAIL", "type": "signal", "hive": "V", "gen": 87, "port": 5}
-{"ts": "2026-01-01T02:01:37.256635+00:00", "mark": 1.0, "pull": "downstream", "msg": "VALIDATE scatter complete: 4 PASS", "type": "signal", "hive": "V", "gen": 87, "port": 5}
-{"ts": "2026-01-01T02:01:37.257531+00:00", "mark": 1.0, "pull": "downstream", "msg": "EVOLVE START: Synthesizing 8 validations", "type": "signal", "hive": "E", "gen": 87, "port": 3}
-{"ts": "2026-01-01T02:01:44.718741+00:00", "mark": 1.0, "pull": "downstream", "msg": "EVOLVE COMPLETE: Cycle 0 \u2192 1", "type": "signal", "hive": "E", "gen": 87, "port": 4}
-{"ts": "2026-01-01T02:01:44.719297+00:00", "mark": 1.0, "pull": "downstream", "msg": "STRANGE LOOP: E(0) \u2192 H(1)", "type": "signal", "hive": "E", "gen": 87, "port": 4}
-{"ts": "2026-01-01T02:01:44.720775+00:00", "mark": 1.0, "pull": "downstream", "msg": "HIVE/8 1010 COMPLETE: 1 cycles", "type": "signal", "hive": "E", "gen": 87, "port": 7}
+{"ts": "2026-01-01T04:50:41Z", "mark": 1.0, "pull": "downstream", "msg": "CDD TEST: Verifying blackboard emission", "type": "signal", "hive": "I", "gen": 87, "port": 7}
+{"ts": "2026-01-01T04:51:04Z", "mark": 1.0, "pull": "downstream", "msg": "CDD TEST: Verifying blackboard emission", "type": "signal", "hive": "I", "gen": 87, "port": 7}
+{"ts": "2026-01-01T04:51:13Z", "mark": 1.0, "pull": "downstream", "msg": "CDD TEST: Verifying blackboard emission", "type": "signal", "hive": "I", "gen": 87, "port": 7}
+{"ts": "2026-01-01T05:05:07Z", "mark": 1.0, "pull": "downstream", "msg": "HIVE:1010 HUNT START - 8 parallel searches for: Discover optimal multi-agent coordination patterns", "type": "signal", "hive": "H", "gen": 87, "port": 7}
+{"ts": "2026-01-01T05:05:07Z", "mark": 1.0, "pull": "downstream", "msg": "HUNT[0]: Exemplar found by Lidless Legion (task 0)", "type": "event", "hive": "H", "gen": 87, "port": 0}
+{"ts": "2026-01-01T05:05:07Z", "mark": 1.0, "pull": "downstream", "msg": "HUNT[2]: Exemplar found by Mirror Magus (task 2)", "type": "event", "hive": "H", "gen": 87, "port": 2}
+{"ts": "2026-01-01T05:05:07Z", "mark": 1.0, "pull": "downstream", "msg": "HUNT[1]: Exemplar found by Web Weaver (task 1)", "type": "event", "hive": "H", "gen": 87, "port": 1}
+{"ts": "2026-01-01T05:05:07Z", "mark": 1.0, "pull": "downstream", "msg": "HUNT[3]: Exemplar found by Spore Storm (task 3)", "type": "event", "hive": "H", "gen": 87, "port": 3}
+{"ts": "2026-01-01T05:05:07Z", "mark": 1.0, "pull": "downstream", "msg": "HUNT[4]: Exemplar found by Red Regnant (task 4)", "type": "event", "hive": "H", "gen": 87, "port": 4}
+{"ts": "2026-01-01T05:05:07Z", "mark": 1.0, "pull": "downstream", "msg": "HUNT[7]: Exemplar found by Spider Sovereign (task 7)", "type": "event", "hive": "H", "gen": 87, "port": 7}
+{"ts": "2026-01-01T05:05:07Z", "mark": 1.0, "pull": "downstream", "msg": "HUNT[5]: Exemplar found by Pyre Praetorian (task 5)", "type": "event", "hive": "H", "gen": 87, "port": 5}
+{"ts": "2026-01-01T05:05:07Z", "mark": 1.0, "pull": "downstream", "msg": "HUNT[6]: Exemplar found by Kraken Keeper (task 6)", "type": "event", "hive": "H", "gen": 87, "port": 6}
+{"ts": "2026-01-01T05:05:07Z", "mark": 1.0, "pull": "downstream", "msg": "INTERLOCK: Defining contract from 8 hunt results", "type": "signal", "hive": "I", "gen": 87, "port": 1}
+{"ts": "2026-01-01T05:05:07Z", "mark": 1.0, "pull": "downstream", "msg": "INTERLOCK COMPLETE: Contract ready with 8 exemplars", "type": "event", "hive": "I", "gen": 87, "port": 6}
+{"ts": "2026-01-01T05:05:07Z", "mark": 1.0, "pull": "downstream", "msg": "VALIDATE START: 8 parallel validations against contract", "type": "signal", "hive": "V", "gen": 87, "port": 2}
+{"ts": "2026-01-01T05:05:07Z", "mark": 1.0, "pull": "downstream", "msg": "VALIDATE[0]: Validated by Lidless Legion using contract: {\n  \"t", "type": "event", "hive": "V", "gen": 87, "port": 0}
+{"ts": "2026-01-01T05:05:07Z", "mark": 1.0, "pull": "downstream", "msg": "VALIDATE[1]: Validated by Web Weaver using contract: {\n  \"task\"", "type": "event", "hive": "V", "gen": 87, "port": 1}
+{"ts": "2026-01-01T05:05:07Z", "mark": 1.0, "pull": "downstream", "msg": "VALIDATE[2]: Validated by Mirror Magus using contract: {\n  \"tas", "type": "event", "hive": "V", "gen": 87, "port": 2}
+{"ts": "2026-01-01T05:05:07Z", "mark": 1.0, "pull": "downstream", "msg": "VALIDATE[4]: Validated by Red Regnant using contract: {\n  \"task", "type": "event", "hive": "V", "gen": 87, "port": 4}
+{"ts": "2026-01-01T05:05:07Z", "mark": 1.0, "pull": "downstream", "msg": "VALIDATE[7]: Validated by Spider Sovereign using contract: {\n  ", "type": "event", "hive": "V", "gen": 87, "port": 7}
+{"ts": "2026-01-01T05:05:07Z", "mark": 1.0, "pull": "downstream", "msg": "VALIDATE[6]: Validated by Kraken Keeper using contract: {\n  \"ta", "type": "event", "hive": "V", "gen": 87, "port": 6}
+{"ts": "2026-01-01T05:05:07Z", "mark": 1.0, "pull": "downstream", "msg": "VALIDATE[5]: Validated by Pyre Praetorian using contract: {\n  \"", "type": "event", "hive": "V", "gen": 87, "port": 5}
+{"ts": "2026-01-01T05:05:07Z", "mark": 1.0, "pull": "downstream", "msg": "VALIDATE[3]: Validated by Spore Storm using contract: {\n  \"task", "type": "event", "hive": "V", "gen": 87, "port": 3}
+{"ts": "2026-01-01T05:05:07Z", "mark": 1.0, "pull": "downstream", "msg": "EVOLVE: Delivering final result from 8 validations", "type": "signal", "hive": "E", "gen": 87, "port": 3}
+{"ts": "2026-01-01T05:05:07Z", "mark": 1.0, "pull": "downstream", "msg": "EVOLVE COMPLETE: HIVE/8:1010 cycle done in 213.48ms - 22 signals emitted", "type": "event", "hive": "E", "gen": 87, "port": 4}
+{"ts": "2026-01-01T05:05:11Z", "mark": 1.0, "pull": "downstream", "msg": "HIVE:1010 HUNT START - 8 parallel searches for: Discover optimal multi-agent coordination patterns", "type": "signal", "hive": "H", "gen": 87, "port": 7}
+{"ts": "2026-01-01T05:05:11Z", "mark": 1.0, "pull": "downstream", "msg": "HUNT[0]: Exemplar found by Lidless Legion (task 0)", "type": "event", "hive": "H", "gen": 87, "port": 0}
+{"ts": "2026-01-01T05:05:11Z", "mark": 1.0, "pull": "downstream", "msg": "HUNT[1]: Exemplar found by Web Weaver (task 1)", "type": "event", "hive": "H", "gen": 87, "port": 1}
+{"ts": "2026-01-01T05:05:11Z", "mark": 1.0, "pull": "downstream", "msg": "HUNT[3]: Exemplar found by Spore Storm (task 3)", "type": "event", "hive": "H", "gen": 87, "port": 3}
+{"ts": "2026-01-01T05:05:11Z", "mark": 1.0, "pull": "downstream", "msg": "HUNT[2]: Exemplar found by Mirror Magus (task 2)", "type": "event", "hive": "H", "gen": 87, "port": 2}
+{"ts": "2026-01-01T05:05:11Z", "mark": 1.0, "pull": "downstream", "msg": "HUNT[4]: Exemplar found by Red Regnant (task 4)", "type": "event", "hive": "H", "gen": 87, "port": 4}
+{"ts": "2026-01-01T05:05:11Z", "mark": 1.0, "pull": "downstream", "msg": "HUNT[6]: Exemplar found by Kraken Keeper (task 6)", "type": "event", "hive": "H", "gen": 87, "port": 6}
+{"ts": "2026-01-01T05:05:11Z", "mark": 1.0, "pull": "downstream", "msg": "HUNT[5]: Exemplar found by Pyre Praetorian (task 5)", "type": "event", "hive": "H", "gen": 87, "port": 5}
+{"ts": "2026-01-01T05:05:11Z", "mark": 1.0, "pull": "downstream", "msg": "HUNT[7]: Exemplar found by Spider Sovereign (task 7)", "type": "event", "hive": "H", "gen": 87, "port": 7}
+{"ts": "2026-01-01T05:05:11Z", "mark": 1.0, "pull": "downstream", "msg": "INTERLOCK: Defining contract from 8 hunt results", "type": "signal", "hive": "I", "gen": 87, "port": 1}
+{"ts": "2026-01-01T05:05:11Z", "mark": 1.0, "pull": "downstream", "msg": "INTERLOCK COMPLETE: Contract ready with 8 exemplars", "type": "event", "hive": "I", "gen": 87, "port": 6}
+{"ts": "2026-01-01T05:05:11Z", "mark": 1.0, "pull": "downstream", "msg": "VALIDATE START: 8 parallel validations against contract", "type": "signal", "hive": "V", "gen": 87, "port": 2}
+{"ts": "2026-01-01T05:05:11Z", "mark": 1.0, "pull": "downstream", "msg": "VALIDATE[2]: Validated by Mirror Magus using contract: {\n  \"tas", "type": "event", "hive": "V", "gen": 87, "port": 2}
+{"ts": "2026-01-01T05:05:11Z", "mark": 1.0, "pull": "downstream", "msg": "VALIDATE[3]: Validated by Spore Storm using contract: {\n  \"task", "type": "event", "hive": "V", "gen": 87, "port": 3}
+{"ts": "2026-01-01T05:05:11Z", "mark": 1.0, "pull": "downstream", "msg": "VALIDATE[0]: Validated by Lidless Legion using contract: {\n  \"t", "type": "event", "hive": "V", "gen": 87, "port": 0}
+{"ts": "2026-01-01T05:05:11Z", "mark": 1.0, "pull": "downstream", "msg": "VALIDATE[1]: Validated by Web Weaver using contract: {\n  \"task\"", "type": "event", "hive": "V", "gen": 87, "port": 1}
+{"ts": "2026-01-01T05:05:11Z", "mark": 1.0, "pull": "downstream", "msg": "VALIDATE[5]: Validated by Pyre Praetorian using contract: {\n  \"", "type": "event", "hive": "V", "gen": 87, "port": 5}
+{"ts": "2026-01-01T05:05:11Z", "mark": 1.0, "pull": "downstream", "msg": "VALIDATE[6]: Validated by Kraken Keeper using contract: {\n  \"ta", "type": "event", "hive": "V", "gen": 87, "port": 6}
+{"ts": "2026-01-01T05:05:11Z", "mark": 1.0, "pull": "downstream", "msg": "VALIDATE[4]: Validated by Red Regnant using contract: {\n  \"task", "type": "event", "hive": "V", "gen": 87, "port": 4}
+{"ts": "2026-01-01T05:05:11Z", "mark": 1.0, "pull": "downstream", "msg": "VALIDATE[7]: Validated by Spider Sovereign using contract: {\n  ", "type": "event", "hive": "V", "gen": 87, "port": 7}
+{"ts": "2026-01-01T05:05:11Z", "mark": 1.0, "pull": "downstream", "msg": "EVOLVE: Delivering final result from 8 validations", "type": "signal", "hive": "E", "gen": 87, "port": 3}
+{"ts": "2026-01-01T05:05:11Z", "mark": 1.0, "pull": "downstream", "msg": "EVOLVE COMPLETE: HIVE/8:1010 cycle done in 214.05ms - 22 signals emitted", "type": "event", "hive": "E", "gen": 87, "port": 4}

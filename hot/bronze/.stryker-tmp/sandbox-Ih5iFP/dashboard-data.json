@@ -1,0 +1,435 @@
+{
+	"lastUpdated": "2025-12-31T18:44:51.237Z",
+	"generation": 87,
+	"iteration": "X3",
+	"version": "87.3.0",
+	"hive": {
+		"currentPhase": "V",
+		"currentCycle": "Session Dec 31 09:09",
+		"phases": {
+			"H": {
+				"name": "HUNT",
+				"active": false,
+				"completed": true,
+				"description": "Research & Planning",
+				"signal": "COLD START: Memory loaded, blackboard analyzed"
+			},
+			"I": {
+				"name": "INTERLOCK",
+				"active": false,
+				"completed": true,
+				"description": "Contracts & Tests (TDD RED)",
+				"signal": "Anti-theater gate created, browser bundle built"
+			},
+			"V": {
+				"name": "VALIDATE",
+				"active": true,
+				"completed": true,
+				"description": "Implementation (TDD GREEN)",
+				"signal": "Gate PASSES (0 violations), demo created"
+			},
+			"E": {
+				"name": "EVOLVE",
+				"active": false,
+				"completed": false,
+				"description": "Refactor & Ship",
+				"signal": "PENDING - need to refactor + emit"
+			}
+		}
+	},
+	"commanders": [
+		{
+			"port": 0,
+			"name": "Lidless Legion",
+			"verb": "SENSE",
+			"status": "active",
+			"hivePhase": "H"
+		},
+		{
+			"port": 1,
+			"name": "Web Weaver",
+			"verb": "FUSE",
+			"status": "active",
+			"hivePhase": "I"
+		},
+		{
+			"port": 2,
+			"name": "Mirror Magus",
+			"verb": "SHAPE",
+			"status": "standby",
+			"hivePhase": "V"
+		},
+		{
+			"port": 3,
+			"name": "Spore Storm",
+			"verb": "DELIVER",
+			"status": "standby",
+			"hivePhase": "E"
+		},
+		{
+			"port": 4,
+			"name": "Red Regnant",
+			"verb": "TEST",
+			"status": "active",
+			"hivePhase": "E"
+		},
+		{
+			"port": 5,
+			"name": "Pyre Praetorian",
+			"verb": "DEFEND",
+			"status": "active",
+			"hivePhase": "V"
+		},
+		{
+			"port": 6,
+			"name": "Kraken Keeper",
+			"verb": "STORE",
+			"status": "active",
+			"hivePhase": "I"
+		},
+		{
+			"port": 7,
+			"name": "Spider Sovereign",
+			"verb": "DECIDE",
+			"status": "active",
+			"hivePhase": "H"
+		}
+	],
+	"tests": {
+		"total": 879,
+		"passing": 643,
+		"failing": 178,
+		"skipped": 7,
+		"todo": 51,
+		"coverage": 73
+	},
+	"realVsTheater": {
+		"real": [
+			{
+				"id": "w3c-pointer-factory",
+				"status": "pass",
+				"tests": "37/37 GREEN",
+				"desc": "W3C PointerEvent factory implementation"
+			},
+			{
+				"id": "smoother-chain",
+				"status": "pass",
+				"tests": "43/43 GREEN",
+				"desc": "SmootherChain composition pattern"
+			},
+			{
+				"id": "one-euro-exemplar",
+				"status": "pass",
+				"tests": "12/13 GREEN",
+				"desc": "OneEuroExemplarAdapter wraps npm 1eurofilter"
+			},
+			{
+				"id": "rapier-adapter",
+				"status": "pass",
+				"tests": "EXISTS",
+				"desc": "RapierPhysicsAdapter with REAL WASM physics"
+			},
+			{
+				"id": "anti-theater-gate",
+				"status": "pass",
+				"tests": "0 violations",
+				"desc": "Pre-commit Gate 7 BLOCKS inline code"
+			},
+			{
+				"id": "browser-bundle",
+				"status": "pass",
+				"tests": "2.2MB built",
+				"desc": "HFO adapter bundle for demos"
+			},
+			{
+				"id": "pre-commit-gates",
+				"status": "pass",
+				"tests": "8 gates",
+				"desc": "TypeCheck, Lint, Test, Arch, V-Phase, TRL, Theater"
+			},
+			{
+				"id": "honest-demo",
+				"status": "pass",
+				"tests": "passes gate",
+				"desc": "Production demo uses HFO.* adapters only"
+			}
+		],
+		"theater": [
+			{
+				"id": "failing-tests",
+				"status": "warn",
+				"count": 178,
+				"desc": "Stub implementations not completed"
+			},
+			{
+				"id": "todo-tests",
+				"status": "info",
+				"count": 51,
+				"desc": "Honest markers (better than fake-green)"
+			},
+			{
+				"id": "emulator-adapters",
+				"status": "fail",
+				"count": 0,
+				"desc": "v86, js-dos, EmulatorJS not implemented"
+			},
+			{
+				"id": "multi-hand",
+				"status": "fail",
+				"count": 0,
+				"desc": "HandIdTracker not implemented"
+			},
+			{
+				"id": "fsm-adapter",
+				"status": "warn",
+				"count": 0,
+				"desc": "XStateFSMAdapter exists but not integrated in demo"
+			},
+			{
+				"id": "e2e-tests",
+				"status": "warn",
+				"count": 0,
+				"desc": "Playwright tests need MediaPipe mock"
+			}
+		]
+	},
+	"enforcement": {
+		"gates": [
+			{
+				"id": "G0",
+				"name": "HIVE Signal Trail",
+				"status": "active"
+			},
+			{
+				"id": "G0.5",
+				"name": "HIVE Sequence",
+				"status": "warn-only"
+			},
+			{
+				"id": "G1",
+				"name": "TypeCheck",
+				"status": "active"
+			},
+			{
+				"id": "G2",
+				"name": "Lint (Biome)",
+				"status": "active"
+			},
+			{
+				"id": "G3",
+				"name": "Tests (changed)",
+				"status": "active"
+			},
+			{
+				"id": "G4",
+				"name": "Architecture",
+				"status": "active"
+			},
+			{
+				"id": "G5",
+				"name": "V-Phase Reward Hack",
+				"status": "active"
+			},
+			{
+				"id": "G6",
+				"name": "TRL Contract Lineage",
+				"status": "warn-only"
+			},
+			{
+				"id": "G7",
+				"name": "Anti-Theater",
+				"status": "active"
+			}
+		],
+		"score": {
+			"design": 8.75,
+			"enforcement": 6.5,
+			"delta": -2.25
+		}
+	},
+	"checklist": [
+		{
+			"id": "cold-start",
+			"title": "Cold Start Protocol",
+			"done": true,
+			"desc": "Memory loaded, blackboard checked, signal emitted"
+		},
+		{
+			"id": "hunt-complete",
+			"title": "H Phase - Research",
+			"done": true,
+			"desc": "Analyzed architecture, found theater patterns"
+		},
+		{
+			"id": "interlock-complete",
+			"title": "I Phase - Contracts",
+			"done": true,
+			"desc": "Created anti-theater gate, browser bundle, index.ts exports"
+		},
+		{
+			"id": "validate-complete",
+			"title": "V Phase - Implementation",
+			"done": true,
+			"desc": "Gate passes, honest demo created"
+		},
+		{
+			"id": "evolve-pending",
+			"title": "E Phase - Refactor",
+			"done": false,
+			"desc": "PENDING: Cleanup, persist lessons, emit final signal"
+		},
+		{
+			"id": "next-hunt",
+			"title": "H(N+1) - Next Cycle",
+			"done": false,
+			"desc": "Start fresh hunt after E phase completes"
+		}
+	],
+	"scripts": [
+		{
+			"id": "test",
+			"name": "🧪 Tests",
+			"cmd": "npm test"
+		},
+		{
+			"id": "lint",
+			"name": "🔍 Lint",
+			"cmd": "npm run lint"
+		},
+		{
+			"id": "typecheck",
+			"name": "📝 TypeCheck",
+			"cmd": "npm run typecheck"
+		},
+		{
+			"id": "theater",
+			"name": "🎭 Theater Gate",
+			"cmd": "npm run gate:theater"
+		},
+		{
+			"id": "enforce",
+			"name": "🏛️ Architecture",
+			"cmd": "npm run enforce"
+		},
+		{
+			"id": "bundle",
+			"name": "📦 Build Bundle",
+			"cmd": "npm run build:bundle"
+		},
+		{
+			"id": "hive",
+			"name": "🐝 HIVE Status",
+			"cmd": "npm run validate:hive"
+		}
+	],
+	"signals": [
+		{
+			"ts": "2025-12-31T09:23:53Z",
+			"hive": "V",
+			"msg": "VALIDATE: Anti-theater gate PASSES. Honest demo created. 8 pre-commit gates active. Production code uses HFO adapter bundle only.",
+			"port": 5
+		},
+		{
+			"ts": "2025-12-31T09:15:22.8300601-07:00",
+			"hive": "I",
+			"msg": "INTERLOCK: Starting anti-theater enforcement + honest demo. Goal: (1) Pre-commit gate blocks inline exemplar code (2) Demo MUST import from adapters/ (3) Adapters MUST import npm packages. Zero tolera",
+			"port": 1
+		},
+		{
+			"ts": "2025-12-31T09:09:36.8235318-07:00",
+			"hive": "H",
+			"msg": "COLD START: Spider Sovereign awakened. Memory loaded (70+ entities). Blackboard: 275 signals Dec29-31. REAL: 642 tests GREEN, W3C pointer factory 37/37, SmootherChain 43/43, OneEuroExemplarAdapter 12/",
+			"port": 7
+		},
+		{
+			"ts": "2025-12-31T08:56:29Z",
+			"hive": "H",
+			"msg": "HANDOFF: FSM Hysteresis Architecture complete. 4 states (IDLE/TRACKING/PRESSED/COASTING). Schmitt Triggers for all gates - no magic numbers. GateConfig injectable. Palm hysteresis 25-35deg band. Gestu",
+			"port": 7
+		},
+		{
+			"ts": "2025-12-31T08:22:43Z",
+			"hive": "H",
+			"msg": "HANDOFF: Gen87.X3 session complete. Files: rapier-physics.adapter.ts (REAL WASM), 4-cursor-simple.html (working demo). Next: validate in browser, tune params.",
+			"port": 7
+		},
+		{
+			"ts": "2025-12-31T08:22:43Z",
+			"hive": "H",
+			"msg": "HUNT: Fixed Golden Layout UMD issue - created 4-cursor-simple.html without GL dependency. Pure CSS grid layout.",
+			"port": 0
+		},
+		{
+			"ts": "2025-12-31T08:15:31Z",
+			"hive": "H",
+			"msg": "HUNT: Rate limit hit - preparing handoff. Demo server running at localhost:8080. Rapier WASM confirmed working via CDN import.",
+			"port": 7
+		},
+		{
+			"ts": "2025-12-31T08:15:31Z",
+			"hive": "H",
+			"msg": "HUNT: Built 4-cursor production demo at sandbox/demos/production/4-cursor-compare.html - Golden Layout + MediaPipe + raw/1euro/rapier-smooth/rapier-predict",
+			"port": 0
+		},
+		{
+			"ts": "2025-12-31T08:15:31Z",
+			"hive": "H",
+			"msg": "HUNT: Created REAL Rapier WASM adapter at sandbox/src/adapters/rapier-physics.adapter.ts - spring-damper physics with smoothed + predictive modes",
+			"port": 0
+		},
+		{
+			"ts": "2025-12-31T01:14:14Z",
+			"hive": "H",
+			"msg": "HUNT: FSM CORRECTED - COAST not freeze on tracking loss (Rapier physics). Palm orientation FIRST CLASS gate (angle not boolean). Only 3 gestures: None/Open_Palm/Pointing_Up. Palm roll = immediate canc",
+			"port": 7
+		},
+		{
+			"ts": "2025-12-31T01:09:34Z",
+			"hive": "H",
+			"msg": "HUNT: FSM analysis complete. Key findings: (1) Current FSM lacks SNAPLOCK state for tracking loss recovery, (2) Palm cone is boolean not angle-based, (3) Missing None transition state from MediaPipe, ",
+			"port": 0
+		},
+		{
+			"ts": "2025-12-31T08:03:42.967Z",
+			"hive": "H",
+			"msg": "SENSE: \"XState FSM gesture pointer state machine mermaid\" → 10 results from [memory, code]",
+			"port": 0
+		},
+		{
+			"ts": "2025-12-31T00:55:34.5441107-07:00",
+			"hive": "E",
+			"msg": "E: RATE_LIMITED_HANDOFF_FINAL - jsdom annotation ADDED to SimpleCursorPipeline.test.ts. Pending: run tests to validate (expect 13/13 GREEN). SmootherChain 43/43, W3C Pointer 37/37 confirmed. Memory MC",
+			"port": 7
+		},
+		{
+			"ts": "2025-12-31T00:54:25.1144725-07:00",
+			"hive": "E",
+			"msg": "E: RATE_LIMITED_HANDOFF - SimpleCursorPipeline 4/13 GREEN, needs jsdom for PointerEvent. FIX: vitest environment='jsdom'. Memory persisted.",
+			"port": 7
+		},
+		{
+			"ts": "2025-12-31T00:51:54Z",
+			"hive": "E",
+			"msg": "HANDOFF: Rate limited. Commit 36932eb pushed. OneEuroExemplarAdapter 12/13 GREEN (npm 1eurofilter). SimpleCursorPipeline wired. 1 timing test needs timestamp fix. CrewAI+OpenRouter ready at sandbox/sr",
+			"port": 7
+		},
+		{
+			"ts": "2025-12-31T07:49:43Z",
+			"hive": "E",
+			"msg": "HANDOFF-RATE-LIMITED: Session ended Dec 31. DONE: 1 adapter 12/13 GREEN, overlay-port FAKE->HONEST (49->7+51), theater taxonomy (5 tiers, 461 stubs), blackboard analyzed 229 signals. TODO: pipeline-or",
+			"port": 7
+		},
+		{
+			"ts": "2025-12-31T07:37:29Z",
+			"hive": "E",
+			"msg": "HANDOFF-FINAL: Rate limit. Session wins: (1) OneEuroExemplarAdapter 12/13 GREEN - npm 1eurofilter wired, (2) SimpleCursorPipeline created, (3) overlay-port FAKE->HONEST (49->7+51), (4) Theater taxonom",
+			"port": 7
+		},
+		{
+			"ts": "2025-12-31T07:34:41Z",
+			"hive": "E",
+			"msg": "HANDOFF: Rate limit reached. Session summary: (1) Theater taxonomy complete, (2) Blackboard analyzed (229 signals), (3) overlay-port.test.ts converted FAKE->HONEST (49 fake -> 7 real + 51 todo), (4) W",
+			"port": 7
+		}
+	]
+}
