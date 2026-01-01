@@ -150,13 +150,14 @@ export class RapierPhysicsAdapter implements SmootherPort {
 
 		return {
 			ts: frame.ts,
+			handId: frame.handId,
 			position: outputPosition,
 			velocity: this.velocity,
+			prediction: this.config.mode === 'predictive' ? outputPosition : null,
 			trackingOk: frame.trackingOk,
 			label: frame.label ?? 'None',
 			confidence: frame.confidence ?? 0,
 			palmFacing: frame.palmFacing ?? false,
-			landmarks: frame.landmarks,
 		};
 	}
 
@@ -173,12 +174,21 @@ export class RapierPhysicsAdapter implements SmootherPort {
 	}
 
 	/**
-	 * Update configuration
+	 * Update configuration (SmootherPort interface compatibility)
+	 * @param mincutoff - Maps to stiffness (higher = less smoothing)
+	 * @param beta - Maps to damping (higher = more damping)
 	 */
-	setParams(params: Partial<RapierConfig>): void {
-		this.config = { ...this.config, ...params };
-		if (this.cursorBody && params.damping !== undefined) {
-			this.cursorBody.setLinearDamping(params.damping * 10);
+	setParams(mincutoff: number, beta: number): void {
+		// Map 1€ filter params to physics params
+		// mincutoff (1-10) → stiffness (100-1000)
+		// beta (0-1) → damping (0.5-0.95)
+		this.config = {
+			...this.config,
+			stiffness: mincutoff * 100,
+			damping: 0.5 + beta * 0.45,
+		};
+		if (this.cursorBody) {
+			this.cursorBody.setLinearDamping(this.config.damping * 10);
 		}
 	}
 
@@ -197,13 +207,14 @@ export class RapierPhysicsAdapter implements SmootherPort {
 	private createPassthroughFrame(frame: SensorFrame): SmoothedFrame {
 		return {
 			ts: frame.ts,
+			handId: frame.handId,
 			position: frame.indexTip ?? { x: 0.5, y: 0.5 },
 			velocity: { x: 0, y: 0 },
+			prediction: null,
 			trackingOk: frame.trackingOk,
 			label: frame.label ?? 'None',
 			confidence: frame.confidence ?? 0,
 			palmFacing: frame.palmFacing ?? false,
-			landmarks: frame.landmarks,
 		};
 	}
 }

@@ -38,25 +38,34 @@ import type {
 
 function createMockSensorFrame(): SensorFrame {
 	return {
-		timestamp: Date.now(),
-		hands: [],
-		face: null,
-		raw: null,
+		ts: Date.now(),
+		handId: 'right',
+		trackingOk: true,
+		palmFacing: true,
+		label: 'Open_Palm',
+		confidence: 0.9,
+		indexTip: { x: 0.5, y: 0.5 },
+		landmarks: null,
 	};
 }
 
 function createMockSmoothedFrame(): SmoothedFrame {
 	return {
-		timestamp: Date.now(),
-		hands: [],
-		face: null,
-		smoothingApplied: true,
+		ts: Date.now(),
+		handId: 'right',
+		trackingOk: true,
+		palmFacing: true,
+		label: 'Open_Palm',
+		confidence: 0.9,
+		position: { x: 0.5, y: 0.5 },
+		velocity: { x: 0, y: 0 },
+		prediction: null,
 	};
 }
 
 function createMockFSMAction(): FSMAction {
 	return {
-		state: 'idle',
+		state: 'DISARMED',
 		gesture: null,
 		confidence: 0.9,
 		timestamp: Date.now(),
@@ -66,32 +75,27 @@ function createMockFSMAction(): FSMAction {
 function createMockPointerEvent(): PointerEventOut {
 	return {
 		type: 'pointermove',
-		x: 100,
-		y: 200,
-		pressure: 0.5,
-		tiltX: 0,
-		tiltY: 0,
-		width: 1,
-		height: 1,
-		pointerType: 'pen',
-		isPrimary: true,
 		pointerId: 1,
+		clientX: 100,
+		clientY: 200,
+		pointerType: 'pen',
+		pressure: 0.5,
+		isPrimary: true,
 	};
 }
 
 function createMockLayoutState(): LayoutState {
 	return {
-		tiles: [{ id: 'test-tile', type: 'dom', title: 'Test' }],
-		arrangement: 'single',
+		tiles: [{ id: 'test-tile', type: 'dom', title: 'Test', config: {} }],
+		arrangement: 'test-tile',
 		shell: 'golden',
 	};
 }
 
 function createMockTarget(): AdapterTarget {
 	return {
-		element: document.createElement('div'),
-		iframe: null,
-		context: null,
+		type: 'element',
+		bounds: { left: 0, top: 0, width: 800, height: 600 },
 	};
 }
 
@@ -108,7 +112,7 @@ class MockSensorPort implements SensorPort {
 	}
 
 	async sense(_video: HTMLVideoElement, timestamp: number): Promise<SensorFrame> {
-		return { ...this.mockFrame, timestamp };
+		return { ...this.mockFrame, ts: timestamp };
 	}
 
 	dispose(): void {
@@ -128,11 +132,15 @@ class MockSmootherPort implements SmootherPort {
 	reset(): void {
 		this.smoothCallCount = 0;
 	}
+
+	setParams(_mincutoff: number, _beta: number): void {
+		// no-op for mock
+	}
 }
 
 class MockFSMPort implements FSMPort {
 	mockAction = createMockFSMAction();
-	currentState = 'idle';
+	currentState = 'DISARMED';
 	processCallCount = 0;
 
 	process(_frame: SmoothedFrame): FSMAction {
@@ -144,8 +152,16 @@ class MockFSMPort implements FSMPort {
 		return this.currentState;
 	}
 
+	disarm(): void {
+		this.currentState = 'DISARMED';
+	}
+
+	subscribe(_callback: (state: string, action: FSMAction) => void): () => void {
+		return () => {};
+	}
+
 	reset(): void {
-		this.currentState = 'idle';
+		this.currentState = 'DISARMED';
 		this.processCallCount = 0;
 	}
 }
@@ -153,6 +169,7 @@ class MockFSMPort implements FSMPort {
 class MockEmitterPort implements EmitterPort {
 	mockPointerEvent = createMockPointerEvent();
 	emitCallCount = 0;
+	pointerId = 1;
 
 	emit(_action: FSMAction, _target: AdapterTarget): PointerEventOut {
 		this.emitCallCount++;
@@ -163,11 +180,28 @@ class MockEmitterPort implements EmitterPort {
 class MockAdapterPort implements AdapterPort {
 	injectCallCount = 0;
 	lastEvent: PointerEventOut | null = null;
+	private hasPointerCapture = false;
 
 	inject(event: PointerEventOut): boolean {
 		this.injectCallCount++;
 		this.lastEvent = event;
 		return true;
+	}
+
+	getBounds(): AdapterTarget['bounds'] {
+		return { left: 0, top: 0, width: 800, height: 600 };
+	}
+
+	setCapture(): void {
+		this.hasPointerCapture = true;
+	}
+
+	releaseCapture(): void {
+		this.hasPointerCapture = false;
+	}
+
+	hasCapture(): boolean {
+		return this.hasPointerCapture;
 	}
 }
 
@@ -180,6 +214,10 @@ class MockUIShellPort implements UIShellPort {
 
 	async initialize(_container: HTMLElement): Promise<void> {
 		this.initialized = true;
+	}
+
+	getTileIds(): string[] {
+		return Array.from(this.tiles.keys());
 	}
 
 	addTile(config: import('../contracts/schemas.js').TileConfig): void {

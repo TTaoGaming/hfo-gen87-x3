@@ -373,7 +373,10 @@ export class W3CGestureComposer {
 		if (!this.stageCallbacks.has(stage)) {
 			this.stageCallbacks.set(stage, []);
 		}
-		this.stageCallbacks.get(stage)!.push(callback);
+		const callbacks = this.stageCallbacks.get(stage);
+		if (callbacks) {
+			callbacks.push(callback);
+		}
 
 		return () => {
 			const callbacks = this.stageCallbacks.get(stage);
