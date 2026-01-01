@@ -14,10 +14,18 @@ npm run lint || exit 1
 echo "  → Architecture Smoke Tests..."
 npx vitest run hot/silver/architecture.smoke.test.ts --passWithNoTests || exit 1
 
-# Gate 4: Dependency boundaries (if silver files changed)
-if git diff --cached --name-only | grep -q "hot/silver"; then
-  echo "  → Dependency Boundaries..."
-  npx dependency-cruiser --config hot/silver/.constraint-rules.mjs hot/silver || exit 1
+# Gate 4: Dependency boundaries (ALWAYS run - no conditional bypass)
+echo "  → Dependency Boundaries..."
+npx dependency-cruiser --config hot/silver/.constraint-rules.mjs hot/silver || exit 1
+
+# Gate 5: Folder whitelist (block unauthorized folders in hot/silver/)
+echo "  → Folder Whitelist..."
+UNAUTHORIZED=$(find hot/silver -maxdepth 1 -type d ! -name "silver" ! -name "exemplars" ! -name "quarantine" 2>/dev/null | grep -v "^hot/silver$" || true)
+if [ -n "$UNAUTHORIZED" ]; then
+  echo "❌ BLOCKED: Unauthorized folders in hot/silver/:"
+  echo "$UNAUTHORIZED"
+  echo "Only 'exemplars/' and 'quarantine/' are allowed."
+  exit 1
 fi
 
 echo "✅ All gates passed. Commit allowed."

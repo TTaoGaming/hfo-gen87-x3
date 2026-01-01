@@ -36,7 +36,8 @@
 			"test-results/**",
 			"*.d.ts",
 			"cold/**",
-			"hot/bronze/quarantine/**"
+			"hot/bronze/quarantine/**",
+			".stryker-tmp/**"
 		]
 	}
 }
