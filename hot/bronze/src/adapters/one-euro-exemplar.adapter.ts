@@ -70,8 +70,8 @@ export class OneEuroExemplarAdapter implements SmootherPort {
 	 * @returns Smoothed frame with filtered positions and velocity
 	 */
 	smooth(frame: SensorFrame): SmoothedFrame {
-		// Handle no landmarks case
-		if (!frame.landmarks || !frame.indexTip) {
+		// Handle no indexTip case - landmarks is optional, indexTip is required for filtering
+		if (!frame.indexTip) {
 			return this.createPassthroughFrame(frame);
 		}
 
@@ -84,7 +84,9 @@ export class OneEuroExemplarAdapter implements SmootherPort {
 
 		// Convert timestamp to seconds for the 1€ filter
 		// The filter expects cumulative timestamp, not delta
-		const timestampSec = frame.ts / 1000;
+		// EDGE CASE FIX: Ensure minimum timestamp > 0 to avoid NaN from filter internals
+		// When ts=0, filter's alpha calculation divides by zero
+		const timestampSec = Math.max(frame.ts / 1000, 0.001);
 
 		// Smooth index tip (primary cursor position)
 		const smoothedTip = this.smoothLandmark('indexTip', frame.indexTip, timestampSec);
@@ -97,6 +99,14 @@ export class OneEuroExemplarAdapter implements SmootherPort {
 				y: (smoothedTip.y - this.lastPosition.y) / dt,
 			};
 		}
+
+		// NaN guard: If filter produced invalid output, reset and passthrough
+		// This handles edge cases like non-monotonic timestamps, first-frame issues
+		if (Number.isNaN(smoothedTip.x) || Number.isNaN(smoothedTip.y)) {
+			this.reset();
+			return this.createPassthroughFrame(frame);
+		}
+
 		this.lastPosition = { x: smoothedTip.x, y: smoothedTip.y };
 
 		// Build and validate output using schema's expected shape
@@ -160,9 +170,15 @@ export class OneEuroExemplarAdapter implements SmootherPort {
 	}
 
 	/**
-	 * Create passthrough frame when no landmarks available
+	 * Create passthrough frame when filtering fails or no landmarks available
+	 * If indexTip exists, uses raw values. Otherwise null position.
 	 */
 	private createPassthroughFrame(frame: SensorFrame): SmoothedFrame {
+		// If indexTip exists, pass it through unfiltered
+		const position = frame.indexTip
+			? { x: Math.max(0, Math.min(1, frame.indexTip.x)), y: Math.max(0, Math.min(1, frame.indexTip.y)) }
+			: null;
+
 		return SmoothedFrameSchema.parse({
 			ts: frame.ts,
 			handId: frame.handId,
@@ -170,8 +186,8 @@ export class OneEuroExemplarAdapter implements SmootherPort {
 			palmFacing: frame.palmFacing,
 			label: frame.label,
 			confidence: frame.confidence,
-			position: null,
-			velocity: null,
+			position,
+			velocity: position ? { x: 0, y: 0 } : null,
 			prediction: null,
 		});
 	}

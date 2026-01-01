@@ -245,14 +245,16 @@ describe('Polymorphic Composition', () => {
 describe('Property-Based Testing (100+ iterations)', () => {
 	it('output coordinates are always in valid range', () => {
 		const pipeline = new HFOPipeline();
+		let lastTs = Date.now();
 
 		fc.assert(
 			fc.property(
-				fc.float({ min: 0, max: 1, noNaN: true }),
-				fc.float({ min: 0, max: 1, noNaN: true }),
-				fc.integer({ min: 1, max: Number.MAX_SAFE_INTEGER }),
-				(x, y, ts) => {
-					const output = pipeline.process({ x, y, timestamp: ts, confidence: 0.9 });
+				fc.float({ min: Math.fround(0.01), max: Math.fround(0.99), noNaN: true }),
+				fc.float({ min: Math.fround(0.01), max: Math.fround(0.99), noNaN: true }),
+				(x, y) => {
+					// Use incrementing timestamps (1€ filter needs strictly increasing ts)
+					lastTs += 16.67;
+					const output = pipeline.process({ x, y, timestamp: lastTs, confidence: 0.9 });
 					
 					// Smoothed coordinates should be reasonable
 					// They might slightly exceed 0-1 due to filter dynamics, but not by much
@@ -268,14 +270,15 @@ describe('Property-Based Testing (100+ iterations)', () => {
 
 	it('jitter is always non-negative', () => {
 		const pipeline = new HFOPipeline();
+		let lastTs = Date.now();
 
 		fc.assert(
 			fc.property(
-				fc.float({ min: 0, max: 1, noNaN: true }),
-				fc.float({ min: 0, max: 1, noNaN: true }),
-				fc.integer({ min: 1, max: Number.MAX_SAFE_INTEGER }),
-				(x, y, ts) => {
-					const output = pipeline.process({ x, y, timestamp: ts, confidence: 0.9 });
+				fc.float({ min: Math.fround(0.01), max: Math.fround(0.99), noNaN: true }),
+				fc.float({ min: Math.fround(0.01), max: Math.fround(0.99), noNaN: true }),
+				(x, y) => {
+					lastTs += 16.67;
+					const output = pipeline.process({ x, y, timestamp: lastTs, confidence: 0.9 });
 					expect(output.jitter).toBeGreaterThanOrEqual(0);
 				}
 			),

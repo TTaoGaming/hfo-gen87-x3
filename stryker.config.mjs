@@ -59,6 +59,7 @@
 export default {
 	// Target PURE source files only (no I/O, no async)
 	mutate: [
+		'hot/bronze/src/pipeline/hfo-pipeline.ts',
 		'hot/bronze/src/contracts/hfo-ports.ts',
 		'hot/bronze/src/contracts/port-contracts.ts',
 		'!hot/bronze/src/**/*.test.ts',

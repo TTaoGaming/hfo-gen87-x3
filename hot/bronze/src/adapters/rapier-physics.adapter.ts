@@ -180,6 +180,18 @@ export class RapierPhysicsAdapter implements SmootherPort {
 		const smoothedPos = this.cursorBody.translation();
 		const smoothedVel = this.cursorBody.linvel();
 
+		// NaN guard: If physics produced invalid values, fallback to passthrough
+		// This can happen with extreme dt values or uninitialized state
+		if (
+			Number.isNaN(smoothedPos.x) ||
+			Number.isNaN(smoothedPos.y) ||
+			Number.isNaN(smoothedVel.x) ||
+			Number.isNaN(smoothedVel.y)
+		) {
+			this.reset();
+			return this.createPassthroughFrame(frame);
+		}
+
 		// Store velocity for output
 		this.velocity = { x: smoothedVel.x, y: smoothedVel.y };
 
@@ -193,12 +205,18 @@ export class RapierPhysicsAdapter implements SmootherPort {
 			};
 		}
 
+		// Clamp to [0,1] normalized space (physics can overshoot)
+		const clampedPosition = {
+			x: Math.max(0, Math.min(1, outputPosition.x)),
+			y: Math.max(0, Math.min(1, outputPosition.y)),
+		};
+
 		return {
 			ts: frame.ts,
 			handId: frame.handId,
-			position: outputPosition,
+			position: clampedPosition,
 			velocity: this.velocity,
-			prediction: this.config.mode === 'predictive' ? outputPosition : null,
+			prediction: this.config.mode === 'predictive' ? clampedPosition : null,
 			trackingOk: frame.trackingOk,
 			label: frame.label ?? 'None',
 			confidence: frame.confidence ?? 0,
