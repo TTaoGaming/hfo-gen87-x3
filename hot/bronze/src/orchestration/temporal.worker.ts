@@ -7,10 +7,9 @@ import { fileURLToPath } from 'node:url';
  *
  * Usage:
  * 1. Start Temporal server: temporal server start-dev
- * 2. Build: npm run build
- * 3. Start worker: node dist/orchestration/temporal.worker.js
+ * 2. Start worker: npx tsx src/orchestration/temporal.worker.ts
  */
-import { Worker } from '@temporalio/worker';
+import { bundleWorkflowCode, Worker } from '@temporalio/worker';
 import 'dotenv/config';
 import * as activities from './temporal.activities.js';
 
@@ -18,12 +17,17 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 async function runWorker() {
 	console.log('🚀 Starting Temporal Worker for HIVE/8...');
+	console.log('📦 Bundling workflow code (TypeScript → JS)...');
 
-	// Use compiled JS path (dist/ when running with node, src/ when running with tsx)
-	const workflowsPath = path.resolve(__dirname, 'temporal.workflows.js').replace('/src/', '/dist/');
+	// Bundle TypeScript workflows at runtime (no pre-build needed)
+	const workflowsPath = path.resolve(__dirname, 'temporal.workflows.ts');
+	const workflowBundle = await bundleWorkflowCode({
+		workflowsPath,
+	});
+	console.log('✅ Workflow bundle created');
 
 	const worker = await Worker.create({
-		workflowsPath,
+		workflowBundle,
 		activities,
 		taskQueue: 'hive-task-queue',
 	});
