@@ -1,0 +1,106 @@
+# 🕸️ Gen87.X3 Executive Facade — One Page Summary
+
+> **Mission**: W3C Pointer Gesture Control Plane — daily-driver gesture input for Total Tool Virtualization  
+> **Date**: 2026-01-01 | **HIVE Phase**: INTERLOCK | **Branch**: gen87-x3.1/develop
+
+---
+
+## 📊 Status Dashboard
+
+| Category | ✅ GREEN | 🔴 BLOCKED | ❌ MISSING |
+|----------|----------|------------|------------|
+| **Ports** | 7/8 implemented | — | NavigatorPort |
+| **Tests** | 894 (archived) | Stryker paths | — |
+| **Adapters** | 4 SILVER_READY | 4 need mutation | — |
+| **Registry** | Code exists | **No bootstrap** | — |
+| **Demo** | Works visually | Uses raw npm | Adapter wiring |
+| **AI Context** | Memory MCP | AGENTS.md 500+ lines | 20-line quick ref |
+
+**VERDICT**: Architecture 95% ✅ | Runtime Wiring 0% 🔴 | AI Adoption Blocked 🔴
+
+---
+
+## 🔄 7-Stage Pipeline (Canonical)
+
+```
+┌───────────┐   ┌───────────┐   ┌───────────┐   ┌───────────┐   ┌───────────┐   ┌───────────┐   ┌───────────┐
+│  SENSE    │ → │  SMOOTH   │ → │  PREDICT  │ → │   FSM     │ → │   EMIT    │ → │  TARGET   │ → │    UI     │
+│ MediaPipe │   │ 1€ Filter │   │  LaViola  │   │  XState   │   │ W3C Ptr   │   │ DOM/etc   │   │ Golden GL │
+│  Port 0   │   │  Port 2   │   │ Port 2.5  │   │  Port 3   │   │  Port 5   │   │  Port 1   │   │  Port 7   │
+└───────────┘   └───────────┘   └───────────┘   └───────────┘   └───────────┘   └───────────┘   └───────────┘
+     ✅              ✅              ❌              ✅              ✅              ✅              ✅
+```
+
+---
+
+## 🎖️ Commander → Port → Adapter Map
+
+| Port | Commander | Verb | Interface | Best Adapter | Mutation |
+|:----:|-----------|------|-----------|--------------|:--------:|
+| 0 | Lidless Legion | SENSE | `SensorPort` | MediaPipeAdapter | — |
+| 1 | Web Weaver | FUSE | `TargetRouterPort` | DOMAdapter | — |
+| 2 | Mirror Magus | SHAPE | `SmootherPort` | OneEuroAdapter | **70%** ✅ |
+| 3 | Spore Storm | DELIVER | `FSMPort` | XStateFSMAdapter | — |
+| 4 | Red Regnant | TEST | `DisruptorPort` | TheaterDetector | — |
+| 5 | Pyre Praetorian | DEFEND | `EmitterPort` | W3CPointerFactory | **64%** ✅ |
+| 6 | Kraken Keeper | STORE | `AssimilatorPort` | MemoryMCP | — |
+| 7 | Spider Sovereign | DECIDE | `NavigatorPort` | **❌ MISSING** | — |
+
+---
+
+## 🔴 P0 Actions (Today)
+
+| # | Task | File | Effort | Why Blocking |
+|---|------|------|:------:|--------------|
+| 1 | **Create bootstrapRegistries.ts** | `src/bootstrap-registries.ts` | 1h | Registry code is dead without this |
+| 2 | **Hot-swap integration test** | `registry-swap.integration.test.ts` | 2h | Proves polymorphism works |
+| 3 | **Fix Stryker imports** | `tsconfig.json` | 1h | Mutation testing blocked |
+| 4 | **Rewire demo to registry** | `demo/index.html` | 1h | Demo is THEATER until this |
+
+---
+
+## 🟡 P1 Actions (This Week)
+
+| Task | Effort | Impact |
+|------|:------:|--------|
+| AI 20-line quick reference | 30m | Unblocks AI adoption |
+| MCP server per commander | 4h | Enables tool discovery |
+| Pre-commit hooks (husky) | 2h | Blocks theater commits |
+| LaViola predictor adapter | 2h | Fills PREDICT gap |
+
+---
+
+## 📦 SILVER_READY Adapters (Mutation >60%)
+
+| Adapter | Score | Port | Notes |
+|---------|:-----:|:----:|-------|
+| vacuole-envelope.ts | **92%** | — | CloudEvents wrapper |
+| one-euro-exemplar.adapter.ts | **70%** | 2 | 1€ filter by Casiez |
+| rapier-physics.adapter.ts | **69%** | 2 | WASM physics |
+| w3c-pointer-fsm.ts | **64%** | 3 | XState FSM |
+
+---
+
+## 📁 Bronze Document Index (Drill-Down)
+
+| Document | Lines | Purpose |
+|----------|:-----:|---------|
+| [EXECUTIVE_SUMMARY_20260101T120000Z.md](../bronze/EXECUTIVE_SUMMARY_20260101T120000Z.md) | 146 | Byzantine consensus truths |
+| [PROGRESS_REPORT_V2.md](../bronze/PROGRESS_REPORT_V2.md) | 107 | What's working vs not |
+| [W3C_POINTER_SPEC.md](../bronze/W3C_POINTER_SPEC.md) | 402 | Pipeline TODO manifest |
+| [HFO_INFRASTRUCTURE_SPEC.md](../bronze/HFO_INFRASTRUCTURE_SPEC.md) | 279 | Infrastructure TODO manifest |
+| [MISSING_TOOLS_RECOMMENDATIONS_20260101.md](../bronze/MISSING_TOOLS_RECOMMENDATIONS_20260101.md) | 366 | A2A/MCP/Skills gaps |
+
+---
+
+## 🎯 Success Criteria (DONE = all checked)
+
+- [ ] `bootstrapRegistries()` wires all factories to singletons
+- [ ] Integration test proves hot-swap at runtime
+- [ ] Demo uses registry, not direct imports
+- [ ] Stryker runs without import errors
+- [ ] AI quick-reference card < 50 lines
+
+---
+
+*Generated by Spider Sovereign | HIVE Phase: I (Interlock) | Source: 9 bronze documents → 1 silver facade*
