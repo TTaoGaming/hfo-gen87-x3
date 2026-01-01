@@ -195,17 +195,15 @@ Provide the final output and evolution recommendations.
 }
 
 // ============================================================================
-// ROUTER: Decide next phase or end
+// ROUTER: Decide next phase or end (reserved for multi-cycle evolution)
 // ============================================================================
 
-function routeAfterEvolve(state: HIVEState): 'hunt' | typeof END {
-	// Continue evolution if cycle < max, otherwise end
-	if (state.cycle < 1) {
-		// Single cycle for now, can increase for continuous evolution
-		return END;
-	}
-	return 'hunt'; // Loop back for N+1
-}
+// NOTE: routeAfterEvolve reserved for continuous evolution loops
+// Currently single-cycle (H→I→V→E→END), can enable N+1 looping later
+// function routeAfterEvolve(state: HIVEState): 'hunt' | typeof END {
+// 	if (state.cycle < 1) return END;
+// 	return 'hunt';
+// }
 
 // ============================================================================
 // BUILD THE HIVE/8 GRAPH
@@ -262,5 +260,5 @@ export async function testLangGraphHIVE(): Promise<void> {
 	console.log('  Interlock Results:', result.interlockResults.length);
 	console.log('  Validate Results:', result.validateResults.length);
 	console.log('  Evolve Results:', result.evolveResults.length);
-	console.log('  Output Preview:', result.output.substring(0, 200) + '...');
+	console.log('  Output Preview:', `${result.output.substring(0, 200)}...`);
 }

@@ -57,7 +57,7 @@ async function runClient() {
 
 	for (const r of result.results) {
 		console.log(`--- ${r.phase} Phase (Port ${r.port}) ---`);
-		console.log(r.output.substring(0, 300) + '...');
+		console.log(`${r.output.substring(0, 300)}...`);
 		console.log('');
 	}
 }

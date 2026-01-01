@@ -89,8 +89,8 @@ export async function HIVEOrchestratorWorkflow(config: HIVEConfig): Promise<HIVE
 	workflow.setHandler(getStateQuery, () => state);
 	workflow.setHandler(getPhaseQuery, () => state.phase);
 
-	// Parse scaling config
-	const parallelism = parseScaling(config.scaling);
+	// NOTE: Scaling config parsed but not used yet (reserved for multi-agent parallelism)
+	// parseScaling(config.scaling);
 
 	// Main HIVE loop
 	while (state.cycle < config.maxCycles && !cancelled) {
@@ -155,15 +155,15 @@ export async function HIVEOrchestratorWorkflow(config: HIVEConfig): Promise<HIVE
 }
 
 // ============================================================================
-// SCALING PARSER
+// SCALING PARSER (exported for future use)
 // ============================================================================
 
-function parseScaling(scaling: string): number {
+export function parseScaling(scaling: string): number {
 	// 8:WXYZ format
 	const match = scaling.match(/8:(\d)(\d)(\d)(\d)/);
 	if (!match) return 1;
 
-	const [, w, x, y, z] = match;
+	const [, w = '0', x = '0', y = '0', z = '0'] = match;
 	return (
 		Number.parseInt(w, 10) * 1000 +
 		Number.parseInt(x, 10) * 100 +
@@ -186,11 +186,13 @@ export interface PhaseWorkerConfig {
 export async function PhaseWorkerWorkflow(config: PhaseWorkerConfig): Promise<PhaseResult> {
 	const { phase, port, task, context } = config;
 
+	// Context used for phase history (currently passed as empty, reserved for future)
+	const contextStr = context.length > 0 ? context.join('\n') : '';
 	let output: string;
 
 	switch (phase) {
 		case 'H':
-			output = (await huntActivity({ task, cycle: 0, port })).output;
+			output = (await huntActivity({ task: task + contextStr, cycle: 0, port })).output;
 			break;
 		case 'I':
 			output = (await interlockActivity({ task, huntResults: [], cycle: 0, port })).output;

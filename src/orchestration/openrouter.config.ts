@@ -80,7 +80,7 @@ export async function generateCompletion(
 		options.model ?? (options.port !== undefined ? PORT_MODELS[options.port] : MODELS.balanced);
 
 	const response = await openrouter.chat.completions.create({
-		model,
+		model: model as string,
 		messages: [
 			...(options.systemPrompt ? [{ role: 'system' as const, content: options.systemPrompt }] : []),
 			{ role: 'user' as const, content: prompt },

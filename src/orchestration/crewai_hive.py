@@ -39,15 +39,16 @@ def create_openrouter_llm(model: str = "meta-llama/llama-3.3-70b-instruct:free")
 # ============================================================================
 
 # Port-to-model mapping - Using free tier for testing
+# FIXED 2025-12-31: Added openrouter/ prefix required by litellm
 PORT_MODELS = {
-    0: "meta-llama/llama-3.3-70b-instruct:free",  # Lidless - fast scanning
-    1: "meta-llama/llama-3.3-70b-instruct:free",  # Weaver - code generation
-    2: "meta-llama/llama-3.3-70b-instruct:free",  # Magus - transformation
-    3: "meta-llama/llama-3.3-70b-instruct:free",  # Storm - delivery
-    4: "meta-llama/llama-3.3-70b-instruct:free",  # Regnant - testing
-    5: "meta-llama/llama-3.3-70b-instruct:free",  # Pyre - validation
-    6: "meta-llama/llama-3.3-70b-instruct:free",  # Kraken - storage
-    7: "meta-llama/llama-3.3-70b-instruct:free",  # Spider - strategy
+    0: "openrouter/meta-llama/llama-3.3-70b-instruct:free",  # Lidless - fast scanning
+    1: "openrouter/meta-llama/llama-3.3-70b-instruct:free",  # Weaver - code generation
+    2: "openrouter/meta-llama/llama-3.3-70b-instruct:free",  # Magus - transformation
+    3: "openrouter/meta-llama/llama-3.3-70b-instruct:free",  # Storm - delivery
+    4: "openrouter/meta-llama/llama-3.3-70b-instruct:free",  # Regnant - testing
+    5: "openrouter/meta-llama/llama-3.3-70b-instruct:free",  # Pyre - validation
+    6: "openrouter/meta-llama/llama-3.3-70b-instruct:free",  # Kraken - storage
+    7: "openrouter/meta-llama/llama-3.3-70b-instruct:free",  # Spider - strategy
 }
 
 
