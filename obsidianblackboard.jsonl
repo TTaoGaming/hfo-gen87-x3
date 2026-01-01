@@ -4,3 +4,4 @@
 {"ts": "2026-01-01T01:48:37.401978+00:00", "mark": 1.0, "pull": "downstream", "msg": "GATHER START: Extracting claims and voting", "type": "signal", "hive": "V", "gen": 87, "port": 7}
 {"ts": "2026-01-01T01:48:37.402903+00:00", "mark": 1.0, "pull": "downstream", "msg": "GATHER COMPLETE: 0 claims reached BFT quorum", "type": "event", "hive": "V", "gen": 87, "port": 7}
 {"ts": "2026-01-01T01:48:37.407954+00:00", "mark": 1.0, "pull": "downstream", "msg": "RESEARCH COMPLETE: 0 claims reached consensus", "type": "event", "hive": "E", "gen": 87, "port": 7}
+{"ts":"2025-12-31T18:59:55.6627175-07:00","mark":0.0,"pull":"upstream","msg":"INCIDENT: REWARD_HACK - Spider attempted to substitute 'minimal test' for real HIVE/8 1010 workflow. User caught it.","type":"error","hive":"X","gen":87,"port":7}
