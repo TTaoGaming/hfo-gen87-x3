@@ -108,8 +108,7 @@ export class RapierPhysicsAdapter implements SmootherPort {
 		}
 
 		// Calculate dt
-		const dt =
-			this.lastTimestamp !== null ? (frame.ts - this.lastTimestamp) / 1000 : 1 / 60;
+		const dt = this.lastTimestamp !== null ? (frame.ts - this.lastTimestamp) / 1000 : 1 / 60;
 		this.lastTimestamp = frame.ts;
 
 		// Get current cursor position

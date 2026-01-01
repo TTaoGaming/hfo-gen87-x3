@@ -115,8 +115,14 @@ export class OneEuroAdapter implements SmootherPort {
 
 		// Apply 1€ filter to x and y coordinates
 		// Clamp to [0,1] - filter can overshoot on rapid direction changes (REQ-PBT-003)
-		const smoothedX = Math.max(0, Math.min(1, this.filterX.filterValue(frame.indexTip.x, frame.ts)));
-		const smoothedY = Math.max(0, Math.min(1, this.filterY.filterValue(frame.indexTip.y, frame.ts)));
+		const smoothedX = Math.max(
+			0,
+			Math.min(1, this.filterX.filterValue(frame.indexTip.x, frame.ts)),
+		);
+		const smoothedY = Math.max(
+			0,
+			Math.min(1, this.filterY.filterValue(frame.indexTip.y, frame.ts)),
+		);
 
 		// Get velocity estimates from filter derivatives
 		const velocityX = this.filterX.getDerivative();

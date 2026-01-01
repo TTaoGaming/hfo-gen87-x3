@@ -513,7 +513,7 @@ describe('Full Validation (validateSignalWithArchetypes)', () => {
 	it('should return complete validation result for valid signal', () => {
 		const input = createSignal({ msg: 'Valid', hive: 'H', port: 0 });
 		const result = validateSignalWithArchetypes(input);
-		
+
 		expect(result.gateResult).toBeDefined();
 		expect(result.archetypeResult).toBeDefined();
 		expect(result.fullyValid).toBe(true);
@@ -523,7 +523,7 @@ describe('Full Validation (validateSignalWithArchetypes)', () => {
 	it('should return fullyValid=false when gates fail', () => {
 		const invalid = { ...createSignal({ msg: 'test' }), ts: 'invalid' };
 		const result = validateSignalWithArchetypes(invalid);
-		
+
 		expect(result.fullyValid).toBe(false);
 		expect(result.gateResult.valid).toBe(false);
 	});
@@ -532,7 +532,7 @@ describe('Full Validation (validateSignalWithArchetypes)', () => {
 		// Invalid gen (below MIN_GENERATION) will fail archetype validation
 		const invalid = { ...createSignal({ msg: 'test' }), gen: 50 };
 		const result = validateSignalWithArchetypes(invalid);
-		
+
 		// Both gates and archetype should fail for invalid gen
 		expect(result.fullyValid).toBe(false);
 	});
@@ -542,7 +542,7 @@ describe('Full Validation (validateSignalWithArchetypes)', () => {
 		const gatesPass = createSignal({ msg: 'test', hive: 'H', port: 0 });
 		const resultBothPass = validateSignalWithArchetypes(gatesPass);
 		expect(resultBothPass.fullyValid).toBe(true);
-		
+
 		const gatesFail = { ...createSignal({ msg: 'test' }), ts: 'bad' };
 		const resultGatesFail = validateSignalWithArchetypes(gatesFail);
 		expect(resultGatesFail.fullyValid).toBe(false);
@@ -644,7 +644,16 @@ describe('Gates Array Structure', () => {
 	});
 
 	it('should correctly count failed gates', () => {
-		const invalid = { ts: 'bad', mark: -1, pull: 'x', msg: '', type: 'x', hive: 'Z', gen: 1, port: 99 };
+		const invalid = {
+			ts: 'bad',
+			mark: -1,
+			pull: 'x',
+			msg: '',
+			type: 'x',
+			hive: 'Z',
+			gen: 1,
+			port: 99,
+		};
 		const result = validateSignal(invalid);
 		expect(result.passedCount).toBe(0);
 		expect(result.failedCount).toBe(8);
