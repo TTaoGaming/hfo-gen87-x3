@@ -59,7 +59,8 @@
 export default {
 	// Target PURE source files only (no I/O, no async)
 	mutate: [
-		'hot/bronze/src/adapters/one-euro-smoother.ts',
+		'hot/bronze/src/contracts/hfo-ports.ts',
+		'hot/bronze/src/contracts/port-contracts.ts',
 		'!hot/bronze/src/**/*.test.ts',
 		'!hot/bronze/src/**/*.spec.ts',
 		'!hot/bronze/src/**/*.d.ts',
