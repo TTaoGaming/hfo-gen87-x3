@@ -19,9 +19,9 @@
  * - Adapter wrappers that intentionally bridge old/new
  */
 
-import { describe, it, expect, beforeAll } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
+import { beforeAll, describe, expect, it } from 'vitest';
 
 // ============================================================================
 // CONFIGURATION
@@ -214,7 +214,9 @@ describe('CONSTRAINT: Quarantine Boundary Enforcement', () => {
 				}
 			}
 
-			console.log(`\nWhitelist utilization: ${usedWhitelist.length}/${QUARANTINE_IMPORT_WHITELIST.length}`);
+			console.log(
+				`\nWhitelist utilization: ${usedWhitelist.length}/${QUARANTINE_IMPORT_WHITELIST.length}`,
+			);
 
 			// Warn about unused whitelist entries
 			const unused = QUARANTINE_IMPORT_WHITELIST.filter(
@@ -241,7 +243,7 @@ describe('CONSTRAINT: Quarantine Boundary Enforcement', () => {
 			const canonicalImportPattern = /from\s+['"]\.\.\/contracts\//;
 
 			let canonicalImportCount = 0;
-			let nonCanonicalAdapters: string[] = [];
+			const nonCanonicalAdapters: string[] = [];
 
 			for (const file of adapterFiles) {
 				// Skip test files

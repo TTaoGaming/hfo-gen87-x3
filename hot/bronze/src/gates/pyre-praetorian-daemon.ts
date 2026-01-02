@@ -94,8 +94,66 @@ export interface HIVEViolation {
 }
 
 // ============================================================================
+// PERIODIC REPORT TYPES
+// ============================================================================
+
+/**
+ * Stigmergy emitter interface (JSONL now, NATS later)
+ * Abstracted for easy swap to NATS when ready
+ */
+export interface StigmergyEmitter {
+	emit(signal: StigmergySignal): void | Promise<void>;
+}
+
+/**
+ * Periodic health report emitted by Pyre Praetorian
+ */
+export interface PyreHealthReport {
+	/** Report timestamp */
+	reportTs: string;
+	/** Period start timestamp */
+	periodStart: string;
+	/** Period end timestamp */
+	periodEnd: string;
+	/** Total signals validated in period */
+	signalsValidated: number;
+	/** Total violations detected in period */
+	violationsDetected: number;
+	/** Breakdown by violation type */
+	violationsByType: Record<ViolationType, number>;
+	/** Breakdown by severity */
+	violationsBySeverity: Record<'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW', number>;
+	/** Current HIVE phase */
+	currentPhase: HIVEPhase | 'X' | null;
+	/** Health status based on violations */
+	status: 'HEALTHY' | 'DEGRADED' | 'CRITICAL';
+	/** Daemon uptime in milliseconds */
+	uptimeMs: number;
+	/** Git commits detected in signals (optional) */
+	gitCommits?: GitCommitInfo[];
+	/** Total signals in blackboard (optional) */
+	blackboardSignals?: number;
+}
+
+// ============================================================================
 // PYRE PRAETORIAN DAEMON
 // ============================================================================
+
+/**
+ * Git commit info extracted from signal messages
+ */
+export interface GitCommitInfo {
+	hash: string;
+	message: string;
+	timestamp: string;
+	signalTs: string;
+}
+
+/**
+ * Blackboard reader function type
+ * Allows injection of file reading for testability
+ */
+export type BlackboardReader = (filePath: string) => string;
 
 export interface PyrePraetorianConfig {
 	/** Maximum allowed time drift in milliseconds (default: 60000 = 60 seconds) */
@@ -108,6 +166,14 @@ export interface PyrePraetorianConfig {
 	allowExceptional: boolean;
 	/** Whether to validate timestamps (default: true). Set false for testing. */
 	validateTimestamps: boolean;
+	/** Periodic report interval in milliseconds (default: 5 minutes). Set 0 to disable. */
+	reportIntervalMs: number;
+	/** Blackboard file path for reading signals (default: 'obsidianblackboard.jsonl') */
+	blackboardPath?: string;
+	/** Blackboard file reader function (injectable for testing) */
+	blackboardReader?: BlackboardReader;
+	/** Stigmergy emitter for periodic reports (JSONL now, NATS later) */
+	emitter?: StigmergyEmitter;
 }
 
 export const DEFAULT_CONFIG: PyrePraetorianConfig = {
@@ -115,6 +181,7 @@ export const DEFAULT_CONFIG: PyrePraetorianConfig = {
 	quarantineOnViolation: true,
 	allowExceptional: true,
 	validateTimestamps: true,
+	reportIntervalMs: 5 * 60 * 1000, // 5 minutes
 };
 
 /**
@@ -135,8 +202,329 @@ export class PyrePraetorianDaemon {
 	private violations: HIVEViolation[] = [];
 	private lastPhase: HIVEPhase | 'X' | null = null;
 
+	// Periodic reporting state
+	private reportTimer: ReturnType<typeof setInterval> | null = null;
+	private startTime: Date;
+	private lastReportTime: Date;
+	private periodViolations: HIVEViolation[] = [];
+	private periodSignalCount: number = 0;
+
+	// Blackboard watching state
+	private watchTimer: ReturnType<typeof setInterval> | null = null;
+	private lastProcessedIndex: number = 0;
+	private gitCommits: GitCommitInfo[] = [];
+
 	constructor(config: Partial<PyrePraetorianConfig> = {}) {
 		this.config = { ...DEFAULT_CONFIG, ...config };
+		this.startTime = new Date();
+		this.lastReportTime = new Date();
+	}
+
+	// ============================================================================
+	// PERIODIC REPORTING (JSONL now, NATS later)
+	// ============================================================================
+
+	/**
+	 * Start periodic health reports
+	 * Emits a stigmergy signal every X minutes with violation summary
+	 */
+	startPeriodicReports(): void {
+		if (this.reportTimer) {
+			return; // Already running
+		}
+
+		if (this.config.reportIntervalMs <= 0 || !this.config.emitter) {
+			return; // Disabled or no emitter
+		}
+
+		this.reportTimer = setInterval(() => {
+			this.emitHealthReport();
+		}, this.config.reportIntervalMs);
+
+		// Emit initial report
+		this.emitHealthReport();
+	}
+
+	/**
+	 * Stop periodic health reports
+	 */
+	stopPeriodicReports(): void {
+		if (this.reportTimer) {
+			clearInterval(this.reportTimer);
+			this.reportTimer = null;
+		}
+	}
+
+	/**
+	 * Generate and emit a health report to stigmergy
+	 */
+	emitHealthReport(): void {
+		if (!this.config.emitter) {
+			return;
+		}
+
+		const report = this.generateHealthReport();
+		const signal = this.createReportSignal(report);
+
+		// Emit via configured emitter (JSONL now, NATS later)
+		this.config.emitter.emit(signal);
+
+		// Reset period counters
+		this.resetPeriodCounters();
+	}
+
+	/**
+	 * Generate health report for current period
+	 */
+	generateHealthReport(): PyreHealthReport {
+		const now = new Date();
+
+		// Count violations by type
+		const violationsByType: Record<ViolationType, number> = {
+			SKIPPED_PHASE: 0,
+			PHASE_INVERSION: 0,
+			BATCH_FABRICATION: 0,
+			FUTURE_TIMESTAMP: 0,
+			TIMESTAMP_PROXIMITY: 0,
+			REWARD_HACK: 0,
+		};
+
+		// Count violations by severity
+		const violationsBySeverity: Record<'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW', number> = {
+			CRITICAL: 0,
+			HIGH: 0,
+			MEDIUM: 0,
+			LOW: 0,
+		};
+
+		for (const v of this.periodViolations) {
+			violationsByType[v.type]++;
+			violationsBySeverity[v.severity]++;
+		}
+
+		// Determine health status
+		let status: 'HEALTHY' | 'DEGRADED' | 'CRITICAL' = 'HEALTHY';
+		if (violationsBySeverity.CRITICAL > 0) {
+			status = 'CRITICAL';
+		} else if (violationsBySeverity.HIGH > 0 || this.periodViolations.length > 5) {
+			status = 'DEGRADED';
+		}
+
+		// Include git commits and blackboard count
+		const recentGitCommits = this.gitCommits.slice(-5); // Last 5 commits
+		const blackboardSignals = this.signalHistory.length;
+
+		// Build report - only include optional fields if they have data
+		const report: PyreHealthReport = {
+			reportTs: now.toISOString(),
+			periodStart: this.lastReportTime.toISOString(),
+			periodEnd: now.toISOString(),
+			signalsValidated: this.periodSignalCount,
+			violationsDetected: this.periodViolations.length,
+			violationsByType,
+			violationsBySeverity,
+			currentPhase: this.lastPhase,
+			status,
+			uptimeMs: now.getTime() - this.startTime.getTime(),
+		};
+
+		// Add optional fields only if they have content
+		if (recentGitCommits.length > 0) {
+			report.gitCommits = recentGitCommits;
+		}
+		if (blackboardSignals > 0) {
+			report.blackboardSignals = blackboardSignals;
+		}
+
+		return report;
+	}
+
+	/**
+	 * Create a stigmergy signal from health report
+	 */
+	private createReportSignal(report: PyreHealthReport): StigmergySignal {
+		const emoji = report.status === 'HEALTHY' ? '✅' : report.status === 'DEGRADED' ? '⚠️' : '🔥';
+		const summary = `${emoji} PYRE HEALTH: ${report.status} | ${report.signalsValidated} signals | ${report.violationsDetected} violations | Phase: ${report.currentPhase ?? 'NULL'}`;
+
+		return {
+			ts: report.reportTs,
+			mark: report.status === 'HEALTHY' ? 1.0 : report.status === 'DEGRADED' ? 0.5 : 0.0,
+			pull: 'downstream',
+			msg: JSON.stringify({ type: 'PYRE_HEALTH_REPORT', summary, report }),
+			type: 'metric',
+			hive: 'V', // Pyre is in V phase (Port 5)
+			gen: 87,
+			port: 5, // Port 5 = Pyre Praetorian
+		};
+	}
+
+	/**
+	 * Reset period counters after report emission
+	 */
+	private resetPeriodCounters(): void {
+		this.lastReportTime = new Date();
+		this.periodViolations = [];
+		this.periodSignalCount = 0;
+	}
+
+	// ============================================================================
+	// BLACKBOARD READING & WATCHING
+	// ============================================================================
+
+	/**
+	 * Read and parse the blackboard JSONL file
+	 * Returns parsed signals (valid ones only)
+	 */
+	readBlackboardFile(): StigmergySignal[] {
+		if (!this.config.blackboardPath || !this.config.blackboardReader) {
+			return [];
+		}
+
+		try {
+			const content = this.config.blackboardReader(this.config.blackboardPath);
+			const lines = content.split('\n').filter((line) => line.trim());
+			const signals: StigmergySignal[] = [];
+
+			for (const line of lines) {
+				try {
+					const parsed = JSON.parse(line);
+					// Check if it's a valid HIVE signal (has hive field)
+					if (parsed && typeof parsed.hive === 'string') {
+						const result = StigmergySignalSchema.safeParse(parsed);
+						if (result.success) {
+							signals.push(result.data);
+							// Git commits are now extracted in validateSignal()
+						}
+					}
+				} catch {
+					// Skip invalid JSON lines
+				}
+			}
+
+			return signals;
+		} catch {
+			return [];
+		}
+	}
+
+	/**
+	 * Extract git commit info from signal message
+	 * Looks for patterns like "commit abc123" or "Git commit abc123"
+	 */
+	private extractGitCommit(signal: StigmergySignal): void {
+		const msg = signal.msg;
+		// Multiple patterns for git commits:
+		// - "commit abc123" or "Git commit abc123"
+		// - "commit: abc123" or "Commit: abc123"
+		// - "EVOLVE: Git commit abc123 -"
+		// - Just a hash after common keywords
+		const patterns = [
+			/(?:commit|git commit)[:\s]+([a-f0-9]{7,40})/i,
+			/(?:merged|pushed|cherry-picked?)[:\s]+([a-f0-9]{7,40})/i,
+			/\b([a-f0-9]{40})\b/, // Full SHA
+		];
+
+		for (const pattern of patterns) {
+			const match = msg.match(pattern);
+			if (match?.[1]) {
+				// Avoid duplicates
+				const existing = this.gitCommits.find((c) => c.hash === match[1]);
+				if (!existing) {
+					this.gitCommits.push({
+						hash: match[1],
+						message: msg.substring(0, 200), // Truncate long messages
+						timestamp: new Date().toISOString(),
+						signalTs: signal.ts,
+					});
+				}
+				break; // Only extract first match
+			}
+		}
+	}
+
+	/**
+	 * Scan blackboard file and validate all signals
+	 * Call this on startup to detect existing violations
+	 */
+	scanBlackboard(): {
+		signalsFound: number;
+		signalsValidated: number;
+		violations: HIVEViolation[];
+		gitCommits: GitCommitInfo[];
+	} {
+		const signals = this.readBlackboardFile();
+		const result = this.analyzeBlackboard(signals);
+
+		return {
+			signalsFound: signals.length,
+			signalsValidated: signals.length,
+			violations: result.violations,
+			gitCommits: [...this.gitCommits],
+		};
+	}
+
+	/**
+	 * Start watching the blackboard file for new signals
+	 * Polls at the report interval (or 10 seconds if faster)
+	 */
+	startWatchingBlackboard(pollIntervalMs?: number): void {
+		if (this.watchTimer) {
+			return; // Already watching
+		}
+
+		if (!this.config.blackboardPath || !this.config.blackboardReader) {
+			console.warn('[PYRE] Cannot watch blackboard: no path or reader configured');
+			return;
+		}
+
+		// Initial scan
+		const initialScan = this.scanBlackboard();
+		this.lastProcessedIndex = initialScan.signalsFound;
+
+		const interval = pollIntervalMs ?? Math.min(this.config.reportIntervalMs, 10_000);
+
+		this.watchTimer = setInterval(() => {
+			this.pollBlackboard();
+		}, interval);
+	}
+
+	/**
+	 * Stop watching the blackboard file
+	 */
+	stopWatchingBlackboard(): void {
+		if (this.watchTimer) {
+			clearInterval(this.watchTimer);
+			this.watchTimer = null;
+		}
+	}
+
+	/**
+	 * Poll blackboard for new signals since last check
+	 */
+	private pollBlackboard(): void {
+		const signals = this.readBlackboardFile();
+
+		// Process only new signals
+		if (signals.length > this.lastProcessedIndex) {
+			const newSignals = signals.slice(this.lastProcessedIndex);
+
+			for (const signal of newSignals) {
+				// Skip our own health report signals to avoid circular validation
+				if (signal.msg.includes('PYRE_HEALTH_REPORT')) {
+					continue;
+				}
+				this.validateSignal(signal);
+			}
+
+			this.lastProcessedIndex = signals.length;
+		}
+	}
+
+	/**
+	 * Get detected git commits
+	 */
+	getGitCommits(): GitCommitInfo[] {
+		return [...this.gitCommits];
 	}
 
 	// ============================================================================
@@ -212,6 +600,7 @@ export class PyrePraetorianDaemon {
 		// Record violations and update state
 		if (violations.length > 0) {
 			this.violations.push(...violations);
+			this.periodViolations.push(...violations); // Track for periodic report
 			if (this.config.onViolation) {
 				for (const v of violations) {
 					this.config.onViolation(v);
@@ -219,9 +608,13 @@ export class PyrePraetorianDaemon {
 			}
 		}
 
-		// Update history
+		// Extract git commit info from signal message
+		this.extractGitCommit(signal);
+
+		// Update history and period counters
 		this.signalHistory.push(signal);
 		this.lastPhase = signal.hive as HIVEPhase | 'X';
+		this.periodSignalCount++; // Track for periodic report
 
 		return { valid: violations.length === 0, violations };
 	}
@@ -312,14 +705,17 @@ export class PyrePraetorianDaemon {
 
 			const lastSignal = this.signalHistory[this.signalHistory.length - 1];
 
-			violations.push({
+			const violation: HIVEViolation = {
 				type: violationType,
 				severity,
 				message: `Invalid transition ${this.lastPhase}→${currentPhase}. Valid: ${validNextPhases.join(', ')}`,
 				signal,
-				previousSignal: lastSignal!,
 				timestamp: new Date().toISOString(),
-			});
+			};
+			if (lastSignal) {
+				violation.previousSignal = lastSignal;
+			}
+			violations.push(violation);
 		}
 
 		return violations;
@@ -344,14 +740,17 @@ export class PyrePraetorianDaemon {
 		);
 
 		if (matchingTimestamps.length > 0) {
-			violations.push({
+			const violation: HIVEViolation = {
 				type: 'BATCH_FABRICATION',
 				severity: 'HIGH',
 				message: `Signal has identical timestamp to ${matchingTimestamps.length} recent signal(s) with different phases. Batch fabrication detected.`,
 				signal,
-				previousSignal: matchingTimestamps[0]!,
 				timestamp: new Date().toISOString(),
-			});
+			};
+			if (matchingTimestamps[0]) {
+				violation.previousSignal = matchingTimestamps[0];
+			}
+			violations.push(violation);
 		}
 
 		return violations;
@@ -405,12 +804,26 @@ export class PyrePraetorianDaemon {
 	// ============================================================================
 
 	/**
-	 * Reset daemon state
+	 * Reset daemon state (keeps timer running if started)
 	 */
 	reset(): void {
 		this.signalHistory = [];
 		this.violations = [];
 		this.lastPhase = null;
+		this.periodViolations = [];
+		this.periodSignalCount = 0;
+		this.lastReportTime = new Date();
+		this.lastProcessedIndex = 0;
+		this.gitCommits = [];
+	}
+
+	/**
+	 * Full shutdown - stops timers and resets state
+	 */
+	shutdown(): void {
+		this.stopPeriodicReports();
+		this.stopWatchingBlackboard();
+		this.reset();
 	}
 
 	/**
@@ -418,6 +831,20 @@ export class PyrePraetorianDaemon {
 	 */
 	getViolations(): HIVEViolation[] {
 		return [...this.violations];
+	}
+
+	/**
+	 * Get period violations (since last report)
+	 */
+	getPeriodViolations(): HIVEViolation[] {
+		return [...this.periodViolations];
+	}
+
+	/**
+	 * Get period signal count (since last report)
+	 */
+	getPeriodSignalCount(): number {
+		return this.periodSignalCount;
 	}
 
 	/**
@@ -432,6 +859,20 @@ export class PyrePraetorianDaemon {
 	 */
 	getCurrentPhase(): HIVEPhase | 'X' | null {
 		return this.lastPhase;
+	}
+
+	/**
+	 * Check if periodic reports are running
+	 */
+	isReporting(): boolean {
+		return this.reportTimer !== null;
+	}
+
+	/**
+	 * Check if blackboard watching is active
+	 */
+	isWatching(): boolean {
+		return this.watchTimer !== null;
 	}
 
 	// ============================================================================
@@ -467,6 +908,82 @@ export class PyrePraetorianDaemon {
 			...partial,
 		};
 	}
+}
+
+// ============================================================================
+// EMITTER FACTORIES (JSONL now, NATS later)
+// ============================================================================
+
+/**
+ * Create a JSONL file emitter for stigmergy signals
+ * Appends signals as newline-delimited JSON to the specified file
+ *
+ * @example
+ * ```typescript
+ * import { appendFileSync } from 'node:fs';
+ *
+ * const emitter = createJSONLEmitter('obsidianblackboard.jsonl', appendFileSync);
+ * const daemon = new PyrePraetorianDaemon({
+ *   emitter,
+ *   reportIntervalMs: 5 * 60 * 1000, // 5 minutes
+ * });
+ * daemon.startPeriodicReports();
+ * ```
+ */
+export function createJSONLEmitter(
+	filePath: string,
+	appendFn: (path: string, data: string) => void,
+): StigmergyEmitter {
+	return {
+		emit(signal: StigmergySignal): void {
+			const line = JSON.stringify(signal) + '\n';
+			appendFn(filePath, line);
+		},
+	};
+}
+
+/**
+ * Create a console emitter for development/debugging
+ *
+ * @example
+ * ```typescript
+ * const daemon = new PyrePraetorianDaemon({
+ *   emitter: createConsoleEmitter(),
+ *   reportIntervalMs: 10_000, // 10 seconds for debugging
+ * });
+ * ```
+ */
+export function createConsoleEmitter(): StigmergyEmitter {
+	return {
+		emit(signal: StigmergySignal): void {
+			const parsed = JSON.parse(signal.msg);
+			console.log(`[PYRE] ${parsed.summary}`);
+		},
+	};
+}
+
+/**
+ * Create a NATS emitter stub (for future implementation)
+ * TODO: Implement when NATS integration is ready
+ *
+ * @example
+ * ```typescript
+ * const emitter = createNATSEmitter('nats://localhost:4222', 'hfo.stigmergy');
+ * ```
+ */
+export function createNATSEmitter(
+	_serverUrl: string,
+	_subject: string,
+): StigmergyEmitter {
+	// Stub for future NATS integration
+	return {
+		emit(_signal: StigmergySignal): void {
+			// TODO: Implement NATS publish
+			// const nc = await connect({ servers: serverUrl });
+			// nc.publish(subject, JSON.stringify(signal));
+			console.warn('[PYRE] NATS emitter not yet implemented - signal dropped');
+		},
+	};
 }
 
 // ============================================================================

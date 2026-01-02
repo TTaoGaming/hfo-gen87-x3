@@ -1,31 +1,17 @@
 /**
  * Contract Schema Mutation Killer Tests
  * =====================================
- * 
+ *
  * Kill all surviving ObjectLiteral mutations in contracts
  */
 
-import { describe, it, expect } from 'vitest';
-import {
-	HFOPortMetadataSchema,
-	PORT_METADATA,
-	getAntiDiagonalPair,
-	getHIVEPhase,
-	getHIVEPorts,
-	getCommander,
-	getVerb,
-} from './hfo-ports.js';
-import hfoPorts from './hfo-ports.js';
-import {
-	PORT_CONTRACTS,
+import { describe, expect, it } from 'vitest';
+import hfoPorts, { HFOPortMetadataSchema, PORT_METADATA } from './hfo-ports.js';
+import portContracts, {
 	GALOIS_LATTICE,
-	getContract,
-	isCapable,
-	isProhibited,
-	getMantra,
+	PORT_CONTRACTS,
 	validatePortAction,
 } from './port-contracts.js';
-import portContracts from './port-contracts.js';
 
 // ============================================================================
 // HFO-PORTS.TS - SCHEMA MUTATION KILLERS
@@ -268,13 +254,11 @@ describe('Port 4 (TEST) Schema - Nested Object Mutations', () => {
 	it('inputSchema.properties REQUIRES name and predicate fields', () => {
 		const contract = PORT_CONTRACTS[4];
 		const schema = contract.inputSchema;
-		
+
 		// Valid input
 		const validInput = {
 			subject: {},
-			properties: [
-				{ name: 'test', predicate: () => true },
-			],
+			properties: [{ name: 'test', predicate: () => true }],
 			iterations: 100,
 		};
 		expect(schema.safeParse(validInput).success).toBe(true);
@@ -282,9 +266,7 @@ describe('Port 4 (TEST) Schema - Nested Object Mutations', () => {
 		// Missing name in property object (kills ObjectLiteral mutation)
 		const missingName = {
 			subject: {},
-			properties: [
-				{ predicate: () => true },
-			],
+			properties: [{ predicate: () => true }],
 			iterations: 100,
 		};
 		expect(schema.safeParse(missingName).success).toBe(false);
@@ -292,9 +274,7 @@ describe('Port 4 (TEST) Schema - Nested Object Mutations', () => {
 		// Missing predicate in property object (kills ObjectLiteral mutation)
 		const missingPredicate = {
 			subject: {},
-			properties: [
-				{ name: 'test' },
-			],
+			properties: [{ name: 'test' }],
 			iterations: 100,
 		};
 		expect(schema.safeParse(missingPredicate).success).toBe(false);
@@ -303,40 +283,32 @@ describe('Port 4 (TEST) Schema - Nested Object Mutations', () => {
 	it('outputSchema.results REQUIRES property, passed, iterations fields', () => {
 		const contract = PORT_CONTRACTS[4];
 		const schema = contract.outputSchema;
-		
+
 		// Valid output
 		const validOutput = {
 			passed: true,
-			results: [
-				{ property: 'test', passed: true, iterations: 100 },
-			],
+			results: [{ property: 'test', passed: true, iterations: 100 }],
 		};
 		expect(schema.safeParse(validOutput).success).toBe(true);
 
 		// Missing property field (kills ObjectLiteral mutation)
 		const missingProperty = {
 			passed: true,
-			results: [
-				{ passed: true, iterations: 100 },
-			],
+			results: [{ passed: true, iterations: 100 }],
 		};
 		expect(schema.safeParse(missingProperty).success).toBe(false);
 
 		// Missing passed field (kills ObjectLiteral mutation)
 		const missingPassed = {
 			passed: true,
-			results: [
-				{ property: 'test', iterations: 100 },
-			],
+			results: [{ property: 'test', iterations: 100 }],
 		};
 		expect(schema.safeParse(missingPassed).success).toBe(false);
 
 		// Missing iterations field (kills ObjectLiteral mutation)
 		const missingIterations = {
 			passed: true,
-			results: [
-				{ property: 'test', passed: true },
-			],
+			results: [{ property: 'test', passed: true }],
 		};
 		expect(schema.safeParse(missingIterations).success).toBe(false);
 	});
@@ -346,31 +318,25 @@ describe('Port 5 (DEFEND) Schema - Nested Object Mutations', () => {
 	it('inputSchema.gates REQUIRES id and check fields', () => {
 		const contract = PORT_CONTRACTS[5];
 		const schema = contract.inputSchema;
-		
+
 		// Valid input
 		const validInput = {
 			payload: {},
-			gates: [
-				{ id: 'G0', check: () => true },
-			],
+			gates: [{ id: 'G0', check: () => true }],
 		};
 		expect(schema.safeParse(validInput).success).toBe(true);
 
 		// Missing id in gate object (kills ObjectLiteral mutation)
 		const missingId = {
 			payload: {},
-			gates: [
-				{ check: () => true },
-			],
+			gates: [{ check: () => true }],
 		};
 		expect(schema.safeParse(missingId).success).toBe(false);
 
 		// Missing check in gate object (kills ObjectLiteral mutation)
 		const missingCheck = {
 			payload: {},
-			gates: [
-				{ id: 'G0' },
-			],
+			gates: [{ id: 'G0' }],
 		};
 		expect(schema.safeParse(missingCheck).success).toBe(false);
 	});
@@ -380,7 +346,7 @@ describe('Port 7 (DECIDE) Schema - Nested Object Mutations', () => {
 	it('inputSchema.context REQUIRES state to be a record', () => {
 		const contract = PORT_CONTRACTS[7];
 		const schema = contract.inputSchema;
-		
+
 		// Valid input
 		const validInput = {
 			context: {
@@ -414,7 +380,7 @@ describe('Port 7 (DECIDE) Schema - Nested Object Mutations', () => {
 	it('inputSchema.options REQUIRES id and action fields', () => {
 		const contract = PORT_CONTRACTS[7];
 		const schema = contract.inputSchema;
-		
+
 		// Valid input
 		const validInput = {
 			context: { request: {}, state: {} },

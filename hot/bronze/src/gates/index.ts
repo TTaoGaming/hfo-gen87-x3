@@ -41,7 +41,15 @@ export {
 	type ViolationType,
 	type HIVEViolation,
 	type PyrePraetorianConfig,
+	type StigmergyEmitter,
+	type PyreHealthReport,
+	type GitCommitInfo,
+	type BlackboardReader,
 	StigmergySignalSchema,
 	VALID_TRANSITIONS,
 	PyrePraetorianDaemon,
+	// Emitter factories (JSONL now, NATS later)
+	createJSONLEmitter,
+	createConsoleEmitter,
+	createNATSEmitter,
 } from './pyre-praetorian-daemon.js';

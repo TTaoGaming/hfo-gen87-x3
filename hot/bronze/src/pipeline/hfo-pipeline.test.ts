@@ -162,7 +162,8 @@ describe('Contract Enforcement', () => {
 			const result = fuse.fuse(validSensed);
 			expect(result._port).toBe(1);
 			expect(result._verb).toBe('FUSE');
-			expect(result._traceId).toMatch(/^trace-\d+$/);
+			// W3C Trace Context format: 00-{32 hex}-{16 hex}-{2 hex}
+			expect(result._traceId).toMatch(/^00-[a-f0-9]{32}-[a-f0-9]{16}-[a-f0-9]{2}$/);
 		});
 	});
 
@@ -174,7 +175,7 @@ describe('Contract Enforcement', () => {
 				_port: 1 as const,
 				_verb: 'FUSE' as const,
 				_ts: new Date().toISOString(),
-				_traceId: 'trace-1',
+				_traceId: '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01', // W3C format
 				payload: {
 					_port: 0 as const,
 					_verb: 'SENSE' as const,

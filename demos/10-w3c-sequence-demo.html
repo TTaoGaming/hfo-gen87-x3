@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>W3C Pointer Events Level 3 - FSM Sequence Demo</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --border: #30363d;
+      --text: #c9d1d9;
+      --text-dim: #8b949e;
+      --accent: #58a6ff;
+      --green: #3fb950;
+      --orange: #f0883e;
+      --red: #f85149;
+      --purple: #a371f7;
+    }
+    
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    h1 { 
+      font-size: 1.5rem; 
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    h1 .badge {
+      font-size: 0.7rem;
+      background: var(--accent);
+      color: var(--bg);
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+    
+    .subtitle {
+      color: var(--text-dim);
+      font-size: 0.9rem;
+      margin-bottom: 20px;
+    }
+    
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+    }
+    
+    .panel h2 {
+      font-size: 1rem;
+      margin-bottom: 12px;
+      color: var(--accent);
+    }
+    
+    /* Sequence Timeline */
+    .sequence-timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .step {
+      display: grid;
+      grid-template-columns: 30px 1fr 150px 120px;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      background: var(--bg);
+      border-radius: 6px;
+      border: 2px solid transparent;
+      transition: all 0.3s ease;
+    }
+    
+    .step.active {
+      border-color: var(--green);
+      background: rgba(63, 185, 80, 0.1);
+    }
+    
+    .step.completed {
+      opacity: 0.5;
+    }
+    
+    .step-num {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      font-weight: bold;
+    }
+    
+    .step.active .step-num {
+      background: var(--green);
+      color: var(--bg);
+    }
+    
+    .step.completed .step-num {
+      background: var(--text-dim);
+    }
+    
+    .step-desc {
+      font-size: 0.9rem;
+    }
+    
+    .step-state {
+      font-family: monospace;
+      font-size: 0.85rem;
+      padding: 4px 8px;
+      border-radius: 4px;
+      text-align: center;
+    }
+    
+    .step-state.DISARMED { background: rgba(72, 79, 88, 0.5); }
+    .step-state.ARMING { background: rgba(240, 136, 62, 0.3); }
+    .step-state.ARMED { background: rgba(63, 185, 80, 0.3); }
+    .step-state.DOWN_COMMIT { background: rgba(248, 81, 73, 0.3); }
+    .step-state.DOWN_NAV { background: rgba(163, 113, 247, 0.3); }
+    
+    .step-event {
+      font-family: monospace;
+      font-size: 0.8rem;
+      color: var(--text-dim);
+    }
+    
+    /* W3C Event Output */
+    .event-log {
+      max-height: 300px;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 0.85rem;
+    }
+    
+    .event-entry {
+      padding: 6px 10px;
+      margin-bottom: 4px;
+      background: var(--bg);
+      border-radius: 4px;
+      border-left: 3px solid var(--border);
+    }
+    
+    .event-entry.pointermove { border-left-color: var(--green); }
+    .event-entry.pointerdown { border-left-color: var(--orange); }
+    .event-entry.pointerup { border-left-color: var(--purple); }
+    .event-entry.pointercancel { border-left-color: var(--red); }
+    .event-entry.wheel { border-left-color: var(--accent); }
+    
+    .event-type {
+      font-weight: bold;
+      color: var(--accent);
+    }
+    
+    .event-detail {
+      color: var(--text-dim);
+      font-size: 0.8rem;
+    }
+    
+    /* Controls */
+    .controls {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      background: var(--accent);
+      color: var(--bg);
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    
+    button:hover { opacity: 0.9; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    
+    button.secondary {
+      background: var(--border);
+      color: var(--text);
+    }
+    
+    /* Input Panel */
+    .input-state {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 12px;
+    }
+    
+    .input-item {
+      text-align: center;
+      padding: 12px;
+      background: var(--bg);
+      border-radius: 6px;
+    }
+    
+    .input-label {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    
+    .input-value {
+      font-size: 1.1rem;
+      font-weight: bold;
+    }
+    
+    .input-value.active { color: var(--green); }
+    .input-value.inactive { color: var(--red); }
+    
+    /* Canvas for pointer visualization */
+    #pointerCanvas {
+      width: 100%;
+      height: 200px;
+      background: var(--bg);
+      border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+    
+    /* Full width panel */
+    .full-width {
+      grid-column: 1 / -1;
+    }
+    
+    /* Code block */
+    pre {
+      background: var(--bg);
+      padding: 12px;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-size: 0.8rem;
+      line-height: 1.4;
+    }
+    
+    code {
+      color: var(--green);
+    }
+    
+    .comment { color: var(--text-dim); }
+    .keyword { color: var(--purple); }
+    .string { color: var(--orange); }
+  </style>
+</head>
+<body>
+  <h1>
+    🎯 W3C Pointer Events Level 3 - FSM Sequence Demo
+    <span class="badge">Gen87.X3</span>
+    <span class="badge" style="background: var(--green);">REAL LOGIC</span>
+  </h1>
+  <p class="subtitle">
+    Demonstrates the FSM responding to your exact user sequence with W3C Pointer Events Level 3 naming
+  </p>
+  
+  <div class="controls">
+    <button id="btnRun">▶️ Run Sequence</button>
+    <button id="btnStep" class="secondary">⏭️ Step</button>
+    <button id="btnReset" class="secondary">🔄 Reset</button>
+    <button id="btnSpeed" class="secondary">⏱️ Speed: Normal</button>
+  </div>
+  
+  <div class="grid">
+    <!-- Sequence Timeline -->
+    <div class="panel">
+      <h2>📋 User Sequence (Your Example)</h2>
+      <div class="sequence-timeline" id="timeline">
+        <!-- Steps populated by JS -->
+      </div>
+    </div>
+    
+    <!-- W3C Event Output -->
+    <div class="panel">
+      <h2>📡 W3C PointerEvent Output</h2>
+      <div class="event-log" id="eventLog">
+        <div class="event-entry">
+          <span class="event-detail">Waiting for sequence...</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Current Input State -->
+    <div class="panel">
+      <h2>🖐️ Current Simulated Input</h2>
+      <div class="input-state">
+        <div class="input-item">
+          <div class="input-label">Palm Cone</div>
+          <div class="input-value" id="palmCone">--</div>
+        </div>
+        <div class="input-item">
+          <div class="input-label">Gesture</div>
+          <div class="input-value" id="gesture">--</div>
+        </div>
+        <div class="input-item">
+          <div class="input-label">FSM State</div>
+          <div class="input-value" id="fsmState">DISARMED</div>
+        </div>
+      </div>
+      <canvas id="pointerCanvas"></canvas>
+    </div>
+    
+    <!-- W3C Spec Reference -->
+    <div class="panel">
+      <h2>📚 W3C Pointer Events Level 3 Reference</h2>
+      <pre><code><span class="comment">// PointerEvent interface (W3C Level 3)</span>
+<span class="keyword">interface</span> PointerEvent : MouseEvent {
+  <span class="keyword">readonly</span> <span class="keyword">attribute</span> <span class="string">long</span> pointerId;
+  <span class="keyword">readonly</span> <span class="keyword">attribute</span> <span class="string">double</span> width;
+  <span class="keyword">readonly</span> <span class="keyword">attribute</span> <span class="string">double</span> height;
+  <span class="keyword">readonly</span> <span class="keyword">attribute</span> <span class="string">float</span> pressure;
+  <span class="keyword">readonly</span> <span class="keyword">attribute</span> <span class="string">long</span> tiltX;
+  <span class="keyword">readonly</span> <span class="keyword">attribute</span> <span class="string">long</span> tiltY;
+  <span class="keyword">readonly</span> <span class="keyword">attribute</span> <span class="string">long</span> twist;
+  <span class="keyword">readonly</span> <span class="keyword">attribute</span> <span class="string">DOMString</span> pointerType;
+  <span class="keyword">readonly</span> <span class="keyword">attribute</span> <span class="string">boolean</span> isPrimary;
+};
+
+<span class="comment">// Our FSM emits these event types:</span>
+<span class="comment">// - pointermove: cursor following index fingertip</span>
+<span class="comment">// - pointerdown: commit gesture (button=0) or nav (button=1)</span>
+<span class="comment">// - pointerup: return to baseline</span>
+<span class="comment">// - pointercancel: palm cone away / tracking lost</span>
+<span class="comment">// - wheel: zoom gesture (Thumb_Up/Down)</span></code></pre>
+    </div>
+    
+    <!-- FSM State Diagram -->
+    <div class="panel full-width">
+      <h2>🔄 FSM State Machine</h2>
+      <svg width="100%" height="180" viewBox="0 0 900 180">
+        <!-- States -->
+        <g id="state-DISARMED" class="state">
+          <rect x="20" y="70" width="110" height="50" rx="8" fill="#484f58" stroke="#30363d" stroke-width="2"/>
+          <text x="75" y="100" text-anchor="middle" fill="#c9d1d9" font-size="14" font-weight="bold">DISARMED</text>
+        </g>
+        
+        <g id="state-ARMING" class="state">
+          <rect x="180" y="70" width="100" height="50" rx="8" fill="#484f58" stroke="#30363d" stroke-width="2"/>
+          <text x="230" y="100" text-anchor="middle" fill="#c9d1d9" font-size="14" font-weight="bold">ARMING</text>
+        </g>
+        
+        <g id="state-ARMED" class="state">
+          <rect x="330" y="70" width="100" height="50" rx="8" fill="#484f58" stroke="#30363d" stroke-width="2"/>
+          <text x="380" y="100" text-anchor="middle" fill="#c9d1d9" font-size="14" font-weight="bold">ARMED</text>
+        </g>
+        
+        <g id="state-DOWN_COMMIT" class="state">
+          <rect x="500" y="20" width="130" height="50" rx="8" fill="#484f58" stroke="#30363d" stroke-width="2"/>
+          <text x="565" y="50" text-anchor="middle" fill="#c9d1d9" font-size="14" font-weight="bold">DOWN_COMMIT</text>
+        </g>
+        
+        <g id="state-DOWN_NAV" class="state">
+          <rect x="500" y="120" width="120" height="50" rx="8" fill="#484f58" stroke="#30363d" stroke-width="2"/>
+          <text x="560" y="150" text-anchor="middle" fill="#c9d1d9" font-size="14" font-weight="bold">DOWN_NAV</text>
+        </g>
+        
+        <g id="state-ZOOM" class="state">
+          <rect x="700" y="70" width="100" height="50" rx="8" fill="#484f58" stroke="#30363d" stroke-width="2"/>
+          <text x="750" y="100" text-anchor="middle" fill="#c9d1d9" font-size="14" font-weight="bold">ZOOM</text>
+        </g>
+        
+        <!-- Transitions (arrows) -->
+        <defs>
+          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#8b949e"/>
+          </marker>
+        </defs>
+        
+        <!-- DISARMED → ARMING -->
+        <line x1="130" y1="95" x2="175" y2="95" stroke="#8b949e" stroke-width="2" marker-end="url(#arrowhead)"/>
+        
+        <!-- ARMING → ARMED -->
+        <line x1="280" y1="95" x2="325" y2="95" stroke="#8b949e" stroke-width="2" marker-end="url(#arrowhead)"/>
+        
+        <!-- ARMED → DOWN_COMMIT -->
+        <path d="M 430 75 Q 465 45 495 45" stroke="#8b949e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+        
+        <!-- ARMED → DOWN_NAV -->
+        <path d="M 430 115 Q 465 145 495 145" stroke="#8b949e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+        
+        <!-- ARMED → ZOOM -->
+        <path d="M 430 95 Q 550 95 695 95" stroke="#8b949e" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+        
+        <!-- Return paths (dashed) -->
+        <path d="M 565 70 Q 565 5 75 5 Q 30 5 30 65" stroke="#8b949e" stroke-width="1" stroke-dasharray="4" fill="none" marker-end="url(#arrowhead)"/>
+        
+        <!-- Active state indicator -->
+        <circle id="activeIndicator" cx="0" cy="0" r="6" fill="#3fb950" style="display: none;"/>
+      </svg>
+    </div>
+  </div>
+  
+  <script type="module">
+    import {
+      calculatePalmAngle,
+      updatePalmConeGate,
+      createPalmConeGateState,
+      DEFAULT_PALM_CONE_CONFIG,
+      updateGestureTransitionPredictor,
+      createGestureTransitionState,
+      DEFAULT_GESTURE_TRANSITION_CONFIG,
+      __tla,  // Top Level Await - must be awaited before using exports
+    } from './lib/hfo.js';
+    
+    // Wait for async module initialization
+    await __tla;
+    
+    // Log that we're using REAL modules
+    console.log('[W3C Sequence Demo] ✅ Using REAL tested modules from hfo.js');
+    
+    // ========================================================================
+    // USER SEQUENCE DEFINITION (Your exact example)
+    // ========================================================================
+    
+    const SEQUENCE = [
+      {
+        desc: "Palm oriented AWAY (does nothing)",
+        palmAngle: 120,  // > 70° = away
+        gesture: "Open_Palm",
+        expectedState: "DISARMED",
+        w3cEvent: null,  // No event emitted
+        explanation: "palmCone.isFacing = false → FSM stays DISARMED"
+      },
+      {
+        desc: "Palm OPEN gesture, palm cone FACING camera",
+        palmAngle: 15,   // < 25° = facing (arm threshold)
+        gesture: "Open_Palm",
+        expectedState: "ARMING",
+        w3cEvent: null,
+        explanation: "palmCone.isFacing = true + Open_Palm → ARMING, start 200ms timer"
+      },
+      {
+        desc: "Baseline stable 200ms → ARMED (sticky)",
+        palmAngle: 15,
+        gesture: "Open_Palm",
+        expectedState: "ARMED",
+        w3cEvent: { type: "pointermove", clientX: 320, clientY: 240 },
+        explanation: "200ms elapsed → ARMED, cursor follows index fingertip"
+      },
+      {
+        desc: "Cursor following index fingertip (move)",
+        palmAngle: 18,
+        gesture: "Open_Palm",
+        expectedState: "ARMED",
+        w3cEvent: { type: "pointermove", clientX: 400, clientY: 300 },
+        explanation: "Still ARMED, emitting pointermove events"
+      },
+      {
+        desc: "Transition to None briefly",
+        palmAngle: 20,
+        gesture: "None",
+        expectedState: "ARMED",
+        w3cEvent: { type: "pointermove", clientX: 410, clientY: 310 },
+        explanation: "Brief None < 80ms debounce, still ARMED (gesture predictor)"
+      },
+      {
+        desc: "Pointing_Up (commit gesture) → pointerdown",
+        palmAngle: 18,
+        gesture: "Pointing_Up",
+        expectedState: "DOWN_COMMIT",
+        w3cEvent: { type: "pointerdown", button: 0, buttons: 1, clientX: 420, clientY: 320 },
+        explanation: "Pointing_Up = primary click, emits pointerdown(button=0)"
+      },
+      {
+        desc: "Move around while pressed down",
+        palmAngle: 20,
+        gesture: "Pointing_Up",
+        expectedState: "DOWN_COMMIT",
+        w3cEvent: { type: "pointermove", buttons: 1, clientX: 500, clientY: 400 },
+        explanation: "DOWN_COMMIT state, pointermove with buttons=1 (primary pressed)"
+      },
+      {
+        desc: "More movement while pressed",
+        palmAngle: 22,
+        gesture: "Pointing_Up",
+        expectedState: "DOWN_COMMIT",
+        w3cEvent: { type: "pointermove", buttons: 1, clientX: 550, clientY: 380 },
+        explanation: "Continued drag, cursor tracks fingertip"
+      },
+      {
+        desc: "Palm cone AWAY (hand twist) → pointercancel",
+        palmAngle: 80,  // > 70° = cancel threshold
+        gesture: "Pointing_Up",
+        expectedState: "DISARMED",
+        w3cEvent: { type: "pointercancel", button: 0, clientX: 550, clientY: 380 },
+        explanation: "palmAngle > cancelThreshold (70°) → immediate DISARMED + pointercancel"
+      },
+      {
+        desc: "Hand moves, palm facing AWAY, cursor follows",
+        palmAngle: 100,
+        gesture: "Open_Palm",
+        expectedState: "DISARMED",
+        w3cEvent: null,
+        explanation: "DISARMED, no W3C events. Must return to baseline to arm again."
+      },
+      {
+        desc: "No commit possible until ARMED again",
+        palmAngle: 95,
+        gesture: "Pointing_Up",
+        expectedState: "DISARMED",
+        w3cEvent: null,
+        explanation: "Pointing_Up ignored in DISARMED state - need palm facing first!"
+      },
+    ];
+    
+    // ========================================================================
+    // FSM SIMULATION (Uses REAL tested logic)
+    // ========================================================================
+    
+    let currentStep = -1;
+    let fsmState = 'DISARMED';
+    let palmGateState = createPalmConeGateState();
+    let gestureState = createGestureTransitionState();
+    let baselineStableAt = null;
+    let isRunning = false;
+    let speed = 1000;  // ms per step
+    
+    const FSM_CONFIG = {
+      armStableMs: 200,
+      minConfidence: 0.7,
+    };
+    
+    function simulateFSM(step) {
+      const ts = performance.now();
+      const { palmAngle, gesture, expectedState } = step;
+      
+      // Use REAL palm cone gate
+      const gateResult = updatePalmConeGate(palmAngle, ts, palmGateState, DEFAULT_PALM_CONE_CONFIG);
+      palmGateState = gateResult.state;
+      
+      // Use REAL gesture predictor
+      const prediction = updateGestureTransitionPredictor(gesture, ts, gestureState, DEFAULT_GESTURE_TRANSITION_CONFIG);
+      gestureState = prediction.state;
+      
+      const effectiveGesture = prediction.shouldDebounce ? 'None' : gesture;
+      const palmFacing = gateResult.isFacing;
+      const shouldCancel = gateResult.shouldCancel;
+      
+      // FSM transitions
+      let prevState = fsmState;
+      let action = { action: 'none', state: fsmState };
+      
+      // Handle cancel first (overrides everything)
+      if (shouldCancel && fsmState !== 'DISARMED') {
+        fsmState = 'DISARMED';
+        baselineStableAt = null;
+        if (prevState === 'DOWN_COMMIT' || prevState === 'DOWN_NAV') {
+          return { type: 'pointercancel', ...step.w3cEvent };
+        }
+        return null;
+      }
+      
+      switch (fsmState) {
+        case 'DISARMED':
+          if (palmFacing && effectiveGesture === 'Open_Palm') {
+            fsmState = 'ARMING';
+            baselineStableAt = ts;
+          }
+          break;
+          
+        case 'ARMING':
+          if (!palmFacing || effectiveGesture !== 'Open_Palm') {
+            fsmState = 'DISARMED';
+            baselineStableAt = null;
+          } else if (baselineStableAt && ts - baselineStableAt >= FSM_CONFIG.armStableMs) {
+            fsmState = 'ARMED';
+          }
+          break;
+          
+        case 'ARMED':
+          if (!palmFacing) {
+            fsmState = 'DISARMED';
+            baselineStableAt = null;
+          } else if (effectiveGesture === 'Pointing_Up') {
+            fsmState = 'DOWN_COMMIT';
+            return { type: 'pointerdown', button: 0, buttons: 1, ...step.w3cEvent };
+          } else if (effectiveGesture === 'Victory') {
+            fsmState = 'DOWN_NAV';
+            return { type: 'pointerdown', button: 1, buttons: 2, ...step.w3cEvent };
+          } else {
+            return { type: 'pointermove', buttons: 0, ...step.w3cEvent };
+          }
+          break;
+          
+        case 'DOWN_COMMIT':
+          if (!palmFacing) {
+            fsmState = 'DISARMED';
+            baselineStableAt = null;
+            return { type: 'pointercancel', button: 0, ...step.w3cEvent };
+          } else if (effectiveGesture === 'Open_Palm') {
+            fsmState = 'ARMED';
+            return { type: 'pointerup', button: 0, ...step.w3cEvent };
+          } else {
+            return { type: 'pointermove', buttons: 1, ...step.w3cEvent };
+          }
+          break;
+          
+        case 'DOWN_NAV':
+          if (!palmFacing) {
+            fsmState = 'DISARMED';
+            return { type: 'pointercancel', button: 1, ...step.w3cEvent };
+          } else if (effectiveGesture === 'Open_Palm') {
+            fsmState = 'ARMED';
+            return { type: 'pointerup', button: 1, ...step.w3cEvent };
+          } else {
+            return { type: 'pointermove', buttons: 2, ...step.w3cEvent };
+          }
+          break;
+          
+        case 'ZOOM':
+          if (!palmFacing) {
+            fsmState = 'DISARMED';
+          } else if (effectiveGesture === 'Open_Palm') {
+            fsmState = 'ARMED';
+          } else if (effectiveGesture === 'Thumb_Up' || effectiveGesture === 'Thumb_Down') {
+            const deltaY = effectiveGesture === 'Thumb_Up' ? -120 : 120;
+            return { type: 'wheel', deltaY, ctrlKey: true };
+          }
+          break;
+      }
+      
+      return step.w3cEvent;
+    }
+    
+    // ========================================================================
+    // UI RENDERING
+    // ========================================================================
+    
+    const timeline = document.getElementById('timeline');
+    const eventLog = document.getElementById('eventLog');
+    const canvas = document.getElementById('pointerCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    // Render sequence timeline
+    function renderTimeline() {
+      timeline.innerHTML = SEQUENCE.map((step, i) => `
+        <div class="step ${i === currentStep ? 'active' : i < currentStep ? 'completed' : ''}" id="step-${i}">
+          <div class="step-num">${i + 1}</div>
+          <div class="step-desc">${step.desc}</div>
+          <div class="step-state ${step.expectedState}">${step.expectedState}</div>
+          <div class="step-event">${step.w3cEvent ? step.w3cEvent.type : 'none'}</div>
+        </div>
+      `).join('');
+    }
+    
+    function updateInputDisplay(step) {
+      document.getElementById('palmCone').textContent = step.palmAngle < 35 ? 'FACING' : 'AWAY';
+      document.getElementById('palmCone').className = `input-value ${step.palmAngle < 35 ? 'active' : 'inactive'}`;
+      document.getElementById('gesture').textContent = step.gesture;
+      document.getElementById('fsmState').textContent = fsmState;
+    }
+    
+    function logW3CEvent(event) {
+      if (!event) {
+        eventLog.innerHTML = `
+          <div class="event-entry">
+            <span class="event-type">--</span>
+            <span class="event-detail">No event (state unchanged or DISARMED)</span>
+          </div>
+        ` + eventLog.innerHTML;
+        return;
+      }
+      
+      const detail = Object.entries(event)
+        .filter(([k]) => k !== 'type')
+        .map(([k, v]) => `${k}: ${v}`)
+        .join(', ');
+      
+      eventLog.innerHTML = `
+        <div class="event-entry ${event.type}">
+          <span class="event-type">${event.type}</span>
+          <span class="event-detail">${detail}</span>
+        </div>
+      ` + eventLog.innerHTML;
+    }
+    
+    function updateStateDiagram() {
+      // Reset all states
+      document.querySelectorAll('.state rect').forEach(rect => {
+        rect.setAttribute('fill', '#484f58');
+        rect.setAttribute('stroke', '#30363d');
+      });
+      
+      // Highlight active state
+      const activeState = document.querySelector(`#state-${fsmState} rect`);
+      if (activeState) {
+        const colors = {
+          DISARMED: '#484f58',
+          ARMING: '#f0883e',
+          ARMED: '#3fb950',
+          DOWN_COMMIT: '#f85149',
+          DOWN_NAV: '#a371f7',
+          ZOOM: '#58a6ff',
+        };
+        activeState.setAttribute('fill', colors[fsmState] || '#484f58');
+        activeState.setAttribute('stroke', '#fff');
+        activeState.setAttribute('stroke-width', '3');
+      }
+    }
+    
+    function drawPointer(event) {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+      
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      if (!event || !event.clientX) return;
+      
+      // Scale coordinates
+      const x = (event.clientX / 640) * canvas.width;
+      const y = (event.clientY / 480) * canvas.height;
+      
+      // Draw cursor
+      ctx.beginPath();
+      ctx.arc(x, y, 12, 0, Math.PI * 2);
+      
+      const colors = {
+        pointermove: event.buttons ? '#f85149' : '#3fb950',
+        pointerdown: '#f0883e',
+        pointerup: '#a371f7',
+        pointercancel: '#f85149',
+      };
+      
+      ctx.fillStyle = colors[event.type] || '#58a6ff';
+      ctx.fill();
+      
+      // Draw label
+      ctx.fillStyle = '#c9d1d9';
+      ctx.font = '12px monospace';
+      ctx.fillText(`${event.type} (${Math.round(x)}, ${Math.round(y)})`, x + 16, y);
+      
+      if (event.buttons) {
+        ctx.fillText(`buttons: ${event.buttons}`, x + 16, y + 14);
+      }
+    }
+    
+    // ========================================================================
+    // SEQUENCE CONTROL
+    // ========================================================================
+    
+    async function runStep() {
+      currentStep++;
+      if (currentStep >= SEQUENCE.length) {
+        isRunning = false;
+        return;
+      }
+      
+      const step = SEQUENCE[currentStep];
+      
+      // Simulate FSM
+      const w3cEvent = simulateFSM(step);
+      
+      // Update UI
+      renderTimeline();
+      updateInputDisplay(step);
+      logW3CEvent(w3cEvent);
+      updateStateDiagram();
+      drawPointer(w3cEvent);
+      
+      // Log explanation
+      console.log(`Step ${currentStep + 1}: ${step.desc}`);
+      console.log(`  → ${step.explanation}`);
+      console.log(`  → FSM: ${fsmState}, Event: ${w3cEvent?.type || 'none'}`);
+    }
+    
+    async function runSequence() {
+      if (isRunning) return;
+      isRunning = true;
+      
+      while (isRunning && currentStep < SEQUENCE.length - 1) {
+        await runStep();
+        await new Promise(r => setTimeout(r, speed));
+      }
+      
+      isRunning = false;
+    }
+    
+    function reset() {
+      isRunning = false;
+      currentStep = -1;
+      fsmState = 'DISARMED';
+      palmGateState = createPalmConeGateState();
+      gestureState = createGestureTransitionState();
+      baselineStableAt = null;
+      
+      renderTimeline();
+      document.getElementById('palmCone').textContent = '--';
+      document.getElementById('gesture').textContent = '--';
+      document.getElementById('fsmState').textContent = 'DISARMED';
+      eventLog.innerHTML = '<div class="event-entry"><span class="event-detail">Reset - waiting for sequence...</span></div>';
+      updateStateDiagram();
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+    
+    // ========================================================================
+    // EVENT HANDLERS
+    // ========================================================================
+    
+    document.getElementById('btnRun').addEventListener('click', runSequence);
+    document.getElementById('btnStep').addEventListener('click', runStep);
+    document.getElementById('btnReset').addEventListener('click', reset);
+    
+    let speedIndex = 0;
+    const speeds = [1000, 500, 200, 2000];
+    const speedLabels = ['Normal', 'Fast', 'Very Fast', 'Slow'];
+    
+    document.getElementById('btnSpeed').addEventListener('click', () => {
+      speedIndex = (speedIndex + 1) % speeds.length;
+      speed = speeds[speedIndex];
+      document.getElementById('btnSpeed').textContent = `⏱️ Speed: ${speedLabels[speedIndex]}`;
+    });
+    
+    // Initialize
+    renderTimeline();
+    updateStateDiagram();
+    console.log('[W3C Sequence Demo] Ready - click Run Sequence');
+  </script>
+</body>
+</html>

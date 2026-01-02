@@ -3,15 +3,13 @@
  *
  * Gen87.X3 | Phase: VALIDATE (V) | TDD RED→GREEN
  */
-import { describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import {
+	DEFAULT_GESTURE_TRANSITION_CONFIG,
 	createGestureTransitionPredictor,
 	createGestureTransitionState,
 	updateGestureTransitionPredictor,
-	DEFAULT_GESTURE_TRANSITION_CONFIG,
-	type GestureTransitionConfig,
 } from './gesture-transition-predictor.js';
-import type { GestureLabel } from '../contracts/schemas.js';
 
 // ============================================================================
 // TESTS: Prediction Logic
@@ -23,14 +21,9 @@ describe('Gesture Transition Prediction', () => {
 	describe('Open_Palm → None → Pointing_Up cycle', () => {
 		it('predicts Pointing_Up when None follows Open_Palm', () => {
 			const state = createGestureTransitionState();
-			
+
 			// First, establish Open_Palm as last valid
-			const afterOpenPalm = updateGestureTransitionPredictor(
-				'Open_Palm',
-				100,
-				state,
-				config,
-			);
+			const afterOpenPalm = updateGestureTransitionPredictor('Open_Palm', 100, state, config);
 			expect(afterOpenPalm.state.lastValidGesture).toBe('Open_Palm');
 
 			// Now enter None state
@@ -46,22 +39,12 @@ describe('Gesture Transition Prediction', () => {
 
 		it('predicts Open_Palm when None follows Pointing_Up', () => {
 			const state = createGestureTransitionState();
-			
+
 			// Establish Pointing_Up as last valid
-			const afterPointing = updateGestureTransitionPredictor(
-				'Pointing_Up',
-				100,
-				state,
-				config,
-			);
+			const afterPointing = updateGestureTransitionPredictor('Pointing_Up', 100, state, config);
 
 			// Enter None state
-			const afterNone = updateGestureTransitionPredictor(
-				'None',
-				180,
-				afterPointing.state,
-				config,
-			);
+			const afterNone = updateGestureTransitionPredictor('None', 180, afterPointing.state, config);
 
 			expect(afterNone.likelyNext).toBe('Open_Palm');
 		});
@@ -70,9 +53,9 @@ describe('Gesture Transition Prediction', () => {
 	describe('None Debouncing', () => {
 		it('shouldDebounce=true when None < noneDebounceMs', () => {
 			const state = createGestureTransitionState();
-			
+
 			const afterGesture = updateGestureTransitionPredictor('Open_Palm', 100, state, config);
-			
+
 			// Very short None (10ms)
 			const afterShortNone = updateGestureTransitionPredictor(
 				'None',
@@ -87,9 +70,9 @@ describe('Gesture Transition Prediction', () => {
 
 		it('shouldDebounce=false when None >= noneDebounceMs', () => {
 			const state = createGestureTransitionState();
-			
+
 			const afterGesture = updateGestureTransitionPredictor('Open_Palm', 100, state, config);
-			
+
 			// Longer None (100ms, above 80ms threshold)
 			const afterLongNone = updateGestureTransitionPredictor(
 				'None',
@@ -106,9 +89,9 @@ describe('Gesture Transition Prediction', () => {
 	describe('Long None Detection', () => {
 		it('isDisengagement=true when None >= longNoneMs', () => {
 			const state = createGestureTransitionState();
-			
+
 			const afterGesture = updateGestureTransitionPredictor('Open_Palm', 100, state, config);
-			
+
 			// Very long None (300ms, above 200ms threshold)
 			const afterLongNone = updateGestureTransitionPredictor(
 				'None',
@@ -123,16 +106,11 @@ describe('Gesture Transition Prediction', () => {
 
 		it('isDisengagement=false when None < longNoneMs', () => {
 			const state = createGestureTransitionState();
-			
+
 			const afterGesture = updateGestureTransitionPredictor('Open_Palm', 100, state, config);
-			
+
 			// Normal None (100ms)
-			const afterNone = updateGestureTransitionPredictor(
-				'None',
-				200,
-				afterGesture.state,
-				config,
-			);
+			const afterNone = updateGestureTransitionPredictor('None', 200, afterGesture.state, config);
 
 			expect(afterNone.isDisengagement).toBe(false);
 		});
@@ -142,7 +120,7 @@ describe('Gesture Transition Prediction', () => {
 		it('confidence is low for very short None (noise)', () => {
 			const state = createGestureTransitionState();
 			const afterGesture = updateGestureTransitionPredictor('Open_Palm', 100, state, config);
-			
+
 			const afterShortNone = updateGestureTransitionPredictor(
 				'None',
 				110, // 10ms
@@ -156,7 +134,7 @@ describe('Gesture Transition Prediction', () => {
 		it('confidence is high for typical None duration', () => {
 			const state = createGestureTransitionState();
 			const afterGesture = updateGestureTransitionPredictor('Open_Palm', 100, state, config);
-			
+
 			// Duration in the sweet spot: >= debounce (80), close to typical (75), < long (200)
 			// Using 100ms which is above debounce and close to typical
 			const afterTypicalNone = updateGestureTransitionPredictor(
@@ -172,7 +150,7 @@ describe('Gesture Transition Prediction', () => {
 		it('confidence drops for very long None (disengagement)', () => {
 			const state = createGestureTransitionState();
 			const afterGesture = updateGestureTransitionPredictor('Open_Palm', 100, state, config);
-			
+
 			// Very long None (500ms)
 			const afterLongNone = updateGestureTransitionPredictor(
 				'None',
@@ -190,9 +168,9 @@ describe('Gesture Transition Prediction', () => {
 			const state = createGestureTransitionState();
 			const afterGesture = updateGestureTransitionPredictor('Open_Palm', 100, state, config);
 			const afterNone = updateGestureTransitionPredictor('None', 150, afterGesture.state, config);
-			
+
 			expect(afterNone.state.noneEnteredAt).not.toBeNull();
-			
+
 			// New valid gesture
 			const afterPointing = updateGestureTransitionPredictor(
 				'Pointing_Up',
@@ -209,7 +187,7 @@ describe('Gesture Transition Prediction', () => {
 		it('confidence is 1.0 for valid gestures', () => {
 			const state = createGestureTransitionState();
 			const result = updateGestureTransitionPredictor('Open_Palm', 100, state, config);
-			
+
 			expect(result.confidence).toBe(1.0);
 		});
 	});
@@ -228,8 +206,8 @@ describe('createGestureTransitionPredictor factory', () => {
 
 	it('creates predictor with default config', () => {
 		const config = predictor.getConfig();
-		expect(config.noneDebounceMs).toBe(50);  // Below this is transition noise
-		expect(config.longNoneMs).toBe(200);     // Above this is disengagement
+		expect(config.noneDebounceMs).toBe(50); // Below this is transition noise
+		expect(config.longNoneMs).toBe(200); // Above this is disengagement
 		expect(config.typicalNoneDurationMs).toBe(75); // Sweet spot for transitions
 	});
 
@@ -313,7 +291,7 @@ describe('Secondary Gesture Predictions', () => {
 		const state = createGestureTransitionState();
 		const afterVictory = updateGestureTransitionPredictor('Victory', 100, state, config);
 		const afterNone = updateGestureTransitionPredictor('None', 180, afterVictory.state, config);
-		
+
 		expect(afterNone.likelyNext).toBe('Open_Palm');
 	});
 
@@ -321,7 +299,7 @@ describe('Secondary Gesture Predictions', () => {
 		const state = createGestureTransitionState();
 		const afterThumb = updateGestureTransitionPredictor('Thumb_Up', 100, state, config);
 		const afterNone = updateGestureTransitionPredictor('None', 180, afterThumb.state, config);
-		
+
 		expect(afterNone.likelyNext).toBe('Open_Palm');
 	});
 
@@ -329,7 +307,7 @@ describe('Secondary Gesture Predictions', () => {
 		const state = createGestureTransitionState();
 		const afterThumb = updateGestureTransitionPredictor('Thumb_Down', 100, state, config);
 		const afterNone = updateGestureTransitionPredictor('None', 180, afterThumb.state, config);
-		
+
 		expect(afterNone.likelyNext).toBe('Open_Palm');
 	});
 });

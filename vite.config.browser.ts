@@ -1,3 +1,4 @@
+import { resolve } from 'node:path';
 /**
  * Vite Configuration for Browser Bundle
  *
@@ -7,15 +8,11 @@
  * Uses Vite for fast dev server and production builds.
  */
 import { defineConfig } from 'vite';
-import { resolve } from 'node:path';
-import wasm from 'vite-plugin-wasm';
 import topLevelAwait from 'vite-plugin-top-level-await';
+import wasm from 'vite-plugin-wasm';
 
 export default defineConfig({
-	plugins: [
-		wasm(),
-		topLevelAwait(),
-	],
+	plugins: [wasm(), topLevelAwait()],
 	build: {
 		lib: {
 			entry: resolve(__dirname, 'hot/bronze/src/browser/index.ts'),

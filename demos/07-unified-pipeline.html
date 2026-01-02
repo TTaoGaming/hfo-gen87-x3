@@ -413,7 +413,13 @@
             RAPIER_STIFFNESS_DEFAULT,
             RAPIER_DAMPING_DEFAULT,
             DEAD_ZONE_DEFAULT,
+            
+            // Top Level Await - must be awaited before using exports
+            __tla,
         } from './lib/hfo.js';
+        
+        // Wait for async module initialization
+        await __tla;
         
         console.log('✅ HFO Real Adapters Loaded');
         console.log('   - OneEuroExemplarAdapter:', typeof OneEuroExemplarAdapter);

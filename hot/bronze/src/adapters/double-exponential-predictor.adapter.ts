@@ -1,3 +1,4 @@
+import { TTI_DISTANCE_THRESHOLD, TTI_SPEED_THRESHOLD } from '../constants/magic-numbers.js';
 /**
  * Double Exponential Smoothing Predictor (LaViola DESP)
  *
@@ -24,7 +25,6 @@
  */
 import type { SmootherPort } from '../contracts/ports.js';
 import type { SensorFrame, SmoothedFrame } from '../contracts/schemas.js';
-import { TTI_DISTANCE_THRESHOLD, TTI_SPEED_THRESHOLD } from '../constants/magic-numbers.js';
 
 // ============================================================================
 // TYPES

@@ -19,23 +19,17 @@
  * - Direct imports from quarantine/
  */
 
-import { describe, it, expect, beforeAll } from 'vitest';
-import { z } from 'zod';
 import * as fc from 'fast-check';
+import { describe, expect, it } from 'vitest';
+import { z } from 'zod';
 
 // Canonical schemas (SSOT)
-import {
-	SensorFrameSchema,
-	SmoothedFrameSchema,
-	NormalizedLandmarkSchema,
-	type SensorFrame,
-	type SmoothedFrame,
-} from '../contracts/schemas.js';
+import { type SensorFrame, type SmoothedFrame, SmoothedFrameSchema } from '../contracts/schemas.js';
 
+import { DoubleExponentialPredictor } from '../adapters/double-exponential-predictor.adapter.js';
+import { OneEuroExemplarAdapter } from '../adapters/one-euro-exemplar.adapter.js';
 // All SmootherPort implementations to audit
 import { OneEuroAdapter } from '../adapters/one-euro.adapter.js';
-import { OneEuroExemplarAdapter } from '../adapters/one-euro-exemplar.adapter.js';
-import { DoubleExponentialPredictor } from '../adapters/double-exponential-predictor.adapter.js';
 import { RapierPhysicsAdapter } from '../adapters/rapier-physics.adapter.js';
 
 // ============================================================================
@@ -382,10 +376,13 @@ describe('CONSTRAINT: Interface Compliance Audit', () => {
 	});
 
 	describe('SmootherPort Reset Behavior', () => {
-		it.each(SMOOTHER_REGISTRY)('$name.reset() MUST be callable without error', async ({ factory }) => {
-			const adapter = await factory();
-			expect(() => adapter.reset()).not.toThrow();
-		});
+		it.each(SMOOTHER_REGISTRY)(
+			'$name.reset() MUST be callable without error',
+			async ({ factory }) => {
+				const adapter = await factory();
+				expect(() => adapter.reset()).not.toThrow();
+			},
+		);
 
 		it.each(SMOOTHER_REGISTRY)(
 			'$name.reset() MUST clear filter state (no velocity carryover)',

@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HFO Full Pipeline Orchestrator - Hexagonal CDD</title>
+  
+  <!-- GoldenLayout CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/golden-layout@2.6.0/dist/css/goldenlayout-base.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/golden-layout@2.6.0/dist/css/themes/goldenlayout-dark-theme.css">
+  
+  <!-- MediaPipe -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/hands.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1675466862/camera_utils.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils@0.3.1675466124/drawing_utils.min.js"></script>
+  
+  <script type="importmap">
+  {
+    "imports": {
+      "golden-layout": "https://esm.sh/golden-layout@2.6.0"
+    }
+  }
+  </script>
+  
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --border: #30363d;
+      --text: #c9d1d9;
+      --text-dim: #8b949e;
+      
+      /* Port Colors */
+      --port0: #00d9ff;  /* Observer - Cyan */
+      --port2: #3fb950;  /* Shaper - Green */
+      --port5: #f85149;  /* Immunizer - Red */
+      --port3: #f0883e;  /* Injector - Orange */
+      --port7: #a371f7;  /* Navigator - Purple */
+    }
+    
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    
+    header {
+      padding: 12px 20px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    header h1 {
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    header .badge {
+      font-size: 0.65rem;
+      background: var(--port7);
+      color: white;
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+    
+    header .controls {
+      display: flex;
+      gap: 10px;
+    }
+    
+    header button {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+    
+    header button:hover { background: var(--border); }
+    header button.active { background: var(--port0); color: var(--bg); }
+    header button:disabled { opacity: 0.5; cursor: not-allowed; }
+    
+    #layout-container {
+      flex: 1;
+      position: relative;
+    }
+    
+    /* Panel Styles */
+    .panel {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      background: var(--surface);
+      overflow: hidden;
+    }
+    
+    .panel-header {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .panel-header h3 {
+      font-size: 0.85rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .port-badge {
+      font-size: 0.6rem;
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--bg);
+    }
+    
+    .port-badge.port0 { background: var(--port0); }
+    .port-badge.port2 { background: var(--port2); }
+    .port-badge.port5 { background: var(--port5); }
+    .port-badge.port3 { background: var(--port3); }
+    .port-badge.port7 { background: var(--port7); }
+    
+    .panel-body {
+      flex: 1;
+      padding: 12px;
+      overflow: auto;
+      font-size: 0.8rem;
+    }
+    
+    /* Video Panel */
+    .video-container {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 4/3;
+      background: #000;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    
+    .video-container video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scaleX(-1);
+    }
+    
+    .video-container canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      transform: scaleX(-1);
+    }
+    
+    .video-status {
+      position: absolute;
+      bottom: 8px;
+      left: 8px;
+      background: rgba(0,0,0,0.7);
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.7rem;
+    }
+    
+    /* Data Display */
+    .data-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    
+    .data-item {
+      background: var(--bg);
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+    }
+    
+    .data-item .label {
+      font-size: 0.65rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    
+    .data-item .value {
+      font-family: 'Consolas', monospace;
+      font-size: 0.9rem;
+    }
+    
+    /* FSM Diagram */
+    .fsm-diagram {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    
+    .fsm-state {
+      padding: 6px 12px;
+      background: var(--bg);
+      border: 2px solid var(--border);
+      border-radius: 4px;
+      font-size: 0.7rem;
+      transition: all 0.2s;
+    }
+    
+    .fsm-state.active {
+      border-color: var(--port5);
+      background: rgba(248, 81, 73, 0.2);
+      color: var(--port5);
+    }
+    
+    /* Event Log */
+    .event-log {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 8px;
+      max-height: 200px;
+      overflow-y: auto;
+      font-family: 'Consolas', monospace;
+      font-size: 0.7rem;
+    }
+    
+    .event-log .event {
+      padding: 2px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .event-log .event:last-child { border-bottom: none; }
+    
+    .event-log .ts { color: var(--text-dim); }
+    .event-log .type { color: var(--port3); }
+    .event-log .data { color: var(--text); }
+    
+    /* Target Canvas */
+    .target-canvas-container {
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .target-canvas-container canvas {
+      width: 100%;
+      height: 100%;
+    }
+    
+    .cursor-indicator {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--port0);
+      border-radius: 50%;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      transition: border-color 0.1s;
+    }
+    
+    .cursor-indicator.pressing {
+      background: rgba(0, 217, 255, 0.3);
+      border-color: var(--port3);
+    }
+    
+    /* Pipeline Flow */
+    .pipeline-flow {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      padding: 8px;
+      background: var(--bg);
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+    
+    .pipeline-stage {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      background: var(--surface);
+      border-radius: 4px;
+      font-size: 0.7rem;
+      white-space: nowrap;
+    }
+    
+    .pipeline-stage.active {
+      border: 1px solid var(--port7);
+    }
+    
+    .pipeline-arrow {
+      color: var(--text-dim);
+    }
+    
+    /* Smoothing Comparison */
+    .smoothing-chart {
+      width: 100%;
+      height: 120px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+    }
+    
+    /* Interface Contract */
+    .contract-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 8px;
+      margin-bottom: 8px;
+    }
+    
+    .contract-box h4 {
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+    }
+    
+    .contract-box code {
+      font-family: 'Consolas', monospace;
+      font-size: 0.65rem;
+      color: var(--port0);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>
+      🕸️ HFO Full Pipeline Orchestrator
+      <span class="badge">Port 7 • Spider Sovereign</span>
+    </h1>
+    <div class="controls">
+      <button id="btnStart">▶️ Start Camera</button>
+      <button id="btnStop" disabled>⏹️ Stop</button>
+      <button id="btnReset">🔄 Reset</button>
+    </div>
+  </header>
+  
+  <div id="layout-container"></div>
+
+  <script type="module">
+    import { GoldenLayout } from 'golden-layout';
+    
+    // ============================================================================
+    // IMPORT REAL TESTED MODULES (Hexagonal CDD)
+    // ============================================================================
+    import {
+      // Contracts (Schemas)
+      SensorFrameSchema,
+      SmoothedFrameSchema,
+      FSMStates,
+      GestureLabels,
+      
+      // Gates (Port 5 - DEFEND)
+      calculatePalmAngle,
+      updatePalmConeGate,
+      createPalmConeGateState,
+      DEFAULT_PALM_CONE_CONFIG,
+      updateGestureTransitionPredictor,
+      createGestureTransitionState,
+      DEFAULT_GESTURE_TRANSITION_CONFIG,
+      
+      // Smoothers (Port 2 - SHAPE)
+      OneEuroExemplarAdapter,
+      
+      // Types
+    } from './lib/hfo.js';
+    
+    console.log('[Orchestrator] ✅ Using REAL tested modules from hfo.js');
+    console.log('[Orchestrator] Hexagonal CDD: Ports communicate via contracts');
+    
+    // ============================================================================
+    // HEXAGONAL ARCHITECTURE - INTERLOCKING INTERFACES
+    // ============================================================================
+    
+    /**
+     * Port 0 (Observer) → SensorPort Interface
+     * Input: Raw MediaPipe landmarks
+     * Output: SensorFrame (validated by schema)
+     */
+    const SensorPort = {
+      state: {
+        landmarks: null,
+        gesture: 'None',
+        confidence: 0,
+        palmAngle: 180,
+        indexTip: { x: 0.5, y: 0.5 },
+      },
+      subscribers: [],
+      
+      emit(frame) {
+        this.state = { ...this.state, ...frame };
+        this.subscribers.forEach(fn => fn(this.state));
+      },
+      
+      subscribe(fn) {
+        this.subscribers.push(fn);
+        return () => this.subscribers = this.subscribers.filter(s => s !== fn);
+      }
+    };
+    
+    /**
+     * Port 2 (Shaper) → SmootherPort Interface
+     * Input: SensorFrame from Port 0
+     * Output: SmoothedFrame (x, y smoothed)
+     */
+    const SmootherPort = {
+      state: {
+        raw: { x: 0.5, y: 0.5 },
+        smoothed: { x: 0.5, y: 0.5 },
+        method: '1€ Filter',
+      },
+      subscribers: [],
+      oneEuroX: new OneEuroExemplarAdapter(),
+      oneEuroY: new OneEuroExemplarAdapter(),
+      
+      process(sensorFrame, ts) {
+        const raw = { x: sensorFrame.indexTip.x, y: sensorFrame.indexTip.y };
+        const smoothed = {
+          x: this.oneEuroX.filter(raw.x, ts),
+          y: this.oneEuroY.filter(raw.y, ts),
+        };
+        this.state = { raw, smoothed, method: '1€ Filter' };
+        this.subscribers.forEach(fn => fn(this.state));
+        return this.state;
+      },
+      
+      subscribe(fn) {
+        this.subscribers.push(fn);
+        return () => this.subscribers = this.subscribers.filter(s => s !== fn);
+      },
+      
+      reset() {
+        this.oneEuroX = new OneEuroExemplarAdapter();
+        this.oneEuroY = new OneEuroExemplarAdapter();
+      }
+    };
+    
+    /**
+     * Port 5 (Immunizer) → GatePort Interface
+     * Input: SensorFrame + SmoothedFrame
+     * Output: FSM state, validated events
+     */
+    const GatePort = {
+      state: {
+        fsmState: 'DISARMED',
+        palmFacing: false,
+        gestureValid: false,
+        shouldDebounce: false,
+      },
+      palmGateState: createPalmConeGateState(),
+      gestureState: createGestureTransitionState(),
+      subscribers: [],
+      
+      // FSM state
+      fsm: {
+        current: 'DISARMED',
+        baselineStableAt: null,
+        armStableMs: 200,
+      },
+      
+      process(sensorFrame, ts) {
+        // Palm Cone Gate (Schmitt Trigger)
+        const gateResult = updatePalmConeGate(
+          sensorFrame.palmAngle,
+          ts,
+          this.palmGateState,
+          DEFAULT_PALM_CONE_CONFIG
+        );
+        this.palmGateState = gateResult.state;
+        
+        // Gesture Transition Predictor
+        const prediction = updateGestureTransitionPredictor(
+          sensorFrame.gesture,
+          ts,
+          this.gestureState,
+          DEFAULT_GESTURE_TRANSITION_CONFIG
+        );
+        this.gestureState = prediction.state;
+        
+        // FSM Logic
+        const prevState = this.fsm.current;
+        const gesture = prediction.shouldDebounce ? 'None' : sensorFrame.gesture;
+        
+        this.runFSM(gesture, gateResult.isFacing, sensorFrame.confidence, ts);
+        
+        this.state = {
+          fsmState: this.fsm.current,
+          prevState,
+          palmFacing: gateResult.isFacing,
+          gestureValid: !prediction.shouldDebounce,
+          shouldDebounce: prediction.shouldDebounce,
+          gateResult,
+          prediction,
+        };
+        
+        this.subscribers.forEach(fn => fn(this.state));
+        return this.state;
+      },
+      
+      runFSM(gesture, palmFacing, confidence, ts) {
+        const minConf = 0.7;
+        
+        switch (this.fsm.current) {
+          case 'DISARMED':
+            if (palmFacing && gesture === 'Open_Palm' && confidence >= minConf) {
+              this.fsm.current = 'ARMING';
+              this.fsm.baselineStableAt = ts;
+            }
+            break;
+            
+          case 'ARMING':
+            if (!palmFacing || gesture !== 'Open_Palm' || confidence < minConf) {
+              this.fsm.current = 'DISARMED';
+              this.fsm.baselineStableAt = null;
+            } else if (ts - this.fsm.baselineStableAt >= this.fsm.armStableMs) {
+              this.fsm.current = 'ARMED';
+            }
+            break;
+            
+          case 'ARMED':
+            if (!palmFacing) {
+              this.fsm.current = 'DISARMED';
+            } else if (gesture === 'Pointing_Up' && confidence >= minConf) {
+              this.fsm.current = 'DOWN_COMMIT';
+            } else if (gesture === 'Victory' && confidence >= minConf) {
+              this.fsm.current = 'DOWN_NAV';
+            }
+            break;
+            
+          case 'DOWN_COMMIT':
+          case 'DOWN_NAV':
+            if (!palmFacing) {
+              this.fsm.current = 'DISARMED';
+            } else if (gesture === 'Open_Palm' && palmFacing) {
+              this.fsm.current = 'ARMED';
+            }
+            break;
+        }
+      },
+      
+      subscribe(fn) {
+        this.subscribers.push(fn);
+        return () => this.subscribers = this.subscribers.filter(s => s !== fn);
+      },
+      
+      reset() {
+        this.palmGateState = createPalmConeGateState();
+        this.gestureState = createGestureTransitionState();
+        this.fsm.current = 'DISARMED';
+        this.fsm.baselineStableAt = null;
+      }
+    };
+    
+    /**
+     * Port 3 (Injector) → EmitterPort Interface
+     * Input: GatePort state + SmootherPort state
+     * Output: W3C PointerEvents
+     */
+    const EmitterPort = {
+      state: {
+        lastEvent: null,
+        eventCount: 0,
+        events: [],
+      },
+      subscribers: [],
+      prevFsmState: 'DISARMED',
+      
+      process(gateState, smootherState) {
+        const { fsmState, prevState } = gateState;
+        const { smoothed } = smootherState;
+        
+        let eventType = null;
+        let eventData = null;
+        
+        // Determine W3C event based on FSM transition
+        if (fsmState === 'ARMED' && (this.prevFsmState === 'ARMED' || this.prevFsmState === 'ARMING')) {
+          eventType = 'pointermove';
+          eventData = { clientX: smoothed.x, clientY: smoothed.y };
+        } else if (fsmState === 'DOWN_COMMIT' && this.prevFsmState !== 'DOWN_COMMIT') {
+          eventType = 'pointerdown';
+          eventData = { button: 0, buttons: 1, clientX: smoothed.x, clientY: smoothed.y };
+        } else if (fsmState === 'DOWN_NAV' && this.prevFsmState !== 'DOWN_NAV') {
+          eventType = 'pointerdown';
+          eventData = { button: 1, buttons: 4, clientX: smoothed.x, clientY: smoothed.y };
+        } else if (fsmState === 'ARMED' && (this.prevFsmState === 'DOWN_COMMIT' || this.prevFsmState === 'DOWN_NAV')) {
+          eventType = 'pointerup';
+          eventData = { button: this.prevFsmState === 'DOWN_COMMIT' ? 0 : 1, clientX: smoothed.x, clientY: smoothed.y };
+        } else if (fsmState === 'DISARMED' && (this.prevFsmState === 'DOWN_COMMIT' || this.prevFsmState === 'DOWN_NAV')) {
+          eventType = 'pointercancel';
+          eventData = { clientX: smoothed.x, clientY: smoothed.y };
+        } else if (fsmState === 'DOWN_COMMIT' || fsmState === 'DOWN_NAV') {
+          eventType = 'pointermove';
+          eventData = { buttons: fsmState === 'DOWN_COMMIT' ? 1 : 4, clientX: smoothed.x, clientY: smoothed.y };
+        }
+        
+        this.prevFsmState = fsmState;
+        
+        if (eventType) {
+          const event = {
+            type: eventType,
+            pointerId: 1,
+            pointerType: 'hand',
+            isPrimary: true,
+            ...eventData,
+            timestamp: performance.now(),
+          };
+          
+          this.state.lastEvent = event;
+          this.state.eventCount++;
+          this.state.events.unshift(event);
+          if (this.state.events.length > 20) this.state.events.pop();
+          
+          this.subscribers.forEach(fn => fn(event, this.state));
+        }
+        
+        return this.state;
+      },
+      
+      subscribe(fn) {
+        this.subscribers.push(fn);
+        return () => this.subscribers = this.subscribers.filter(s => s !== fn);
+      },
+      
+      reset() {
+        this.state = { lastEvent: null, eventCount: 0, events: [] };
+        this.prevFsmState = 'DISARMED';
+      }
+    };
+    
+    // ============================================================================
+    // MEDIAPIPE INTEGRATION (Port 0 Driver)
+    // ============================================================================
+    
+    let hands = null;
+    let camera = null;
+    let isRunning = false;
+    let videoElement = null;
+    let canvasElement = null;
+    
+    async function initMediaPipe() {
+      hands = new Hands({
+        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/${file}`
+      });
+      
+      hands.setOptions({
+        maxNumHands: 1,
+        modelComplexity: 1,
+        minDetectionConfidence: 0.7,
+        minTrackingConfidence: 0.5,
+      });
+      
+      hands.onResults(onHandResults);
+      console.log('[Port 0] MediaPipe Hands initialized');
+    }
+    
+    function classifyGesture(landmarks) {
+      if (!landmarks || landmarks.length < 21) return { label: 'None', confidence: 0 };
+      
+      const tips = [4, 8, 12, 16, 20];
+      const pips = [3, 6, 10, 14, 18];
+      
+      const extended = tips.map((tip, i) => {
+        if (i === 0) return landmarks[tip].x < landmarks[pips[i]].x;
+        return landmarks[tip].y < landmarks[pips[i]].y;
+      });
+      
+      const [thumb, index, middle, ring, pinky] = extended;
+      
+      if (thumb && index && middle && ring && pinky) return { label: 'Open_Palm', confidence: 0.9 };
+      if (!thumb && index && !middle && !ring && !pinky) return { label: 'Pointing_Up', confidence: 0.85 };
+      if (!thumb && index && middle && !ring && !pinky) return { label: 'Victory', confidence: 0.85 };
+      if (!thumb && !index && !middle && !ring && !pinky) return { label: 'Closed_Fist', confidence: 0.8 };
+      
+      return { label: 'None', confidence: 0.5 };
+    }
+    
+    function onHandResults(results) {
+      const ts = performance.now();
+      
+      if (canvasElement) {
+        const ctx = canvasElement.getContext('2d');
+        ctx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+        
+        if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+          const landmarks = results.multiHandLandmarks[0];
+          drawConnectors(ctx, landmarks, HAND_CONNECTIONS, { color: '#00FF00', lineWidth: 2 });
+          drawLandmarks(ctx, landmarks, { color: '#FF0000', lineWidth: 1, radius: 3 });
+        }
+      }
+      
+      if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+        const landmarks = results.multiHandLandmarks[0];
+        const palmAngle = calculatePalmAngle(landmarks);
+        const { label, confidence } = classifyGesture(landmarks);
+        const indexTip = landmarks[8];
+        
+        // Port 0 emits SensorFrame
+        SensorPort.emit({
+          landmarks,
+          gesture: label,
+          confidence,
+          palmAngle,
+          indexTip: { x: indexTip.x, y: indexTip.y },
+          trackingOk: true,
+        });
+        
+        // Port 2 processes smoothing
+        const smootherState = SmootherPort.process({
+          indexTip: { x: indexTip.x, y: indexTip.y },
+        }, ts);
+        
+        // Port 5 processes gates/FSM
+        const gateState = GatePort.process({
+          gesture: label,
+          confidence,
+          palmAngle,
+        }, ts);
+        
+        // Port 3 emits W3C events
+        EmitterPort.process(gateState, smootherState);
+        
+      } else {
+        // No hand detected
+        SensorPort.emit({
+          landmarks: null,
+          gesture: 'None',
+          confidence: 0,
+          palmAngle: 180,
+          indexTip: { x: 0.5, y: 0.5 },
+          trackingOk: false,
+        });
+        
+        GatePort.process({ gesture: 'None', confidence: 0, palmAngle: 180 }, ts);
+      }
+    }
+    
+    async function startCamera() {
+      if (isRunning || !videoElement) return;
+      
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { width: 640, height: 480, facingMode: 'user' }
+        });
+        
+        videoElement.srcObject = stream;
+        await videoElement.play();
+        
+        if (canvasElement) {
+          canvasElement.width = videoElement.videoWidth;
+          canvasElement.height = videoElement.videoHeight;
+        }
+        
+        camera = new Camera(videoElement, {
+          onFrame: async () => { await hands.send({ image: videoElement }); },
+          width: 640,
+          height: 480,
+        });
+        
+        await camera.start();
+        isRunning = true;
+        
+        document.getElementById('btnStart').disabled = true;
+        document.getElementById('btnStop').disabled = false;
+        
+        console.log('[Port 0] Camera started');
+      } catch (err) {
+        console.error('[Port 0] Camera error:', err);
+      }
+    }
+    
+    function stopCamera() {
+      if (!isRunning) return;
+      
+      if (camera) { camera.stop(); camera = null; }
+      if (videoElement?.srcObject) {
+        videoElement.srcObject.getTracks().forEach(t => t.stop());
+        videoElement.srcObject = null;
+      }
+      
+      isRunning = false;
+      document.getElementById('btnStart').disabled = false;
+      document.getElementById('btnStop').disabled = true;
+      
+      console.log('[Port 0] Camera stopped');
+    }
+    
+    function resetPipeline() {
+      SmootherPort.reset();
+      GatePort.reset();
+      EmitterPort.reset();
+      console.log('[Orchestrator] Pipeline reset');
+    }
+    
+    // ============================================================================
+    // GOLDEN LAYOUT SETUP
+    // ============================================================================
+    
+    const container = document.getElementById('layout-container');
+    
+    const layoutConfig = {
+      root: {
+        type: 'row',
+        content: [
+          {
+            type: 'column',
+            width: 25,
+            content: [
+              { type: 'component', componentType: 'sensor', title: '👁️ Input (Port 0)', height: 50 },
+              { type: 'component', componentType: 'smoother', title: '🎯 Smoother (Port 2)' },
+            ]
+          },
+          {
+            type: 'column',
+            width: 25,
+            content: [
+              { type: 'component', componentType: 'gates', title: '🛡️ Gates/FSM (Port 5)' },
+            ]
+          },
+          {
+            type: 'column',
+            width: 25,
+            content: [
+              { type: 'component', componentType: 'emitter', title: '📤 W3C Output (Port 3)' },
+            ]
+          },
+          {
+            type: 'column',
+            width: 25,
+            content: [
+              { type: 'component', componentType: 'target', title: '🎯 Target App (Port 7)' },
+            ]
+          },
+        ]
+      }
+    };
+    
+    const layout = new GoldenLayout(container);
+    
+    // ============================================================================
+    // PANEL FACTORIES
+    // ============================================================================
+    
+    // Port 0 - Sensor Panel
+    layout.registerComponentFactoryFunction('sensor', (container) => {
+      container.element.innerHTML = `
+        <div class="panel">
+          <div class="panel-header">
+            <h3><span class="port-badge port0">Port 0</span> MediaPipe Input</h3>
+          </div>
+          <div class="panel-body">
+            <div class="contract-box">
+              <h4>SensorPort Interface</h4>
+              <code>emit(SensorFrame) → subscribers</code>
+            </div>
+            <div class="video-container">
+              <video id="videoElement" playsinline></video>
+              <canvas id="canvasOverlay"></canvas>
+              <div class="video-status" id="videoStatus">⏳ Ready</div>
+            </div>
+            <div class="data-grid" style="margin-top: 8px;">
+              <div class="data-item">
+                <div class="label">Gesture</div>
+                <div class="value" id="sensorGesture">--</div>
+              </div>
+              <div class="data-item">
+                <div class="label">Palm Angle</div>
+                <div class="value" id="sensorPalmAngle">--°</div>
+              </div>
+              <div class="data-item">
+                <div class="label">Index Tip X</div>
+                <div class="value" id="sensorX">--</div>
+              </div>
+              <div class="data-item">
+                <div class="label">Index Tip Y</div>
+                <div class="value" id="sensorY">--</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      videoElement = container.element.querySelector('#videoElement');
+      canvasElement = container.element.querySelector('#canvasOverlay');
+      
+      SensorPort.subscribe((state) => {
+        container.element.querySelector('#sensorGesture').textContent = state.gesture;
+        container.element.querySelector('#sensorPalmAngle').textContent = state.palmAngle.toFixed(1) + '°';
+        container.element.querySelector('#sensorX').textContent = state.indexTip.x.toFixed(3);
+        container.element.querySelector('#sensorY').textContent = state.indexTip.y.toFixed(3);
+        container.element.querySelector('#videoStatus').textContent = state.trackingOk ? '🖐️ ' + state.gesture : '👋 No hand';
+      });
+    });
+    
+    // Port 2 - Smoother Panel
+    layout.registerComponentFactoryFunction('smoother', (container) => {
+      container.element.innerHTML = `
+        <div class="panel">
+          <div class="panel-header">
+            <h3><span class="port-badge port2">Port 2</span> 1€ Filter Smoother</h3>
+          </div>
+          <div class="panel-body">
+            <div class="contract-box">
+              <h4>SmootherPort Interface</h4>
+              <code>process(SensorFrame, ts) → SmoothedFrame</code>
+            </div>
+            <div class="data-grid">
+              <div class="data-item">
+                <div class="label">Raw X</div>
+                <div class="value" id="rawX">--</div>
+              </div>
+              <div class="data-item">
+                <div class="label">Raw Y</div>
+                <div class="value" id="rawY">--</div>
+              </div>
+              <div class="data-item">
+                <div class="label">Smoothed X</div>
+                <div class="value" id="smoothX">--</div>
+              </div>
+              <div class="data-item">
+                <div class="label">Smoothed Y</div>
+                <div class="value" id="smoothY">--</div>
+              </div>
+            </div>
+            <div style="margin-top: 12px;">
+              <div class="label" style="margin-bottom: 4px;">Method</div>
+              <div style="font-size: 0.8rem; color: var(--port2);">1€ Filter (Casiez CHI 2012)</div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      SmootherPort.subscribe((state) => {
+        container.element.querySelector('#rawX').textContent = state.raw.x.toFixed(4);
+        container.element.querySelector('#rawY').textContent = state.raw.y.toFixed(4);
+        container.element.querySelector('#smoothX').textContent = state.smoothed.x.toFixed(4);
+        container.element.querySelector('#smoothY').textContent = state.smoothed.y.toFixed(4);
+      });
+    });
+    
+    // Port 5 - Gates/FSM Panel
+    layout.registerComponentFactoryFunction('gates', (container) => {
+      container.element.innerHTML = `
+        <div class="panel">
+          <div class="panel-header">
+            <h3><span class="port-badge port5">Port 5</span> Gates + FSM</h3>
+          </div>
+          <div class="panel-body">
+            <div class="contract-box">
+              <h4>GatePort Interface</h4>
+              <code>process(SensorFrame, ts) → { fsmState, palmFacing, ... }</code>
+            </div>
+            <div style="margin-bottom: 12px;">
+              <div class="label" style="margin-bottom: 6px;">FSM State</div>
+              <div class="fsm-diagram">
+                <div class="fsm-state active" id="fsm-DISARMED">DISARMED</div>
+                <div class="fsm-state" id="fsm-ARMING">ARMING</div>
+                <div class="fsm-state" id="fsm-ARMED">ARMED</div>
+                <div class="fsm-state" id="fsm-DOWN_COMMIT">DOWN_COMMIT</div>
+                <div class="fsm-state" id="fsm-DOWN_NAV">DOWN_NAV</div>
+              </div>
+            </div>
+            <div class="data-grid">
+              <div class="data-item">
+                <div class="label">Palm Facing</div>
+                <div class="value" id="gatePalmFacing">❌</div>
+              </div>
+              <div class="data-item">
+                <div class="label">Gesture Valid</div>
+                <div class="value" id="gateGestureValid">❌</div>
+              </div>
+              <div class="data-item">
+                <div class="label">Debouncing</div>
+                <div class="value" id="gateDebounce">❌</div>
+              </div>
+              <div class="data-item">
+                <div class="label">Current State</div>
+                <div class="value" id="gateCurrentState">DISARMED</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      GatePort.subscribe((state) => {
+        // Update FSM diagram
+        container.element.querySelectorAll('.fsm-state').forEach(el => el.classList.remove('active'));
+        const stateEl = container.element.querySelector(`#fsm-${state.fsmState}`);
+        if (stateEl) stateEl.classList.add('active');
+        
+        container.element.querySelector('#gatePalmFacing').textContent = state.palmFacing ? '✅' : '❌';
+        container.element.querySelector('#gateGestureValid').textContent = state.gestureValid ? '✅' : '❌';
+        container.element.querySelector('#gateDebounce').textContent = state.shouldDebounce ? '⏳' : '✅';
+        container.element.querySelector('#gateCurrentState').textContent = state.fsmState;
+      });
+    });
+    
+    // Port 3 - Emitter Panel
+    layout.registerComponentFactoryFunction('emitter', (container) => {
+      container.element.innerHTML = `
+        <div class="panel">
+          <div class="panel-header">
+            <h3><span class="port-badge port3">Port 3</span> W3C PointerEvents</h3>
+          </div>
+          <div class="panel-body">
+            <div class="contract-box">
+              <h4>EmitterPort Interface</h4>
+              <code>process(GateState, SmootherState) → PointerEvent</code>
+            </div>
+            <div class="data-grid" style="margin-bottom: 12px;">
+              <div class="data-item">
+                <div class="label">Last Event</div>
+                <div class="value" id="emitterLastEvent">--</div>
+              </div>
+              <div class="data-item">
+                <div class="label">Event Count</div>
+                <div class="value" id="emitterCount">0</div>
+              </div>
+            </div>
+            <div class="label" style="margin-bottom: 6px;">Event Log</div>
+            <div class="event-log" id="eventLog">
+              <div class="event"><span class="ts">--</span> Waiting...</div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      EmitterPort.subscribe((event, state) => {
+        container.element.querySelector('#emitterLastEvent').textContent = event.type;
+        container.element.querySelector('#emitterCount').textContent = state.eventCount;
+        
+        const log = container.element.querySelector('#eventLog');
+        const entry = document.createElement('div');
+        entry.className = 'event';
+        entry.innerHTML = `<span class="ts">${new Date().toTimeString().split(' ')[0]}</span> <span class="type">${event.type}</span> <span class="data">x=${event.clientX?.toFixed(2)}, y=${event.clientY?.toFixed(2)}${event.button !== undefined ? ', btn=' + event.button : ''}</span>`;
+        log.insertBefore(entry, log.firstChild);
+        while (log.children.length > 15) log.removeChild(log.lastChild);
+      });
+    });
+    
+    // Port 7 - Target Application Panel
+    layout.registerComponentFactoryFunction('target', (container) => {
+      container.element.innerHTML = `
+        <div class="panel">
+          <div class="panel-header">
+            <h3><span class="port-badge port7">Port 7</span> Target Application</h3>
+          </div>
+          <div class="panel-body">
+            <div class="contract-box">
+              <h4>Receives W3C PointerEvents</h4>
+              <code>window.addEventListener('pointermove', ...)</code>
+            </div>
+            <div class="target-canvas-container" id="targetContainer">
+              <canvas id="targetCanvas"></canvas>
+              <div class="cursor-indicator" id="cursorIndicator" style="left: 50%; top: 50%;"></div>
+            </div>
+            <div class="data-grid" style="margin-top: 8px;">
+              <div class="data-item">
+                <div class="label">Cursor X</div>
+                <div class="value" id="targetX">--</div>
+              </div>
+              <div class="data-item">
+                <div class="label">Cursor Y</div>
+                <div class="value" id="targetY">--</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      const targetCanvas = container.element.querySelector('#targetCanvas');
+      const targetCtx = targetCanvas.getContext('2d');
+      const cursor = container.element.querySelector('#cursorIndicator');
+      const targetContainer = container.element.querySelector('#targetContainer');
+      
+      // Size canvas
+      const resizeCanvas = () => {
+        targetCanvas.width = targetContainer.offsetWidth;
+        targetCanvas.height = targetContainer.offsetHeight;
+      };
+      resizeCanvas();
+      
+      let isDrawing = false;
+      let lastX = 0, lastY = 0;
+      
+      EmitterPort.subscribe((event, state) => {
+        const rect = targetContainer.getBoundingClientRect();
+        const x = event.clientX * rect.width;
+        const y = event.clientY * rect.height;
+        
+        cursor.style.left = `${event.clientX * 100}%`;
+        cursor.style.top = `${event.clientY * 100}%`;
+        
+        container.element.querySelector('#targetX').textContent = x.toFixed(0) + 'px';
+        container.element.querySelector('#targetY').textContent = y.toFixed(0) + 'px';
+        
+        if (event.type === 'pointerdown') {
+          isDrawing = true;
+          cursor.classList.add('pressing');
+          lastX = x;
+          lastY = y;
+        } else if (event.type === 'pointerup' || event.type === 'pointercancel') {
+          isDrawing = false;
+          cursor.classList.remove('pressing');
+        } else if (event.type === 'pointermove' && isDrawing) {
+          targetCtx.beginPath();
+          targetCtx.strokeStyle = event.buttons === 4 ? '#a371f7' : '#00d9ff';
+          targetCtx.lineWidth = 3;
+          targetCtx.lineCap = 'round';
+          targetCtx.moveTo(lastX, lastY);
+          targetCtx.lineTo(x, y);
+          targetCtx.stroke();
+          lastX = x;
+          lastY = y;
+        }
+      });
+    });
+    
+    // Load layout
+    layout.loadLayout(layoutConfig);
+    
+    // Handle resize
+    window.addEventListener('resize', () => {
+      layout.setSize(container.offsetWidth, container.offsetHeight);
+    });
+    
+    // Button handlers
+    document.getElementById('btnStart').addEventListener('click', startCamera);
+    document.getElementById('btnStop').addEventListener('click', stopCamera);
+    document.getElementById('btnReset').addEventListener('click', resetPipeline);
+    
+    // Initialize
+    initMediaPipe().then(() => {
+      console.log('[Orchestrator] Ready - Click Start Camera');
+    });
+    
+    // Export for debugging
+    window.HFO = { SensorPort, SmootherPort, GatePort, EmitterPort };
+  </script>
+</body>
+</html>

@@ -37,8 +37,8 @@ export const GestureTransitionConfigSchema = z.object({
 export type GestureTransitionConfig = z.infer<typeof GestureTransitionConfigSchema>;
 
 export const DEFAULT_GESTURE_TRANSITION_CONFIG: GestureTransitionConfig = {
-	noneDebounceMs: 50,    // Below this is transition noise (very short None)
-	longNoneMs: 200,       // Above this is genuine disengagement
+	noneDebounceMs: 50, // Below this is transition noise (very short None)
+	longNoneMs: 200, // Above this is genuine disengagement
 	typicalNoneDurationMs: 75, // Sweet spot for gesture transitions
 };
 
@@ -144,7 +144,7 @@ function predictNextGesture(lastValidGesture: GestureLabel): GestureLabel {
 function calculateConfidence(msInNone: number, config: GestureTransitionConfig): number {
 	if (msInNone < config.noneDebounceMs) {
 		// Too short - likely noise, low confidence
-		return msInNone / config.noneDebounceMs * 0.3;
+		return (msInNone / config.noneDebounceMs) * 0.3;
 	}
 
 	if (msInNone >= config.longNoneMs) {

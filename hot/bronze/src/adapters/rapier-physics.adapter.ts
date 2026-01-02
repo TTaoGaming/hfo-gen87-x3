@@ -19,14 +19,14 @@
  * @see https://dimforge.com/
  */
 import RAPIER from '@dimforge/rapier2d-compat';
-import type { SmootherPort } from '../contracts/ports.js';
-import type { SensorFrame, SmoothedFrame } from '../contracts/schemas.js';
 import {
 	DEAD_ZONE_DEFAULT,
 	RAPIER_DAMPING_DEFAULT,
 	RAPIER_STIFFNESS_DEFAULT,
 	RAPIER_SUBSTEPS_DEFAULT,
 } from '../constants/magic-numbers.js';
+import type { SmootherPort } from '../contracts/ports.js';
+import type { SensorFrame, SmoothedFrame } from '../contracts/schemas.js';
 
 // ============================================================================
 // TYPES

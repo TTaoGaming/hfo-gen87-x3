@@ -1,28 +1,24 @@
 /**
  * HFO Pipeline Mutation Killer Tests
  * ===================================
- * 
+ *
  * These tests are specifically designed to KILL MUTANTS.
  * Each test targets a specific mutation that was surviving.
- * 
+ *
  * @module hfo-pipeline-mutation-killer
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import {
-	NoisyLandmarkSchema,
-	SensedFrameSchema,
-	FusedFrameSchema,
-	ShapedFrameSchema,
-	SenseAdapter,
-	FuseAdapter,
-	ShapeSmootherAdapter,
-	HFOPipeline,
 	DebugPipeline,
-	validatePipelineFrame,
+	FuseAdapter,
+	FusedFrameSchema,
 	type NoisyLandmark,
-	type SensedFrame,
-	type FusedFrame,
+	SenseAdapter,
+	SensedFrameSchema,
+	ShapeSmootherAdapter,
+	ShapedFrameSchema,
+	validatePipelineFrame,
 } from './hfo-pipeline.js';
 
 // ============================================================================
@@ -253,7 +249,7 @@ describe('ShapeSmootherAdapter Config - Optional Chaining Mutations', () => {
 
 		// Stationary with jitter - low cutoff should smooth more aggressively
 		const frames: NoisyLandmark[] = [
-			{ x: 0.500, y: 0.5, timestamp: 1000, confidence: 0.9 },
+			{ x: 0.5, y: 0.5, timestamp: 1000, confidence: 0.9 },
 			{ x: 0.505, y: 0.5, timestamp: 1016, confidence: 0.9 }, // Small jitter
 			{ x: 0.495, y: 0.5, timestamp: 1033, confidence: 0.9 },
 			{ x: 0.503, y: 0.5, timestamp: 1050, confidence: 0.9 },
@@ -269,7 +265,7 @@ describe('ShapeSmootherAdapter Config - Optional Chaining Mutations', () => {
 			const fused = fuseAdapter.fuse(sensed);
 			const shapedLow = adapterLowCutoff.shape(fused);
 			const shapedHigh = adapterHighCutoff.shape(fused);
-			
+
 			lowCutoffJitter += Math.abs(shapedLow.smooth.x - prevLow);
 			highCutoffJitter += Math.abs(shapedHigh.smooth.x - prevHigh);
 			prevLow = shapedLow.smooth.x;
@@ -480,7 +476,7 @@ describe('validatePipelineFrame', () => {
 		const result = validatePipelineFrame(invalidSensed, 'sensed');
 		expect(result.valid).toBe(false);
 		expect(result.errors.length).toBeGreaterThan(0);
-		expect(result.errors.some(e => e.includes('_verb'))).toBe(true);
+		expect(result.errors.some((e) => e.includes('_verb'))).toBe(true);
 	});
 });
 
@@ -609,8 +605,15 @@ describe('FuseAdapter', () => {
 		const result1 = adapter.fuse(sensed);
 		const result2 = adapter.fuse(sensed);
 
-		expect(result1._traceId).toBe('trace-1');
-		expect(result2._traceId).toBe('trace-2');
+		// W3C Trace Context: traceId stays same, spanId changes
+		// Format: 00-{traceId}-{spanId}-{flags}
+		const traceId1 = result1._traceId.split('-')[1];
+		const traceId2 = result2._traceId.split('-')[1];
+		const spanId1 = result1._traceId.split('-')[2];
+		const spanId2 = result2._traceId.split('-')[2];
+
+		expect(traceId1).toBe(traceId2); // Same trace
+		expect(spanId1).not.toBe(spanId2); // Different spans
 	});
 
 	it('wraps payload correctly', () => {
@@ -869,7 +872,7 @@ describe('DebugPipeline - maxLogSize Boundary', () => {
 
 		const log = debugPipeline.getDebugLog();
 		expect(log.length).toBe(2);
-		
+
 		// First entry (x=0.1) should have been shifted out
 		// Log should contain entries for x=0.2 and x=0.3
 	});
@@ -924,7 +927,7 @@ describe('Error Path Coverage', () => {
 		};
 
 		const { debug } = debugPipeline.processWithDebug(validInput);
-		
+
 		// With valid input, errors should be empty
 		expect(debug[0]!.errors.length).toBe(0);
 	});
@@ -1031,10 +1034,10 @@ describe('DebugPipeline - successRate calculation', () => {
 		}
 
 		const stats = debugPipeline.getStats();
-		
+
 		// All frames valid - successRate should be 1.0
 		expect(stats.successRate).toBe(1.0);
-		
+
 		// If mutation changed .filter() to .length (MethodExpression mutation)
 		// successRate would be 5/5 = 1.0 (same result for all-valid case)
 		// But the test still validates the filter function is being called
@@ -1058,7 +1061,7 @@ describe('DebugPipeline - error branch coverage', () => {
 		}
 
 		const log = debugPipeline.getDebugLog();
-		
+
 		// All entries should have empty errors arrays
 		for (const entry of log) {
 			expect(Array.isArray(entry.errors)).toBe(true);
@@ -1110,7 +1113,12 @@ describe('ShapeSmootherAdapter reset() - BlockStatement mutation killer', () => 
 		let ts = 1000;
 		let lastShaped: ShapedFrame | undefined;
 		for (let i = 0; i < 10; i++) {
-			const frame = senseAdapter.sense({ x: 0.1 + i * 0.05, y: 0.1 + i * 0.05, timestamp: ts, confidence: 0.9 });
+			const frame = senseAdapter.sense({
+				x: 0.1 + i * 0.05,
+				y: 0.1 + i * 0.05,
+				timestamp: ts,
+				confidence: 0.9,
+			});
 			const fused = fuseAdapter.fuse(frame);
 			lastShaped = adapter.shape(fused);
 			ts += 16.67;
@@ -1151,7 +1159,7 @@ describe('DebugPipeline - validation error collection (understanding dead code)'
 		// NOTE: The input validation in processWithDebug records errors via safeParse
 		// BUT the actual pipeline.process() uses .parse() which throws
 		// So these error paths are defensive but unreachable for input validation
-		// 
+		//
 		// This test documents that behavior:
 		const debugPipeline = new DebugPipeline();
 
@@ -1171,7 +1179,7 @@ describe('DebugPipeline - validation error collection (understanding dead code)'
 		// because ShapeSmootherAdapter produces well-formed ShapedFrame
 		// The output validation is defensive code that catches adapter bugs
 		const debugPipeline = new DebugPipeline();
-		let ts = 1000;
+		const ts = 1000;
 
 		const input: NoisyLandmark = { x: 0.5, y: 0.5, timestamp: ts, confidence: 0.9 };
 		const { debug } = debugPipeline.processWithDebug(input);
@@ -1427,7 +1435,12 @@ describe('Config defaults - LogicalOperator ?? vs && mutations', () => {
 
 		// Process multiple frames to exercise the smoother
 		for (let i = 0; i < 5; i++) {
-			const frame = senseAdapter.sense({ x: 0.5 + i * 0.01, y: 0.5, timestamp: ts, confidence: 0.9 });
+			const frame = senseAdapter.sense({
+				x: 0.5 + i * 0.01,
+				y: 0.5,
+				timestamp: ts,
+				confidence: 0.9,
+			});
 			result = adapter.shape(fuseAdapter.fuse(frame));
 			ts += 16.67;
 		}

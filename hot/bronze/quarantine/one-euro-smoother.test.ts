@@ -8,12 +8,9 @@
 import { fc, test as fcTest } from '@fast-check/vitest';
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
-	OneEuroSmoother,
-	type Point2D,
-	Point2DSchema,
-	type SmoothedPoint,
-	SmoothedPointSchema,
-	SmootherConfigSchema,
+    OneEuroSmoother,
+    type Point2D,
+    SmoothedPointSchema
 } from './one-euro-smoother.ts';
 
 describe('OneEuroSmoother', () => {

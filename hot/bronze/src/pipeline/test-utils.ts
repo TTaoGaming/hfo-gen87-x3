@@ -1,10 +1,10 @@
 /**
  * Test Utilities for HFO Pipeline
  * ================================
- * 
+ *
  * These functions are for TESTING ONLY - not production code.
  * They generate synthetic data to verify pipeline behavior.
- * 
+ *
  * @module test-utils
  * @internal
  */
@@ -14,15 +14,15 @@ import type { NoisyLandmark } from './hfo-pipeline.js';
 /**
  * Generate synthetic noisy data simulating MediaPipe jitter ON A MOVING PATH
  * Real MediaPipe has ~2-5px jitter at 60fps during hand movement
- * 
+ *
  * This creates a smooth circular motion with noise overlaid - realistic test case
- * 
+ *
  * @param numFrames - Number of frames to generate
  * @param centerX - X center of circular path (0-1 normalized)
  * @param centerY - Y center of circular path (0-1 normalized)
  * @param jitterAmount - Amount of random noise (0.01 = ~1% = ~10px on 1000px screen)
  * @returns Array of noisy landmarks following a circular path
- * 
+ *
  * @example
  * ```ts
  * const frames = generateNoisyPath(100, 0.5, 0.5, 0.01);
@@ -31,14 +31,14 @@ import type { NoisyLandmark } from './hfo-pipeline.js';
  */
 export function generateNoisyPath(
 	numFrames: number,
-	centerX: number = 0.5,
-	centerY: number = 0.5,
-	jitterAmount: number = 0.01,
+	centerX = 0.5,
+	centerY = 0.5,
+	jitterAmount = 0.01,
 ): NoisyLandmark[] {
 	if (numFrames <= 0) {
 		return [];
 	}
-	
+
 	const frames: NoisyLandmark[] = [];
 	let ts = Date.now();
 	const radius = 0.2;
@@ -66,7 +66,7 @@ export function generateNoisyPath(
 /**
  * Calculate total path length (sum of distances between consecutive points)
  * Used to measure jitter - more jitter = longer path for same motion
- * 
+ *
  * @param points - Array of x,y coordinates
  * @returns Total path length
  */
@@ -74,7 +74,7 @@ export function calculateTotalJitter(points: Array<{ x: number; y: number }>): n
 	if (points.length < 2) {
 		return 0;
 	}
-	
+
 	let total = 0;
 	for (let i = 1; i < points.length; i++) {
 		const curr = points[i]!;
@@ -89,11 +89,11 @@ export function calculateTotalJitter(points: Array<{ x: number; y: number }>): n
 /**
  * Calculate jitter reduction ratio
  * Returns value < 1 if smoothing reduced jitter (good)
- * 
+ *
  * @param rawPoints - Original noisy coordinates
  * @param smoothPoints - Smoothed coordinates
  * @returns Ratio of smooth/raw path length. < 1 means smoothing helped.
- * 
+ *
  * @example
  * ```ts
  * const ratio = calculateJitterReduction(rawPath, smoothedPath);
@@ -123,16 +123,16 @@ export function calculateJitterReduction(
  */
 export function generateLinearPath(
 	numFrames: number,
-	startX: number = 0.1,
-	startY: number = 0.5,
-	endX: number = 0.9,
-	endY: number = 0.5,
-	jitterAmount: number = 0.01,
+	startX = 0.1,
+	startY = 0.5,
+	endX = 0.9,
+	endY = 0.5,
+	jitterAmount = 0.01,
 ): NoisyLandmark[] {
 	if (numFrames <= 0) {
 		return [];
 	}
-	
+
 	const frames: NoisyLandmark[] = [];
 	let ts = Date.now();
 
@@ -161,14 +161,14 @@ export function generateLinearPath(
  */
 export function generateStationaryJitter(
 	numFrames: number,
-	x: number = 0.5,
-	y: number = 0.5,
-	jitterAmount: number = 0.02,
+	x = 0.5,
+	y = 0.5,
+	jitterAmount = 0.02,
 ): NoisyLandmark[] {
 	if (numFrames <= 0) {
 		return [];
 	}
-	
+
 	const frames: NoisyLandmark[] = [];
 	let ts = Date.now();
 
