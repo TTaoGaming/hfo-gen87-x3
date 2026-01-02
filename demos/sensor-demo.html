@@ -1,0 +1,879 @@
+Sorry too loud <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HFO Sensor Demo — Port 0 SENSE | JADC2 ISR</title>
+  
+  <!-- GoldenLayout CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/golden-layout@2.6.0/dist/css/goldenlayout-base.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/golden-layout@2.6.0/dist/css/themes/goldenlayout-dark-theme.css">
+  
+  <!-- Import Map for ESM -->
+  <script type="importmap">
+  {
+    "imports": {
+      "golden-layout": "https://esm.sh/golden-layout@2.6.0",
+      "@mediapipe/tasks-vision": "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.18/vision_bundle.mjs"
+    }
+  }
+  </script>
+  
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --border: #30363d;
+      --text: #c9d1d9;
+      --text-dim: #8b949e;
+      --accent: #58a6ff;
+      --port0: #ff6b6b;  /* Port 0 = SENSE = Red (Lidless Legion) */
+      --success: #00ff88;
+      --warning: #f0883e;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    header {
+      padding: 12px 20px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    header h1 {
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    header .badge {
+      background: var(--port0);
+      color: #000;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: bold;
+    }
+    
+    header .jadc2 {
+      background: #3a3a3a;
+      color: var(--text);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.65rem;
+      font-weight: normal;
+    }
+    
+    header .status {
+      margin-left: auto;
+      display: flex;
+      gap: 16px;
+      font-size: 0.8rem;
+      color: var(--text-dim);
+    }
+    
+    header .status .connected { color: var(--success); }
+    header .status .disconnected { color: var(--port0); }
+    
+    #layout-container {
+      flex: 1;
+      position: relative;
+    }
+    
+    /* Panel Styles */
+    .panel {
+      padding: 16px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      overflow: auto;
+    }
+    
+    .panel h3 {
+      font-size: 0.9rem;
+      margin-bottom: 12px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    /* Video Panel */
+    .video-panel video,
+    .video-panel canvas {
+      width: 100%;
+      flex: 1;
+      background: #000;
+      border-radius: 4px;
+      object-fit: cover;
+    }
+    
+    .video-panel .controls {
+      margin-top: 12px;
+      display: flex;
+      gap: 8px;
+    }
+    
+    .video-panel button {
+      padding: 8px 16px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+    
+    .video-panel button:hover {
+      background: var(--bg);
+    }
+    
+    .video-panel button.active {
+      background: var(--port0);
+      color: #000;
+      border-color: var(--port0);
+    }
+    
+    /* Landmarks Panel */
+    .landmarks-panel canvas {
+      width: 100%;
+      flex: 1;
+      background: #000;
+      border-radius: 4px;
+    }
+    
+    /* Gesture Panel */
+    .gesture-panel .current-gesture {
+      font-size: 3rem;
+      text-align: center;
+      padding: 20px;
+      color: var(--port0);
+    }
+    
+    .gesture-panel .gesture-name {
+      font-size: 1.2rem;
+      text-align: center;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+    
+    .gesture-panel .confidence-bar {
+      height: 20px;
+      background: var(--bg);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    
+    .gesture-panel .confidence-fill {
+      height: 100%;
+      background: var(--port0);
+      transition: width 0.1s ease;
+    }
+    
+    .gesture-panel .gesture-history {
+      margin-top: 12px;
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      max-height: 100px;
+      overflow-y: auto;
+    }
+    
+    /* Stats Panel */
+    .stats-panel .stat-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .stats-panel .stat-label {
+      color: var(--text-dim);
+      font-size: 0.85rem;
+    }
+    
+    .stats-panel .stat-value {
+      font-family: monospace;
+      font-size: 0.9rem;
+    }
+    
+    .stats-panel .good { color: var(--success); }
+    .stats-panel .warn { color: var(--warning); }
+    .stats-panel .bad { color: var(--port0); }
+    
+    /* MessageBus Panel */
+    .bus-panel .log {
+      flex: 1;
+      background: #000;
+      border-radius: 4px;
+      padding: 8px;
+      font-family: monospace;
+      font-size: 0.7rem;
+      overflow-y: auto;
+      max-height: 250px;
+    }
+    
+    .bus-panel .log-entry {
+      padding: 2px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .bus-panel .log-topic { color: var(--accent); }
+    .bus-panel .log-time { color: var(--text-dim); }
+    
+    /* Config Panel */
+    .config-panel .config-group {
+      margin-bottom: 16px;
+    }
+    
+    .config-panel label {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      margin-bottom: 4px;
+    }
+    
+    .config-panel select {
+      width: 100%;
+      padding: 8px;
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+    }
+    
+    footer {
+      padding: 8px 20px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      font-size: 0.75rem;
+      color: var(--text-dim);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>
+      👁️ Sensor Demo
+      <span class="badge">Port 0 SENSE</span>
+      <span class="jadc2">JADC2: ISR (Sensors)</span>
+    </h1>
+    <div class="status">
+      <span>Camera: <span id="cameraStatus" class="disconnected">●</span> <span id="cameraText">Inactive</span></span>
+      <span>Bus: <span id="busStatus" class="connected">●</span> <span id="busText">Connected</span></span>
+    </div>
+  </header>
+  
+  <div id="layout-container"></div>
+  
+  <footer>
+    HFO Gen87.X3.2 | Port 0 Lidless Legion — "How do we SENSE the SENSE?" | JADC2 ISR Role | MediaPipe Vision + InMemorySubstrateAdapter
+  </footer>
+
+  <script type="module">
+    import { GoldenLayout } from 'golden-layout';
+    import {
+      InMemorySubstrateAdapter,
+      SensorFrameSchema,
+      GestureLabels,
+      createSensorFrameFromMouse,
+    } from './lib/hfo.js';
+    
+    // Optionally load MediaPipe (may fail due to CORS/CDN issues)
+    let GestureRecognizer, FilesetResolver;
+    let gestureRecognizer = null;
+    let mediaPipeAvailable = false;
+    
+    try {
+      const vision = await import('@mediapipe/tasks-vision');
+      GestureRecognizer = vision.GestureRecognizer;
+      FilesetResolver = vision.FilesetResolver;
+      mediaPipeAvailable = true;
+      console.log('[Sensor Demo] ✅ MediaPipe Vision loaded');
+    } catch (e) {
+      console.warn('[Sensor Demo] ⚠️ MediaPipe not available, using mouse fallback');
+    }
+    
+    // ========================================================================
+    // MESSAGE BUS SETUP (RxJS Substrate - JADC2 Transport Layer)
+    // ========================================================================
+    const bus = new InMemorySubstrateAdapter();
+    await bus.connect();
+    
+    document.getElementById('busStatus').className = 'connected';
+    document.getElementById('busText').textContent = 'Connected';
+    console.log('[Sensor Demo] ✅ InMemorySubstrateAdapter connected');
+    
+    // ========================================================================
+    // SENSOR STATE (Port 0 - SENSE - JADC2 ISR)
+    // ========================================================================
+    const GESTURE_EMOJI = {
+      'None': '❓',
+      'Closed_Fist': '✊',
+      'Open_Palm': '✋',
+      'Pointing_Up': '☝️',
+      'Thumb_Down': '👎',
+      'Thumb_Up': '👍',
+      'Victory': '✌️',
+      'ILoveYou': '🤟',
+    };
+    
+    let sensorConfig = {
+      source: mediaPipeAvailable ? 'camera' : 'mouse',
+      publishRate: 60,  // Hz
+    };
+    
+    let sensorStats = {
+      frameCount: 0,
+      fps: 0,
+      lastFrameTime: 0,
+      latency: 0,
+      confidence: 0,
+      messagesPublished: 0,
+    };
+    
+    let currentGesture = 'None';
+    let gestureHistory = [];
+    const MAX_HISTORY = 20;
+    
+    // MessageBus log
+    const busLog = [];
+    const MAX_LOG = 50;
+    
+    function logBusMessage(topic, data) {
+      const entry = {
+        time: new Date().toISOString().substr(11, 12),
+        topic,
+        data: typeof data === 'string' ? data : JSON.stringify(data).substring(0, 40),
+      };
+      busLog.unshift(entry);
+      if (busLog.length > MAX_LOG) busLog.pop();
+      bus.publish('bus.log', entry);
+    }
+    
+    // ========================================================================
+    // GOLDEN LAYOUT SETUP
+    // ========================================================================
+    const container = document.getElementById('layout-container');
+    const layout = new GoldenLayout(container);
+    
+    // Panel references
+    let videoElement, landmarksCanvas, gesturePanel, statsPanel, logPanel, configPanel;
+    let videoStream = null;
+    
+    // ========================================================================
+    // PANEL: Video Input (Camera/Mouse)
+    // ========================================================================
+    layout.registerComponentFactoryFunction('video', (cont) => {
+      const el = document.createElement('div');
+      el.className = 'panel video-panel';
+      el.innerHTML = `
+        <h3>📹 Input Source</h3>
+        <video id="videoInput" autoplay playsinline muted></video>
+        <canvas id="mouseCanvas" style="display:none;"></canvas>
+        <div class="controls">
+          <button id="btnCamera" ${!mediaPipeAvailable ? 'disabled' : ''}>📷 Camera</button>
+          <button id="btnMouse" class="active">🖱️ Mouse</button>
+        </div>
+      `;
+      cont.element.appendChild(el);
+      
+      videoElement = el.querySelector('#videoInput');
+      const mouseCanvas = el.querySelector('#mouseCanvas');
+      const btnCamera = el.querySelector('#btnCamera');
+      const btnMouse = el.querySelector('#btnMouse');
+      
+      // Camera button
+      btnCamera.addEventListener('click', async () => {
+        if (!mediaPipeAvailable) return;
+        sensorConfig.source = 'camera';
+        btnCamera.classList.add('active');
+        btnMouse.classList.remove('active');
+        videoElement.style.display = 'block';
+        mouseCanvas.style.display = 'none';
+        await startCamera();
+      });
+      
+      // Mouse button
+      btnMouse.addEventListener('click', () => {
+        sensorConfig.source = 'mouse';
+        btnMouse.classList.add('active');
+        btnCamera.classList.remove('active');
+        videoElement.style.display = 'none';
+        mouseCanvas.style.display = 'block';
+        stopCamera();
+        startMouseTracking(mouseCanvas);
+      });
+      
+      // Start with mouse by default (more reliable for demos)
+      if (sensorConfig.source === 'mouse') {
+        videoElement.style.display = 'none';
+        mouseCanvas.style.display = 'block';
+        startMouseTracking(mouseCanvas);
+      }
+    });
+    
+    async function startCamera() {
+      try {
+        videoStream = await navigator.mediaDevices.getUserMedia({
+          video: { width: 640, height: 480, facingMode: 'user' }
+        });
+        videoElement.srcObject = videoStream;
+        document.getElementById('cameraStatus').className = 'connected';
+        document.getElementById('cameraText').textContent = 'Active';
+        
+        if (mediaPipeAvailable && !gestureRecognizer) {
+          await initMediaPipe();
+        }
+        
+        startCameraProcessing();
+      } catch (e) {
+        console.error('[Sensor Demo] Camera error:', e);
+        document.getElementById('cameraStatus').className = 'disconnected';
+        document.getElementById('cameraText').textContent = 'Error';
+      }
+    }
+    
+    function stopCamera() {
+      if (videoStream) {
+        videoStream.getTracks().forEach(t => t.stop());
+        videoStream = null;
+      }
+      document.getElementById('cameraStatus').className = 'disconnected';
+      document.getElementById('cameraText').textContent = 'Inactive';
+    }
+    
+    async function initMediaPipe() {
+      try {
+        const vision = await FilesetResolver.forVisionTasks(
+          'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.18/wasm'
+        );
+        gestureRecognizer = await GestureRecognizer.createFromOptions(vision, {
+          baseOptions: {
+            modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task',
+            delegate: 'GPU'
+          },
+          runningMode: 'VIDEO',
+          numHands: 1,
+        });
+        console.log('[Sensor Demo] ✅ MediaPipe GestureRecognizer initialized');
+      } catch (e) {
+        console.error('[Sensor Demo] MediaPipe init error:', e);
+        gestureRecognizer = null;
+      }
+    }
+    
+    function startCameraProcessing() {
+      if (!gestureRecognizer || sensorConfig.source !== 'camera') return;
+      
+      const processFrame = () => {
+        if (sensorConfig.source !== 'camera' || !gestureRecognizer) return;
+        
+        const now = performance.now();
+        const result = gestureRecognizer.recognizeForVideo(videoElement, now);
+        
+        if (result && result.landmarks && result.landmarks.length > 0) {
+          const landmarks = result.landmarks[0];
+          const gesture = result.gestures?.[0]?.[0]?.categoryName || 'None';
+          const confidence = result.gestures?.[0]?.[0]?.score || 0;
+          
+          const frame = {
+            landmarks: landmarks.map(l => ({ x: l.x, y: l.y, z: l.z })),
+            gesture: gesture,
+            confidence: confidence,
+            timestamp: now,
+            handedness: result.handedness?.[0]?.[0]?.categoryName || 'Right',
+          };
+          
+          publishSensorFrame(frame);
+          updateLandmarksVisualization(landmarks);
+          updateGestureDisplay(gesture, confidence);
+        }
+        
+        requestAnimationFrame(processFrame);
+      };
+      
+      processFrame();
+    }
+    
+    function startMouseTracking(canvas) {
+      const ctx = canvas.getContext('2d');
+      let mouseX = 0.5, mouseY = 0.5;
+      let isPressed = false;
+      
+      const resizeCanvas = () => {
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+      };
+      resizeCanvas();
+      
+      canvas.addEventListener('mousemove', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        mouseX = (e.clientX - rect.left) / rect.width;
+        mouseY = (e.clientY - rect.top) / rect.height;
+      });
+      
+      canvas.addEventListener('mousedown', () => { isPressed = true; });
+      canvas.addEventListener('mouseup', () => { isPressed = false; });
+      
+      const tick = () => {
+        if (sensorConfig.source !== 'mouse') return;
+        
+        const now = performance.now();
+        
+        // Create SensorFrame from mouse position
+        // The label/gesture is determined by mouse button state
+        const gesture = isPressed ? 'Pointing_Up' : 'Open_Palm';
+        const frame = {
+          ts: now,
+          handId: 'right',
+          trackingOk: true,
+          palmFacing: true,
+          label: gesture,
+          confidence: 1.0,
+          indexTip: { x: mouseX, y: mouseY, z: 0, visibility: 1.0 },
+          landmarks: null,
+        };
+        
+        publishSensorFrame(frame);
+        updateGestureDisplay(gesture, 1.0);
+        
+        // Draw mouse position
+        const w = canvas.width;
+        const h = canvas.height;
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, w, h);
+        
+        // Draw synthetic "hand" visualization
+        ctx.beginPath();
+        ctx.arc(mouseX * w, mouseY * h, isPressed ? 30 : 40, 0, Math.PI * 2);
+        ctx.fillStyle = isPressed ? '#ff6b6b' : '#00ff88';
+        ctx.fill();
+        
+        ctx.fillStyle = '#c9d1d9';
+        ctx.font = '12px monospace';
+        ctx.fillText(`(${(mouseX * 100).toFixed(1)}%, ${(mouseY * 100).toFixed(1)}%)`, 10, 20);
+        ctx.fillText(isPressed ? 'Pointing_Up (click)' : 'Open_Palm', 10, 40);
+        
+        requestAnimationFrame(tick);
+      };
+      tick();
+    }
+    
+    function publishSensorFrame(frame) {
+      const now = performance.now();
+      
+      // Validate against contract
+      const result = SensorFrameSchema.safeParse(frame);
+      if (!result.success) {
+        console.warn('[Sensor Demo] Invalid frame:', result.error);
+        return;
+      }
+      
+      // Calculate stats
+      if (sensorStats.lastFrameTime > 0) {
+        const dt = now - sensorStats.lastFrameTime;
+        sensorStats.fps = 1000 / dt;
+        sensorStats.latency = dt;
+      }
+      sensorStats.lastFrameTime = now;
+      sensorStats.frameCount++;
+      sensorStats.confidence = frame.confidence;
+      sensorStats.messagesPublished++;
+      
+      // Publish to MessageBus (JADC2 transport)
+      bus.publish('sensor.frame', frame);
+      logBusMessage('sensor.frame', `${frame.gesture} @ ${frame.confidence.toFixed(2)}`);
+    }
+    
+    // ========================================================================
+    // PANEL: Raw Landmarks (21-point hand visualization)
+    // ========================================================================
+    layout.registerComponentFactoryFunction('landmarks', (cont) => {
+      const el = document.createElement('div');
+      el.className = 'panel landmarks-panel';
+      el.innerHTML = `
+        <h3>✋ Hand Landmarks (21 points)</h3>
+        <canvas id="landmarksCanvas"></canvas>
+      `;
+      cont.element.appendChild(el);
+      
+      landmarksCanvas = el.querySelector('#landmarksCanvas');
+    });
+    
+    function updateLandmarksVisualization(landmarks) {
+      if (!landmarksCanvas) return;
+      
+      const ctx = landmarksCanvas.getContext('2d');
+      const w = landmarksCanvas.width = landmarksCanvas.offsetWidth;
+      const h = landmarksCanvas.height = landmarksCanvas.offsetHeight;
+      
+      ctx.fillStyle = '#000';
+      ctx.fillRect(0, 0, w, h);
+      
+      if (!landmarks || landmarks.length === 0) return;
+      
+      // MediaPipe hand connections
+      const connections = [
+        [0, 1], [1, 2], [2, 3], [3, 4],       // Thumb
+        [0, 5], [5, 6], [6, 7], [7, 8],       // Index
+        [0, 9], [9, 10], [10, 11], [11, 12],  // Middle
+        [0, 13], [13, 14], [14, 15], [15, 16], // Ring
+        [0, 17], [17, 18], [18, 19], [19, 20], // Pinky
+        [5, 9], [9, 13], [13, 17],             // Palm
+      ];
+      
+      // Draw connections
+      ctx.strokeStyle = '#444';
+      ctx.lineWidth = 2;
+      for (const [i, j] of connections) {
+        const a = landmarks[i];
+        const b = landmarks[j];
+        ctx.beginPath();
+        ctx.moveTo(a.x * w, a.y * h);
+        ctx.lineTo(b.x * w, b.y * h);
+        ctx.stroke();
+      }
+      
+      // Draw landmarks
+      for (let i = 0; i < landmarks.length; i++) {
+        const l = landmarks[i];
+        const isTip = [4, 8, 12, 16, 20].includes(i);
+        
+        ctx.beginPath();
+        ctx.arc(l.x * w, l.y * h, isTip ? 8 : 5, 0, Math.PI * 2);
+        ctx.fillStyle = isTip ? '#ff6b6b' : '#58a6ff';
+        ctx.fill();
+        
+        // Label landmark index
+        ctx.fillStyle = '#666';
+        ctx.font = '10px monospace';
+        ctx.fillText(i.toString(), l.x * w + 10, l.y * h);
+      }
+    }
+    
+    // ========================================================================
+    // PANEL: Gesture Display
+    // ========================================================================
+    layout.registerComponentFactoryFunction('gesture', (cont) => {
+      const el = document.createElement('div');
+      el.className = 'panel gesture-panel';
+      el.innerHTML = `
+        <h3>🎯 Current Gesture</h3>
+        <div class="current-gesture" id="gestureEmoji">❓</div>
+        <div class="gesture-name" id="gestureName">None</div>
+        <div class="confidence-bar">
+          <div class="confidence-fill" id="confidenceFill" style="width: 0%"></div>
+        </div>
+        <div class="gesture-history" id="gestureHistory"></div>
+      `;
+      cont.element.appendChild(el);
+      
+      gesturePanel = {
+        emoji: el.querySelector('#gestureEmoji'),
+        name: el.querySelector('#gestureName'),
+        confidence: el.querySelector('#confidenceFill'),
+        history: el.querySelector('#gestureHistory'),
+      };
+    });
+    
+    function updateGestureDisplay(gesture, confidence) {
+      if (!gesturePanel) return;
+      
+      if (gesture !== currentGesture) {
+        currentGesture = gesture;
+        gestureHistory.unshift({ gesture, time: new Date().toLocaleTimeString() });
+        if (gestureHistory.length > MAX_HISTORY) gestureHistory.pop();
+      }
+      
+      gesturePanel.emoji.textContent = GESTURE_EMOJI[gesture] || '❓';
+      gesturePanel.name.textContent = gesture.replace('_', ' ');
+      gesturePanel.confidence.style.width = `${confidence * 100}%`;
+      
+      gesturePanel.history.innerHTML = gestureHistory
+        .map(h => `<div>${h.time}: ${GESTURE_EMOJI[h.gesture]} ${h.gesture}</div>`)
+        .join('');
+    }
+    
+    // ========================================================================
+    // PANEL: Stats
+    // ========================================================================
+    layout.registerComponentFactoryFunction('stats', (cont) => {
+      const el = document.createElement('div');
+      el.className = 'panel stats-panel';
+      el.innerHTML = `
+        <h3>📈 Sensor Statistics</h3>
+        <div class="stat-row">
+          <span class="stat-label">Frame Rate</span>
+          <span class="stat-value" id="statFps">--</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Frame Latency</span>
+          <span class="stat-value" id="statLatency">--</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Confidence</span>
+          <span class="stat-value" id="statConfidence">--</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Total Frames</span>
+          <span class="stat-value" id="statFrames">--</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Messages/sec</span>
+          <span class="stat-value" id="statMsgRate">--</span>
+        </div>
+      `;
+      cont.element.appendChild(el);
+      
+      statsPanel = {
+        fps: el.querySelector('#statFps'),
+        latency: el.querySelector('#statLatency'),
+        confidence: el.querySelector('#statConfidence'),
+        frames: el.querySelector('#statFrames'),
+        msgRate: el.querySelector('#statMsgRate'),
+      };
+    });
+    
+    // Stats update loop
+    let lastMsgCount = 0;
+    setInterval(() => {
+      if (!statsPanel) return;
+      
+      statsPanel.fps.textContent = sensorStats.fps.toFixed(1) + ' Hz';
+      statsPanel.fps.className = 'stat-value ' + (sensorStats.fps > 50 ? 'good' : sensorStats.fps > 30 ? 'warn' : 'bad');
+      
+      statsPanel.latency.textContent = sensorStats.latency.toFixed(1) + ' ms';
+      statsPanel.confidence.textContent = (sensorStats.confidence * 100).toFixed(1) + '%';
+      statsPanel.frames.textContent = sensorStats.frameCount.toLocaleString();
+      
+      const rate = sensorStats.messagesPublished - lastMsgCount;
+      lastMsgCount = sensorStats.messagesPublished;
+      statsPanel.msgRate.textContent = rate + '/s';
+    }, 1000);
+    
+    // ========================================================================
+    // PANEL: MessageBus Log
+    // ========================================================================
+    layout.registerComponentFactoryFunction('buslog', (cont) => {
+      const el = document.createElement('div');
+      el.className = 'panel bus-panel';
+      el.innerHTML = `
+        <h3>🔌 MessageBus Traffic (JADC2 Transport)</h3>
+        <div class="log" id="busLogContainer"></div>
+      `;
+      cont.element.appendChild(el);
+      
+      logPanel = el.querySelector('#busLogContainer');
+      
+      bus.subscribe('bus.log', (entry) => {
+        if (!logPanel) return;
+        const div = document.createElement('div');
+        div.className = 'log-entry';
+        div.innerHTML = `<span class="log-time">${entry.time}</span> <span class="log-topic">${entry.topic}</span>`;
+        logPanel.insertBefore(div, logPanel.firstChild);
+        while (logPanel.children.length > MAX_LOG) {
+          logPanel.removeChild(logPanel.lastChild);
+        }
+      });
+    });
+    
+    // ========================================================================
+    // PANEL: Config
+    // ========================================================================
+    layout.registerComponentFactoryFunction('config', (cont) => {
+      const el = document.createElement('div');
+      el.className = 'panel config-panel';
+      el.innerHTML = `
+        <h3>⚙️ Sensor Configuration</h3>
+        <div class="config-group">
+          <label>Input Source</label>
+          <select id="sourceSelect">
+            <option value="mouse" ${sensorConfig.source === 'mouse' ? 'selected' : ''}>🖱️ Mouse (Fallback)</option>
+            <option value="camera" ${!mediaPipeAvailable ? 'disabled' : ''}>📷 Camera (MediaPipe)</option>
+          </select>
+        </div>
+        <div class="config-group">
+          <label>JADC2 Role: ISR (Sensors)</label>
+          <p style="font-size:0.75rem;color:var(--text-dim);margin-top:4px;">
+            Port 0 performs Intelligence, Surveillance, Reconnaissance.
+            SENSE without INTERPRET. Raw data flows downstream to Port 2 (SHAPE) for smoothing.
+          </p>
+        </div>
+        <div class="config-group">
+          <label>Commander: Lidless Legion</label>
+          <p style="font-size:0.75rem;color:var(--text-dim);margin-top:4px;">
+            "How do we SENSE the SENSE?" — The eye that watches itself watching.
+            Trigram: ☷ Kun (Earth) | Binary: 000
+          </p>
+        </div>
+      `;
+      cont.element.appendChild(el);
+      
+      const sourceSelect = el.querySelector('#sourceSelect');
+      sourceSelect.addEventListener('change', (e) => {
+        sensorConfig.source = e.target.value;
+        // Trigger source change in video panel
+        const btn = document.getElementById(sensorConfig.source === 'camera' ? 'btnCamera' : 'btnMouse');
+        if (btn) btn.click();
+      });
+    });
+    
+    // ========================================================================
+    // LAYOUT CONFIGURATION
+    // ========================================================================
+    const layoutConfig = {
+      root: {
+        type: 'row',
+        content: [
+          {
+            type: 'column',
+            width: 35,
+            content: [
+              { type: 'component', componentType: 'video', title: '📹 Input' },
+              { type: 'component', componentType: 'landmarks', title: '✋ Landmarks' },
+            ]
+          },
+          {
+            type: 'column',
+            width: 30,
+            content: [
+              { type: 'component', componentType: 'gesture', title: '🎯 Gesture' },
+              { type: 'component', componentType: 'config', title: '⚙️ Config' },
+            ]
+          },
+          {
+            type: 'column',
+            width: 35,
+            content: [
+              { type: 'component', componentType: 'stats', title: '📈 Stats' },
+              { type: 'component', componentType: 'buslog', title: '🔌 MessageBus' },
+            ]
+          }
+        ]
+      }
+    };
+    
+    layout.loadLayout(layoutConfig);
+    
+    window.addEventListener('resize', () => {
+      layout.setSize(container.offsetWidth, container.offsetHeight);
+    });
+    
+    console.log('[Sensor Demo] ✅ GoldenLayout initialized');
+    console.log('[Sensor Demo] Port 0 Lidless Legion — JADC2 ISR Role');
+    console.log('[Sensor Demo] Using SensorFrameSchema contract for downstream composition');
+  </script>
+</body>
+</html>

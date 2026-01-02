@@ -11,10 +11,10 @@
 import { type ActorRefFrom, type SnapshotFrom, assign, createActor, setup } from 'xstate';
 import type { FSMPort } from '../contracts/ports.js';
 import {
-	type FSMAction,
-	FSMActionSchema,
-	type FSMState,
-	type SmoothedFrame,
+    type FSMAction,
+    FSMActionSchema,
+    type FSMState,
+    type SmoothedFrame,
 } from '../contracts/schemas.js';
 
 // ============================================================================

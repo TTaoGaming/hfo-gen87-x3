@@ -105,6 +105,11 @@ export {
 } from '../pipeline/hfo-pipeline.js';
 
 // ============================================================================
+// SUBSTRATE (In-Memory Message Bus for Browser)
+// ============================================================================
+export { InMemorySubstrateAdapter } from '../adapters/in-memory-substrate.adapter.js';
+
+// ============================================================================
 // TRACE CONTEXT (OpenTelemetry W3C Format)
 // ============================================================================
 export {

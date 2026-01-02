@@ -12,12 +12,12 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { SmoothedFrame } from '../contracts/schemas.js';
 import { FSMActionSchema } from '../contracts/schemas.js';
-import { 
-	XStateFSMAdapter, 
-	guards,
-	DEFAULT_ARM_STABLE_MS,
-	DEFAULT_CMD_WINDOW_MS,
-	DEFAULT_MIN_CONFIDENCE
+import {
+    DEFAULT_ARM_STABLE_MS,
+    DEFAULT_CMD_WINDOW_MS,
+    DEFAULT_MIN_CONFIDENCE,
+    XStateFSMAdapter,
+    guards
 } from './xstate-fsm.adapter.js';
 
 // ============================================================================

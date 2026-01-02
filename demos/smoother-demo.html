@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HFO Smoother Demo — Port 2 SHAPE</title>
+  
+  <!-- GoldenLayout CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/golden-layout@2.6.0/dist/css/goldenlayout-base.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/golden-layout@2.6.0/dist/css/themes/goldenlayout-dark-theme.css">
+  
+  <!-- Import Map -->
+  <script type="importmap">
+  {
+    "imports": {
+      "golden-layout": "https://esm.sh/golden-layout@2.6.0"
+    }
+  }
+  </script>
+  
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --border: #30363d;
+      --text: #c9d1d9;
+      --text-dim: #8b949e;
+      --accent: #58a6ff;
+      --port2: #00ff88;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    header {
+      padding: 12px 20px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    header h1 {
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    header .badge {
+      background: var(--port2);
+      color: #000;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: bold;
+    }
+    
+    header .status {
+      margin-left: auto;
+      font-size: 0.8rem;
+      color: var(--text-dim);
+    }
+    
+    header .status .connected {
+      color: var(--port2);
+    }
+    
+    #layout-container {
+      flex: 1;
+      position: relative;
+    }
+    
+    /* Panel Styles */
+    .panel {
+      padding: 16px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      overflow: auto;
+    }
+    
+    .panel h3 {
+      font-size: 0.9rem;
+      margin-bottom: 12px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    /* Input Panel */
+    .input-panel canvas {
+      width: 100%;
+      flex: 1;
+      background: #000;
+      border-radius: 4px;
+      cursor: crosshair;
+    }
+    
+    .input-controls {
+      margin-top: 12px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    
+    .input-controls label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      color: var(--text-dim);
+    }
+    
+    .input-controls input[type="range"] {
+      width: 100px;
+    }
+    
+    /* Comparison Panel */
+    .comparison-panel canvas {
+      width: 100%;
+      flex: 1;
+      background: #000;
+      border-radius: 4px;
+    }
+    
+    .legend {
+      margin-top: 8px;
+      display: flex;
+      gap: 16px;
+      font-size: 0.75rem;
+    }
+    
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    
+    .legend-raw { background: #ff6b6b; }
+    .legend-smooth { background: var(--port2); }
+    
+    /* Params Panel */
+    .params-panel .param-group {
+      margin-bottom: 16px;
+    }
+    
+    .params-panel label {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      margin-bottom: 4px;
+    }
+    
+    .params-panel .param-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .params-panel input[type="range"] {
+      flex: 1;
+    }
+    
+    .params-panel .value {
+      width: 60px;
+      text-align: right;
+      font-family: monospace;
+      font-size: 0.85rem;
+    }
+    
+    .params-panel .source {
+      font-size: 0.65rem;
+      color: var(--text-dim);
+      font-style: italic;
+    }
+    
+    /* Stats Panel */
+    .stats-panel .stat-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .stats-panel .stat-label {
+      color: var(--text-dim);
+      font-size: 0.85rem;
+    }
+    
+    .stats-panel .stat-value {
+      font-family: monospace;
+      font-size: 0.9rem;
+    }
+    
+    .stats-panel .good { color: var(--port2); }
+    .stats-panel .warn { color: #f0883e; }
+    .stats-panel .bad { color: #f85149; }
+    
+    /* MessageBus Panel */
+    .bus-panel .log {
+      flex: 1;
+      background: #000;
+      border-radius: 4px;
+      padding: 8px;
+      font-family: monospace;
+      font-size: 0.75rem;
+      overflow-y: auto;
+      max-height: 300px;
+    }
+    
+    .bus-panel .log-entry {
+      padding: 2px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .bus-panel .log-topic {
+      color: var(--accent);
+    }
+    
+    .bus-panel .log-time {
+      color: var(--text-dim);
+    }
+    
+    footer {
+      padding: 8px 20px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      font-size: 0.75rem;
+      color: var(--text-dim);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>
+      🎯 Smoother Demo
+      <span class="badge">Port 2 SHAPE</span>
+    </h1>
+    <div class="status">
+      MessageBus: <span id="busStatus" class="connected">●</span>
+      <span id="busStatusText">Connecting...</span>
+    </div>
+  </header>
+  
+  <div id="layout-container"></div>
+  
+  <footer>
+    HFO Gen87.X3.2 | Using REAL OneEuroExemplarAdapter (83.58% mutation score) | RxJS InMemorySubstrateAdapter
+  </footer>
+
+  <script type="module">
+    import { GoldenLayout } from 'golden-layout';
+    import {
+      InMemorySubstrateAdapter,
+      OneEuroExemplarAdapter,
+      addJitter,
+      ONE_EURO_MINCUTOFF_DEFAULT,
+      ONE_EURO_BETA_DEFAULT,
+    } from './lib/hfo.js';
+    
+    // ========================================================================
+    // MESSAGE BUS SETUP (RxJS Substrate)
+    // ========================================================================
+    const bus = new InMemorySubstrateAdapter();
+    await bus.connect();
+    
+    document.getElementById('busStatus').textContent = '●';
+    document.getElementById('busStatusText').textContent = 'Connected';
+    
+    console.log('[Smoother Demo] ✅ InMemorySubstrateAdapter connected');
+    
+    // ========================================================================
+    // SMOOTHER STATE (Port 2 - SHAPE)
+    // ========================================================================
+    let smootherX = new OneEuroExemplarAdapter();
+    let smootherY = new OneEuroExemplarAdapter();
+    
+    // Parameter state
+    let params = {
+      minCutoff: ONE_EURO_MINCUTOFF_DEFAULT,
+      beta: ONE_EURO_BETA_DEFAULT,
+      jitter: 15,
+    };
+    
+    // Trail data for visualization
+    const TRAIL_LENGTH = 100;
+    let rawTrail = [];
+    let smoothTrail = [];
+    
+    // Stats
+    let stats = {
+      rawJitter: 0,
+      smoothJitter: 0,
+      reduction: 0,
+      frameTime: 0,
+      messagesPublished: 0,
+    };
+    
+    // MessageBus log
+    const busLog = [];
+    const MAX_LOG = 50;
+    
+    function logBusMessage(topic, data) {
+      const entry = {
+        time: new Date().toISOString().substr(11, 12),
+        topic,
+        data: JSON.stringify(data).substring(0, 60),
+      };
+      busLog.unshift(entry);
+      if (busLog.length > MAX_LOG) busLog.pop();
+      bus.publish('bus.log', entry);
+    }
+    
+    // ========================================================================
+    // GOLDEN LAYOUT SETUP
+    // ========================================================================
+    const container = document.getElementById('layout-container');
+    const layout = new GoldenLayout(container);
+    
+    // Panel references for updates
+    let inputCanvas, compCanvas, paramsPanel, statsPanel, logPanel;
+    
+    // ========================================================================
+    // PANEL: Input (mouse + jitter)
+    // ========================================================================
+    layout.registerComponentFactoryFunction('input', (cont) => {
+      const el = document.createElement('div');
+      el.className = 'panel input-panel';
+      el.innerHTML = `
+        <h3>📥 Input Source</h3>
+        <canvas id="inputCanvas"></canvas>
+        <div class="input-controls">
+          <label>
+            Jitter:
+            <input type="range" id="jitterSlider" min="0" max="50" value="${params.jitter}">
+            <span id="jitterValue">${params.jitter}px</span>
+          </label>
+        </div>
+      `;
+      cont.element.appendChild(el);
+      
+      inputCanvas = el.querySelector('#inputCanvas');
+      const jitterSlider = el.querySelector('#jitterSlider');
+      const jitterValue = el.querySelector('#jitterValue');
+      
+      jitterSlider.addEventListener('input', (e) => {
+        params.jitter = parseInt(e.target.value);
+        jitterValue.textContent = params.jitter + 'px';
+      });
+      
+      // Mouse tracking
+      let mouseX = 0.5, mouseY = 0.5;
+      inputCanvas.addEventListener('mousemove', (e) => {
+        const rect = inputCanvas.getBoundingClientRect();
+        mouseX = (e.clientX - rect.left) / rect.width;
+        mouseY = (e.clientY - rect.top) / rect.height;
+      });
+      
+      // Animation loop - publish to bus
+      function tick() {
+        const rawX = addJitter(mouseX, params.jitter / 1000);
+        const rawY = addJitter(mouseY, params.jitter / 1000);
+        
+        // Publish raw input to bus
+        bus.publish('sensor.raw', { x: rawX, y: rawY, ts: performance.now() });
+        logBusMessage('sensor.raw', { x: rawX.toFixed(3), y: rawY.toFixed(3) });
+        stats.messagesPublished++;
+        
+        requestAnimationFrame(tick);
+      }
+      tick();
+    });
+    
+    // ========================================================================
+    // PANEL: Comparison (raw vs smooth trails)
+    // ========================================================================
+    layout.registerComponentFactoryFunction('comparison', (cont) => {
+      const el = document.createElement('div');
+      el.className = 'panel comparison-panel';
+      el.innerHTML = `
+        <h3>📊 Raw vs Smoothed</h3>
+        <canvas id="compCanvas"></canvas>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot legend-raw"></div>Raw Input</div>
+          <div class="legend-item"><div class="legend-dot legend-smooth"></div>1€ Smoothed</div>
+        </div>
+      `;
+      cont.element.appendChild(el);
+      
+      compCanvas = el.querySelector('#compCanvas');
+      
+      // Subscribe to raw input
+      bus.subscribe('sensor.raw', (data) => {
+        const { x, y, ts } = data;
+        
+        // Add to raw trail
+        rawTrail.push({ x, y });
+        if (rawTrail.length > TRAIL_LENGTH) rawTrail.shift();
+        
+        // Smooth via OneEuroExemplarAdapter
+        const start = performance.now();
+        const smoothX = smootherX.smooth({ value: x, timestamp: ts / 1000 });
+        const smoothY = smootherY.smooth({ value: y, timestamp: ts / 1000 });
+        stats.frameTime = performance.now() - start;
+        
+        // Add to smooth trail
+        smoothTrail.push({ x: smoothX, y: smoothY });
+        if (smoothTrail.length > TRAIL_LENGTH) smoothTrail.shift();
+        
+        // Publish smoothed output
+        bus.publish('smoother.output', { x: smoothX, y: smoothY, ts });
+        
+        // Update stats
+        updateStats();
+      });
+      
+      // Render loop
+      function render() {
+        if (!compCanvas) { requestAnimationFrame(render); return; }
+        
+        const ctx = compCanvas.getContext('2d');
+        const w = compCanvas.width = compCanvas.offsetWidth;
+        const h = compCanvas.height = compCanvas.offsetHeight;
+        
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, w, h);
+        
+        // Draw raw trail
+        if (rawTrail.length > 1) {
+          ctx.beginPath();
+          ctx.strokeStyle = '#ff6b6b';
+          ctx.lineWidth = 2;
+          rawTrail.forEach((p, i) => {
+            const px = p.x * w;
+            const py = p.y * h;
+            if (i === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+          });
+          ctx.stroke();
+        }
+        
+        // Draw smooth trail
+        if (smoothTrail.length > 1) {
+          ctx.beginPath();
+          ctx.strokeStyle = '#00ff88';
+          ctx.lineWidth = 2;
+          smoothTrail.forEach((p, i) => {
+            const px = p.x * w;
+            const py = p.y * h;
+            if (i === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+          });
+          ctx.stroke();
+        }
+        
+        requestAnimationFrame(render);
+      }
+      render();
+    });
+    
+    // ========================================================================
+    // PANEL: Parameters
+    // ========================================================================
+    layout.registerComponentFactoryFunction('params', (cont) => {
+      const el = document.createElement('div');
+      el.className = 'panel params-panel';
+      el.innerHTML = `
+        <h3>⚙️ 1€ Filter Parameters</h3>
+        
+        <div class="param-group">
+          <label>Min Cutoff (fc<sub>min</sub>)</label>
+          <div class="param-row">
+            <input type="range" id="minCutoffSlider" min="0.001" max="5" step="0.001" value="${params.minCutoff}">
+            <span class="value" id="minCutoffValue">${params.minCutoff.toFixed(3)}</span>
+          </div>
+          <div class="source">@source gery.casiez.net/1euro — Default: 1.0 Hz</div>
+        </div>
+        
+        <div class="param-group">
+          <label>Beta (β) — Speed Coefficient</label>
+          <div class="param-row">
+            <input type="range" id="betaSlider" min="0" max="1" step="0.001" value="${params.beta}">
+            <span class="value" id="betaValue">${params.beta.toFixed(3)}</span>
+          </div>
+          <div class="source">@source Casiez CHI 2012 — Default: 0.0 (no speed adaptation)</div>
+        </div>
+        
+        <button id="resetParams" style="margin-top:12px;padding:8px 16px;cursor:pointer;">Reset to Defaults</button>
+      `;
+      cont.element.appendChild(el);
+      
+      const minCutoffSlider = el.querySelector('#minCutoffSlider');
+      const minCutoffValue = el.querySelector('#minCutoffValue');
+      const betaSlider = el.querySelector('#betaSlider');
+      const betaValue = el.querySelector('#betaValue');
+      const resetBtn = el.querySelector('#resetParams');
+      
+      minCutoffSlider.addEventListener('input', (e) => {
+        params.minCutoff = parseFloat(e.target.value);
+        minCutoffValue.textContent = params.minCutoff.toFixed(3);
+        resetSmootherWithParams();
+      });
+      
+      betaSlider.addEventListener('input', (e) => {
+        params.beta = parseFloat(e.target.value);
+        betaValue.textContent = params.beta.toFixed(3);
+        resetSmootherWithParams();
+      });
+      
+      resetBtn.addEventListener('click', () => {
+        params.minCutoff = ONE_EURO_MINCUTOFF_DEFAULT;
+        params.beta = ONE_EURO_BETA_DEFAULT;
+        minCutoffSlider.value = params.minCutoff;
+        minCutoffValue.textContent = params.minCutoff.toFixed(3);
+        betaSlider.value = params.beta;
+        betaValue.textContent = params.beta.toFixed(3);
+        resetSmootherWithParams();
+      });
+    });
+    
+    function resetSmootherWithParams() {
+      smootherX = new OneEuroExemplarAdapter({ minCutoff: params.minCutoff, beta: params.beta });
+      smootherY = new OneEuroExemplarAdapter({ minCutoff: params.minCutoff, beta: params.beta });
+      rawTrail = [];
+      smoothTrail = [];
+      console.log('[Smoother Demo] Reset with minCutoff:', params.minCutoff, 'beta:', params.beta);
+    }
+    
+    // ========================================================================
+    // PANEL: Stats
+    // ========================================================================
+    layout.registerComponentFactoryFunction('stats', (cont) => {
+      const el = document.createElement('div');
+      el.className = 'panel stats-panel';
+      el.innerHTML = `
+        <h3>📈 Statistics</h3>
+        <div class="stat-row">
+          <span class="stat-label">Raw Jitter (σ)</span>
+          <span class="stat-value" id="statRawJitter">--</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Smooth Jitter (σ)</span>
+          <span class="stat-value" id="statSmoothJitter">--</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Jitter Reduction</span>
+          <span class="stat-value" id="statReduction">--</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Frame Time</span>
+          <span class="stat-value" id="statFrameTime">--</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Messages/sec</span>
+          <span class="stat-value" id="statMsgRate">--</span>
+        </div>
+      `;
+      cont.element.appendChild(el);
+      
+      statsPanel = {
+        rawJitter: el.querySelector('#statRawJitter'),
+        smoothJitter: el.querySelector('#statSmoothJitter'),
+        reduction: el.querySelector('#statReduction'),
+        frameTime: el.querySelector('#statFrameTime'),
+        msgRate: el.querySelector('#statMsgRate'),
+      };
+    });
+    
+    function updateStats() {
+      if (!statsPanel) return;
+      
+      // Calculate jitter (standard deviation of deltas)
+      if (rawTrail.length > 2) {
+        const rawDeltas = [];
+        const smoothDeltas = [];
+        for (let i = 1; i < rawTrail.length; i++) {
+          rawDeltas.push(Math.sqrt(
+            Math.pow(rawTrail[i].x - rawTrail[i-1].x, 2) +
+            Math.pow(rawTrail[i].y - rawTrail[i-1].y, 2)
+          ));
+        }
+        for (let i = 1; i < smoothTrail.length; i++) {
+          smoothDeltas.push(Math.sqrt(
+            Math.pow(smoothTrail[i].x - smoothTrail[i-1].x, 2) +
+            Math.pow(smoothTrail[i].y - smoothTrail[i-1].y, 2)
+          ));
+        }
+        
+        const rawMean = rawDeltas.reduce((a, b) => a + b, 0) / rawDeltas.length;
+        const smoothMean = smoothDeltas.reduce((a, b) => a + b, 0) / smoothDeltas.length;
+        
+        stats.rawJitter = Math.sqrt(rawDeltas.reduce((sum, d) => sum + Math.pow(d - rawMean, 2), 0) / rawDeltas.length);
+        stats.smoothJitter = Math.sqrt(smoothDeltas.reduce((sum, d) => sum + Math.pow(d - smoothMean, 2), 0) / smoothDeltas.length);
+        stats.reduction = stats.rawJitter > 0 ? ((stats.rawJitter - stats.smoothJitter) / stats.rawJitter * 100) : 0;
+      }
+      
+      statsPanel.rawJitter.textContent = (stats.rawJitter * 1000).toFixed(2) + ' px';
+      statsPanel.smoothJitter.textContent = (stats.smoothJitter * 1000).toFixed(2) + ' px';
+      statsPanel.reduction.textContent = stats.reduction.toFixed(1) + '%';
+      statsPanel.reduction.className = 'stat-value ' + (stats.reduction > 50 ? 'good' : stats.reduction > 20 ? 'warn' : 'bad');
+      statsPanel.frameTime.textContent = stats.frameTime.toFixed(3) + ' ms';
+    }
+    
+    // Message rate counter
+    let lastMsgCount = 0;
+    setInterval(() => {
+      if (statsPanel) {
+        const rate = stats.messagesPublished - lastMsgCount;
+        lastMsgCount = stats.messagesPublished;
+        statsPanel.msgRate.textContent = rate + '/s';
+      }
+    }, 1000);
+    
+    // ========================================================================
+    // PANEL: MessageBus Log
+    // ========================================================================
+    layout.registerComponentFactoryFunction('buslog', (cont) => {
+      const el = document.createElement('div');
+      el.className = 'panel bus-panel';
+      el.innerHTML = `
+        <h3>🔌 MessageBus Traffic</h3>
+        <div class="log" id="busLogContainer"></div>
+      `;
+      cont.element.appendChild(el);
+      
+      logPanel = el.querySelector('#busLogContainer');
+      
+      // Subscribe to log updates
+      bus.subscribe('bus.log', (entry) => {
+        if (!logPanel) return;
+        const div = document.createElement('div');
+        div.className = 'log-entry';
+        div.innerHTML = `<span class="log-time">${entry.time}</span> <span class="log-topic">${entry.topic}</span>`;
+        logPanel.insertBefore(div, logPanel.firstChild);
+        
+        // Trim old entries
+        while (logPanel.children.length > MAX_LOG) {
+          logPanel.removeChild(logPanel.lastChild);
+        }
+      });
+    });
+    
+    // ========================================================================
+    // LAYOUT CONFIGURATION
+    // ========================================================================
+    const layoutConfig = {
+      root: {
+        type: 'row',
+        content: [
+          {
+            type: 'column',
+            width: 35,
+            content: [
+              { type: 'component', componentType: 'input', title: '📥 Input' },
+              { type: 'component', componentType: 'params', title: '⚙️ Parameters' },
+            ]
+          },
+          {
+            type: 'column',
+            width: 40,
+            content: [
+              { type: 'component', componentType: 'comparison', title: '📊 Comparison' },
+            ]
+          },
+          {
+            type: 'column',
+            width: 25,
+            content: [
+              { type: 'component', componentType: 'stats', title: '📈 Stats' },
+              { type: 'component', componentType: 'buslog', title: '🔌 MessageBus' },
+            ]
+          }
+        ]
+      }
+    };
+    
+    layout.loadLayout(layoutConfig);
+    
+    // Handle resize
+    window.addEventListener('resize', () => {
+      layout.setSize(container.offsetWidth, container.offsetHeight);
+    });
+    
+    console.log('[Smoother Demo] ✅ GoldenLayout initialized');
+    console.log('[Smoother Demo] Using REAL OneEuroExemplarAdapter (83.58% mutation score)');
+  </script>
+</body>
+</html>

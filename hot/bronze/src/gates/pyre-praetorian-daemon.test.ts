@@ -21,8 +21,8 @@ import {
     PyrePraetorianDaemon,
     StigmergySignalSchema,
     VALID_TRANSITIONS,
-    createJSONLEmitter,
     createConsoleEmitter,
+    createJSONLEmitter,
     createNATSEmitter,
     type StigmergySignal
 } from './pyre-praetorian-daemon.js';

@@ -346,10 +346,11 @@
       createGestureTransitionState,
       DEFAULT_GESTURE_TRANSITION_CONFIG,
       OneEuroExemplarAdapter,
-      XStateFSMAdapter,  // REAL FSM with 43 tests (54% mutation score)
+      XStateFSMAdapter,  // REAL FSM with 43 tests (82.70% mutation score)
       SensorFrameSchema,
       SmoothedFrameSchema,
       createSensorFrameFromMouse,
+      HFOPortFactory,  // Port factory for W3C PointerEventAdapter (45 tests)
     } from './lib/hfo.js';
     
     console.log('[HFO] ✅ Golden Unified Demo - REAL tested modules loaded (no inline code)');
@@ -447,45 +448,52 @@
       }
     };
     
-    // Port 3 - DELIVER (W3C PointerEvents)
+    // Port 3 - DELIVER (W3C PointerEvents) - Uses REAL PointerEventAdapter (45 tests)
+    const portFactory = new HFOPortFactory();
+    const pointerEventAdapter = portFactory.createEmitter();
+    
     const EmitterPort = {
       state: { lastEvent: null, eventCount: 0, events: [] },
       subscribers: [],
       prevFsmState: 'DISARMED',
+      targetBounds: { width: 800, height: 600, left: 0, top: 0 },  // Updated by GoldenLayout
+      
+      setTargetBounds(bounds) {
+        this.targetBounds = bounds;
+      },
       
       process(gateState, smootherState) {
-        const { fsmState } = gateState;
+        const { fsmState, lastAction } = gateState;
         const { smoothed } = smootherState;
-        let eventType = null, eventData = null;
         
-        if (fsmState === 'ARMED' && (this.prevFsmState === 'ARMED' || this.prevFsmState === 'ARMING')) {
-          eventType = 'pointermove';
-          eventData = { clientX: smoothed.x, clientY: smoothed.y };
-        } else if (fsmState === 'DOWN_COMMIT' && this.prevFsmState !== 'DOWN_COMMIT') {
-          eventType = 'pointerdown';
-          eventData = { button: 0, buttons: 1, clientX: smoothed.x, clientY: smoothed.y };
-        } else if (fsmState === 'ARMED' && this.prevFsmState === 'DOWN_COMMIT') {
-          eventType = 'pointerup';
-          eventData = { button: 0, clientX: smoothed.x, clientY: smoothed.y };
-        } else if (fsmState === 'DISARMED' && this.prevFsmState === 'DOWN_COMMIT') {
-          eventType = 'pointercancel';
-          eventData = { clientX: smoothed.x, clientY: smoothed.y };
-        } else if (fsmState === 'DOWN_COMMIT') {
-          eventType = 'pointermove';
-          eventData = { buttons: 1, clientX: smoothed.x, clientY: smoothed.y };
+        // Use REAL PointerEventAdapter.emit() - CDD validated output
+        // FSMAction contains: { state, action, x?, y?, button? }
+        if (lastAction && lastAction.action !== 'none') {
+          // Create target with current bounds - coordinates normalized (0-1)
+          const target = { bounds: this.targetBounds };
+          
+          // Override action coordinates with smoothed values if available
+          const actionWithCoords = {
+            ...lastAction,
+            x: smoothed.x,
+            y: smoothed.y,
+          };
+          
+          // REAL adapter emits W3C PointerEventOut (Zod validated)
+          const event = pointerEventAdapter.emit(actionWithCoords, target);
+          
+          if (event) {
+            // Add timestamp for UI display
+            const eventWithTs = { ...event, timestamp: performance.now() };
+            this.state.lastEvent = eventWithTs;
+            this.state.eventCount++;
+            this.state.events.unshift(eventWithTs);
+            if (this.state.events.length > 20) this.state.events.pop();
+            this.subscribers.forEach(fn => fn(eventWithTs, this.state));
+          }
         }
         
         this.prevFsmState = fsmState;
-        
-        if (eventType) {
-          const event = { type: eventType, pointerId: 1, pointerType: 'hand', isPrimary: true, ...eventData, timestamp: performance.now() };
-          this.state.lastEvent = event;
-          this.state.eventCount++;
-          this.state.events.unshift(event);
-          if (this.state.events.length > 20) this.state.events.pop();
-          this.subscribers.forEach(fn => fn(event, this.state));
-        }
-        
         return this.state;
       },
       

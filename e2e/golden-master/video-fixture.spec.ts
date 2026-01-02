@@ -21,7 +21,11 @@
 import { expect, test, type Page } from '@playwright/test';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type { TelemetryFrame, TelemetrySession } from './telemetry-collector';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Fixture paths relative to workspace
 const FIXTURES_DIR = path.join(__dirname, '../../cold/silver');
