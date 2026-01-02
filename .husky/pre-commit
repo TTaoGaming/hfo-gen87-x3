@@ -28,7 +28,32 @@ if [ -n "$UNAUTHORIZED" ]; then
   exit 1
 fi
 
-# Gate 6: Single Entry Point - NEW code files must go to bronze/quarantine
+# Gate 6: Magic Numbers Provenance Check
+echo "  → Magic Numbers Provenance..."
+# Check staged TS files for magic numbers without @source annotation
+STAGED_TS=$(git diff --cached --name-only | grep -E '\.ts$' | grep -v '\.test\.ts$' | grep -v '\.spec\.ts$' | grep -v 'magic-numbers\.ts$' || true)
+if [ -n "$STAGED_TS" ]; then
+  MAGIC_VIOLATIONS=""
+  for FILE in $STAGED_TS; do
+    # Check for decimal literals like 0.007, 0.002 etc without nearby @source
+    VIOLATIONS=$(git diff --cached "$FILE" | grep -E '^\+.*0\.[0-9]{2,}' | grep -v '@source\|@citation\|@see\|import.*magic-numbers' || true)
+    if [ -n "$VIOLATIONS" ]; then
+      MAGIC_VIOLATIONS="$MAGIC_VIOLATIONS\n$FILE:\n$VIOLATIONS"
+    fi
+  done
+  if [ -n "$MAGIC_VIOLATIONS" ]; then
+    echo "⚠️  WARNING: Magic numbers detected without provenance:"
+    echo -e "$MAGIC_VIOLATIONS"
+    echo ""
+    echo "   To fix:"
+    echo "   1. Import from hot/bronze/src/constants/magic-numbers.ts"
+    echo "   2. OR add @source JSDoc annotation"
+    echo "   See: MAGIC_NUMBERS_REGISTRY.md"
+    # Warning only for now - set to exit 1 to block
+  fi
+fi
+
+# Gate 7: Single Entry Point - NEW code files must go to bronze/quarantine
 echo "  → Single Entry Point..."
 NEW_CODE=$(git diff --cached --name-only --diff-filter=A | grep -E '\.(ts|tsx|js|jsx|html)$' | grep -v 'hot/bronze/quarantine/' | grep -v '\.test\.' | grep -v '\.spec\.' || true)
 if [ -n "$NEW_CODE" ]; then

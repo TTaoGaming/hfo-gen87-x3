@@ -21,6 +21,12 @@
 import RAPIER from '@dimforge/rapier2d-compat';
 import type { SmootherPort } from '../contracts/ports.js';
 import type { SensorFrame, SmoothedFrame } from '../contracts/schemas.js';
+import {
+	DEAD_ZONE_DEFAULT,
+	RAPIER_DAMPING_DEFAULT,
+	RAPIER_STIFFNESS_DEFAULT,
+	RAPIER_SUBSTEPS_DEFAULT,
+} from '../constants/magic-numbers.js';
 
 // ============================================================================
 // TYPES
@@ -38,9 +44,12 @@ export interface RapierConfig {
 	/** Physics substeps per frame (more = smoother but slower) */
 	substeps?: number;
 	// ========== VELOCITY DEAD ZONE (Standard UX Pattern) ==========
-	/** Velocity threshold below which cursor stays still (jitter elimination)
-	 * Standard values: Unity 0.125, Steam 0.05-0.08, our default 0.002 (tight)
-	 * @see https://docs.unity3d.com/Packages/com.unity.inputsystem@1.0/manual/Controls.html#deadzones
+	/**
+	 * Velocity threshold below which cursor stays still (jitter elimination)
+	 * @source https://docs.microsoft.com/en-us/windows/win32/xinput/getting-started-with-xinput
+	 * @citation XInput standard; Unity Input System documentation
+	 * @range [0.05, 0.25] - Industry standard (Xbox=0.24, Steam=0.05-0.08)
+	 * @default 0.10 - Hardware noise floor
 	 */
 	velocityDeadZone?: number;
 	// ========== ADAPTIVE MODE (1€ Filter-inspired) ==========
@@ -54,16 +63,16 @@ export interface RapierConfig {
 
 const DEFAULT_CONFIG: Required<RapierConfig> = {
 	mode: 'smoothed',
-	stiffness: 200, // Reduced for smoother response (was 400 - too snappy)
-	damping: 1.2, // CRITICALLY DAMPED+ to prevent oscillation (was 0.85 - underdamped!)
+	stiffness: RAPIER_STIFFNESS_DEFAULT, // 200 - Tuned for ~50ms settling time
+	damping: RAPIER_DAMPING_DEFAULT, // 1.2 - Critically damped+ to prevent oscillation
 	predictionMs: 50, // 3 frames at 60fps
-	substeps: 4, // More substeps for smoother physics (was 2)
-	// Velocity dead zone - standard UX pattern (Unity 0.125, Steam 0.05)
-	velocityDeadZone: 0.002, // 0.2% of normalized space - tight but eliminates jitter
+	substeps: RAPIER_SUBSTEPS_DEFAULT, // 4 - Balance accuracy vs performance
+	// Velocity dead zone - XInput standard (see MAGIC_NUMBERS_REGISTRY.md)
+	velocityDeadZone: DEAD_ZONE_DEFAULT, // 0.10 (10%) - Hardware noise floor
 	// Adaptive mode defaults (tuned for cursor tracking)
-	minStiffness: 50, // Lower minimum for smoother rest behavior (was 100)
-	speedCoefficient: 300, // Gentler ramp-up (was 500 - too aggressive)
-	maxStiffness: 400, // Lower cap for stability (was 800 - caused oscillation)
+	minStiffness: 50, // Lower minimum for smoother rest behavior
+	speedCoefficient: 300, // Gentler ramp-up
+	maxStiffness: 400, // Lower cap for stability
 };
 
 // ============================================================================
@@ -200,8 +209,19 @@ export class RapierPhysicsAdapter implements SmootherPort {
 			return this.createPassthroughFrame(frame);
 		}
 
-		// Store velocity for output
-		this.velocity = { x: smoothedVel.x, y: smoothedVel.y };
+		// ========== VELOCITY DEAD ZONE (Standard UX Pattern) ==========
+		// At very low velocity, clamp to zero to eliminate jitter
+		// This is standard cursor UX - Unity, Steam, game engines all use this
+		// @see https://docs.unity3d.com/Packages/com.unity.inputsystem@1.0/manual/Controls.html#deadzones
+		const speed = Math.sqrt(smoothedVel.x * smoothedVel.x + smoothedVel.y * smoothedVel.y);
+		if (speed < this.config.velocityDeadZone) {
+			// Zero out velocity in physics engine - cursor stays perfectly still
+			this.cursorBody.setLinvel({ x: 0, y: 0 }, true);
+			this.velocity = { x: 0, y: 0 };
+		} else {
+			// Store velocity for output
+			this.velocity = { x: smoothedVel.x, y: smoothedVel.y };
+		}
 
 		// For predictive mode, simulate future position
 		let outputPosition = { x: smoothedPos.x, y: smoothedPos.y };

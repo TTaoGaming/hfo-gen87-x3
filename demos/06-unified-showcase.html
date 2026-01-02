@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HFO Gen87 — Unified Showcase</title>
+    
+    <!-- Import Map for ESM Modules -->
+    <script type="importmap">
+    {
+        "imports": {
+            "1eurofilter": "https://esm.sh/1eurofilter@1.2.2"
+        }
+    }
+    </script>
+    
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        :root {
+            --bg-dark: #1a1a2e;
+            --bg-card: #16213e;
+            --border: #0f3460;
+            --accent-red: #e94560;
+            --accent-green: #00ff88;
+            --accent-blue: #00d9ff;
+            --accent-orange: #ff9f43;
+            --accent-purple: #a855f7;
+            --text: #eee;
+            --text-dim: #888;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        header {
+            padding: 16px 24px;
+            background: var(--bg-card);
+            border-bottom: 2px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        header h1 {
+            font-size: 1.5rem;
+            background: linear-gradient(90deg, var(--accent-red), var(--accent-purple), var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        header p { color: var(--text-dim); font-size: 0.9rem; margin-top: 4px; }
+        
+        .smoother-select {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .smoother-btn {
+            padding: 8px 16px;
+            border: 2px solid var(--border);
+            background: transparent;
+            color: var(--text-dim);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        
+        .smoother-btn.active { border-color: var(--accent-green); color: var(--accent-green); }
+        .smoother-btn:hover:not(.active) { border-color: var(--accent-blue); }
+        
+        main {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 0;
+        }
+        
+        .sidebar {
+            background: var(--bg-card);
+            padding: 20px;
+            border-right: 2px solid var(--border);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .panel {
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            padding: 16px;
+        }
+        
+        .panel h3 {
+            font-size: 0.9rem;
+            color: var(--accent-green);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .panel h3 .port { 
+            font-size: 0.7rem; 
+            color: var(--text-dim);
+            font-weight: normal;
+        }
+        
+        .control-group {
+            margin-bottom: 14px;
+        }
+        
+        .control-group label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--accent-orange);
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+        
+        .control-group input[type="range"] {
+            width: 100%;
+            margin-bottom: 4px;
+            accent-color: var(--accent-orange);
+        }
+        
+        .control-group .value {
+            font-size: 0.8rem;
+            color: #fff;
+            font-family: monospace;
+        }
+        
+        .control-group .provenance {
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            margin-top: 2px;
+        }
+        
+        .presets {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+        
+        .preset-btn {
+            padding: 6px 10px;
+            background: var(--border);
+            border: none;
+            color: var(--text);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.7rem;
+        }
+        
+        .preset-btn:hover { background: var(--accent-orange); color: #000; }
+        
+        .canvas-container {
+            position: relative;
+            background: #0d1117;
+        }
+        
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .overlay {
+            position: absolute;
+            padding: 12px 16px;
+            background: rgba(0,0,0,0.85);
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-family: monospace;
+        }
+        
+        .legend { top: 20px; right: 20px; }
+        .stats { bottom: 20px; left: 20px; }
+        .mode-badge { top: 20px; left: 20px; border: 1px solid var(--accent-orange); }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+        
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .dot-raw { background: #ff4444; }
+        .dot-1euro { background: var(--accent-green); }
+        .dot-physics { background: var(--accent-orange); }
+        .dot-desp { background: var(--accent-blue); }
+        .dot-predicted { background: var(--accent-purple); }
+        
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+        
+        .stat-label { color: var(--text-dim); }
+        .stat-value { color: var(--accent-green); }
+        
+        footer {
+            padding: 12px 24px;
+            background: var(--bg-card);
+            border-top: 2px solid var(--border);
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        footer a { color: var(--accent-red); text-decoration: none; }
+        
+        /* Magic Numbers Provenance Badge */
+        .provenance-badge {
+            display: inline-block;
+            font-size: 0.6rem;
+            background: rgba(0,255,136,0.1);
+            color: var(--accent-green);
+            padding: 2px 6px;
+            border-radius: 3px;
+            margin-left: 4px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div>
+            <h1>🕸️ HFO Unified Showcase</h1>
+            <p>Polymorphic SmootherPort Adapters — Side-by-Side Comparison</p>
+        </div>
+        <div class="smoother-select">
+            <button class="smoother-btn active" data-smoother="all">All Smoothers</button>
+            <button class="smoother-btn" data-smoother="1euro">1€ Filter</button>
+            <button class="smoother-btn" data-smoother="physics">Physics</button>
+            <button class="smoother-btn" data-smoother="desp">DESP</button>
+            <button class="smoother-btn" data-smoother="raw">Raw Only</button>
+        </div>
+    </header>
+    
+    <main>
+        <div class="sidebar">
+            <!-- 1€ Filter Controls -->
+            <div class="panel" id="oneEuroPanel">
+                <h3>
+                    <span style="color: var(--accent-green);">● 1€ Filter</span>
+                    <span class="port">Port 2 SHAPE</span>
+                </h3>
+                
+                <div class="control-group">
+                    <label>
+                        Min Cutoff (fcmin)
+                        <span class="provenance-badge">Casiez CHI 2012</span>
+                    </label>
+                    <input type="range" id="mincutoff" min="0.1" max="10" step="0.1" value="1.0">
+                    <div class="value"><span id="mincutoffVal">1.0</span> Hz</div>
+                    <div class="provenance">@source gery.casiez.net/1euro | Range: [0.1, 10]</div>
+                </div>
+                
+                <div class="control-group">
+                    <label>
+                        Beta (β)
+                        <span class="provenance-badge">Casiez CHI 2012</span>
+                    </label>
+                    <input type="range" id="beta" min="0" max="1" step="0.01" value="0">
+                    <div class="value"><span id="betaVal">0.00</span></div>
+                    <div class="provenance">@source Paper default: 0.0, increase for speed response</div>
+                </div>
+            </div>
+            
+            <!-- Physics Controls -->
+            <div class="panel" id="physicsPanel">
+                <h3>
+                    <span style="color: var(--accent-orange);">● Physics (Rapier-style)</span>
+                    <span class="port">Port 2 SHAPE</span>
+                </h3>
+                
+                <div class="presets">
+                    <button class="preset-btn" data-stiffness="400" data-damping="25">Snappy</button>
+                    <button class="preset-btn" data-stiffness="200" data-damping="17">Smooth</button>
+                    <button class="preset-btn" data-stiffness="100" data-damping="5">Bouncy</button>
+                    <button class="preset-btn" data-stiffness="200" data-damping="30">Critical</button>
+                </div>
+                
+                <div class="control-group">
+                    <label>
+                        Stiffness (k)
+                        <span class="provenance-badge">Custom Tuned</span>
+                    </label>
+                    <input type="range" id="stiffness" min="100" max="500" step="10" value="200">
+                    <div class="value"><span id="stiffnessVal">200</span> N/m</div>
+                    <div class="provenance">@source MAGIC_NUMBERS_REGISTRY | Range: [100, 500]</div>
+                </div>
+                
+                <div class="control-group">
+                    <label>
+                        Damping (ζ ratio)
+                        <span class="provenance-badge">Classical Mechanics</span>
+                    </label>
+                    <input type="range" id="damping" min="0.5" max="2" step="0.1" value="1.2">
+                    <div class="value"><span id="dampingVal">1.2</span></div>
+                    <div class="provenance">@source Critical=1.0, Overdamped=1.2 | Range: [0.5, 2.0]</div>
+                </div>
+                
+                <div class="control-group">
+                    <label>
+                        Dead Zone
+                        <span class="provenance-badge">XInput Standard</span>
+                    </label>
+                    <input type="range" id="deadzone" min="0.05" max="0.25" step="0.01" value="0.10">
+                    <div class="value"><span id="deadzoneVal">0.10</span> (10%)</div>
+                    <div class="provenance">@source XInput: 0.24, Steam: 0.05-0.08 | Range: [0.05, 0.25]</div>
+                </div>
+            </div>
+            
+            <!-- DESP Controls -->
+            <div class="panel" id="despPanel">
+                <h3>
+                    <span style="color: var(--accent-blue);">● DESP (LaViola)</span>
+                    <span class="port">Port 2 SHAPE + PREDICT</span>
+                </h3>
+                
+                <div class="control-group">
+                    <label>
+                        Alpha (α)
+                        <span class="provenance-badge">LaViola 2003</span>
+                    </label>
+                    <input type="range" id="despAlpha" min="0.1" max="0.9" step="0.05" value="0.5">
+                    <div class="value"><span id="despAlphaVal">0.50</span></div>
+                    <div class="provenance">@source Double Exponential Smoothing paper | Range: [0.1, 0.9]</div>
+                </div>
+                
+                <div class="control-group">
+                    <label>Prediction (ms)</label>
+                    <input type="range" id="despPrediction" min="0" max="100" step="5" value="50">
+                    <div class="value"><span id="despPredictionVal">50</span> ms</div>
+                    <div class="provenance">Lookahead for "negative latency"</div>
+                </div>
+            </div>
+            
+            <!-- Noise Controls -->
+            <div class="panel">
+                <h3>
+                    <span style="color: var(--accent-red);">● Noise Generator</span>
+                    <span class="port">Test Input</span>
+                </h3>
+                
+                <div class="control-group">
+                    <label>Jitter Amount</label>
+                    <input type="range" id="jitter" min="0" max="0.1" step="0.005" value="0.02">
+                    <div class="value"><span id="jitterVal">0.020</span> (2%)</div>
+                </div>
+                
+                <div class="control-group">
+                    <label>Update Rate</label>
+                    <input type="range" id="updateRate" min="15" max="120" step="5" value="60">
+                    <div class="value"><span id="updateRateVal">60</span> Hz</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="canvas-container">
+            <canvas id="canvas"></canvas>
+            
+            <div class="overlay mode-badge" id="modeBadge">
+                Mode: <span id="currentMode">All Smoothers</span>
+            </div>
+            
+            <div class="overlay legend">
+                <div class="legend-item">
+                    <div class="legend-dot dot-raw"></div>
+                    <span>Raw Input (noisy)</span>
+                </div>
+                <div class="legend-item" id="legend1euro">
+                    <div class="legend-dot dot-1euro"></div>
+                    <span>1€ Filter</span>
+                </div>
+                <div class="legend-item" id="legendPhysics">
+                    <div class="legend-dot dot-physics"></div>
+                    <span>Physics Spring-Damper</span>
+                </div>
+                <div class="legend-item" id="legendDesp">
+                    <div class="legend-dot dot-desp"></div>
+                    <span>DESP (predicted)</span>
+                </div>
+            </div>
+            
+            <div class="overlay stats">
+                <div class="stat-row">
+                    <span class="stat-label">Raw Jitter:</span>
+                    <span class="stat-value" id="statRawJitter">0.00</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">1€ Jitter:</span>
+                    <span class="stat-value" id="stat1euroJitter">0.00</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Physics Jitter:</span>
+                    <span class="stat-value" id="statPhysicsJitter">0.00</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">DESP Jitter:</span>
+                    <span class="stat-value" id="statDespJitter">0.00</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Frame Time:</span>
+                    <span class="stat-value" id="statFrameTime">0.00</span> ms
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer>
+        <div>HFO Gen87.X3 | <a href="index.html">← All Demos</a></div>
+        <div>Magic Numbers: All params have @source provenance — See MAGIC_NUMBERS_REGISTRY.md</div>
+    </footer>
+
+    <script type="module">
+        import { OneEuroFilter } from '1eurofilter';
+        
+        // ============================================================================
+        // CANVAS SETUP
+        // ============================================================================
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        
+        // ============================================================================
+        // STATE
+        // ============================================================================
+        let mouseX = 0.5, mouseY = 0.5; // Normalized [0,1]
+        let activeSmoother = 'all';
+        
+        // Trail histories
+        const TRAIL_LENGTH = 100;
+        const rawTrail = [];
+        const oneEuroTrail = [];
+        const physicsTrail = [];
+        const despTrail = [];
+        
+        // Jitter measurements
+        let rawJitter = 0, oneEuroJitterVal = 0, physicsJitterVal = 0, despJitterVal = 0;
+        
+        // ============================================================================
+        // 1€ FILTER (Casiez CHI 2012)
+        // @source https://gery.casiez.net/1euro/
+        // ============================================================================
+        let oneEuroX = new OneEuroFilter(60, 1.0, 0.0, 1.0);
+        let oneEuroY = new OneEuroFilter(60, 1.0, 0.0, 1.0);
+        
+        function resetOneEuro() {
+            const freq = parseFloat(document.getElementById('updateRate').value);
+            const mincutoff = parseFloat(document.getElementById('mincutoff').value);
+            const beta = parseFloat(document.getElementById('beta').value);
+            oneEuroX = new OneEuroFilter(freq, mincutoff, beta, 1.0);
+            oneEuroY = new OneEuroFilter(freq, mincutoff, beta, 1.0);
+        }
+        
+        // ============================================================================
+        // PHYSICS SPRING-DAMPER (Rapier-style)
+        // @source MAGIC_NUMBERS_REGISTRY.md - Custom tuned for hand tracking
+        // ============================================================================
+        const physics = {
+            x: 0.5, y: 0.5,
+            vx: 0, vy: 0,
+            
+            update(targetX, targetY, dt) {
+                const k = parseFloat(document.getElementById('stiffness').value);
+                const zetaRatio = parseFloat(document.getElementById('damping').value);
+                const deadzone = parseFloat(document.getElementById('deadzone').value);
+                
+                // Spring-damper: F = -k*(x-target) - c*v
+                // c = 2*zeta*sqrt(k*m), assume m=1
+                const c = 2 * zetaRatio * Math.sqrt(k);
+                
+                const substeps = 4;
+                const subDt = dt / substeps;
+                
+                for (let i = 0; i < substeps; i++) {
+                    const fx = -k * (this.x - targetX) - c * this.vx;
+                    const fy = -k * (this.y - targetY) - c * this.vy;
+                    
+                    this.vx += fx * subDt;
+                    this.vy += fy * subDt;
+                    this.x += this.vx * subDt;
+                    this.y += this.vy * subDt;
+                }
+                
+                // Dead zone - XInput standard @source Microsoft XInput docs
+                const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+                if (speed < deadzone) {
+                    this.vx = 0;
+                    this.vy = 0;
+                }
+                
+                return { x: this.x, y: this.y };
+            }
+        };
+        
+        // ============================================================================
+        // DESP - Double Exponential Smoothing Predictor (LaViola 2003)
+        // @source https://cs.brown.edu/people/jlaviola/pubs/kfvsexp_final_laviola.pdf
+        // ============================================================================
+        const desp = {
+            Sp_x: 0.5, Spp_x: 0.5,
+            Sp_y: 0.5, Spp_y: 0.5,
+            initialized: false,
+            
+            update(x, y, predictionMs) {
+                const alpha = parseFloat(document.getElementById('despAlpha').value);
+                
+                if (!this.initialized) {
+                    this.Sp_x = x; this.Spp_x = x;
+                    this.Sp_y = y; this.Spp_y = y;
+                    this.initialized = true;
+                    return { x, y };
+                }
+                
+                // Single exponential smoothing
+                const Sp_x_new = alpha * x + (1 - alpha) * this.Sp_x;
+                const Sp_y_new = alpha * y + (1 - alpha) * this.Sp_y;
+                
+                // Double exponential smoothing
+                const Spp_x_new = alpha * Sp_x_new + (1 - alpha) * this.Spp_x;
+                const Spp_y_new = alpha * Sp_y_new + (1 - alpha) * this.Spp_y;
+                
+                this.Sp_x = Sp_x_new; this.Spp_x = Spp_x_new;
+                this.Sp_y = Sp_y_new; this.Spp_y = Spp_y_new;
+                
+                // Prediction coefficients
+                const a_x = 2 * this.Sp_x - this.Spp_x;
+                const b_x = (alpha / (1 - alpha)) * (this.Sp_x - this.Spp_x);
+                const a_y = 2 * this.Sp_y - this.Spp_y;
+                const b_y = (alpha / (1 - alpha)) * (this.Sp_y - this.Spp_y);
+                
+                // Predict τ steps ahead (τ in frames, assuming 60fps → predictionMs/16.67)
+                const tau = predictionMs / 16.67;
+                const predictedX = a_x + b_x * tau;
+                const predictedY = a_y + b_y * tau;
+                
+                return { 
+                    x: Math.max(0, Math.min(1, predictedX)), 
+                    y: Math.max(0, Math.min(1, predictedY)) 
+                };
+            }
+        };
+        
+        // ============================================================================
+        // NOISE GENERATOR
+        // ============================================================================
+        function addNoise(value) {
+            const jitter = parseFloat(document.getElementById('jitter').value);
+            return value + (Math.random() - 0.5) * 2 * jitter;
+        }
+        
+        // ============================================================================
+        // JITTER MEASUREMENT
+        // ============================================================================
+        function measureJitter(trail) {
+            if (trail.length < 3) return 0;
+            let totalJitter = 0;
+            for (let i = 2; i < trail.length; i++) {
+                const dx1 = trail[i].x - trail[i-1].x;
+                const dy1 = trail[i].y - trail[i-1].y;
+                const dx2 = trail[i-1].x - trail[i-2].x;
+                const dy2 = trail[i-1].y - trail[i-2].y;
+                const ddx = dx1 - dx2;
+                const ddy = dy1 - dy2;
+                totalJitter += Math.sqrt(ddx*ddx + ddy*ddy);
+            }
+            return totalJitter / (trail.length - 2);
+        }
+        
+        // ============================================================================
+        // MOUSE TRACKING
+        // ============================================================================
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            mouseX = (e.clientX - rect.left) / rect.width;
+            mouseY = (e.clientY - rect.top) / rect.height;
+        });
+        
+        // ============================================================================
+        // CONTROLS
+        // ============================================================================
+        // Smoother select buttons
+        document.querySelectorAll('.smoother-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.smoother-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                activeSmoother = btn.dataset.smoother;
+                document.getElementById('currentMode').textContent = btn.textContent;
+                
+                // Show/hide panels
+                document.getElementById('oneEuroPanel').style.display = 
+                    ['all', '1euro'].includes(activeSmoother) ? 'block' : 'none';
+                document.getElementById('physicsPanel').style.display = 
+                    ['all', 'physics'].includes(activeSmoother) ? 'block' : 'none';
+                document.getElementById('despPanel').style.display = 
+                    ['all', 'desp'].includes(activeSmoother) ? 'block' : 'none';
+                    
+                // Show/hide legend items
+                document.getElementById('legend1euro').style.display = 
+                    ['all', '1euro'].includes(activeSmoother) ? 'flex' : 'none';
+                document.getElementById('legendPhysics').style.display = 
+                    ['all', 'physics'].includes(activeSmoother) ? 'flex' : 'none';
+                document.getElementById('legendDesp').style.display = 
+                    ['all', 'desp'].includes(activeSmoother) ? 'flex' : 'none';
+            });
+        });
+        
+        // Physics presets
+        document.querySelectorAll('.preset-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.getElementById('stiffness').value = btn.dataset.stiffness;
+                document.getElementById('stiffnessVal').textContent = btn.dataset.stiffness;
+                document.getElementById('damping').value = btn.dataset.damping / Math.sqrt(parseFloat(btn.dataset.stiffness)) / 2;
+                document.getElementById('dampingVal').textContent = (btn.dataset.damping / Math.sqrt(parseFloat(btn.dataset.stiffness)) / 2).toFixed(1);
+            });
+        });
+        
+        // Slider value displays
+        const sliders = [
+            ['mincutoff', 'mincutoffVal', resetOneEuro],
+            ['beta', 'betaVal', resetOneEuro],
+            ['stiffness', 'stiffnessVal'],
+            ['damping', 'dampingVal'],
+            ['deadzone', 'deadzoneVal'],
+            ['despAlpha', 'despAlphaVal'],
+            ['despPrediction', 'despPredictionVal'],
+            ['jitter', 'jitterVal'],
+            ['updateRate', 'updateRateVal', resetOneEuro],
+        ];
+        
+        sliders.forEach(([id, valId, callback]) => {
+            const slider = document.getElementById(id);
+            const valEl = document.getElementById(valId);
+            slider.addEventListener('input', () => {
+                valEl.textContent = parseFloat(slider.value).toFixed(id === 'jitter' ? 3 : 2);
+                if (callback) callback();
+            });
+        });
+        
+        // ============================================================================
+        // RENDER LOOP
+        // ============================================================================
+        let lastTime = performance.now();
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        
+        function render(time) {
+            const dt = (time - lastTime) / 1000;
+            lastTime = time;
+            frameCount++;
+            
+            // Clear
+            ctx.fillStyle = '#0d1117';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Grid
+            ctx.strokeStyle = '#1a2332';
+            ctx.lineWidth = 1;
+            const gridSize = 50;
+            for (let x = 0; x < canvas.width; x += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            for (let y = 0; y < canvas.height; y += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+            
+            // Add noise to mouse position (simulating sensor noise)
+            const noisyX = addNoise(mouseX);
+            const noisyY = addNoise(mouseY);
+            
+            // Update all smoothers
+            const timestamp = time / 1000;
+            const oneEuroPos = {
+                x: oneEuroX.filter(noisyX, timestamp),
+                y: oneEuroY.filter(noisyY, timestamp)
+            };
+            const physicsPos = physics.update(noisyX, noisyY, dt);
+            const predictionMs = parseFloat(document.getElementById('despPrediction').value);
+            const despPos = desp.update(noisyX, noisyY, predictionMs);
+            
+            // Update trails
+            rawTrail.push({ x: noisyX, y: noisyY });
+            oneEuroTrail.push(oneEuroPos);
+            physicsTrail.push(physicsPos);
+            despTrail.push(despPos);
+            
+            if (rawTrail.length > TRAIL_LENGTH) rawTrail.shift();
+            if (oneEuroTrail.length > TRAIL_LENGTH) oneEuroTrail.shift();
+            if (physicsTrail.length > TRAIL_LENGTH) physicsTrail.shift();
+            if (despTrail.length > TRAIL_LENGTH) despTrail.shift();
+            
+            // Draw trails
+            function drawTrail(trail, color, show) {
+                if (!show || trail.length < 2) return;
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(trail[0].x * canvas.width, trail[0].y * canvas.height);
+                for (let i = 1; i < trail.length; i++) {
+                    ctx.globalAlpha = i / trail.length;
+                    ctx.lineTo(trail[i].x * canvas.width, trail[i].y * canvas.height);
+                }
+                ctx.globalAlpha = 1;
+                ctx.stroke();
+            }
+            
+            const show1euro = ['all', '1euro'].includes(activeSmoother);
+            const showPhysics = ['all', 'physics'].includes(activeSmoother);
+            const showDesp = ['all', 'desp'].includes(activeSmoother);
+            
+            drawTrail(rawTrail, '#ff4444', true);
+            drawTrail(oneEuroTrail, '#00ff88', show1euro);
+            drawTrail(physicsTrail, '#ff9f43', showPhysics);
+            drawTrail(despTrail, '#00d9ff', showDesp);
+            
+            // Draw current positions
+            function drawDot(x, y, color, size, show) {
+                if (!show) return;
+                ctx.fillStyle = color;
+                ctx.beginPath();
+                ctx.arc(x * canvas.width, y * canvas.height, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            drawDot(noisyX, noisyY, '#ff4444', 8, true);
+            drawDot(oneEuroPos.x, oneEuroPos.y, '#00ff88', 10, show1euro);
+            drawDot(physicsPos.x, physicsPos.y, '#ff9f43', 10, showPhysics);
+            drawDot(despPos.x, despPos.y, '#00d9ff', 10, showDesp);
+            
+            // Update stats
+            if (time - lastFpsUpdate > 200) {
+                rawJitter = measureJitter(rawTrail);
+                oneEuroJitterVal = measureJitter(oneEuroTrail);
+                physicsJitterVal = measureJitter(physicsTrail);
+                despJitterVal = measureJitter(despTrail);
+                
+                document.getElementById('statRawJitter').textContent = (rawJitter * 1000).toFixed(2);
+                document.getElementById('stat1euroJitter').textContent = (oneEuroJitterVal * 1000).toFixed(2);
+                document.getElementById('statPhysicsJitter').textContent = (physicsJitterVal * 1000).toFixed(2);
+                document.getElementById('statDespJitter').textContent = (despJitterVal * 1000).toFixed(2);
+                document.getElementById('statFrameTime').textContent = (dt * 1000).toFixed(2);
+                lastFpsUpdate = time;
+            }
+            
+            requestAnimationFrame(render);
+        }
+        
+        requestAnimationFrame(render);
+    </script>
+</body>
+</html>

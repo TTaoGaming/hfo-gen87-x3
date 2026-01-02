@@ -62,9 +62,18 @@ export default {
 		'hot/bronze/src/pipeline/hfo-pipeline.ts',
 		'hot/bronze/src/contracts/hfo-ports.ts',
 		'hot/bronze/src/contracts/port-contracts.ts',
+		// Exclude test utilities - not production code
+		'!hot/bronze/src/pipeline/test-utils.ts',
 		'!hot/bronze/src/**/*.test.ts',
 		'!hot/bronze/src/**/*.spec.ts',
 		'!hot/bronze/src/**/*.d.ts',
+		// Exclude adapters with dynamic imports (mediapipe)
+		'!hot/bronze/src/adapters/mediapipe.adapter.ts',
+	],
+
+	// Files to completely ignore (not even instrument for coverage)
+	ignorePatterns: [
+		'hot/bronze/src/adapters/mediapipe.adapter.ts', // Has dynamic imports that break when instrumented
 	],
 
 	// Test runner - vitest

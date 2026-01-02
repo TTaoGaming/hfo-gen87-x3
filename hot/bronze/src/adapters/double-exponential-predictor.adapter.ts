@@ -24,13 +24,18 @@
  */
 import type { SmootherPort } from '../contracts/ports.js';
 import type { SensorFrame, SmoothedFrame } from '../contracts/schemas.js';
+import { TTI_DISTANCE_THRESHOLD, TTI_SPEED_THRESHOLD } from '../constants/magic-numbers.js';
 
 // ============================================================================
 // TYPES
 // ============================================================================
 
 export interface DESPConfig {
-	/** Smoothing factor α ∈ (0,1). Higher = more responsive, lower = smoother */
+	/**
+	 * Smoothing factor α ∈ (0,1). Higher = more responsive, lower = smoother
+	 * @source https://cs.brown.edu/people/jlaviola/pubs/kfvsexp_final_laviola.pdf (Section 3.1)
+	 * @range [0.1, 0.9] - LaViola paper suggests tuning per application
+	 */
 	alpha: number;
 	/** Prediction lookahead in ms (default: 50ms = 3 frames at 60fps) */
 	predictionMs: number;
@@ -121,8 +126,6 @@ export class DoubleExponentialPredictor implements SmootherPort {
 		// ========== LaViola DESP Algorithm ==========
 
 		// Step 1: Single exponential smoothing
-		const Sp_x_prev = this.Sp_x;
-		const Sp_y_prev = this.Sp_y;
 		this.Sp_x = α * x + (1 - α) * this.Sp_x;
 		this.Sp_y = α * y + (1 - α) * this.Sp_y;
 
@@ -224,12 +227,14 @@ export class DoubleExponentialPredictor implements SmootherPort {
 		const dy = targetY - posY;
 		const distance = Math.sqrt(dx * dx + dy * dy);
 
-		// If already at target
-		if (distance < 0.001) return 0;
+		// If already at target (within threshold from magic-numbers.ts)
+		// @source MAGIC_NUMBERS_REGISTRY.md - TTI_DISTANCE_THRESHOLD
+		if (distance < TTI_DISTANCE_THRESHOLD) return 0;
 
 		// Velocity magnitude in direction of target
 		const speed = Math.sqrt(this.velocity.x ** 2 + this.velocity.y ** 2);
-		if (speed < 0.001) return Number.POSITIVE_INFINITY;
+		// @source MAGIC_NUMBERS_REGISTRY.md - TTI_SPEED_THRESHOLD
+		if (speed < TTI_SPEED_THRESHOLD) return Number.POSITIVE_INFINITY;
 
 		// Dot product to check if moving toward target
 		const dot = dx * this.velocity.x + dy * this.velocity.y;

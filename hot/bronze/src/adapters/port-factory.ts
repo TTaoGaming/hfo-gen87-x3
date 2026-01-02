@@ -31,6 +31,7 @@ import type {
 	TileConfig,
 	UIShellConfig,
 } from '../contracts/schemas.js';
+import { DoubleExponentialPredictor } from './double-exponential-predictor.adapter.js';
 import { GoldenLayoutShellAdapter } from './golden-layout-shell.adapter.js';
 import { MediaPipeAdapter } from './mediapipe.adapter.js';
 import { OneEuroExemplarAdapter } from './one-euro-exemplar.adapter.js';
@@ -47,7 +48,7 @@ import { XStateFSMAdapter } from './xstate-fsm.adapter.js';
  */
 export interface SmootherConfig {
 	/** Smoother algorithm type */
-	type: '1euro' | 'rapier-smooth' | 'rapier-predict' | 'rapier-adaptive';
+	type: '1euro' | 'rapier-smooth' | 'rapier-predict' | 'rapier-adaptive' | 'desp';
 
 	// 1€ filter options
 	/** Minimum cutoff frequency (1€ filter) - lower = more smoothing at low speeds */
@@ -72,6 +73,14 @@ export interface SmootherConfig {
 	speedCoefficient?: number;
 	/** Maximum stiffness cap (Rapier adaptive mode) */
 	maxStiffness?: number;
+
+	// DESP (Double Exponential Smoothing Predictor) options
+	/**
+	 * Smoothing factor α ∈ (0,1) for DESP
+	 * Higher = more responsive, lower = smoother
+	 * @source https://cs.brown.edu/people/jlaviola/pubs/kfvsexp_final_laviola.pdf
+	 */
+	alpha?: number;
 }
 
 /**
@@ -453,6 +462,15 @@ export class HFOPortFactory implements PortFactory {
 				if (smoother.maxStiffness !== undefined) config.maxStiffness = smoother.maxStiffness;
 				if (smoother.damping !== undefined) config.damping = smoother.damping;
 				return new RapierSmootherAdapter(new RapierPhysicsAdapter(config));
+			}
+
+			case 'desp': {
+				// DESP: Double Exponential Smoothing Predictor (LaViola 2003)
+				// @source https://cs.brown.edu/people/jlaviola/pubs/kfvsexp_final_laviola.pdf
+				const config: Partial<import('./double-exponential-predictor.adapter.js').DESPConfig> = {};
+				if (smoother.alpha !== undefined) config.alpha = smoother.alpha;
+				if (smoother.predictionMs !== undefined) config.predictionMs = smoother.predictionMs;
+				return new DoubleExponentialPredictor(config);
 			}
 
 			default: {

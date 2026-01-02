@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HFO Demo: 1€ Filter (SmootherPort)</title>
+    
+    <!-- Import Map for ESM Modules -->
+    <script type="importmap">
+    {
+        "imports": {
+            "1eurofilter": "https://esm.sh/1eurofilter@1.2.2"
+        }
+    }
+    </script>
+    
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        header {
+            padding: 16px 24px;
+            background: #16213e;
+            border-bottom: 2px solid #0f3460;
+        }
+        
+        header h1 {
+            font-size: 1.5rem;
+            color: #00ff88;
+        }
+        
+        header p {
+            color: #888;
+            font-size: 0.9rem;
+            margin-top: 4px;
+        }
+        
+        main {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 0;
+        }
+        
+        .controls {
+            background: #16213e;
+            padding: 20px;
+            border-right: 2px solid #0f3460;
+            overflow-y: auto;
+        }
+        
+        .control-group {
+            margin-bottom: 24px;
+        }
+        
+        .control-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: #00ff88;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .control-group input[type="range"] {
+            width: 100%;
+            margin-bottom: 4px;
+        }
+        
+        .control-group .value {
+            font-size: 0.9rem;
+            color: #fff;
+            font-family: monospace;
+        }
+        
+        .control-group .description {
+            font-size: 0.75rem;
+            color: #666;
+            margin-top: 4px;
+        }
+        
+        .canvas-container {
+            position: relative;
+            background: #0d1117;
+        }
+        
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .legend {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+        
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .legend-raw { background: #ff4444; }
+        .legend-filtered { background: #00ff88; }
+        
+        .stats {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.8);
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-family: monospace;
+        }
+        
+        .formula {
+            background: #0d1117;
+            padding: 12px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.75rem;
+            color: #888;
+            margin-top: 16px;
+        }
+        
+        .formula code {
+            color: #00ff88;
+        }
+        
+        footer {
+            padding: 12px 24px;
+            background: #16213e;
+            border-top: 2px solid #0f3460;
+            font-size: 0.8rem;
+            color: #666;
+        }
+        
+        .credit {
+            color: #00ff88;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🎯 1€ Filter Demo</h1>
+        <p>SmootherPort • Port 2 (SHAPE) • Adaptive Low-Pass Filter by Géry Casiez (CHI 2012)</p>
+    </header>
+    
+    <main>
+        <div class="controls">
+            <div class="control-group">
+                <label>minCutoff (Hz)</label>
+                <input type="range" id="minCutoff" min="0.001" max="5" step="0.001" value="1.0">
+                <div class="value" id="minCutoffValue">1.000</div>
+                <div class="description">Minimum cutoff frequency. Lower = smoother but more lag.</div>
+            </div>
+            
+            <div class="control-group">
+                <label>beta (Speed Coefficient)</label>
+                <input type="range" id="beta" min="0" max="1" step="0.001" value="0.007">
+                <div class="value" id="betaValue">0.007</div>
+                <div class="description">Speed coefficient. Higher = less lag during fast movements.</div>
+            </div>
+            
+            <div class="control-group">
+                <label>dcutoff (Derivative Cutoff)</label>
+                <input type="range" id="dcutoff" min="0.1" max="5" step="0.01" value="1.0">
+                <div class="value" id="dcutoffValue">1.00</div>
+                <div class="description">Cutoff frequency for derivative. Usually keep at 1.0.</div>
+            </div>
+            
+            <div class="control-group">
+                <label>Noise Level</label>
+                <input type="range" id="noise" min="0" max="50" step="1" value="15">
+                <div class="value" id="noiseValue">15 px</div>
+                <div class="description">Simulated input noise for testing.</div>
+            </div>
+            
+            <div class="formula">
+                <strong>1€ Algorithm:</strong><br><br>
+                <code>cutoff = minCutoff + β × |velocity|</code><br><br>
+                The cutoff frequency adapts based on speed:<br>
+                • Slow motion → low cutoff → smooth<br>
+                • Fast motion → high cutoff → responsive
+            </div>
+        </div>
+        
+        <div class="canvas-container">
+            <canvas id="canvas"></canvas>
+            
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-dot legend-raw"></div>
+                    <span>Raw Input (noisy)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot legend-filtered"></div>
+                    <span>1€ Filtered (smooth)</span>
+                </div>
+            </div>
+            
+            <div class="stats">
+                <div>Jitter Reduction: <span id="jitterReduction">--</span>%</div>
+                <div>Latency: <span id="latency">--</span> ms</div>
+                <div>Cutoff: <span id="currentCutoff">--</span> Hz</div>
+            </div>
+        </div>
+    </main>
+    
+    <footer>
+        HFO Gen87.X3 | <span class="credit">1€ Filter by Géry Casiez, Nicolas Roussel, Daniel Vogel (CHI 2012)</span>
+        | npm: <code>1eurofilter@1.2.2</code> (original author)
+    </footer>
+
+    <script type="module">
+        import { OneEuroFilter } from '1eurofilter';
+        
+        // ============================================================================
+        // HFO ARCHITECTURE: SmootherPort Implementation via 1€ Filter
+        // Using the CANONICAL npm package by the original author Géry Casiez
+        // ============================================================================
+        
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Resize canvas to fill container
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        
+        // Parameters
+        let params = {
+            minCutoff: 1.0,
+            beta: 0.007,
+            dcutoff: 1.0,
+            noise: 15
+        };
+        
+        // Create 1€ filters (one for X, one for Y)
+        let filterX = new OneEuroFilter(60, params.minCutoff, params.beta, params.dcutoff);
+        let filterY = new OneEuroFilter(60, params.minCutoff, params.beta, params.dcutoff);
+        
+        // Trail data
+        const trailLength = 100;
+        let rawTrail = [];
+        let filteredTrail = [];
+        
+        // Current positions
+        let rawPos = { x: 0, y: 0 };
+        let filteredPos = { x: 0, y: 0 };
+        let targetPos = { x: 0, y: 0 };
+        
+        // Stats tracking
+        let rawJitter = [];
+        let filteredJitter = [];
+        let lastFilteredX = null;
+        let lastFilteredY = null;
+        
+        // Bind controls
+        ['minCutoff', 'beta', 'dcutoff', 'noise'].forEach(param => {
+            const input = document.getElementById(param);
+            const display = document.getElementById(param + 'Value');
+            
+            input.addEventListener('input', () => {
+                const value = parseFloat(input.value);
+                params[param] = value;
+                
+                if (param === 'noise') {
+                    display.textContent = value + ' px';
+                } else if (param === 'beta') {
+                    display.textContent = value.toFixed(3);
+                } else if (param === 'minCutoff') {
+                    display.textContent = value.toFixed(3);
+                } else {
+                    display.textContent = value.toFixed(2);
+                }
+                
+                // Recreate filters with new params
+                if (param !== 'noise') {
+                    filterX = new OneEuroFilter(60, params.minCutoff, params.beta, params.dcutoff);
+                    filterY = new OneEuroFilter(60, params.minCutoff, params.beta, params.dcutoff);
+                }
+            });
+        });
+        
+        // Track mouse
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            targetPos.x = e.clientX - rect.left;
+            targetPos.y = e.clientY - rect.top;
+        });
+        
+        // Animation loop
+        let lastTime = performance.now();
+        
+        function animate(time) {
+            const dt = (time - lastTime) / 1000;
+            lastTime = time;
+            
+            // Add noise to raw position
+            rawPos.x = targetPos.x + (Math.random() - 0.5) * params.noise * 2;
+            rawPos.y = targetPos.y + (Math.random() - 0.5) * params.noise * 2;
+            
+            // Apply 1€ filter
+            const timestamp = time / 1000; // 1€ filter expects seconds
+            filteredPos.x = filterX.filter(rawPos.x, timestamp);
+            filteredPos.y = filterY.filter(rawPos.y, timestamp);
+            
+            // Track jitter for stats
+            if (lastFilteredX !== null) {
+                const rawDelta = Math.sqrt(
+                    Math.pow(rawPos.x - rawTrail[rawTrail.length - 1]?.x || 0, 2) +
+                    Math.pow(rawPos.y - rawTrail[rawTrail.length - 1]?.y || 0, 2)
+                );
+                const filteredDelta = Math.sqrt(
+                    Math.pow(filteredPos.x - lastFilteredX, 2) +
+                    Math.pow(filteredPos.y - lastFilteredY, 2)
+                );
+                
+                rawJitter.push(rawDelta);
+                filteredJitter.push(filteredDelta);
+                
+                if (rawJitter.length > 60) {
+                    rawJitter.shift();
+                    filteredJitter.shift();
+                }
+            }
+            lastFilteredX = filteredPos.x;
+            lastFilteredY = filteredPos.y;
+            
+            // Update trails
+            rawTrail.push({ x: rawPos.x, y: rawPos.y });
+            filteredTrail.push({ x: filteredPos.x, y: filteredPos.y });
+            
+            if (rawTrail.length > trailLength) rawTrail.shift();
+            if (filteredTrail.length > trailLength) filteredTrail.shift();
+            
+            // Clear canvas
+            ctx.fillStyle = '#0d1117';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw grid
+            ctx.strokeStyle = '#1a2233';
+            ctx.lineWidth = 1;
+            for (let x = 0; x < canvas.width; x += 50) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            for (let y = 0; y < canvas.height; y += 50) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+            
+            // Draw raw trail (noisy - red)
+            if (rawTrail.length > 1) {
+                ctx.strokeStyle = 'rgba(255, 68, 68, 0.5)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(rawTrail[0].x, rawTrail[0].y);
+                for (let i = 1; i < rawTrail.length; i++) {
+                    ctx.lineTo(rawTrail[i].x, rawTrail[i].y);
+                }
+                ctx.stroke();
+            }
+            
+            // Draw filtered trail (smooth - green)
+            if (filteredTrail.length > 1) {
+                ctx.strokeStyle = 'rgba(0, 255, 136, 0.8)';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(filteredTrail[0].x, filteredTrail[0].y);
+                for (let i = 1; i < filteredTrail.length; i++) {
+                    ctx.lineTo(filteredTrail[i].x, filteredTrail[i].y);
+                }
+                ctx.stroke();
+            }
+            
+            // Draw raw cursor (red dot)
+            ctx.fillStyle = '#ff4444';
+            ctx.beginPath();
+            ctx.arc(rawPos.x, rawPos.y, 6, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw filtered cursor (green dot)
+            ctx.fillStyle = '#00ff88';
+            ctx.beginPath();
+            ctx.arc(filteredPos.x, filteredPos.y, 8, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Update stats
+            if (rawJitter.length > 10) {
+                const avgRaw = rawJitter.reduce((a, b) => a + b, 0) / rawJitter.length;
+                const avgFiltered = filteredJitter.reduce((a, b) => a + b, 0) / filteredJitter.length;
+                const reduction = avgRaw > 0 ? ((1 - avgFiltered / avgRaw) * 100).toFixed(0) : 0;
+                
+                document.getElementById('jitterReduction').textContent = reduction;
+                
+                // Estimate latency (higher smoothing = more latency)
+                const lagEstimate = Math.round((1 / params.minCutoff) * 16.67); // rough ms estimate
+                document.getElementById('latency').textContent = lagEstimate;
+                
+                // Calculate current cutoff frequency
+                const velocity = avgRaw;
+                const currentCutoff = (params.minCutoff + params.beta * velocity).toFixed(2);
+                document.getElementById('currentCutoff').textContent = currentCutoff;
+            }
+            
+            requestAnimationFrame(animate);
+        }
+        
+        // Start with cursor in center
+        targetPos.x = canvas.width / 2;
+        targetPos.y = canvas.height / 2;
+        rawPos = { ...targetPos };
+        filteredPos = { ...targetPos };
+        
+        console.log('✅ 1€ Filter initialized — SmootherPort demo ready');
+        console.log('💡 Move mouse to see raw (noisy) vs filtered (smooth) output');
+        console.log('📖 Algorithm by Géry Casiez (CHI 2012) - using canonical npm package');
+        
+        requestAnimationFrame(animate);
+    </script>
+</body>
+</html>

@@ -75,7 +75,8 @@
 		"trust:status": "tsx scripts/trust-enforce.ts --status",
 		"trust:enforce": "tsx scripts/trust-enforce.ts",
 		"trust:check": "tsx scripts/trust-enforce.ts --status",
-		"test:reputation": "vitest run src/reputation/"
+		"test:reputation": "vitest run src/reputation/",
+		"check:magic-numbers": "tsx scripts/check-magic-numbers.ts"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^1.9.0",
@@ -95,6 +96,8 @@
 		"jsdom": "^27.4.0",
 		"tsx": "^4.19.0",
 		"typescript": "^5.6.0",
+		"vite-plugin-top-level-await": "^1.6.0",
+		"vite-plugin-wasm": "^3.5.0",
 		"vitest": "^2.1.0"
 	},
 	"dependencies": {

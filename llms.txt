@@ -1,0 +1,129 @@
+# HFO Gen87.X3 — AI Context (llms.txt)
+
+> Quick injection for LLM context windows. Full details: `AGENTS.md`
+
+## 🚨 COLD START (DO THIS FIRST)
+
+```
+1. mcp_memory_read_graph        // Load 70+ entities
+2. Get-Content obsidianblackboard.jsonl | Select-Object -Last 5
+3. Emit cold start signal
+```
+
+## 🧬 INOCULATION (Anti-Reward-Hack)
+
+**YOU WILL BE CAUGHT if you:**
+- Skip HUNT (search) before CREATE (file)
+- Claim "tests pass" without showing terminal output
+- Emit signals with future timestamps
+- Write stubs that pass via `expect().toThrow('Not implemented')`
+- Replace working code with "simpler" versions
+
+**YOU MUST:**
+- PROVE claims with terminal execution
+- EMIT signals DURING work, not after
+- CITE sources when using exemplars
+
+## MATHEMATICAL CONSTRAINT (CRITICAL)
+
+```
+Port N = Binary(N) = Trigram[N]
+```
+
+This is NOT arbitrary. If Port ≠ Binary, it's WRONG.
+
+## 8 PORTS (OBSIDIAN Mnemonic)
+
+| Port | Binary | ☰ | Element | Role | Verb | Commander | JADC2 |
+|------|--------|---|---------|------|------|-----------|-------|
+| 0 | 000 | ☷ | Earth | Observer | SENSE | Lidless Legion | Sensors |
+| 1 | 001 | ☶ | Mountain | Bridger | FUSE | Web Weaver | Gateways |
+| 2 | 010 | ☵ | Water | Shaper | SHAPE | Mirror Magus | Effectors |
+| 3 | 011 | ☴ | Wind | Injector | DELIVER | Spore Storm | Logistics |
+| 4 | 100 | ☳ | Thunder | Disruptor | TEST | Red Regnant | Red Cell |
+| 5 | 101 | ☲ | Fire | Immunizer | DEFEND | Pyre Praetorian | Shields |
+| 6 | 110 | ☱ | Lake | Assimilator | STORE | Kraken Keeper | Fusion |
+| 7 | 111 | ☰ | Heaven | Navigator | DECIDE | Spider Sovereign | Command |
+
+## HIVE/8 PHASES
+
+```
+H (Hunt)     → @0+@7 → Research   → Plan    → Hindsight
+I (Interlock)→ @1+@6 → RED tests  → Do      → Insight
+V (Validate) → @2+@5 → GREEN tests→ Check   → Foresight  
+E (Evolve)   → @3+@4 → REFACTOR   → Act     → Evolution
+```
+
+Anti-diagonal: Pairs sum to 7 (0+7, 1+6, 2+5, 3+4).
+
+## SIGNAL SCHEMA (8 Fields = 8 Ports)
+
+```json
+{"ts":"ISO","mark":0-1,"pull":"downstream","msg":"text","type":"signal","hive":"H","gen":87,"port":7}
+```
+
+| Field | Port | Verb |
+|-------|------|------|
+| ts | @0 | SENSE |
+| mark | @1 | FUSE |
+| pull | @2 | SHAPE |
+| msg | @3 | DELIVER |
+| type | @4 | TEST |
+| hive | @5 | DEFEND |
+| gen | @6 | STORE |
+| port | @7 | DECIDE |
+
+## NOTATION
+
+- `@N` = Port N full semantic payload
+- `H[0,7]` = Hunt phase coordinate
+- `[row,col]` = Galois lattice cell
+- `DERIVE X` = Output equivalence class
+
+## EXCLUSIVE RIGHTS
+
+- Only @7 can `decide`
+- Only @6 can `persist`
+- Only @3 can `emit_output`
+- Only @2 can `transform`
+
+## PROVENANCE (TRL 8-9 ONLY)
+
+| Source | What We Took |
+|--------|--------------|
+| JADC2 | 8 functions (Sensors→Command) |
+| DARPA Mosaic | Polymorphic hexagonal tiles |
+| I Ching Bagua | 8 trigrams, binary encoding |
+| Hexagonal Arch | Ports & Adapters pattern |
+| Stigmergy | Indirect coordination |
+
+**Zero invention. Only retheming + composition.**
+
+## MEMORY MCP TOOLS
+
+```
+mcp_memory_read_graph       // Cold start - load all
+mcp_memory_search_nodes     // Find specific entities
+mcp_memory_add_observations // Record learnings
+mcp_memory_create_entities  // Document new concepts
+mcp_memory_create_relations // Link entities
+```
+
+## KEY FILES
+
+- `hot/gold/HFO_ARCHITECTURE_SSOT.md` — Full SSOT
+- `hot/gold/HFO_ARCHITECTURE_SSOT_20260101.md` — Enriched version
+- `AGENTS.md` — Grimoire lookup tables + inoculation protocol
+- `obsidianblackboard.jsonl` — Signal log
+- `.vscode/mcp.json` — Workspace MCP servers
+
+## COMMANDS
+
+```bash
+npm test                    # Run tests
+npm run stryker             # Mutation testing
+Get-Content obsidianblackboard.jsonl | Select-Object -Last 5
+```
+
+---
+*Port 7 | ☰ Heaven | 111 | Gen87.X3*

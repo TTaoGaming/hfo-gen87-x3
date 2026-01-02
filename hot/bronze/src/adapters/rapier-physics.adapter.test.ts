@@ -1003,3 +1003,100 @@ describe('MUTANT KILLERS - Timestamp/dt Calculation', () => {
 		expect(result.position.y).toBeGreaterThan(0.5);
 	});
 });
+
+// ==========================================================================
+// ADDITIONAL MUTANT KILLERS - Target high-value survivors
+// ==========================================================================
+
+describe('MUTANT KILLERS - Init Guard and Target Position', () => {
+	it('double init() is idempotent (guard prevents duplicate world)', async () => {
+		// MUTANT KILLER: if (this.initialized) return → if (false) return
+		// If guard is removed, double init would create duplicate physics worlds
+		const adapter = new RapierPhysicsAdapter();
+
+		await adapter.init();
+		const state1 = adapter.getState();
+
+		// Set cursor to non-default position
+		adapter.smooth(createTestFrame({ ts: 0, indexTip: { x: 0.8, y: 0.8 } }));
+		adapter.smooth(createTestFrame({ ts: 16, indexTip: { x: 0.8, y: 0.8 } }));
+		const state2 = adapter.getState();
+
+		// Second init should NOT reset state
+		await adapter.init();
+		const state3 = adapter.getState();
+
+		// State should be preserved (init guard worked)
+		expect(state3.position.x).toBeCloseTo(state2.position.x, 2);
+		expect(state3.position.y).toBeCloseTo(state2.position.y, 2);
+	});
+
+	it('targetPosition starts at center (0.5, 0.5)', async () => {
+		// MUTANT KILLER: { x: 0.5, y: 0.5 } → {}
+		// Empty object would cause NaN when physics tries to calculate spring force
+		const adapter = new RapierPhysicsAdapter();
+		await adapter.init();
+
+		// First smooth should move from center toward target
+		// If targetPosition was empty/undefined, physics would break
+		const result = adapter.smooth(createTestFrame({ ts: 0, indexTip: { x: 0.7, y: 0.7 } }));
+
+		// Output must be valid numbers (not NaN)
+		expect(Number.isNaN(result.position.x)).toBe(false);
+		expect(Number.isNaN(result.position.y)).toBe(false);
+		expect(result.position.x).toBeGreaterThanOrEqual(0);
+		expect(result.position.x).toBeLessThanOrEqual(1);
+	});
+});
+
+describe('MUTANT KILLERS - TTI (Time-to-Impact) Calculation', () => {
+	it('calculateTTI returns POSITIVE_INFINITY when not initialized', async () => {
+		// MUTANT KILLER: Tests guard condition
+		const adapter = new RapierPhysicsAdapter({ mode: 'predictive' });
+		// NOT initialized - should return infinity
+		const tti = adapter.calculateTTI(0.7, 0.5);
+		expect(tti).toBe(Number.POSITIVE_INFINITY);
+	});
+
+	it('calculateTTI returns 0 when already at target', async () => {
+		// MUTANT KILLER: Tests distance < 0.001 guard
+		const adapter = await createPredictiveRapierAdapter();
+
+		// Move to position very close to target
+		for (let i = 0; i < 20; i++) {
+			adapter.smooth(createTestFrame({ ts: i * 16, indexTip: { x: 0.5, y: 0.5 } }));
+		}
+
+		// Target is exactly where cursor is
+		const tti = adapter.calculateTTI(0.5, 0.5);
+		expect(tti).toBe(0);
+	});
+
+	it('calculateTTI returns POSITIVE_INFINITY when cursor is stationary', async () => {
+		// MUTANT KILLER: Tests speed < 0.001 guard
+		const adapter = await createPredictiveRapierAdapter();
+
+		// Keep cursor still (no movement)
+		for (let i = 0; i < 10; i++) {
+			adapter.smooth(createTestFrame({ ts: i * 16, indexTip: { x: 0.5, y: 0.5 } }));
+		}
+
+		// Target is elsewhere but cursor is not moving
+		const tti = adapter.calculateTTI(0.8, 0.8);
+		expect(tti).toBe(Number.POSITIVE_INFINITY);
+	});
+
+	it('calculateTTI returns POSITIVE_INFINITY when moving away from target', async () => {
+		// MUTANT KILLER: Tests dot <= 0 guard
+		const adapter = await createPredictiveRapierAdapter();
+
+		// Move cursor to the RIGHT
+		for (let i = 0; i < 20; i++) {
+			adapter.smooth(createTestFrame({ ts: i * 16, indexTip: { x: 0.3 + i * 0.02, y: 0.5 } }));
+		}
+
+		// Target is to the LEFT (cursor moving away)
+		const tti = adapter.calculateTTI(0.2, 0.5);
+		expect(tti).toBe(Number.POSITIVE_INFINITY);
+	});
+});

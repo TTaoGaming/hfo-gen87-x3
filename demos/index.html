@@ -103,6 +103,27 @@
     <p class="subtitle">Polymorphic Adapter Components — Each implements a Port interface</p>
     
     <div class="demo-grid">
+        <a href="07-unified-pipeline.html" class="demo-card" style="--accent: #3fb950; grid-column: 1 / -1; border-width: 3px; background: rgba(63, 185, 80, 0.1);">
+            <div class="demo-icon">🔥</div>
+            <div class="demo-title">Unified Pipeline (REAL ADAPTERS)</div>
+            <div class="demo-port">Port 0 → Port 2 — REAL TypeScript Adapters, REAL WASM</div>
+            <div class="demo-desc">
+                <strong>NO STUBS, NO MOCKS, NO THEATER.</strong> Uses bundled TypeScript adapters:
+                OneEuroExemplarAdapter, RapierPhysicsAdapter, DoubleExponentialPredictor.
+                Hot-swappable SmootherPort with SensorFrame → SmoothedFrame contract.
+            </div>
+        </a>
+        
+        <a href="06-unified-showcase.html" class="demo-card" style="--accent: #a855f7; grid-column: 1 / -1;">
+            <div class="demo-icon">🎯</div>
+            <div class="demo-title">Unified Showcase (Standalone)</div>
+            <div class="demo-port">SmootherPort — All Exemplars Side-by-Side</div>
+            <div class="demo-desc">
+                Compare all smoothers in real-time: 1€ Filter, Physics Spring-Damper, DESP Predictor.
+                Adjustable parameters with provenance from MAGIC_NUMBERS_REGISTRY.md.
+            </div>
+        </a>
+        
         <a href="01-golden-layout.html" class="demo-card golden">
             <div class="demo-icon">🏛️</div>
             <div class="demo-title">GoldenLayout</div>
@@ -130,6 +151,26 @@
             <div class="demo-desc">
                 Gesture recognition: Open Palm, Closed Fist, Victory, Thumbs Up/Down,
                 ILoveYou. Outputs SensorFrame.label with confidence.
+            </div>
+        </a>
+        
+        <a href="04-one-euro-filter.html" class="demo-card" style="--accent: #00ff88;">
+            <div class="demo-icon">📊</div>
+            <div class="demo-title">1€ Filter</div>
+            <div class="demo-port">SmootherPort — Port 2 (SHAPE)</div>
+            <div class="demo-desc">
+                Casiez CHI 2012 adaptive low-pass filter. Tunable mincutoff & beta.
+                Reduces jitter while minimizing lag.
+            </div>
+        </a>
+        
+        <a href="05-spring-damper.html" class="demo-card" style="--accent: #ff9f43;">
+            <div class="demo-icon">⚡</div>
+            <div class="demo-title">Physics Spring-Damper</div>
+            <div class="demo-port">SmootherPort — Port 2 (SHAPE)</div>
+            <div class="demo-desc">
+                Rapier-style spring-mass-damper system. Stiffness, damping, prediction.
+                Critical damping for optimal response.
             </div>
         </a>
     </div>

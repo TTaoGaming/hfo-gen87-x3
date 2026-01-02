@@ -78,7 +78,7 @@ describe('CONSTRAINT: Port Interface Compliance', () => {
 					'ILoveYou',
 					'None',
 				),
-				confidence: fc.double({ min: 0, max: 1 }),
+				confidence: fc.double({ min: 0, max: 1, noNaN: true }),
 				indexTip: fc.record({
 					x: fc.double({ min: 0, max: 1, noNaN: true }),
 					y: fc.double({ min: 0, max: 1, noNaN: true }),
@@ -363,6 +363,49 @@ describe('CONSTRAINT: PortFactory Wiring', () => {
 		// Factory should expose all port getters
 		expect(typeof factory.createSmoother).toBe('function');
 		expect(typeof factory.createShell).toBe('function');
+	});
+
+	it('HFOPortFactory creates all 5 smoother types (Port 2 - Mirror Magus)', async () => {
+		const { HFOPortFactory } = await import('../adapters/port-factory.js');
+		const { SmoothedFrameSchema } = await import('../contracts/schemas.js');
+
+		const smootherTypes = [
+			{ type: '1euro' as const, name: 'OneEuroExemplarAdapter' },
+			{ type: 'rapier-smooth' as const, name: 'RapierPhysicsAdapter (smooth)' },
+			{ type: 'rapier-predict' as const, name: 'RapierPhysicsAdapter (predict)' },
+			{ type: 'rapier-adaptive' as const, name: 'RapierPhysicsAdapter (adaptive)' },
+			{ type: 'desp' as const, name: 'DoubleExponentialPredictor' },
+		];
+
+		const testFrame = {
+			ts: 1000,
+			handId: 'right' as const,
+			trackingOk: true,
+			palmFacing: true,
+			label: 'Open_Palm' as const,
+			confidence: 0.9,
+			indexTip: { x: 0.5, y: 0.5, z: 0, visibility: 1 },
+			landmarks: null,
+		};
+
+		for (const { type, name } of smootherTypes) {
+			const factory = new HFOPortFactory({
+				smoother: { type },
+				shell: { type: 'raw' },
+			});
+
+			const smoother = factory.createSmoother();
+
+			// SmootherPort interface compliance
+			expect(typeof smoother.smooth).toBe('function');
+			expect(typeof smoother.reset).toBe('function');
+			expect(typeof smoother.setParams).toBe('function');
+
+			// Produces valid SmoothedFrame
+			const result = smoother.smooth(testFrame);
+			const parsed = SmoothedFrameSchema.safeParse(result);
+			expect(parsed.success, `${name} should produce valid SmoothedFrame`).toBe(true);
+		}
 	});
 
 	it.todo('HFOPortFactory produces composable pipeline', async () => {

@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HFO Demo: Physics Spring-Damper (SmootherPort)</title>
+    
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        header {
+            padding: 16px 24px;
+            background: #16213e;
+            border-bottom: 2px solid #0f3460;
+        }
+        
+        header h1 {
+            font-size: 1.5rem;
+            color: #ff9f43;
+        }
+        
+        header p {
+            color: #888;
+            font-size: 0.9rem;
+            margin-top: 4px;
+        }
+        
+        main {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 0;
+        }
+        
+        .controls {
+            background: #16213e;
+            padding: 20px;
+            border-right: 2px solid #0f3460;
+            overflow-y: auto;
+        }
+        
+        .control-group {
+            margin-bottom: 20px;
+        }
+        
+        .control-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: #ff9f43;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .control-group input[type="range"] {
+            width: 100%;
+            margin-bottom: 4px;
+        }
+        
+        .control-group .value {
+            font-size: 0.9rem;
+            color: #fff;
+            font-family: monospace;
+        }
+        
+        .control-group .description {
+            font-size: 0.75rem;
+            color: #666;
+            margin-top: 4px;
+        }
+        
+        .preset-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        
+        .preset-btn {
+            padding: 8px 12px;
+            background: #0f3460;
+            border: 1px solid #ff9f43;
+            color: #ff9f43;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+        
+        .preset-btn:hover {
+            background: #ff9f43;
+            color: #000;
+        }
+        
+        .canvas-container {
+            position: relative;
+            background: #0d1117;
+        }
+        
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .legend {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+        
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .legend-target { background: #666; }
+        .legend-cursor { background: #ff9f43; }
+        .legend-predicted { background: #00d9ff; }
+        
+        .stats {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.8);
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-family: monospace;
+        }
+        
+        .formula {
+            background: #0d1117;
+            padding: 12px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.7rem;
+            color: #888;
+            margin-top: 16px;
+        }
+        
+        .formula code {
+            color: #ff9f43;
+        }
+        
+        footer {
+            padding: 12px 24px;
+            background: #16213e;
+            border-top: 2px solid #0f3460;
+            font-size: 0.8rem;
+            color: #666;
+        }
+        
+        .credit { color: #ff9f43; }
+        
+        .mode-indicator {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 159, 67, 0.2);
+            border: 1px solid #ff9f43;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>⚡ Physics Spring-Damper Demo</h1>
+        <p>SmootherPort • Port 2 (SHAPE) • Rapier-style Spring-Mass-Damper System</p>
+    </header>
+    
+    <main>
+        <div class="controls">
+            <h3 style="color: #ff9f43; margin-bottom: 12px;">Presets</h3>
+            <div class="preset-buttons">
+                <button class="preset-btn" data-stiffness="400" data-damping="20" data-mass="1">Snappy</button>
+                <button class="preset-btn" data-stiffness="200" data-damping="12" data-mass="1">Smooth</button>
+                <button class="preset-btn" data-stiffness="800" data-damping="40" data-mass="1">Rigid</button>
+                <button class="preset-btn" data-stiffness="100" data-damping="5" data-mass="1">Bouncy</button>
+                <button class="preset-btn" data-stiffness="150" data-damping="2" data-mass="0.5">Wobble</button>
+            </div>
+            
+            <div class="control-group">
+                <label>Stiffness (k)</label>
+                <input type="range" id="stiffness" min="10" max="1000" step="10" value="200">
+                <div class="value" id="stiffnessValue">200 N/m</div>
+                <div class="description">Spring constant. Higher = faster response to target changes.</div>
+            </div>
+            
+            <div class="control-group">
+                <label>Damping (c)</label>
+                <input type="range" id="damping" min="0" max="100" step="1" value="12">
+                <div class="value" id="dampingValue">12</div>
+                <div class="description">Damping coefficient. Higher = less oscillation, more stable.</div>
+            </div>
+            
+            <div class="control-group">
+                <label>Mass (m)</label>
+                <input type="range" id="mass" min="0.1" max="5" step="0.1" value="1">
+                <div class="value" id="massValue">1.0 kg</div>
+                <div class="description">Point mass. Higher = more inertia, slower to accelerate.</div>
+            </div>
+            
+            <div class="control-group">
+                <label>Prediction Steps</label>
+                <input type="range" id="prediction" min="0" max="30" step="1" value="10">
+                <div class="value" id="predictionValue">10 frames</div>
+                <div class="description">How far ahead to predict. For "negative latency".</div>
+            </div>
+            
+            <div class="control-group">
+                <label>Substeps</label>
+                <input type="range" id="substeps" min="1" max="10" step="1" value="4">
+                <div class="value" id="substepsValue">4</div>
+                <div class="description">Physics substeps per frame. Higher = more accurate.</div>
+            </div>
+            
+            <div class="formula">
+                <strong>Spring Physics:</strong><br><br>
+                <code>F = -k(x - target) - c*v</code><br>
+                <code>a = F / m</code><br><br>
+                Critical damping: <code>c = 2√(k*m)</code><br><br>
+                Underdamped = oscillation<br>
+                Overdamped = sluggish<br>
+                Critical = optimal
+            </div>
+        </div>
+        
+        <div class="canvas-container">
+            <canvas id="canvas"></canvas>
+            
+            <div class="mode-indicator" id="dampingMode">
+                Damping: <span id="dampingType">Underdamped</span>
+            </div>
+            
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-dot legend-target"></div>
+                    <span>Target (mouse)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot legend-cursor"></div>
+                    <span>Spring Cursor</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot legend-predicted"></div>
+                    <span>Predicted Position</span>
+                </div>
+            </div>
+            
+            <div class="stats">
+                <div>Velocity: <span id="velocity">0.0</span> px/s</div>
+                <div>Distance: <span id="distance">0.0</span> px</div>
+                <div>Energy: <span id="energy">0.0</span> J</div>
+                <div>ζ (zeta): <span id="zeta">0.00</span></div>
+            </div>
+        </div>
+    </main>
+    
+    <footer>
+        HFO Gen87.X3 | <span class="credit">Physics-based smoothing for responsive yet stable cursor tracking</span>
+    </footer>
+
+    <script>
+        // ============================================================================
+        // HFO ARCHITECTURE: SmootherPort Implementation via Spring-Damper Physics
+        // This demonstrates the Rapier-style physics smoothing approach
+        // ============================================================================
+        
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Resize canvas
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        
+        // Physics state
+        let params = {
+            stiffness: 200,
+            damping: 12,
+            mass: 1.0,
+            prediction: 10,
+            substeps: 4
+        };
+        
+        // Position and velocity (2D)
+        let pos = { x: 0, y: 0 };
+        let vel = { x: 0, y: 0 };
+        let target = { x: 0, y: 0 };
+        let predicted = { x: 0, y: 0 };
+        
+        // Trail
+        const trailLength = 80;
+        let trail = [];
+        let predictedTrail = [];
+        
+        // Bind controls
+        const controls = ['stiffness', 'damping', 'mass', 'prediction', 'substeps'];
+        controls.forEach(param => {
+            const input = document.getElementById(param);
+            const display = document.getElementById(param + 'Value');
+            
+            input.addEventListener('input', () => {
+                const value = parseFloat(input.value);
+                params[param] = value;
+                
+                if (param === 'stiffness') display.textContent = value + ' N/m';
+                else if (param === 'damping') display.textContent = value;
+                else if (param === 'mass') display.textContent = value.toFixed(1) + ' kg';
+                else if (param === 'prediction') display.textContent = value + ' frames';
+                else if (param === 'substeps') display.textContent = value;
+                
+                updateDampingType();
+            });
+        });
+        
+        // Preset buttons
+        document.querySelectorAll('.preset-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                params.stiffness = parseFloat(btn.dataset.stiffness);
+                params.damping = parseFloat(btn.dataset.damping);
+                params.mass = parseFloat(btn.dataset.mass);
+                
+                document.getElementById('stiffness').value = params.stiffness;
+                document.getElementById('damping').value = params.damping;
+                document.getElementById('mass').value = params.mass;
+                
+                document.getElementById('stiffnessValue').textContent = params.stiffness + ' N/m';
+                document.getElementById('dampingValue').textContent = params.damping;
+                document.getElementById('massValue').textContent = params.mass.toFixed(1) + ' kg';
+                
+                updateDampingType();
+            });
+        });
+        
+        function updateDampingType() {
+            const criticalDamping = 2 * Math.sqrt(params.stiffness * params.mass);
+            const zeta = params.damping / criticalDamping;
+            
+            document.getElementById('zeta').textContent = zeta.toFixed(2);
+            
+            let type, color;
+            if (zeta < 0.9) {
+                type = 'Underdamped (oscillates)';
+                color = '#ff4444';
+            } else if (zeta > 1.1) {
+                type = 'Overdamped (sluggish)';
+                color = '#4444ff';
+            } else {
+                type = 'Critical (optimal)';
+                color = '#00ff88';
+            }
+            
+            document.getElementById('dampingType').textContent = type;
+            document.getElementById('dampingType').style.color = color;
+        }
+        updateDampingType();
+        
+        // Track mouse
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            target.x = e.clientX - rect.left;
+            target.y = e.clientY - rect.top;
+        });
+        
+        // Spring physics step
+        function physicsStep(dt) {
+            const subDt = dt / params.substeps;
+            
+            for (let i = 0; i < params.substeps; i++) {
+                // Spring force: F = -k * (pos - target)
+                const springForceX = -params.stiffness * (pos.x - target.x);
+                const springForceY = -params.stiffness * (pos.y - target.y);
+                
+                // Damping force: F = -c * velocity
+                const dampingForceX = -params.damping * vel.x;
+                const dampingForceY = -params.damping * vel.y;
+                
+                // Total force
+                const forceX = springForceX + dampingForceX;
+                const forceY = springForceY + dampingForceY;
+                
+                // Acceleration: a = F / m
+                const accX = forceX / params.mass;
+                const accY = forceY / params.mass;
+                
+                // Semi-implicit Euler integration
+                vel.x += accX * subDt;
+                vel.y += accY * subDt;
+                pos.x += vel.x * subDt;
+                pos.y += vel.y * subDt;
+            }
+        }
+        
+        // Predict future position
+        function predictPosition(steps) {
+            // Clone state
+            let predPos = { x: pos.x, y: pos.y };
+            let predVel = { x: vel.x, y: vel.y };
+            
+            const predDt = 1/60; // Assume 60fps
+            
+            for (let s = 0; s < steps; s++) {
+                for (let i = 0; i < params.substeps; i++) {
+                    const springForceX = -params.stiffness * (predPos.x - target.x);
+                    const springForceY = -params.stiffness * (predPos.y - target.y);
+                    const dampingForceX = -params.damping * predVel.x;
+                    const dampingForceY = -params.damping * predVel.y;
+                    
+                    const accX = (springForceX + dampingForceX) / params.mass;
+                    const accY = (springForceY + dampingForceY) / params.mass;
+                    
+                    predVel.x += accX * (predDt / params.substeps);
+                    predVel.y += accY * (predDt / params.substeps);
+                    predPos.x += predVel.x * (predDt / params.substeps);
+                    predPos.y += predVel.y * (predDt / params.substeps);
+                }
+            }
+            
+            return predPos;
+        }
+        
+        // Animation loop
+        let lastTime = performance.now();
+        
+        function animate(time) {
+            const dt = Math.min((time - lastTime) / 1000, 0.05); // Cap at 50ms
+            lastTime = time;
+            
+            // Physics update
+            physicsStep(dt);
+            
+            // Prediction
+            predicted = predictPosition(params.prediction);
+            
+            // Update trails
+            trail.push({ x: pos.x, y: pos.y });
+            if (trail.length > trailLength) trail.shift();
+            
+            // Clear canvas
+            ctx.fillStyle = '#0d1117';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw grid
+            ctx.strokeStyle = '#1a2233';
+            ctx.lineWidth = 1;
+            for (let x = 0; x < canvas.width; x += 50) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            for (let y = 0; y < canvas.height; y += 50) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+            
+            // Draw spring line (target to cursor)
+            ctx.strokeStyle = 'rgba(255, 159, 67, 0.3)';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(target.x, target.y);
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // Draw trail
+            if (trail.length > 1) {
+                ctx.strokeStyle = 'rgba(255, 159, 67, 0.5)';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(trail[0].x, trail[0].y);
+                for (let i = 1; i < trail.length; i++) {
+                    ctx.lineTo(trail[i].x, trail[i].y);
+                }
+                ctx.stroke();
+            }
+            
+            // Draw prediction line
+            if (params.prediction > 0) {
+                ctx.strokeStyle = 'rgba(0, 217, 255, 0.5)';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([3, 3]);
+                ctx.beginPath();
+                ctx.moveTo(pos.x, pos.y);
+                ctx.lineTo(predicted.x, predicted.y);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+            
+            // Draw target (gray crosshair)
+            ctx.strokeStyle = '#666';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(target.x - 15, target.y);
+            ctx.lineTo(target.x + 15, target.y);
+            ctx.moveTo(target.x, target.y - 15);
+            ctx.lineTo(target.x, target.y + 15);
+            ctx.stroke();
+            
+            // Draw cursor (orange dot)
+            ctx.fillStyle = '#ff9f43';
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.y, 10, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw predicted position (cyan dot)
+            if (params.prediction > 0) {
+                ctx.fillStyle = '#00d9ff';
+                ctx.beginPath();
+                ctx.arc(predicted.x, predicted.y, 6, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Update stats
+            const velocity = Math.sqrt(vel.x * vel.x + vel.y * vel.y);
+            const distance = Math.sqrt((pos.x - target.x) ** 2 + (pos.y - target.y) ** 2);
+            const kineticEnergy = 0.5 * params.mass * velocity * velocity;
+            const potentialEnergy = 0.5 * params.stiffness * distance * distance;
+            const totalEnergy = kineticEnergy + potentialEnergy;
+            
+            document.getElementById('velocity').textContent = velocity.toFixed(0);
+            document.getElementById('distance').textContent = distance.toFixed(0);
+            document.getElementById('energy').textContent = totalEnergy.toFixed(0);
+            
+            requestAnimationFrame(animate);
+        }
+        
+        // Initialize at center
+        pos.x = canvas.width / 2;
+        pos.y = canvas.height / 2;
+        target = { ...pos };
+        
+        console.log('✅ Spring-Damper Physics initialized — SmootherPort demo ready');
+        console.log('💡 Move mouse to see spring-based cursor following');
+        console.log('📖 Try presets: Snappy, Smooth, Rigid, Bouncy, Wobble');
+        
+        requestAnimationFrame(animate);
+    </script>
+</body>
+</html>

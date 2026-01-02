@@ -5,9 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HFO Demo: GoldenLayout (UIShellPort)</title>
     
-    <!-- GoldenLayout CSS -->
+    <!-- GoldenLayout CSS from jsDelivr -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/golden-layout@2.6.0/dist/css/goldenlayout-base.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/golden-layout@2.6.0/dist/css/themes/goldenlayout-dark-theme.css">
+    
+    <!-- Import Map for ESM Module Resolution -->
+    <script type="importmap">
+    {
+        "imports": {
+            "golden-layout": "https://esm.sh/golden-layout@2.6.0"
+        }
+    }
+    </script>
     
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -110,10 +119,10 @@
         HFO Gen87.X3 | Drag tabs to rearrange • Double-click to maximize • Resize by dragging borders
     </footer>
 
-    <!-- GoldenLayout JS -->
-    <script src="https://cdn.jsdelivr.net/npm/golden-layout@2.6.0/dist/bundle/cjs/golden-layout.umd.js"></script>
-    
-    <script>
+    <!-- GoldenLayout via ESM Module -->
+    <script type="module">
+        import { GoldenLayout } from 'golden-layout';
+        
         // ============================================================================
         // HFO ARCHITECTURE: UIShellPort Implementation via GoldenLayout
         // ============================================================================
@@ -163,7 +172,7 @@
         };
         
         // Create GoldenLayout instance
-        const layout = new goldenLayout.GoldenLayout(container);
+        const layout = new GoldenLayout(container);
         
         // Register component factories (this is the polymorphic adapter pattern)
         layout.registerComponentFactoryFunction('sensor', (container) => {
@@ -214,7 +223,10 @@
             layout.setSize(container.offsetWidth, container.offsetHeight);
         });
         
-        console.log('✅ GoldenLayout initialized — UIShellPort demo ready');
+        // Export for debugging
+        window.goldenLayout = layout;
+        
+        console.log('✅ GoldenLayout initialized via ESM — UIShellPort demo ready');
         console.log('💡 Try: Drag tiles to rearrange, resize borders, double-click to maximize');
     </script>
 </body>

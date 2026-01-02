@@ -122,6 +122,8 @@ export class FuseAdapter implements Port1Fuse {
 /**
  * Port 2: Shape Adapter - USES REAL 1€ FILTER
  * This is the critical piece - actual smoothing happens here
+ * @source https://gery.casiez.net/1euro/
+ * @citation Casiez et al. CHI 2012 - default params from paper
  */
 export class ShapeSmootherAdapter implements Port2Shape {
 	private smoother: OneEuroSmoother;
@@ -129,7 +131,9 @@ export class ShapeSmootherAdapter implements Port2Shape {
 	constructor(config?: { freq?: number; beta?: number; minCutoff?: number }) {
 		this.smoother = new OneEuroSmoother({
 			freq: config?.freq ?? 60,
-			beta: config?.beta ?? 0.007,
+			// @source https://gery.casiez.net/1euro/ - Paper says start at 0, tune up
+			beta: config?.beta ?? 0.0, // Casiez default: 0.0 (no speed adaptation initially)
+			// @source https://gery.casiez.net/1euro/ - Paper default 1.0 Hz
 			minCutoff: config?.minCutoff ?? 1.0,
 		});
 	}
@@ -211,81 +215,159 @@ export class HFOPipeline {
 }
 
 // ============================================================================
-// NOISE GENERATOR (For Testing)
+// DEBUG UTILITIES (For Production Debugging)
 // ============================================================================
 
 /**
- * Generate synthetic noisy data simulating MediaPipe jitter ON A MOVING PATH
- * Real MediaPipe has ~2-5px jitter at 60fps during hand movement
- * 
- * This creates a smooth circular motion with noise overlaid - realistic test case
+ * Pipeline debug inspector - helps users understand data flow
+ * @internal Use for debugging, not in hot paths
  */
-export function generateNoisyPath(
-	numFrames: number,
-	centerX: number = 0.5,
-	centerY: number = 0.5,
-	jitterAmount: number = 0.01,  // ~1% normalized = ~10px on 1000px screen
-): NoisyLandmark[] {
-	const frames: NoisyLandmark[] = [];
-	let ts = Date.now();
-	const radius = 0.2; // Circular motion radius
-
-	for (let i = 0; i < numFrames; i++) {
-		// Smooth circular path
-		const angle = (i / numFrames) * Math.PI * 2;
-		const smoothX = centerX + Math.cos(angle) * radius;
-		const smoothY = centerY + Math.sin(angle) * radius;
-
-		// Add random jitter
-		const noisyX = smoothX + (Math.random() - 0.5) * jitterAmount * 2;
-		const noisyY = smoothY + (Math.random() - 0.5) * jitterAmount * 2;
-
-		// Clamp to valid range
-		frames.push({
-			x: Math.max(0, Math.min(1, noisyX)),
-			y: Math.max(0, Math.min(1, noisyY)),
-			timestamp: ts,
-			confidence: 0.9 + Math.random() * 0.1,
-		});
-		ts += 16.67; // ~60fps
-	}
-
-	return frames;
+export interface PipelineDebugInfo {
+	readonly stage: 'sense' | 'fuse' | 'shape';
+	readonly timestamp: string;
+	readonly port: 0 | 1 | 2;
+	readonly inputValid: boolean;
+	readonly outputValid: boolean;
+	readonly processingTimeMs: number;
+	readonly errors: string[];
 }
 
 /**
- * Calculate jitter reduction ratio
- * Returns value < 1 if smoothing reduced jitter (good)
+ * Debug wrapper for pipeline - captures detailed flow information
+ * Use this when troubleshooting pipeline issues
  */
-export function calculateJitterReduction(
-	rawPoints: Array<{ x: number; y: number }>,
-	smoothPoints: Array<{ x: number; y: number }>,
-): number {
-	if (rawPoints.length < 2) return 1;
+export class DebugPipeline {
+	private pipeline: HFOPipeline;
+	private debugLog: PipelineDebugInfo[] = [];
+	private maxLogSize: number;
 
-	const rawJitter = calculateTotalJitter(rawPoints);
-	const smoothJitter = calculateTotalJitter(smoothPoints);
-
-	return smoothJitter / rawJitter;
-}
-
-function calculateTotalJitter(points: Array<{ x: number; y: number }>): number {
-	let total = 0;
-	for (let i = 1; i < points.length; i++) {
-		const curr = points[i]!;
-		const prev = points[i - 1]!;
-		const dx = curr.x - prev.x;
-		const dy = curr.y - prev.y;
-		total += Math.sqrt(dx * dx + dy * dy);
+	constructor(pipeline?: HFOPipeline, maxLogSize: number = 1000) {
+		this.pipeline = pipeline ?? new HFOPipeline();
+		this.maxLogSize = maxLogSize;
 	}
-	return total;
+
+	/**
+	 * Process with full debug tracing
+	 */
+	processWithDebug(rawInput: NoisyLandmark): { result: ShapedFrame; debug: PipelineDebugInfo[] } {
+		const debugEntries: PipelineDebugInfo[] = [];
+		const errors: string[] = [];
+
+		// Validate input
+		const inputValidation = NoisyLandmarkSchema.safeParse(rawInput);
+		if (!inputValidation.success) {
+			errors.push(`Input validation failed: ${inputValidation.error.message}`);
+		}
+
+		const startTime = performance.now();
+		const result = this.pipeline.process(rawInput);
+		const endTime = performance.now();
+
+		// Validate output
+		const outputValidation = ShapedFrameSchema.safeParse(result);
+		if (!outputValidation.success) {
+			errors.push(`Output validation failed: ${outputValidation.error.message}`);
+		}
+
+		const debugInfo: PipelineDebugInfo = {
+			stage: 'shape',
+			timestamp: new Date().toISOString(),
+			port: 2,
+			inputValid: inputValidation.success,
+			outputValid: outputValidation.success,
+			processingTimeMs: endTime - startTime,
+			errors,
+		};
+
+		debugEntries.push(debugInfo);
+		this.addToLog(debugInfo);
+
+		return { result, debug: debugEntries };
+	}
+
+	/**
+	 * Get recent debug log entries
+	 */
+	getDebugLog(count?: number): PipelineDebugInfo[] {
+		if (count === undefined) {
+			return [...this.debugLog];
+		}
+		return this.debugLog.slice(-count);
+	}
+
+	/**
+	 * Clear debug log
+	 */
+	clearLog(): void {
+		this.debugLog = [];
+	}
+
+	/**
+	 * Get pipeline statistics
+	 */
+	getStats(): {
+		totalProcessed: number;
+		successRate: number;
+		avgProcessingTimeMs: number;
+		errorCount: number;
+	} {
+		const total = this.debugLog.length;
+		if (total === 0) {
+			return { totalProcessed: 0, successRate: 1, avgProcessingTimeMs: 0, errorCount: 0 };
+		}
+
+		const successful = this.debugLog.filter(d => d.inputValid && d.outputValid).length;
+		const avgTime = this.debugLog.reduce((sum, d) => sum + d.processingTimeMs, 0) / total;
+		const errorCount = this.debugLog.reduce((sum, d) => sum + d.errors.length, 0);
+
+		return {
+			totalProcessed: total,
+			successRate: successful / total,
+			avgProcessingTimeMs: avgTime,
+			errorCount,
+		};
+	}
+
+	private addToLog(entry: PipelineDebugInfo): void {
+		this.debugLog.push(entry);
+		if (this.debugLog.length > this.maxLogSize) {
+			this.debugLog.shift();
+		}
+	}
 }
 
-export default {
-	HFOPipeline,
-	SenseAdapter,
-	FuseAdapter,
-	ShapeSmootherAdapter,
-	generateNoisyPath,
-	calculateJitterReduction,
-};
+/**
+ * Validate a frame at any stage of the pipeline
+ * Returns detailed error information for debugging
+ */
+export function validatePipelineFrame(
+	frame: unknown,
+	expectedStage: 'sensed' | 'fused' | 'shaped',
+): { valid: boolean; errors: string[]; stage: string } {
+	const errors: string[] = [];
+
+	const schemas = {
+		sensed: SensedFrameSchema,
+		fused: FusedFrameSchema,
+		shaped: ShapedFrameSchema,
+	};
+
+	const schema = schemas[expectedStage];
+	const result = schema.safeParse(frame);
+
+	if (!result.success) {
+		for (const issue of result.error.issues) {
+			errors.push(`${issue.path.join('.')}: ${issue.message}`);
+		}
+	}
+
+	return {
+		valid: result.success,
+		errors,
+		stage: expectedStage,
+	};
+}
+
+// Re-export test utilities from separate module (for backward compatibility)
+// In production, import from './test-utils.js' directly
+export { generateNoisyPath, calculateJitterReduction, calculateTotalJitter } from './test-utils.js';
