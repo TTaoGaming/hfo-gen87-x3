@@ -10,15 +10,15 @@
 
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
-	DebugPipeline,
-	FuseAdapter,
-	FusedFrameSchema,
-	type NoisyLandmark,
-	SenseAdapter,
-	SensedFrameSchema,
-	ShapeSmootherAdapter,
-	ShapedFrameSchema,
-	validatePipelineFrame,
+    DebugPipeline,
+    FuseAdapter,
+    FusedFrameSchema,
+    type NoisyLandmark,
+    SenseAdapter,
+    SensedFrameSchema,
+    ShapeSmootherAdapter,
+    ShapedFrameSchema,
+    validatePipelineFrame,
 } from './hfo-pipeline.js';
 
 // ============================================================================
@@ -622,6 +622,81 @@ describe('FuseAdapter', () => {
 
 		expect(result.payload._port).toBe(0);
 		expect(result.payload.landmark.x).toBe(0.123);
+	});
+
+	// ========================================================================
+	// MUTATION KILLERS: startNewTrace, getTraceContext, reset
+	// These methods were showing as NoCoverage in Stryker
+	// ========================================================================
+
+	describe('startNewTrace() - Mutation Killers', () => {
+		it('returns a valid W3C TraceContext', () => {
+			const trace = adapter.startNewTrace();
+			expect(trace).toBeDefined();
+			expect(trace.traceparent).toBeDefined();
+			expect(trace.tracestate).toBeDefined();
+			// W3C format: 00-{32hex}-{16hex}-{2hex}
+			expect(trace.traceparent).toMatch(/^00-[0-9a-f]{32}-[0-9a-f]{16}-[0-9a-f]{2}$/);
+		});
+
+		it('creates different traces on each call', () => {
+			const trace1 = adapter.startNewTrace();
+			const trace2 = adapter.startNewTrace();
+			expect(trace1.traceparent).not.toBe(trace2.traceparent);
+		});
+
+		it('updates internal trace state (observable via getTraceContext)', () => {
+			adapter.startNewTrace();
+			const ctx = adapter.getTraceContext();
+			expect(ctx).not.toBeNull();
+		});
+	});
+
+	describe('getTraceContext() - Mutation Killers', () => {
+		it('returns null before any trace is started', () => {
+			const freshAdapter = new FuseAdapter();
+			const ctx = freshAdapter.getTraceContext();
+			expect(ctx).toBeNull();
+		});
+
+		it('returns the current trace after startNewTrace()', () => {
+			const trace = adapter.startNewTrace();
+			const ctx = adapter.getTraceContext();
+			expect(ctx).not.toBeNull();
+			expect(ctx?.traceparent).toBe(trace.traceparent);
+		});
+
+		it('returns the current trace after fuse()', () => {
+			const sensed = senseAdapter.sense({ x: 0.5, y: 0.5, timestamp: 1000, confidence: 0.9 });
+			adapter.fuse(sensed);
+			const ctx = adapter.getTraceContext();
+			expect(ctx).not.toBeNull();
+			expect(ctx?.traceparent).toMatch(/^00-[0-9a-f]{32}-[0-9a-f]{16}-[0-9a-f]{2}$/);
+		});
+	});
+
+	describe('reset() - Mutation Killers', () => {
+		it('clears the trace context', () => {
+			adapter.startNewTrace();
+			expect(adapter.getTraceContext()).not.toBeNull();
+			adapter.reset();
+			expect(adapter.getTraceContext()).toBeNull();
+		});
+
+		it('allows starting a new trace after reset', () => {
+			const trace1 = adapter.startNewTrace();
+			adapter.reset();
+			const trace2 = adapter.startNewTrace();
+			// After reset, should get a completely new trace
+			expect(trace2.traceparent).not.toBe(trace1.traceparent);
+		});
+
+		it('reset does not throw when called multiple times', () => {
+			adapter.reset();
+			adapter.reset();
+			adapter.reset();
+			expect(adapter.getTraceContext()).toBeNull();
+		});
 	});
 });
 

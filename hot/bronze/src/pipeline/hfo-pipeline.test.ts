@@ -9,23 +9,18 @@
  * 4. Jitter is reduced (measurable improvement)
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
 import * as fc from 'fast-check';
+import { beforeEach, describe, expect, it } from 'vitest';
 import {
-	HFOPipeline,
-	SenseAdapter,
-	FuseAdapter,
-	ShapeSmootherAdapter,
-	generateNoisyPath,
-	calculateJitterReduction,
-	NoisyLandmarkSchema,
-	SensedFrameSchema,
-	FusedFrameSchema,
-	ShapedFrameSchema,
-	type NoisyLandmark,
-	type Port0Sense,
-	type Port1Fuse,
-	type Port2Shape,
+    FuseAdapter,
+    generateNoisyPath,
+    HFOPipeline,
+    SenseAdapter,
+    ShapedFrameSchema,
+    ShapeSmootherAdapter,
+    type NoisyLandmark,
+    type Port0Sense,
+    type Port2Shape
 } from './hfo-pipeline.js';
 
 // ============================================================================

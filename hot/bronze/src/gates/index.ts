@@ -10,46 +10,27 @@
  */
 
 export {
-	// Palm Cone Gate
-	type PalmConeConfig,
-	type PalmConeGateState,
-	type PalmConeGateResult,
-	type PalmConeGate,
-	PalmConeConfigSchema,
-	DEFAULT_PALM_CONE_CONFIG,
-	calculatePalmAngle,
-	updatePalmConeGate,
-	createPalmConeGate,
-	createPalmConeGateState,
+    DEFAULT_PALM_CONE_CONFIG, PalmConeConfigSchema, calculatePalmAngle, createPalmConeGate,
+    createPalmConeGateState, updatePalmConeGate,
+    // Palm Cone Gate
+    type PalmConeConfig, type PalmConeGate, type PalmConeGateResult, type PalmConeGateState
 } from './palm-cone-gate.js';
 
 export {
-	// Gesture Transition Predictor
-	type GestureTransitionConfig,
-	type GestureTransitionState,
-	type GestureTransitionPrediction,
-	type GestureTransitionPredictor,
-	GestureTransitionConfigSchema,
-	DEFAULT_GESTURE_TRANSITION_CONFIG,
-	updateGestureTransitionPredictor,
-	createGestureTransitionPredictor,
-	createGestureTransitionState,
+    DEFAULT_GESTURE_TRANSITION_CONFIG, GestureTransitionConfigSchema, createGestureTransitionPredictor,
+    createGestureTransitionState, updateGestureTransitionPredictor,
+    // Gesture Transition Predictor
+    type GestureTransitionConfig, type GestureTransitionPrediction,
+    type GestureTransitionPredictor, type GestureTransitionState
 } from './gesture-transition-predictor.js';
 
 export {
-	// Pyre Praetorian Daemon - HIVE Sequence Validator (P0 IR-0001 mitigation)
-	type ViolationType,
-	type HIVEViolation,
-	type PyrePraetorianConfig,
-	type StigmergyEmitter,
-	type PyreHealthReport,
-	type GitCommitInfo,
-	type BlackboardReader,
-	StigmergySignalSchema,
-	VALID_TRANSITIONS,
-	PyrePraetorianDaemon,
-	// Emitter factories (JSONL now, NATS later)
-	createJSONLEmitter,
-	createConsoleEmitter,
-	createNATSEmitter,
+    PyrePraetorianDaemon, StigmergySignalSchema,
+    VALID_TRANSITIONS, createConsoleEmitter,
+    // Emitter factories (JSONL now, NATS later)
+    createJSONLEmitter, createNATSEmitter, type BlackboardReader, type GitCommitInfo, type HIVEViolation, type PyreHealthReport, type PyrePraetorianConfig,
+    type StigmergyEmitter,
+    // Pyre Praetorian Daemon - HIVE Sequence Validator (P0 IR-0001 mitigation)
+    type ViolationType
 } from './pyre-praetorian-daemon.js';
+

@@ -18,10 +18,10 @@
  * - open-palm-side.mp4: Palm angle rejection test (should stay DISARMED)
  */
 
-import { test, expect, type Page } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import type { TelemetrySession, TelemetryFrame } from './telemetry-collector';
+import type { TelemetryFrame, TelemetrySession } from './telemetry-collector';
 
 // Fixture paths relative to workspace
 const FIXTURES_DIR = path.join(__dirname, '../../cold/silver');

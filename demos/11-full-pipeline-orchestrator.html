@@ -382,6 +382,9 @@
       createGestureTransitionState,
       DEFAULT_GESTURE_TRANSITION_CONFIG,
       
+      // FSM (Port 3 - DELIVER) - REAL XState v5 adapter with 43 tests
+      XStateFSMAdapter,
+      
       // Smoothers (Port 2 - SHAPE)
       OneEuroExemplarAdapter,
       
@@ -462,6 +465,9 @@
      * Port 5 (Immunizer) → GatePort Interface
      * Input: SensorFrame + SmoothedFrame
      * Output: FSM state, validated events
+     * 
+     * Uses REAL XStateFSMAdapter (43 tests, 54% mutation score)
+     * NO HAND-ROLLED FSM - exemplar pattern only
      */
     const GatePort = {
       state: {
@@ -469,20 +475,17 @@
         palmFacing: false,
         gestureValid: false,
         shouldDebounce: false,
+        lastAction: null,
       },
       palmGateState: createPalmConeGateState(),
       gestureState: createGestureTransitionState(),
       subscribers: [],
       
-      // FSM state
-      fsm: {
-        current: 'DISARMED',
-        baselineStableAt: null,
-        armStableMs: 200,
-      },
+      // REAL FSM adapter - replaces hand-rolled switch statement
+      fsm: new XStateFSMAdapter(),
       
       process(sensorFrame, ts) {
-        // Palm Cone Gate (Schmitt Trigger)
+        // Gate 1: Palm Cone (Schmitt Trigger Hysteresis)
         const gateResult = updatePalmConeGate(
           sensorFrame.palmAngle,
           ts,
@@ -491,7 +494,7 @@
         );
         this.palmGateState = gateResult.state;
         
-        // Gesture Transition Predictor
+        // Gate 2: Gesture Transition Debounce
         const prediction = updateGestureTransitionPredictor(
           sensorFrame.gesture,
           ts,
@@ -500,65 +503,39 @@
         );
         this.gestureState = prediction.state;
         
-        // FSM Logic
-        const prevState = this.fsm.current;
-        const gesture = prediction.shouldDebounce ? 'None' : sensorFrame.gesture;
+        // Get previous state for transition detection
+        const prevState = this.fsm.getState();
         
-        this.runFSM(gesture, gateResult.isFacing, sensorFrame.confidence, ts);
+        // Create SmoothedFrame for FSM (adapter's expected input)
+        const smoothedFrame = {
+          ts,
+          handId: sensorFrame.handId || 'right',
+          trackingOk: sensorFrame.trackingOk !== false,
+          palmFacing: gateResult.isFacing,
+          label: prediction.shouldDebounce ? 'None' : sensorFrame.gesture,
+          confidence: sensorFrame.confidence,
+          position: sensorFrame.indexTip 
+            ? { x: sensorFrame.indexTip.x, y: sensorFrame.indexTip.y } 
+            : { x: 0.5, y: 0.5 }
+        };
+        
+        // REAL FSM processing - returns FSMAction
+        const fsmAction = this.fsm.process(smoothedFrame);
+        const fsmState = fsmAction.state || this.fsm.getState();
         
         this.state = {
-          fsmState: this.fsm.current,
+          fsmState,
           prevState,
           palmFacing: gateResult.isFacing,
           gestureValid: !prediction.shouldDebounce,
           shouldDebounce: prediction.shouldDebounce,
           gateResult,
           prediction,
+          lastAction: fsmAction,
         };
         
         this.subscribers.forEach(fn => fn(this.state));
         return this.state;
-      },
-      
-      runFSM(gesture, palmFacing, confidence, ts) {
-        const minConf = 0.7;
-        
-        switch (this.fsm.current) {
-          case 'DISARMED':
-            if (palmFacing && gesture === 'Open_Palm' && confidence >= minConf) {
-              this.fsm.current = 'ARMING';
-              this.fsm.baselineStableAt = ts;
-            }
-            break;
-            
-          case 'ARMING':
-            if (!palmFacing || gesture !== 'Open_Palm' || confidence < minConf) {
-              this.fsm.current = 'DISARMED';
-              this.fsm.baselineStableAt = null;
-            } else if (ts - this.fsm.baselineStableAt >= this.fsm.armStableMs) {
-              this.fsm.current = 'ARMED';
-            }
-            break;
-            
-          case 'ARMED':
-            if (!palmFacing) {
-              this.fsm.current = 'DISARMED';
-            } else if (gesture === 'Pointing_Up' && confidence >= minConf) {
-              this.fsm.current = 'DOWN_COMMIT';
-            } else if (gesture === 'Victory' && confidence >= minConf) {
-              this.fsm.current = 'DOWN_NAV';
-            }
-            break;
-            
-          case 'DOWN_COMMIT':
-          case 'DOWN_NAV':
-            if (!palmFacing) {
-              this.fsm.current = 'DISARMED';
-            } else if (gesture === 'Open_Palm' && palmFacing) {
-              this.fsm.current = 'ARMED';
-            }
-            break;
-        }
       },
       
       subscribe(fn) {
@@ -569,8 +546,7 @@
       reset() {
         this.palmGateState = createPalmConeGateState();
         this.gestureState = createGestureTransitionState();
-        this.fsm.current = 'DISARMED';
-        this.fsm.baselineStableAt = null;
+        this.fsm.disarm();  // Use adapter's disarm() method
       }
     };
     

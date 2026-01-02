@@ -7,19 +7,19 @@
  * @source Gen85: src/shared/trace-context.test.ts
  */
 
-import { describe, it, expect } from 'vitest';
 import * as fc from 'fast-check';
+import { describe, expect, it } from 'vitest';
 import {
-	createTraceContext,
-	propagateTrace,
-	extractTraceId,
-	extractSpanId,
-	validateTraceparent,
-	createDeterministicTrace,
-	parseTraceparent,
-	isSampled,
-	getTraceId,
-	getSpanId,
+    createDeterministicTrace,
+    createTraceContext,
+    extractSpanId,
+    extractTraceId,
+    getSpanId,
+    getTraceId,
+    isSampled,
+    parseTraceparent,
+    propagateTrace,
+    validateTraceparent,
 } from './trace-context.js';
 
 describe('trace-context', () => {

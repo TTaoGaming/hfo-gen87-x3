@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-Video Landmark Extractor for Golden Master Testing
+Video Landmark & Gesture Extractor for Golden Master Testing
 
 Gen87.X3 | Phase: HUNT (H) | Port 0 (Lidless Legion)
 
-Extracts MediaPipe hand landmarks from video files and saves as JSON
-for deterministic golden master testing.
+Extracts MediaPipe hand landmarks AND gesture classifications from video files
+and saves as JSONL for deterministic golden master testing.
 
 Usage:
     python extract-video-landmarks.py input.mp4 output.jsonl
@@ -14,6 +14,7 @@ Requirements:
     pip install mediapipe opencv-python
 
 @source HFO_DETERMINISTIC_HARNESS_SPECS: "lock per-frame landmark traces from short MP4s"
+@source MediaPipe GestureRecognizer: https://developers.google.com/mediapipe/solutions/vision/gesture_recognizer
 """
 
 import argparse
@@ -47,29 +48,31 @@ class LandmarkPoint:
 
 @dataclass 
 class FrameLandmarks:
-    """Landmarks for a single frame."""
+    """Landmarks for a single frame with gesture classification."""
     frame_number: int
     timestamp_ms: float
     hand_detected: bool
     handedness: Optional[str]  # "Left" or "Right"
     landmarks: Optional[list[dict]]  # 21 landmarks or None
+    gesture: Optional[str]  # "Open_Palm", "Pointing_Up", "Victory", etc.
+    gesture_confidence: Optional[float]  # 0.0-1.0
 
 
 def extract_landmarks(video_path: str) -> list[FrameLandmarks]:
-    """Extract hand landmarks from video file."""
+    """Extract hand landmarks AND gestures from video file."""
     import cv2
     import mediapipe as mp
     from mediapipe.tasks import python
     from mediapipe.tasks.python import vision
     
-    # Download model if needed
+    # Download gesture recognizer model if needed (includes landmarks + gestures)
     import urllib.request
     import os
     
-    model_path = "hand_landmarker.task"
+    model_path = "gesture_recognizer.task"
     if not os.path.exists(model_path):
-        print("Downloading hand landmarker model...")
-        url = "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task"
+        print("Downloading gesture recognizer model...")
+        url = "https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task"
         urllib.request.urlretrieve(url, model_path)
         print("Model downloaded.")
     
@@ -82,16 +85,16 @@ def extract_landmarks(video_path: str) -> list[FrameLandmarks]:
     print(f"Video: {video_path}")
     print(f"FPS: {fps}, Total frames: {frame_count}")
     
-    # Create hand landmarker
+    # Create gesture recognizer (gives landmarks + gesture classification)
     base_options = python.BaseOptions(model_asset_path=model_path)
-    options = vision.HandLandmarkerOptions(
+    options = vision.GestureRecognizerOptions(
         base_options=base_options,
         num_hands=1,
         min_hand_detection_confidence=0.5,
         min_tracking_confidence=0.5
     )
     
-    with vision.HandLandmarker.create_from_options(options) as landmarker:
+    with vision.GestureRecognizer.create_from_options(options) as recognizer:
         frame_number = 0
         
         while cap.isOpened():
@@ -105,17 +108,25 @@ def extract_landmarks(video_path: str) -> list[FrameLandmarks]:
             # Create MediaPipe image
             mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame)
             
-            # Process with MediaPipe
-            result = landmarker.detect(mp_image)
+            # Process with MediaPipe GestureRecognizer
+            result = recognizer.recognize(mp_image)
             
             timestamp_ms = (frame_number / fps) * 1000
             
             if result.hand_landmarks and len(result.hand_landmarks) > 0:
                 hand_landmarks = result.hand_landmarks[0]
                 handedness = "Right"  # Default
+                gesture = "None"
+                gesture_confidence = 0.0
                 
                 if result.handedness:
                     handedness = result.handedness[0][0].category_name
+                
+                # Extract gesture classification
+                if result.gestures and len(result.gestures) > 0:
+                    top_gesture = result.gestures[0][0]
+                    gesture = top_gesture.category_name
+                    gesture_confidence = top_gesture.score
                 
                 landmarks = []
                 for lm in hand_landmarks:
@@ -131,7 +142,9 @@ def extract_landmarks(video_path: str) -> list[FrameLandmarks]:
                     timestamp_ms=timestamp_ms,
                     hand_detected=True,
                     handedness=handedness,
-                    landmarks=landmarks
+                    landmarks=landmarks,
+                    gesture=gesture,
+                    gesture_confidence=gesture_confidence
                 ))
             else:
                 results.append(FrameLandmarks(
@@ -139,7 +152,9 @@ def extract_landmarks(video_path: str) -> list[FrameLandmarks]:
                     timestamp_ms=timestamp_ms,
                     hand_detected=False,
                     handedness=None,
-                    landmarks=None
+                    landmarks=None,
+                    gesture=None,
+                    gesture_confidence=None
                 ))
             
             frame_number += 1
@@ -163,7 +178,9 @@ def save_landmarks(landmarks: list[FrameLandmarks], output_path: str):
                 "timestampMs": frame.timestamp_ms,
                 "handDetected": frame.hand_detected,
                 "handedness": frame.handedness,
-                "landmarks": frame.landmarks
+                "landmarks": frame.landmarks,
+                "gesture": frame.gesture,
+                "gestureConfidence": frame.gesture_confidence
             }
             f.write(json.dumps(record) + "\n")
     
@@ -194,10 +211,20 @@ def main():
     
     # Print summary
     detected_frames = sum(1 for f in landmarks if f.hand_detected)
+    
+    # Count gestures
+    gesture_counts = {}
+    for f in landmarks:
+        if f.gesture:
+            gesture_counts[f.gesture] = gesture_counts.get(f.gesture, 0) + 1
+    
     print(f"\nSummary:")
     print(f"  Total frames: {len(landmarks)}")
     print(f"  Frames with hand: {detected_frames}")
     print(f"  Detection rate: {detected_frames / len(landmarks) * 100:.1f}%")
+    print(f"  Gesture counts:")
+    for gesture, count in sorted(gesture_counts.items(), key=lambda x: -x[1]):
+        print(f"    {gesture}: {count}")
 
 
 if __name__ == "__main__":

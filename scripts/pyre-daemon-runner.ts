@@ -20,8 +20,8 @@
 
 import { appendFileSync, readFileSync } from 'node:fs';
 import {
-	PyrePraetorianDaemon,
-	type StigmergySignal,
+    PyrePraetorianDaemon,
+    type StigmergySignal,
 } from '../hot/bronze/src/gates/pyre-praetorian-daemon.js';
 
 // ============================================================================

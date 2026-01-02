@@ -16,14 +16,14 @@
 
 import { z } from 'zod';
 import {
-	OneEuroSmoother,
-	type Point2D,
-	type SmoothedPoint,
+    OneEuroSmoother,
+    type Point2D,
+    type SmoothedPoint,
 } from '../../quarantine/one-euro-smoother.js';
 import {
-	createTraceContext,
-	propagateTrace,
-	type TraceContext,
+    createTraceContext,
+    propagateTrace,
+    type TraceContext,
 } from '../shared/trace-context.js';
 
 // ============================================================================

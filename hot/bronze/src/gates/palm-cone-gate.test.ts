@@ -3,16 +3,16 @@
  *
  * Gen87.X3 | Phase: VALIDATE (V) | TDD RED→GREEN
  */
-import { describe, it, expect, beforeEach } from 'vitest';
-import {
-	calculatePalmAngle,
-	createPalmConeGate,
-	createPalmConeGateState,
-	updatePalmConeGate,
-	DEFAULT_PALM_CONE_CONFIG,
-	type PalmConeConfig,
-} from './palm-cone-gate.js';
+import { beforeEach, describe, expect, it } from 'vitest';
 import type { NormalizedLandmark } from '../contracts/schemas.js';
+import {
+    calculatePalmAngle,
+    createPalmConeGate,
+    createPalmConeGateState,
+    DEFAULT_PALM_CONE_CONFIG,
+    updatePalmConeGate,
+    type PalmConeConfig,
+} from './palm-cone-gate.js';
 
 // ============================================================================
 // FIXTURES

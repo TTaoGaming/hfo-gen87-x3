@@ -1,0 +1,116 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "🌪️ Spore Storm - Heartbeat Mantra",
+			"type": "shell",
+			"command": "npx",
+			"args": ["tsx", "scripts/spore-storm-heartbeat.ts"],
+			"group": "none",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"clear": true
+			},
+			"isBackground": true,
+			"problemMatcher": [],
+			"detail": "Start Spore Storm heartbeat daemon - 'Given One Swarm to Rule the 8' (8 commander mantras hourly)"
+		},
+		{
+			"label": "🔥 Pyre Praetorian - OCTOPULSE",
+			"type": "shell",
+			"command": "npx",
+			"args": ["tsx", "scripts/pyre-daemon-runner.ts"],
+			"group": "none",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"clear": true
+			},
+			"isBackground": true,
+			"problemMatcher": [],
+			"detail": "Start Pyre Praetorian daemon with OCTOPULSE gate defense reports (8 gate statuses hourly)"
+		},
+		{
+			"label": "🧪 Run Tests",
+			"type": "shell",
+			"command": "npx",
+			"args": ["vitest", "run"],
+			"group": {
+				"kind": "test",
+				"isDefault": true
+			},
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "🧪 Watch Tests",
+			"type": "shell",
+			"command": "npx",
+			"args": ["vitest", "watch"],
+			"group": "test",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated"
+			},
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "🏗️ Build",
+			"type": "shell",
+			"command": "npm",
+			"args": ["run", "build"],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared"
+			},
+			"problemMatcher": ["$tsc"]
+		},
+		{
+			"label": "🔍 Type Check",
+			"type": "shell",
+			"command": "npx",
+			"args": ["tsc", "--noEmit"],
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared"
+			},
+			"problemMatcher": ["$tsc"]
+		},
+		{
+			"label": "📋 Lint",
+			"type": "shell",
+			"command": "npx",
+			"args": ["biome", "check", "."],
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "📊 Blackboard Tail",
+			"type": "shell",
+			"command": "Get-Content",
+			"args": ["obsidianblackboard.jsonl", "-Tail", "20", "-Wait"],
+			"group": "none",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated"
+			},
+			"isBackground": true,
+			"problemMatcher": [],
+			"detail": "Watch the last 20 signals on the blackboard"
+		}
+	]
+}
