@@ -207,11 +207,11 @@ export class PyrePraetorianDaemon {
 	private startTime: Date;
 	private lastReportTime: Date;
 	private periodViolations: HIVEViolation[] = [];
-	private periodSignalCount: number = 0;
+	private periodSignalCount = 0;
 
 	// Blackboard watching state
 	private watchTimer: ReturnType<typeof setInterval> | null = null;
-	private lastProcessedIndex: number = 0;
+	private lastProcessedIndex = 0;
 	private gitCommits: GitCommitInfo[] = [];
 
 	constructor(config: Partial<PyrePraetorianConfig> = {}) {
@@ -682,8 +682,8 @@ export class PyrePraetorianDaemon {
 		let validNextPhases = VALID_TRANSITIONS[this.lastPhase];
 		if (!this.config.allowExceptional) {
 			// When exceptional is disabled, X is NOT a valid target from any phase
-			validNextPhases = validNextPhases.filter(p => p !== 'X');
-			
+			validNextPhases = validNextPhases.filter((p) => p !== 'X');
+
 			// Also, transitioning TO X is not allowed
 			if (currentPhase === 'X') {
 				const lastSignal = this.signalHistory[this.signalHistory.length - 1];
@@ -757,31 +757,31 @@ export class PyrePraetorianDaemon {
 		if (signal.type !== 'metric' || !signal.msg.includes('PYRE_OCTOPULSE')) {
 			return false;
 		}
-		
+
 		// All matching signals must also be OCTOPULSE metrics
 		const allOctopulseMetrics = matchingSignals.every(
-			s => s.type === 'metric' && s.msg.includes('PYRE_OCTOPULSE')
+			(s) => s.type === 'metric' && s.msg.includes('PYRE_OCTOPULSE'),
 		);
 		if (!allOctopulseMetrics) {
 			return false;
 		}
-		
+
 		// Check that we're building toward a complete set of ports 0-7
 		const allSignals = [...matchingSignals, signal];
-		const ports = new Set(allSignals.map(s => s.port));
-		
+		const ports = new Set(allSignals.map((s) => s.port));
+
 		// Valid OCTOPULSE: unique ports, all in range 0-7
 		// Can be partial (building up) or complete (all 8)
 		if (ports.size !== allSignals.length) {
 			return false; // Duplicate port = not valid OCTOPULSE
 		}
-		
+
 		for (const port of ports) {
 			if (port < 0 || port > 7) {
 				return false;
 			}
 		}
-		
+
 		return true;
 	}
 
@@ -795,16 +795,16 @@ export class PyrePraetorianDaemon {
 
 		// Check last 8 signals for identical timestamps
 		const recentSignals = this.signalHistory.slice(-8);
-		const matchingTimestamps = recentSignals.filter(s => s.ts === signal.ts);
-		
+		const matchingTimestamps = recentSignals.filter((s) => s.ts === signal.ts);
+
 		// Check if this is part of a PYRE OCTOPULSE pattern
 		if (matchingTimestamps.length > 0 && this.isPartOfOctopulse(signal, matchingTimestamps)) {
 			// This is part of a valid PYRE OCTOPULSE - not a violation!
 			return [];
 		}
-		
+
 		// Check for violations (different phases at same timestamp)
-		const differentPhases = matchingTimestamps.filter(s => s.hive !== signal.hive);
+		const differentPhases = matchingTimestamps.filter((s) => s.hive !== signal.hive);
 
 		if (differentPhases.length > 0) {
 			const violation: HIVEViolation = {
@@ -1003,7 +1003,7 @@ export function createJSONLEmitter(
 ): StigmergyEmitter {
 	return {
 		emit(signal: StigmergySignal): void {
-			const line = JSON.stringify(signal) + '\n';
+			const line = `${JSON.stringify(signal)}\n`;
 			appendFn(filePath, line);
 		},
 	};
@@ -1038,10 +1038,7 @@ export function createConsoleEmitter(): StigmergyEmitter {
  * const emitter = createNATSEmitter('nats://localhost:4222', 'hfo.stigmergy');
  * ```
  */
-export function createNATSEmitter(
-	_serverUrl: string,
-	_subject: string,
-): StigmergyEmitter {
+export function createNATSEmitter(_serverUrl: string, _subject: string): StigmergyEmitter {
 	// Stub for future NATS integration
 	return {
 		emit(_signal: StigmergySignal): void {

@@ -2,11 +2,11 @@
  * 8-Port Architecture Smoke Tests
  * ================================
  * Proves polymorphic composition via terminal execution
- * 
+ *
  * Run: npx vitest run hot/silver/8-port-composition.test.ts
  */
 
-import { describe, it, expect, beforeAll } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
 // ============================================================================
@@ -33,14 +33,70 @@ const HeartbeatResponseSchema = z.object({
 // ============================================================================
 
 const PORT_METADATA = [
-	{ portNumber: 0, commander: 'Lidless Legion', verb: 'SENSE', hivePhase: 'H', antiDiagonalPair: 7, mantra: 'How do we SENSE the SENSE?' },
-	{ portNumber: 1, commander: 'Web Weaver', verb: 'FUSE', hivePhase: 'I', antiDiagonalPair: 6, mantra: 'How do we FUSE the FUSE?' },
-	{ portNumber: 2, commander: 'Mirror Magus', verb: 'SHAPE', hivePhase: 'V', antiDiagonalPair: 5, mantra: 'How do we SHAPE the SHAPE?' },
-	{ portNumber: 3, commander: 'Spore Storm', verb: 'DELIVER', hivePhase: 'E', antiDiagonalPair: 4, mantra: 'How do we DELIVER the DELIVER?' },
-	{ portNumber: 4, commander: 'Red Regnant', verb: 'TEST', hivePhase: 'E', antiDiagonalPair: 3, mantra: 'How do we TEST the TEST?' },
-	{ portNumber: 5, commander: 'Pyre Praetorian', verb: 'DEFEND', hivePhase: 'V', antiDiagonalPair: 2, mantra: 'How do we DEFEND the DEFEND?' },
-	{ portNumber: 6, commander: 'Kraken Keeper', verb: 'STORE', hivePhase: 'I', antiDiagonalPair: 1, mantra: 'How do we STORE the STORE?' },
-	{ portNumber: 7, commander: 'Spider Sovereign', verb: 'DECIDE', hivePhase: 'H', antiDiagonalPair: 0, mantra: 'How do we DECIDE the DECIDE?' },
+	{
+		portNumber: 0,
+		commander: 'Lidless Legion',
+		verb: 'SENSE',
+		hivePhase: 'H',
+		antiDiagonalPair: 7,
+		mantra: 'How do we SENSE the SENSE?',
+	},
+	{
+		portNumber: 1,
+		commander: 'Web Weaver',
+		verb: 'FUSE',
+		hivePhase: 'I',
+		antiDiagonalPair: 6,
+		mantra: 'How do we FUSE the FUSE?',
+	},
+	{
+		portNumber: 2,
+		commander: 'Mirror Magus',
+		verb: 'SHAPE',
+		hivePhase: 'V',
+		antiDiagonalPair: 5,
+		mantra: 'How do we SHAPE the SHAPE?',
+	},
+	{
+		portNumber: 3,
+		commander: 'Spore Storm',
+		verb: 'DELIVER',
+		hivePhase: 'E',
+		antiDiagonalPair: 4,
+		mantra: 'How do we DELIVER the DELIVER?',
+	},
+	{
+		portNumber: 4,
+		commander: 'Red Regnant',
+		verb: 'TEST',
+		hivePhase: 'E',
+		antiDiagonalPair: 3,
+		mantra: 'How do we TEST the TEST?',
+	},
+	{
+		portNumber: 5,
+		commander: 'Pyre Praetorian',
+		verb: 'DEFEND',
+		hivePhase: 'V',
+		antiDiagonalPair: 2,
+		mantra: 'How do we DEFEND the DEFEND?',
+	},
+	{
+		portNumber: 6,
+		commander: 'Kraken Keeper',
+		verb: 'STORE',
+		hivePhase: 'I',
+		antiDiagonalPair: 1,
+		mantra: 'How do we STORE the STORE?',
+	},
+	{
+		portNumber: 7,
+		commander: 'Spider Sovereign',
+		verb: 'DECIDE',
+		hivePhase: 'H',
+		antiDiagonalPair: 0,
+		mantra: 'How do we DECIDE the DECIDE?',
+	},
 ] as const;
 
 // ============================================================================
@@ -50,7 +106,7 @@ const PORT_METADATA = [
 describe('8-Port Architecture: Metadata Validation', () => {
 	it('all 8 ports have valid metadata', () => {
 		expect(PORT_METADATA).toHaveLength(8);
-		
+
 		for (const meta of PORT_METADATA) {
 			const result = PortMetadataSchema.safeParse(meta);
 			expect(result.success).toBe(true);
@@ -114,34 +170,66 @@ describe('8-Port Architecture: Type Contracts', () => {
 	// Mock implementations for type checking
 	class MockSensePort implements SensePort {
 		readonly portNumber = 0 as const;
-		async heartbeat() { return { healthy: true, timestamp: new Date().toISOString() }; }
-		async initialize() { /* noop */ }
-		async shutdown() { /* noop */ }
-		async sense(input: { source: string }) { return { data: { source: input.source } }; }
+		async heartbeat() {
+			return { healthy: true, timestamp: new Date().toISOString() };
+		}
+		async initialize() {
+			/* noop */
+		}
+		async shutdown() {
+			/* noop */
+		}
+		async sense(input: { source: string }) {
+			return { data: { source: input.source } };
+		}
 	}
 
 	class MockFusePort implements FusePort {
 		readonly portNumber = 1 as const;
-		async heartbeat() { return { healthy: true, timestamp: new Date().toISOString() }; }
-		async initialize() { /* noop */ }
-		async shutdown() { /* noop */ }
-		async fuse(input: { sources: unknown[] }) { return { fused: input.sources }; }
+		async heartbeat() {
+			return { healthy: true, timestamp: new Date().toISOString() };
+		}
+		async initialize() {
+			/* noop */
+		}
+		async shutdown() {
+			/* noop */
+		}
+		async fuse(input: { sources: unknown[] }) {
+			return { fused: input.sources };
+		}
 	}
 
 	class MockShapePort implements ShapePort {
 		readonly portNumber = 2 as const;
-		async heartbeat() { return { healthy: true, timestamp: new Date().toISOString() }; }
-		async initialize() { /* noop */ }
-		async shutdown() { /* noop */ }
-		async shape(input: { data: unknown }) { return { shaped: input.data }; }
+		async heartbeat() {
+			return { healthy: true, timestamp: new Date().toISOString() };
+		}
+		async initialize() {
+			/* noop */
+		}
+		async shutdown() {
+			/* noop */
+		}
+		async shape(input: { data: unknown }) {
+			return { shaped: input.data };
+		}
 	}
 
 	class MockDeliverPort implements DeliverPort {
 		readonly portNumber = 3 as const;
-		async heartbeat() { return { healthy: true, timestamp: new Date().toISOString() }; }
-		async initialize() { /* noop */ }
-		async shutdown() { /* noop */ }
-		async deliver(input: { payload: unknown; target: string }) { return { delivered: true }; }
+		async heartbeat() {
+			return { healthy: true, timestamp: new Date().toISOString() };
+		}
+		async initialize() {
+			/* noop */
+		}
+		async shutdown() {
+			/* noop */
+		}
+		async deliver(input: { payload: unknown; target: string }) {
+			return { delivered: true };
+		}
 	}
 
 	it('mock ports implement interfaces correctly', async () => {
@@ -179,12 +267,12 @@ describe('8-Port Architecture: Type Contracts', () => {
 					const sensed = await ports.sense.sense({ source });
 					const fused = await ports.fuse.fuse({ sources: [sensed.data] });
 					const shaped = await ports.shape.shape({ data: fused.fused });
-					const delivered = await ports.deliver.deliver({ 
-						payload: shaped.shaped, 
-						target: 'test' 
+					const delivered = await ports.deliver.deliver({
+						payload: shaped.shaped,
+						target: 'test',
 					});
 					return delivered;
-				}
+				},
 			};
 		}
 

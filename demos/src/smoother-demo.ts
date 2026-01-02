@@ -16,11 +16,14 @@ import {
 	ONE_EURO_BETA_DEFAULT,
 	ONE_EURO_MINCUTOFF_DEFAULT,
 	OneEuroExemplarAdapter,
+	PointerEventAdapter,
 	type SensorFrame,
 	type SmoothedFrame,
+	XStateFSMAdapter,
 	addJitter,
 	createSensorFrameFromMouse,
 } from '../../hot/bronze/src/browser/index.js';
+import type { AdapterTarget } from '../../hot/bronze/src/contracts/schemas.js';
 
 // ============================================================================
 // CONTRACT ENFORCEMENT: TypeScript catches wrong API at compile time
@@ -30,6 +33,10 @@ import {
 // TypeScript will error if you try to pass the wrong type.
 // Example of CORRECT usage:
 const smoother = new OneEuroExemplarAdapter();
+
+// IR-0012 FIX: Complete pipeline - add FSM and Emitter
+const fsm = new XStateFSMAdapter();
+const pointerEmitter = new PointerEventAdapter(1, 'touch');
 
 // CORRECT - createSensorFrameFromMouse returns SensorFrame:
 const frame: SensorFrame = createSensorFrameFromMouse(0.5, 0.5, performance.now());
@@ -102,6 +109,14 @@ function processInput(x: number, y: number): void {
 
 	// Smooth using CORRECT API: smooth(SensorFrame) -> SmoothedFrame
 	const smoothedFrame: SmoothedFrame = state.smoother.smooth(sensorFrame);
+
+	// IR-0012 FIX: Complete pipeline - FSM + Emit
+	const action = fsm.process(smoothedFrame);
+	const target: AdapterTarget = {
+		id: 'smoother-canvas',
+		bounds: { left: 0, top: 0, width: 800, height: 600 },
+	};
+	pointerEmitter.emit(action, target);
 
 	// Update trails
 	state.trails.raw.push({ x: jitteredX, y: jitteredY });
@@ -232,7 +247,7 @@ export async function initSmootherDemo(canvasId: string, statsId: string): Promi
 
 	// Mouse input handler
 	canvas.addEventListener('mousemove', (e) => {
-		const rect = canvas!.getBoundingClientRect();
+		const rect = canvas?.getBoundingClientRect();
 		const x = (e.clientX - rect.left) / rect.width;
 		const y = (e.clientY - rect.top) / rect.height;
 		processInput(x, y);

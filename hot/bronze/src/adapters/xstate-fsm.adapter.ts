@@ -8,13 +8,13 @@
  *
  * Grounded: Tavily research 2025-12-29
  */
-import { type ActorRefFrom, type SnapshotFrom, assign, createActor, setup } from 'xstate';
+import { type ActorRefFrom, assign, createActor, setup } from 'xstate';
 import type { FSMPort } from '../contracts/ports.js';
 import {
-    type FSMAction,
-    FSMActionSchema,
-    type FSMState,
-    type SmoothedFrame,
+	type FSMAction,
+	FSMActionSchema,
+	type FSMState,
+	type SmoothedFrame,
 } from '../contracts/schemas.js';
 
 // ============================================================================
@@ -423,14 +423,10 @@ const gestureMachine = setup({
 // ============================================================================
 
 type GestureActor = ActorRefFrom<typeof gestureMachine>;
-// @ts-expect-error Reserved for future snapshot inspection
-type _GestureSnapshot = SnapshotFrom<typeof gestureMachine>;
 
 export class XStateFSMAdapter implements FSMPort {
 	private actor: GestureActor;
 	private previousState: FSMState = 'DISARMED';
-	// @ts-expect-error Reserved for stateful transitions
-	private _previousFrame: SmoothedFrame | null = null;
 	private subscribers: Set<(state: string, action: FSMAction) => void> = new Set();
 
 	constructor() {
@@ -462,8 +458,6 @@ export class XStateFSMAdapter implements FSMPort {
 
 		// Compute action based on state transition (pass current frame for label access)
 		const action = this.computeAction(newState, snapshot.context, frame);
-
-		this._previousFrame = frame;
 
 		// CDD: Validate output at port boundary
 		return FSMActionSchema.parse(action);

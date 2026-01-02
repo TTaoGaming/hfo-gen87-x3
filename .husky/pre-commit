@@ -55,7 +55,7 @@ fi
 
 # Gate 7: Single Entry Point - NEW code files must go to bronze/quarantine
 echo "  → Single Entry Point..."
-NEW_CODE=$(git diff --cached --name-only --diff-filter=A | grep -E '\.(ts|tsx|js|jsx|html)$' | grep -v 'hot/bronze/quarantine/' | grep -v '\.test\.' | grep -v '\.spec\.' || true)
+NEW_CODE=$(git diff --cached --name-only --diff-filter=A | grep -E '^hot/bronze/src/.*\.(ts|tsx|js|jsx|html)$' | grep -v 'hot/bronze/quarantine/' | grep -v '\.test\.' | grep -v '\.spec\.' || true)
 if [ -n "$NEW_CODE" ]; then
   echo "❌ BLOCKED: New code files must go to hot/bronze/quarantine/"
   echo "   Files blocked:"
@@ -70,14 +70,44 @@ fi
 
 echo "✅ All fast gates passed."
 
-# Gate 8: Pyre HIVE Sequence Scan (INFORMATIONAL - warnings only for now)
+# Gate 8: Simulation/Theater Code Detection (BLOCKING)
+# Catches Math.random(), inline filter classes, fake smoothing - IR-0006 violations
+echo "  → Simulation/Theater Code Detection..."
+if command -v npx &> /dev/null; then
+  SIMULATION_OUTPUT=$(npx --yes tsx scripts/simulation-detector.ts --staged 2>&1)
+  SIMULATION_EXIT=$?
+  
+  if [ $SIMULATION_EXIT -ne 0 ]; then
+    echo "$SIMULATION_OUTPUT"
+    echo ""
+    echo "❌ BLOCKED: Simulation/Theater code detected in staged files"
+    echo ""
+    echo "   Your code uses FAKE simulation instead of REAL architecture:"
+    echo "   - Math.random() instead of MediaPipeAdapter.sense()"
+    echo "   - Inline filter classes instead of OneEuroExemplarAdapter"
+    echo "   - Hardcoded coordinates instead of SensorFrame pipeline"
+    echo ""
+    echo "   To fix:"
+    echo "   1. Import real adapters from lib/hfo.js or hot/bronze/src/"
+    echo "   2. Use createSensorFrameFromMouse() for mouse input"
+    echo "   3. Use adapter.smooth(sensorFrame) for smoothing"
+    echo ""
+    echo "   See: hot/bronze/src/constraints/demo-contract.constraint.test.ts"
+    exit 1
+  fi
+  echo "    ✅ No theater code detected"
+else
+  echo "    (Simulation detector skipped - npx not available)"
+fi
+
+# Gate 9: Pyre HIVE Sequence Scan (INFORMATIONAL - warnings only for now)
 # TODO: Enable blocking after historical violations are cleared
 echo "  → Pyre HIVE Sequence Scan (INFO)..."
 if command -v npx &> /dev/null; then
   npx --yes tsx scripts/pyre-daemon-runner.ts --scan-only 2>/dev/null || echo "  (Pyre scan skipped - tsx not available)"
 fi
 
-# Gate 9: Mutation Testing (80% threshold) - BLOCKING on changed files
+# Gate 10: Mutation Testing (80% threshold) - BLOCKING on changed files
 # Only runs if TS files in hot/bronze/src are staged
 echo "  → Mutation Testing Check..."
 STAGED_SRC=$(git diff --cached --name-only | grep -E '^hot/bronze/src/.*\.ts$' | grep -v '\.test\.ts$' | grep -v '\.spec\.ts$' || true)

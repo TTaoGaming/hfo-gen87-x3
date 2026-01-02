@@ -439,7 +439,9 @@ export class HFOPortFactory implements PortFactory {
 
 			case 'rapier-smooth': {
 				// Build config object with only defined properties
-				const config: Partial<import('./rapier-physics.adapter.js').RapierConfig> = { mode: 'smoothed' };
+				const config: Partial<import('./rapier-physics.adapter.js').RapierConfig> = {
+					mode: 'smoothed',
+				};
 				if (smoother.stiffness !== undefined) config.stiffness = smoother.stiffness;
 				if (smoother.damping !== undefined) config.damping = smoother.damping;
 				return new RapierSmootherAdapter(new RapierPhysicsAdapter(config));
@@ -447,7 +449,9 @@ export class HFOPortFactory implements PortFactory {
 
 			case 'rapier-predict': {
 				// Build config object with only defined properties
-				const config: Partial<import('./rapier-physics.adapter.js').RapierConfig> = { mode: 'predictive' };
+				const config: Partial<import('./rapier-physics.adapter.js').RapierConfig> = {
+					mode: 'predictive',
+				};
 				if (smoother.stiffness !== undefined) config.stiffness = smoother.stiffness;
 				if (smoother.damping !== undefined) config.damping = smoother.damping;
 				if (smoother.predictionMs !== undefined) config.predictionMs = smoother.predictionMs;
@@ -456,9 +460,12 @@ export class HFOPortFactory implements PortFactory {
 
 			case 'rapier-adaptive': {
 				// 1€ PHYSICS: Rapier with velocity-adaptive stiffness
-				const config: Partial<import('./rapier-physics.adapter.js').RapierConfig> = { mode: 'adaptive' };
+				const config: Partial<import('./rapier-physics.adapter.js').RapierConfig> = {
+					mode: 'adaptive',
+				};
 				if (smoother.minStiffness !== undefined) config.minStiffness = smoother.minStiffness;
-				if (smoother.speedCoefficient !== undefined) config.speedCoefficient = smoother.speedCoefficient;
+				if (smoother.speedCoefficient !== undefined)
+					config.speedCoefficient = smoother.speedCoefficient;
 				if (smoother.maxStiffness !== undefined) config.maxStiffness = smoother.maxStiffness;
 				if (smoother.damping !== undefined) config.damping = smoother.damping;
 				return new RapierSmootherAdapter(new RapierPhysicsAdapter(config));

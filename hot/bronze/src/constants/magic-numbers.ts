@@ -62,7 +62,7 @@ export const ONE_EURO_DCUTOFF_MAX = 10.0;
  * @default 0.10 - Matches typical hardware noise floor (~10%)
  * @note Xbox controllers: 0.20-0.25, Steam: 0.05-0.08, Hardware: ~0.10
  */
-export const DEAD_ZONE_DEFAULT = 0.10;
+export const DEAD_ZONE_DEFAULT = 0.1;
 export const DEAD_ZONE_MIN = 0.05;
 export const DEAD_ZONE_MAX = 0.25;
 
@@ -172,11 +172,7 @@ export const OneEuroTunablesSchema = z.object({
 		.min(ONE_EURO_MINCUTOFF_MIN)
 		.max(ONE_EURO_MINCUTOFF_MAX)
 		.default(ONE_EURO_MINCUTOFF_DEFAULT),
-	beta: z
-		.number()
-		.min(ONE_EURO_BETA_MIN)
-		.max(ONE_EURO_BETA_MAX)
-		.default(ONE_EURO_BETA_DEFAULT),
+	beta: z.number().min(ONE_EURO_BETA_MIN).max(ONE_EURO_BETA_MAX).default(ONE_EURO_BETA_DEFAULT),
 	dcutoff: z
 		.number()
 		.min(ONE_EURO_DCUTOFF_MIN)
@@ -185,11 +181,7 @@ export const OneEuroTunablesSchema = z.object({
 });
 
 export const DeadZoneTunablesSchema = z.object({
-	deadZone: z
-		.number()
-		.min(DEAD_ZONE_MIN)
-		.max(DEAD_ZONE_MAX)
-		.default(DEAD_ZONE_DEFAULT),
+	deadZone: z.number().min(DEAD_ZONE_MIN).max(DEAD_ZONE_MAX).default(DEAD_ZONE_DEFAULT),
 });
 
 export const RapierTunablesSchema = z.object({

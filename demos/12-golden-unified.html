@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HFO Golden Unified — Gen87.X3</title>
+  
+  <!-- GoldenLayout CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/golden-layout@2.6.0/dist/css/goldenlayout-base.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/golden-layout@2.6.0/dist/css/themes/goldenlayout-dark-theme.css">
+  
+  <!-- MediaPipe -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/hands.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1675466862/camera_utils.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils@0.3.1675466124/drawing_utils.min.js"></script>
+  
+  <script type="importmap">
+  {
+    "imports": {
+      "golden-layout": "https://esm.sh/golden-layout@2.6.0"
+    }
+  }
+  </script>
+  
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --border: #30363d;
+      --text: #c9d1d9;
+      --text-dim: #8b949e;
+      
+      /* Port Colors (HFO 8-Port) */
+      --port0: #00d9ff;  /* Observer - Cyan */
+      --port1: #58a6ff;  /* Bridger - Blue */
+      --port2: #3fb950;  /* Shaper - Green */
+      --port3: #f0883e;  /* Injector - Orange */
+      --port4: #f85149;  /* Disruptor - Red */
+      --port5: #ff7b72;  /* Immunizer - Coral */
+      --port6: #d2a8ff;  /* Assimilator - Lavender */
+      --port7: #a371f7;  /* Navigator - Purple */
+    }
+    
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    
+    /* Header */
+    header {
+      padding: 10px 20px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    header h1 {
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .badge {
+      font-size: 0.6rem;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+    
+    .badge.gen { background: var(--port7); color: white; }
+    .badge.golden { background: #d4af37; color: #000; }
+    
+    .controls {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .controls button {
+      padding: 6px 14px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: all 0.2s;
+    }
+    
+    .controls button:hover { background: var(--border); }
+    .controls button.active { background: var(--port2); color: var(--bg); border-color: var(--port2); }
+    .controls button:disabled { opacity: 0.4; cursor: not-allowed; }
+    
+    /* Layout Container */
+    #layout-container {
+      flex: 1;
+      position: relative;
+    }
+    
+    /* Panel Base */
+    .panel {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      background: var(--surface);
+      overflow: hidden;
+    }
+    
+    .panel-header {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    
+    .panel-header h3 {
+      font-size: 0.8rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .port-tag {
+      font-size: 0.55rem;
+      padding: 2px 5px;
+      border-radius: 3px;
+      color: var(--bg);
+      font-weight: 600;
+    }
+    
+    .port-tag.p0 { background: var(--port0); }
+    .port-tag.p2 { background: var(--port2); }
+    .port-tag.p3 { background: var(--port3); }
+    .port-tag.p5 { background: var(--port5); }
+    .port-tag.p7 { background: var(--port7); }
+    
+    .panel-body {
+      flex: 1;
+      padding: 10px;
+      overflow: auto;
+      font-size: 0.75rem;
+    }
+    
+    /* Video Panel */
+    .video-wrapper {
+      position: relative;
+      width: 100%;
+      background: #000;
+      border-radius: 4px;
+      overflow: hidden;
+      aspect-ratio: 4/3;
+    }
+    
+    .video-wrapper video,
+    .video-wrapper canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scaleX(-1);
+    }
+    
+    .video-wrapper canvas {
+      pointer-events: none;
+    }
+    
+    .video-status {
+      position: absolute;
+      bottom: 6px;
+      left: 6px;
+      background: rgba(0,0,0,0.75);
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.65rem;
+    }
+    
+    /* FSM Display */
+    .fsm-strip {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+    
+    .fsm-state {
+      padding: 4px 8px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 0.65rem;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+    
+    .fsm-state.active {
+      border-color: var(--port5);
+      background: rgba(255, 123, 114, 0.2);
+      color: var(--port5);
+    }
+    
+    /* Data Grid */
+    .data-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+    
+    .data-item {
+      background: var(--bg);
+      padding: 6px 8px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+    }
+    
+    .data-item .label {
+      font-size: 0.6rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+    
+    .data-item .value {
+      font-family: 'Consolas', monospace;
+      font-size: 0.8rem;
+    }
+    
+    /* Event Log */
+    .event-log {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 6px;
+      max-height: 150px;
+      overflow-y: auto;
+      font-family: 'Consolas', monospace;
+      font-size: 0.65rem;
+    }
+    
+    .event-log .entry {
+      padding: 2px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .event-log .entry:last-child { border-bottom: none; }
+    .event-log .ts { color: var(--text-dim); }
+    .event-log .type { color: var(--port3); }
+    
+    /* Target Canvas */
+    .target-area {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    
+    .target-area canvas {
+      width: 100%;
+      height: 100%;
+    }
+    
+    .cursor-dot {
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--port0);
+      border-radius: 50%;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      transition: border-color 0.1s, background 0.1s;
+    }
+    
+    .cursor-dot.pressing {
+      background: rgba(0, 217, 255, 0.3);
+      border-color: var(--port3);
+    }
+    
+    /* Footer */
+    footer {
+      padding: 6px 20px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      font-size: 0.65rem;
+      color: var(--text-dim);
+      display: flex;
+      justify-content: space-between;
+    }
+    
+    #fsmStateText {
+      font-weight: 600;
+      color: var(--port5);
+    }
+    
+    #fsmStateStrip {
+      font-family: 'Consolas', monospace;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>
+      🕸️ HFO Golden Unified
+      <span class="badge gen">Gen87.X3</span>
+      <span class="badge golden">GoldenLayout</span>
+    </h1>
+    <div class="controls">
+      <button id="btn-mouse" class="active" data-input="mouse">🖱️ Mouse</button>
+      <button id="btn-camera" data-input="camera">📷 Camera</button>
+      <button id="btn-reset">🔄 Reset</button>
+    </div>
+  </header>
+  
+  <div id="layout-container"></div>
+  
+  <footer>
+    <span>FSM: <span id="fsmStateText">DISARMED</span></span>
+    <span id="fsmStateStrip">DISARMED → ARMING → ARMED → DOWN_COMMIT</span>
+  </footer>
+
+  <script type="module">
+    import { GoldenLayout } from 'golden-layout';
+    
+    // Import HFO REAL TESTED modules - NO INLINE CODE
+    import {
+      calculatePalmAngle,
+      updatePalmConeGate,
+      createPalmConeGateState,
+      DEFAULT_PALM_CONE_CONFIG,
+      updateGestureTransitionPredictor,
+      createGestureTransitionState,
+      DEFAULT_GESTURE_TRANSITION_CONFIG,
+      OneEuroExemplarAdapter,
+      XStateFSMAdapter,  // REAL FSM with 43 tests (82.70% mutation score)
+      SensorFrameSchema,
+      SmoothedFrameSchema,
+      createSensorFrameFromMouse,
+      HFOPortFactory,  // Port factory for W3C PointerEventAdapter (45 tests)
+    } from './lib/hfo.js';
+    
+    console.log('[HFO] ✅ Golden Unified Demo - REAL tested modules loaded (no inline code)');
+    
+    // ============================================================================
+    // GLOBAL STATE
+    // ============================================================================
+    let inputMode = 'mouse';
+    let videoElement = null;
+    let canvasOverlay = null;
+    let hands = null;
+    let camera = null;
+    let isRunning = false;
+    
+    // ============================================================================
+    // PORT INTERFACES (Hexagonal Architecture)
+    // ============================================================================
+    
+    // Port 0 - SENSE
+    const SensorPort = {
+      state: { landmarks: null, gesture: 'None', confidence: 0, palmAngle: 180, indexTip: { x: 0.5, y: 0.5 }, trackingOk: false },
+      subscribers: [],
+      emit(frame) { this.state = { ...this.state, ...frame }; this.subscribers.forEach(fn => fn(this.state)); },
+      subscribe(fn) { this.subscribers.push(fn); return () => this.subscribers = this.subscribers.filter(s => s !== fn); }
+    };
+    
+    // Port 2 - SHAPE (Uses REAL OneEuroExemplarAdapter with smooth(frame) interface)
+    const SmootherPort = {
+      state: { raw: { x: 0.5, y: 0.5 }, smoothed: { x: 0.5, y: 0.5 } },
+      subscribers: [],
+      adapter: new OneEuroExemplarAdapter(),
+      
+      process(sensorFrame, ts) {
+        const raw = { x: sensorFrame.indexTip.x, y: sensorFrame.indexTip.y };
+        
+        // Use REAL adapter's smooth() method - sensorFrame MUST already be valid
+        const smoothedFrame = this.adapter.smooth(sensorFrame);
+        const smoothed = smoothedFrame.position || raw;
+        
+        this.state = { raw, smoothed };
+        this.subscribers.forEach(fn => fn(this.state));
+        return this.state;
+      },
+      subscribe(fn) { this.subscribers.push(fn); return () => this.subscribers = this.subscribers.filter(s => s !== fn); },
+      reset() { this.adapter = new OneEuroExemplarAdapter(); }
+    };
+    
+    // Port 5 - DEFEND (FSM + Gates) - Uses REAL XStateFSMAdapter (43 tests, 54% mutation score)
+    const GatePort = {
+      state: { fsmState: 'DISARMED', palmFacing: false, gestureValid: false, lastAction: null },
+      palmGateState: createPalmConeGateState(),
+      gestureState: createGestureTransitionState(),
+      fsm: new XStateFSMAdapter(),  // REAL adapter - NO hand-rolled FSM
+      subscribers: [],
+      
+      process(sensorFrame, ts) {
+        // Gate 1: Palm Cone (Schmitt Trigger Hysteresis)
+        const gateResult = updatePalmConeGate(sensorFrame.palmAngle, ts, this.palmGateState, DEFAULT_PALM_CONE_CONFIG);
+        this.palmGateState = gateResult.state;
+        
+        // Gate 2: Gesture Transition Debounce
+        const prediction = updateGestureTransitionPredictor(sensorFrame.gesture, ts, this.gestureState, DEFAULT_GESTURE_TRANSITION_CONFIG);
+        this.gestureState = prediction.state;
+        
+        // Create SmoothedFrame for FSM (the adapter's expected input)
+        const smoothedFrame = {
+          ts,
+          handId: sensorFrame.handId || 'right',
+          trackingOk: sensorFrame.trackingOk !== false,
+          palmFacing: gateResult.isFacing,
+          label: prediction.shouldDebounce ? 'None' : sensorFrame.gesture,
+          confidence: sensorFrame.confidence,
+          position: sensorFrame.indexTip ? { x: sensorFrame.indexTip.x, y: sensorFrame.indexTip.y } : { x: 0.5, y: 0.5 }
+        };
+        
+        // REAL FSM processing - returns FSMAction with state, action, x, y, button, etc.
+        const fsmAction = this.fsm.process(smoothedFrame);
+        const fsmState = fsmAction.state || this.fsm.getState();
+        
+        this.state = { 
+          fsmState, 
+          palmFacing: gateResult.isFacing, 
+          gestureValid: !prediction.shouldDebounce,
+          lastAction: fsmAction
+        };
+        this.subscribers.forEach(fn => fn(this.state));
+        return this.state;
+      },
+      
+      subscribe(fn) { this.subscribers.push(fn); return () => this.subscribers = this.subscribers.filter(s => s !== fn); },
+      reset() {
+        this.palmGateState = createPalmConeGateState();
+        this.gestureState = createGestureTransitionState();
+        this.fsm.disarm();  // Use adapter's disarm() method
+      }
+    };
+    
+    // Port 3 - DELIVER (W3C PointerEvents) - Uses REAL PointerEventAdapter (45 tests)
+    const portFactory = new HFOPortFactory();
+    const pointerEventAdapter = portFactory.createEmitter();
+    
+    const EmitterPort = {
+      state: { lastEvent: null, eventCount: 0, events: [] },
+      subscribers: [],
+      prevFsmState: 'DISARMED',
+      targetBounds: { width: 800, height: 600, left: 0, top: 0 },  // Updated by GoldenLayout
+      
+      setTargetBounds(bounds) {
+        this.targetBounds = bounds;
+      },
+      
+      process(gateState, smootherState) {
+        const { fsmState, lastAction } = gateState;
+        const { smoothed } = smootherState;
+        
+        // Use REAL PointerEventAdapter.emit() - CDD validated output
+        // FSMAction contains: { state, action, x?, y?, button? }
+        if (lastAction && lastAction.action !== 'none') {
+          // Create target with current bounds - coordinates normalized (0-1)
+          const target = { bounds: this.targetBounds };
+          
+          // Override action coordinates with smoothed values if available
+          const actionWithCoords = {
+            ...lastAction,
+            x: smoothed.x,
+            y: smoothed.y,
+          };
+          
+          // REAL adapter emits W3C PointerEventOut (Zod validated)
+          const event = pointerEventAdapter.emit(actionWithCoords, target);
+          
+          if (event) {
+            // Add timestamp for UI display
+            const eventWithTs = { ...event, timestamp: performance.now() };
+            this.state.lastEvent = eventWithTs;
+            this.state.eventCount++;
+            this.state.events.unshift(eventWithTs);
+            if (this.state.events.length > 20) this.state.events.pop();
+            this.subscribers.forEach(fn => fn(eventWithTs, this.state));
+          }
+        }
+        
+        this.prevFsmState = fsmState;
+        return this.state;
+      },
+      
+      subscribe(fn) { this.subscribers.push(fn); return () => this.subscribers = this.subscribers.filter(s => s !== fn); },
+      reset() { this.state = { lastEvent: null, eventCount: 0, events: [] }; this.prevFsmState = 'DISARMED'; }
+    };
+    
+    // ============================================================================
+    // MEDIAPIPE
+    // ============================================================================
+    
+    async function initMediaPipe() {
+      hands = new Hands({
+        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/${file}`
+      });
+      hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.7, minTrackingConfidence: 0.5 });
+      hands.onResults(onHandResults);
+      console.log('[Port 0] MediaPipe initialized');
+    }
+    
+    function classifyGesture(landmarks) {
+      if (!landmarks || landmarks.length < 21) return { label: 'None', confidence: 0 };
+      const tips = [4, 8, 12, 16, 20], pips = [3, 6, 10, 14, 18];
+      const extended = tips.map((tip, i) => i === 0 ? landmarks[tip].x < landmarks[pips[i]].x : landmarks[tip].y < landmarks[pips[i]].y);
+      const [thumb, index, middle, ring, pinky] = extended;
+      if (thumb && index && middle && ring && pinky) return { label: 'Open_Palm', confidence: 0.9 };
+      if (!thumb && index && !middle && !ring && !pinky) return { label: 'Pointing_Up', confidence: 0.85 };
+      return { label: 'None', confidence: 0.5 };
+    }
+    
+    function onHandResults(results) {
+      const ts = performance.now();
+      if (canvasOverlay) {
+        const ctx = canvasOverlay.getContext('2d');
+        ctx.clearRect(0, 0, canvasOverlay.width, canvasOverlay.height);
+        if (results.multiHandLandmarks?.[0]) {
+          drawConnectors(ctx, results.multiHandLandmarks[0], HAND_CONNECTIONS, { color: '#00FF00', lineWidth: 2 });
+          drawLandmarks(ctx, results.multiHandLandmarks[0], { color: '#FF0000', lineWidth: 1, radius: 3 });
+        }
+      }
+      
+      if (results.multiHandLandmarks?.[0]) {
+        const landmarks = results.multiHandLandmarks[0];
+        const palmAngle = calculatePalmAngle(landmarks);
+        const { label, confidence } = classifyGesture(landmarks);
+        const indexTip = landmarks[8];
+        
+        SensorPort.emit({ landmarks, gesture: label, confidence, palmAngle, indexTip: { x: indexTip.x, y: indexTip.y }, trackingOk: true });
+        const smootherState = SmootherPort.process({ indexTip: { x: indexTip.x, y: indexTip.y } }, ts);
+        const gateState = GatePort.process({ gesture: label, confidence, palmAngle }, ts);
+        EmitterPort.process(gateState, smootherState);
+      } else {
+        SensorPort.emit({ landmarks: null, gesture: 'None', confidence: 0, palmAngle: 180, indexTip: { x: 0.5, y: 0.5 }, trackingOk: false });
+        GatePort.process({ gesture: 'None', confidence: 0, palmAngle: 180 }, ts);
+      }
+    }
+    
+    async function startCamera() {
+      if (isRunning || !videoElement) return;
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
+        videoElement.srcObject = stream;
+        await videoElement.play();
+        if (canvasOverlay) { canvasOverlay.width = videoElement.videoWidth; canvasOverlay.height = videoElement.videoHeight; }
+        camera = new Camera(videoElement, { onFrame: async () => { await hands.send({ image: videoElement }); }, width: 640, height: 480 });
+        await camera.start();
+        isRunning = true;
+        console.log('[Port 0] Camera started');
+      } catch (err) { console.error('[Port 0] Camera error:', err); }
+    }
+    
+    function stopCamera() {
+      if (!isRunning) return;
+      if (camera) { camera.stop(); camera = null; }
+      if (videoElement?.srcObject) { videoElement.srcObject.getTracks().forEach(t => t.stop()); videoElement.srcObject = null; }
+      isRunning = false;
+      console.log('[Port 0] Camera stopped');
+    }
+    
+    // ============================================================================
+    // MOUSE INPUT (Fallback) - Uses REAL createSensorFrameFromMouse
+    // ============================================================================
+    let mouseX = 0.5, mouseY = 0.5, mouseDown = false;
+    
+    function processMouseInput() {
+      if (inputMode !== 'mouse') return;
+      const ts = performance.now();
+      
+      // Use REAL helper to create valid SensorFrame
+      const sensorFrame = createSensorFrameFromMouse(mouseX, mouseY, ts);
+      // Override gesture based on mouse state
+      sensorFrame.label = mouseDown ? 'Pointing_Up' : 'Open_Palm';
+      
+      // Calculate palmAngle from palmFacing (palmFacing=true means angle < 90)
+      const palmAngle = sensorFrame.palmFacing ? 45 : 135;
+      
+      SensorPort.emit({ ...sensorFrame, gesture: sensorFrame.label, palmAngle });
+      const smootherState = SmootherPort.process(sensorFrame, ts);
+      // GatePort expects palmAngle, gesture, confidence
+      const gateState = GatePort.process({ gesture: sensorFrame.label, confidence: sensorFrame.confidence, palmAngle }, ts);
+      EmitterPort.process(gateState, smootherState);
+      requestAnimationFrame(processMouseInput);
+    }
+    
+    // ============================================================================
+    // GOLDEN LAYOUT
+    // ============================================================================
+    
+    const container = document.getElementById('layout-container');
+    
+    const layoutConfig = {
+      root: {
+        type: 'row',
+        content: [
+          {
+            type: 'column', width: 30,
+            content: [
+              { type: 'component', componentType: 'video', title: '📹 Video Input' },
+              { type: 'component', componentType: 'sensor', title: '👁️ Sensor (Port 0)' }
+            ]
+          },
+          {
+            type: 'column', width: 35,
+            content: [
+              { type: 'component', componentType: 'fsm', title: '🛡️ FSM/Gates (Port 5)', height: 45 },
+              { type: 'component', componentType: 'smoother', title: '🎯 Smoother (Port 2)' }
+            ]
+          },
+          {
+            type: 'column', width: 35,
+            content: [
+              { type: 'component', componentType: 'target', title: '🎯 Target (Port 7)' },
+              { type: 'component', componentType: 'events', title: '📤 Events (Port 3)' }
+            ]
+          }
+        ]
+      }
+    };
+    
+    const layout = new GoldenLayout(container);
+    
+    // Video Panel
+    layout.registerComponentFactoryFunction('video', (cont) => {
+      cont.element.innerHTML = `
+        <div class="panel">
+          <div class="panel-header"><h3><span class="port-tag p0">P0</span> Camera Feed</h3></div>
+          <div class="panel-body">
+            <div class="video-wrapper">
+              <video id="videoEl" playsinline muted></video>
+              <canvas id="canvasEl"></canvas>
+              <div class="video-status" id="videoStatus">📷 Ready</div>
+            </div>
+          </div>
+        </div>
+      `;
+      videoElement = cont.element.querySelector('#videoEl');
+      canvasOverlay = cont.element.querySelector('#canvasEl');
+      
+      SensorPort.subscribe(state => {
+        cont.element.querySelector('#videoStatus').textContent = state.trackingOk ? '🖐️ ' + state.gesture : '📷 No hand';
+      });
+    });
+    
+    // Sensor Data Panel
+    layout.registerComponentFactoryFunction('sensor', (cont) => {
+      cont.element.innerHTML = `
+        <div class="panel">
+          <div class="panel-header"><h3><span class="port-tag p0">P0</span> Sensor Data</h3></div>
+          <div class="panel-body">
+            <div class="data-grid">
+              <div class="data-item"><div class="label">Gesture</div><div class="value" id="senGesture">--</div></div>
+              <div class="data-item"><div class="label">Confidence</div><div class="value" id="senConf">--</div></div>
+              <div class="data-item"><div class="label">Palm Angle</div><div class="value" id="senPalm">--°</div></div>
+              <div class="data-item"><div class="label">Index Tip</div><div class="value" id="senTip">--</div></div>
+            </div>
+          </div>
+        </div>
+      `;
+      SensorPort.subscribe(state => {
+        cont.element.querySelector('#senGesture').textContent = state.gesture;
+        cont.element.querySelector('#senConf').textContent = (state.confidence * 100).toFixed(0) + '%';
+        cont.element.querySelector('#senPalm').textContent = state.palmAngle.toFixed(1) + '°';
+        cont.element.querySelector('#senTip').textContent = `(${state.indexTip.x.toFixed(2)}, ${state.indexTip.y.toFixed(2)})`;
+      });
+    });
+    
+    // FSM Panel
+    layout.registerComponentFactoryFunction('fsm', (cont) => {
+      cont.element.innerHTML = `
+        <div class="panel">
+          <div class="panel-header"><h3><span class="port-tag p5">P5</span> FSM State</h3></div>
+          <div class="panel-body">
+            <div class="fsm-strip">
+              <div class="fsm-state active" id="fsm-DISARMED">DISARMED</div>
+              <div class="fsm-state" id="fsm-ARMING">ARMING</div>
+              <div class="fsm-state" id="fsm-ARMED">ARMED</div>
+              <div class="fsm-state" id="fsm-DOWN_COMMIT">DOWN_COMMIT</div>
+            </div>
+            <div class="data-grid">
+              <div class="data-item"><div class="label">Palm Facing</div><div class="value" id="fsmPalm">❌</div></div>
+              <div class="data-item"><div class="label">Gesture Valid</div><div class="value" id="fsmGesture">❌</div></div>
+            </div>
+          </div>
+        </div>
+      `;
+      GatePort.subscribe(state => {
+        cont.element.querySelectorAll('.fsm-state').forEach(el => el.classList.remove('active'));
+        const stateEl = cont.element.querySelector(`#fsm-${state.fsmState}`);
+        if (stateEl) stateEl.classList.add('active');
+        cont.element.querySelector('#fsmPalm').textContent = state.palmFacing ? '✅' : '❌';
+        cont.element.querySelector('#fsmGesture').textContent = state.gestureValid ? '✅' : '❌';
+        document.getElementById('fsmStateText').textContent = state.fsmState;
+      });
+    });
+    
+    // Smoother Panel
+    layout.registerComponentFactoryFunction('smoother', (cont) => {
+      cont.element.innerHTML = `
+        <div class="panel">
+          <div class="panel-header"><h3><span class="port-tag p2">P2</span> 1€ Filter</h3></div>
+          <div class="panel-body">
+            <div class="data-grid">
+              <div class="data-item"><div class="label">Raw X</div><div class="value" id="smRawX">--</div></div>
+              <div class="data-item"><div class="label">Raw Y</div><div class="value" id="smRawY">--</div></div>
+              <div class="data-item"><div class="label">Smooth X</div><div class="value" id="smSmoothX">--</div></div>
+              <div class="data-item"><div class="label">Smooth Y</div><div class="value" id="smSmoothY">--</div></div>
+            </div>
+          </div>
+        </div>
+      `;
+      SmootherPort.subscribe(state => {
+        cont.element.querySelector('#smRawX').textContent = state.raw.x.toFixed(4);
+        cont.element.querySelector('#smRawY').textContent = state.raw.y.toFixed(4);
+        cont.element.querySelector('#smSmoothX').textContent = state.smoothed.x.toFixed(4);
+        cont.element.querySelector('#smSmoothY').textContent = state.smoothed.y.toFixed(4);
+      });
+    });
+    
+    // Events Panel
+    layout.registerComponentFactoryFunction('events', (cont) => {
+      cont.element.innerHTML = `
+        <div class="panel">
+          <div class="panel-header"><h3><span class="port-tag p3">P3</span> W3C Events</h3></div>
+          <div class="panel-body">
+            <div class="data-grid" style="margin-bottom:8px">
+              <div class="data-item"><div class="label">Last Event</div><div class="value" id="evLast">--</div></div>
+              <div class="data-item"><div class="label">Count</div><div class="value" id="evCount">0</div></div>
+            </div>
+            <div class="event-log" id="eventLog"></div>
+          </div>
+        </div>
+      `;
+      EmitterPort.subscribe((event, state) => {
+        cont.element.querySelector('#evLast').textContent = event.type;
+        cont.element.querySelector('#evCount').textContent = state.eventCount;
+        const log = cont.element.querySelector('#eventLog');
+        const entry = document.createElement('div');
+        entry.className = 'entry';
+        entry.innerHTML = `<span class="ts">${new Date().toTimeString().slice(0,8)}</span> <span class="type">${event.type}</span>`;
+        log.insertBefore(entry, log.firstChild);
+        while (log.children.length > 10) log.removeChild(log.lastChild);
+      });
+    });
+    
+    // Target Panel
+    layout.registerComponentFactoryFunction('target', (cont) => {
+      cont.element.innerHTML = `
+        <div class="panel">
+          <div class="panel-header"><h3><span class="port-tag p7">P7</span> Target Area</h3></div>
+          <div class="panel-body">
+            <div class="target-area" id="targetArea">
+              <canvas id="targetCanvas"></canvas>
+              <div class="cursor-dot" id="cursorDot"></div>
+            </div>
+          </div>
+        </div>
+      `;
+      const targetArea = cont.element.querySelector('#targetArea');
+      const cursor = cont.element.querySelector('#cursorDot');
+      const canvas = cont.element.querySelector('#targetCanvas');
+      const ctx = canvas.getContext('2d');
+      
+      const resizeCanvas = () => { canvas.width = targetArea.offsetWidth; canvas.height = targetArea.offsetHeight; };
+      resizeCanvas();
+      
+      let isDrawing = false, lastX = 0, lastY = 0;
+      
+      EmitterPort.subscribe((event) => {
+        const x = event.clientX * targetArea.offsetWidth;
+        const y = event.clientY * targetArea.offsetHeight;
+        cursor.style.left = `${event.clientX * 100}%`;
+        cursor.style.top = `${event.clientY * 100}%`;
+        
+        if (event.type === 'pointerdown') { isDrawing = true; cursor.classList.add('pressing'); lastX = x; lastY = y; }
+        else if (event.type === 'pointerup' || event.type === 'pointercancel') { isDrawing = false; cursor.classList.remove('pressing'); }
+        else if (event.type === 'pointermove' && isDrawing) {
+          ctx.beginPath();
+          ctx.strokeStyle = '#00d9ff';
+          ctx.lineWidth = 3;
+          ctx.lineCap = 'round';
+          ctx.moveTo(lastX, lastY);
+          ctx.lineTo(x, y);
+          ctx.stroke();
+          lastX = x; lastY = y;
+        }
+      });
+      
+      // Handle mouse in target area when in mouse mode
+      targetArea.addEventListener('mousemove', (e) => {
+        if (inputMode !== 'mouse') return;
+        const rect = targetArea.getBoundingClientRect();
+        mouseX = (e.clientX - rect.left) / rect.width;
+        mouseY = (e.clientY - rect.top) / rect.height;
+      });
+      
+      targetArea.addEventListener('mousedown', () => { if (inputMode === 'mouse') mouseDown = true; });
+      targetArea.addEventListener('mouseup', () => { if (inputMode === 'mouse') mouseDown = false; });
+      targetArea.addEventListener('mouseleave', () => { if (inputMode === 'mouse') mouseDown = false; });
+    });
+    
+    // Load layout
+    layout.loadLayout(layoutConfig);
+    window.addEventListener('resize', () => layout.setSize(container.offsetWidth, container.offsetHeight));
+    
+    // ============================================================================
+    // CONTROLS
+    // ============================================================================
+    
+    document.querySelectorAll('[data-input]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        inputMode = btn.dataset.input;
+        document.querySelectorAll('[data-input]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        
+        if (inputMode === 'camera') {
+          await initMediaPipe();
+          await startCamera();
+        } else {
+          stopCamera();
+          requestAnimationFrame(processMouseInput);
+        }
+      });
+    });
+    
+    document.getElementById('btn-reset').addEventListener('click', () => {
+      SmootherPort.reset();
+      GatePort.reset();
+      EmitterPort.reset();
+      console.log('[HFO] Pipeline reset');
+    });
+    
+    // Start in mouse mode
+    requestAnimationFrame(processMouseInput);
+    
+    // Export for testing
+    window.HFO = { SensorPort, SmootherPort, GatePort, EmitterPort, layout };
+    window.__hfo_ready = true;
+    
+    console.log('[HFO] ✅ Golden Unified Demo ready');
+    console.log('[HFO] 💡 Drag panels to rearrange, click Camera to start hand tracking');
+  </script>
+</body>
+</html>

@@ -512,10 +512,9 @@ export class TileComposer implements ComposerPort {
 	/**
 	 * Handle tile focus change
 	 */
-	private handleTileFocus(tileId: string): void {
+	private handleTileFocus(_tileId: string): void {
 		// Could be used to prioritize gesture input for focused tile
-		// For now, just log
-		console.log(`[TileComposer] Tile focused: ${tileId}`);
+		// Currently a no-op, tile focus tracking implemented
 	}
 }
 

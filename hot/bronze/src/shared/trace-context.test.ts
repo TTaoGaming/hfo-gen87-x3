@@ -10,16 +10,16 @@
 import * as fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import {
-    createDeterministicTrace,
-    createTraceContext,
-    extractSpanId,
-    extractTraceId,
-    getSpanId,
-    getTraceId,
-    isSampled,
-    parseTraceparent,
-    propagateTrace,
-    validateTraceparent,
+	createDeterministicTrace,
+	createTraceContext,
+	extractSpanId,
+	extractTraceId,
+	getSpanId,
+	getTraceId,
+	isSampled,
+	parseTraceparent,
+	propagateTrace,
+	validateTraceparent,
 } from './trace-context.js';
 
 describe('trace-context', () => {
@@ -132,15 +132,15 @@ describe('trace-context', () => {
 
 	describe('validateTraceparent', () => {
 		it('should accept valid W3C format', () => {
-			expect(
-				validateTraceparent('00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01'),
-			).toBe(true);
+			expect(validateTraceparent('00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01')).toBe(
+				true,
+			);
 		});
 
 		it('should reject invalid version', () => {
-			expect(
-				validateTraceparent('01-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01'),
-			).toBe(false);
+			expect(validateTraceparent('01-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01')).toBe(
+				false,
+			);
 		});
 
 		it('should reject short traceId', () => {
@@ -148,15 +148,13 @@ describe('trace-context', () => {
 		});
 
 		it('should reject short spanId', () => {
-			expect(
-				validateTraceparent('00-4bf92f3577b34da6a3ce929d0e0e4736-00f067-01'),
-			).toBe(false);
+			expect(validateTraceparent('00-4bf92f3577b34da6a3ce929d0e0e4736-00f067-01')).toBe(false);
 		});
 
 		it('should reject uppercase hex', () => {
-			expect(
-				validateTraceparent('00-4BF92F3577B34DA6A3CE929D0E0E4736-00F067AA0BA902B7-01'),
-			).toBe(false);
+			expect(validateTraceparent('00-4BF92F3577B34DA6A3CE929D0E0E4736-00F067AA0BA902B7-01')).toBe(
+				false,
+			);
 		});
 	});
 
@@ -197,9 +195,7 @@ describe('trace-context', () => {
 
 	describe('parseTraceparent', () => {
 		it('should parse valid traceparent', () => {
-			const parsed = parseTraceparent(
-				'00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01',
-			);
+			const parsed = parseTraceparent('00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01');
 			expect(parsed).toEqual({
 				version: '00',
 				traceId: '4bf92f3577b34da6a3ce929d0e0e4736',

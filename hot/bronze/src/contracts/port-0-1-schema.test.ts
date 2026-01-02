@@ -1,3 +1,4 @@
+import * as fc from 'fast-check';
 /**
  * Port 0 (Lidless Legion) + Port 1 (Web Weaver) Schema Tests
  *
@@ -8,35 +9,34 @@
  * - Port 1 validation utilities (valguards, registry, composition)
  */
 import { describe, expect, it } from 'vitest';
-import * as fc from 'fast-check';
 
 // Port 0 imports
 import {
 	CameraConstraintsSchema,
-	VideoFrameSchema,
+	GestureLabels,
+	HandLandmarkIndex,
+	HandLandmarksSchema,
 	MediaPipeConfigSchema,
 	NormalizedLandmarkSchema,
-	HandLandmarksSchema,
-	HandLandmarkIndex,
-	GestureLabels,
-	SensorFrameSchema,
 	PORT_0_METADATA,
-	isSensorFrame,
-	isNormalizedLandmark,
+	SensorFrameSchema,
+	VideoFrameSchema,
 	isGestureLabel,
+	isNormalizedLandmark,
+	isSensorFrame,
 } from './port-0-lidless-legion.js';
 
 // Port 1 imports
 import {
-	createValguard,
-	createStrictValguard,
-	validateSensorFrame,
-	validateCameraConstraints,
-	SCHEMA_REGISTRY,
-	getPortSchemas,
-	validatePortInput,
 	PORT_1_METADATA,
+	SCHEMA_REGISTRY,
 	composeSchemas,
+	createStrictValguard,
+	createValguard,
+	getPortSchemas,
+	validateCameraConstraints,
+	validatePortInput,
+	validateSensorFrame,
 } from './port-1-web-weaver.js';
 
 // ============================================================================
@@ -396,11 +396,10 @@ describe('Port 1: Web Weaver (FUSE)', () => {
 
 	describe('composeSchemas', () => {
 		it('validates input, transforms, validates output', () => {
-			const composed = composeSchemas(
-				VideoFrameSchema,
-				VideoFrameSchema,
-				(frame) => ({ ...frame, timestamp: frame.timestamp + 1 }),
-			);
+			const composed = composeSchemas(VideoFrameSchema, VideoFrameSchema, (frame) => ({
+				...frame,
+				timestamp: frame.timestamp + 1,
+			}));
 
 			const result = composed({ timestamp: 100, width: 1920, height: 1080 });
 			expect(result.success).toBe(true);
@@ -408,11 +407,7 @@ describe('Port 1: Web Weaver (FUSE)', () => {
 		});
 
 		it('fails on invalid input', () => {
-			const composed = composeSchemas(
-				VideoFrameSchema,
-				VideoFrameSchema,
-				(frame) => frame,
-			);
+			const composed = composeSchemas(VideoFrameSchema, VideoFrameSchema, (frame) => frame);
 
 			const result = composed({ timestamp: -1 });
 			expect(result.success).toBe(false);

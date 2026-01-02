@@ -1,4 +1,11 @@
-/**\n * @deprecated Use playwright-unified.config.ts instead\n * \n * WARNING: This config references stale sandbox/ paths that no longer exist.\n * The webServer entries for sandbox/demo-golden and sandbox/demo-real are broken.\n * See config/playwright/README.md for guidance.\n */\nimport { defineConfig, devices } from '@playwright/test';
+/**
+ * @deprecated Use playwright-unified.config.ts instead
+ *
+ * WARNING: This config references stale sandbox/ paths that no longer exist.
+ * The webServer entries for sandbox/demo-golden and sandbox/demo-real are broken.
+ * See config/playwright/README.md for guidance.
+ */
+import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
 	testDir: './',

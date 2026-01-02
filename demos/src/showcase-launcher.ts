@@ -1,34 +1,39 @@
 /**
  * 🥈 SILVER SHOWCASE LAUNCHER - Using REAL GoldenLayoutShellAdapter
- * 
+ *
  * Gen87.X3 | Port 7 NAVIGATE | UIShellPort Implementation
- * 
+ *
  * PURPOSE: Single launch point with GoldenLayout as the REAL UI shell.
  * Each showcase is a TILE in the shell, not an iframe link.
- * 
+ *
  * ARCHITECTURE:
  * - GoldenLayoutShellAdapter (hot/bronze/src/adapters)
  * - UIShellPort interface implementation
  * - Tiles register component factories
  * - NO iframes, NO link chains
- * 
+ *
  * @port 7
  * @verb NAVIGATE
  * @binary 111
  */
 
 import {
+	DEFAULT_PALM_CONE_CONFIG,
+	DOMAdapter,
 	GoldenLayoutShellAdapter,
 	InMemorySubstrateAdapter,
-	HFOPortFactory,
-	createPalmConeGate,
+	OneEuroExemplarAdapter,
+	PointerEventAdapter,
+	type SensorFrame,
+	type SmoothedFrame,
+	XStateFSMAdapter,
+	addJitter,
 	createPalmConeGateState,
+	createSensorFrameFromMouse,
 	updatePalmConeGate,
-	DEFAULT_PALM_CONE_CONFIG,
 } from '../../hot/bronze/src/browser/index.js';
 import type {
-	LayoutState,
-	TileConfig,
+	AdapterTarget,
 	TileType,
 	UIShellConfig,
 } from '../../hot/bronze/src/contracts/schemas.js';
@@ -39,6 +44,11 @@ import type {
 
 const shell = new GoldenLayoutShellAdapter();
 const bus = new InMemorySubstrateAdapter();
+const smoother = new OneEuroExemplarAdapter(); // Real 1€ filter for smoothing
+
+// IR-0012 FIX: Complete pipeline - add FSM and Emitter
+const fsm = new XStateFSMAdapter();
+const pointerEmitter = new PointerEventAdapter(1, 'touch');
 
 // ============================================================================
 // SHOWCASE REGISTRY - Each showcase becomes a component factory
@@ -74,7 +84,7 @@ function createObserverShowcase(container: HTMLElement): void {
 			<p class="info">MediaPipe landmark passthrough. Binary: 000</p>
 		</div>
 	`;
-	
+
 	// Simulate hand tracking data
 	const canvas = container.querySelector('canvas') as HTMLCanvasElement;
 	const ctx = canvas?.getContext('2d');
@@ -83,12 +93,14 @@ function createObserverShowcase(container: HTMLElement): void {
 		const animate = () => {
 			ctx.fillStyle = '#1a1a2e';
 			ctx.fillRect(0, 0, 300, 200);
-			
-			// Draw simulated landmarks
+
+			// Draw simulated landmarks using proper jitter function (IR-0009 FIX)
 			ctx.fillStyle = '#ff6b6b';
 			for (let i = 0; i < 21; i++) {
-				const x = 150 + Math.sin(frame * 0.02 + i * 0.3) * 80;
-				const y = 100 + Math.cos(frame * 0.02 + i * 0.3) * 60;
+				const baseX = 0.5 + Math.sin(frame * 0.02 + i * 0.3) * 0.27;
+				const baseY = 0.5 + Math.cos(frame * 0.02 + i * 0.3) * 0.3;
+				const x = addJitter(baseX, 0.01) * 300; // Deterministic jitter
+				const y = addJitter(baseY, 0.01) * 200;
 				ctx.beginPath();
 				ctx.arc(x, y, 4, 0, Math.PI * 2);
 				ctx.fill();
@@ -111,9 +123,9 @@ function createBridgerShowcase(container: HTMLElement): void {
 			<h3>🕸️ Web Weaver - Bridger</h3>
 			<div class="showcase-content">
 				<div class="gates-grid" id="gates-${Date.now()}">
-					${['G0', 'G1', 'G2', 'G3', 'G4', 'G5', 'G6', 'G7'].map(g => 
-						`<div class="gate-status pass">${g} ✓</div>`
-					).join('')}
+					${['G0', 'G1', 'G2', 'G3', 'G4', 'G5', 'G6', 'G7']
+						.map((g) => `<div class="gate-status pass">${g} ✓</div>`)
+						.join('')}
 				</div>
 				<div class="validation-log">
 					<div>Schema: Zod validated ✓</div>
@@ -126,7 +138,7 @@ function createBridgerShowcase(container: HTMLElement): void {
 	`;
 }
 
-// Port 2 - Shaper - SHAPE  
+// Port 2 - Shaper - SHAPE
 function createShaperShowcase(container: HTMLElement): void {
 	container.innerHTML = `
 		<div class="showcase-panel" style="--port-color: #58a6ff">
@@ -145,28 +157,44 @@ function createShaperShowcase(container: HTMLElement): void {
 			<p class="info">1€ Filter smoothing. Binary: 010</p>
 		</div>
 	`;
-	
+
 	const canvas = container.querySelector('canvas') as HTMLCanvasElement;
+	const domAdapter = new DOMAdapter(canvas);
 	const ctx = canvas?.getContext('2d');
 	if (ctx) {
 		const raw: number[] = [];
-		const smooth: number[] = [];
-		let lastSmooth = 0.5;
-		
+		const smoothed: number[] = [];
+
 		const draw = () => {
-			// Generate noisy data
-			const noise = 0.5 + (Math.random() - 0.5) * 0.3;
+			// Generate noisy data using addJitter (IR-0009/IR-0010 FIX)
+			const baseValue = 0.5;
+			const noise = addJitter(baseValue, 0.15); // Controlled jitter
 			raw.push(noise);
-			
-			// Simple 1€-like smoothing
-			lastSmooth = lastSmooth + 0.1 * (noise - lastSmooth);
-			smooth.push(lastSmooth);
-			
-			if (raw.length > 100) { raw.shift(); smooth.shift(); }
-			
+
+			// Use REAL OneEuroExemplarAdapter for smoothing (IR-0010 FIX)
+			const frame: SensorFrame = createSensorFrameFromMouse(noise, noise, performance.now());
+			const smoothedFrame: SmoothedFrame = smoother.smooth(frame);
+			smoothed.push(smoothedFrame.position?.x ?? 0.5);
+
+			// IR-0012 FIX: Complete pipeline - FSM + Emit
+			const action = fsm.process(smoothedFrame);
+			const target: AdapterTarget = {
+				id: 'shaper-canvas',
+				bounds: domAdapter.getBounds(),
+			};
+			const event = pointerEmitter.emit(action, target);
+			if (event) {
+				domAdapter.inject(event); // REAL INJECTION (IR-0013 FIX)
+			}
+
+			if (raw.length > 100) {
+				raw.shift();
+				smoothed.shift();
+			}
+
 			ctx.fillStyle = '#1a1a2e';
 			ctx.fillRect(0, 0, 300, 150);
-			
+
 			// Draw raw (red)
 			ctx.strokeStyle = '#ef4444';
 			ctx.beginPath();
@@ -176,19 +204,19 @@ function createShaperShowcase(container: HTMLElement): void {
 				i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
 			});
 			ctx.stroke();
-			
+
 			// Draw smooth (blue)
 			ctx.strokeStyle = '#58a6ff';
 			ctx.lineWidth = 2;
 			ctx.beginPath();
-			smooth.forEach((v, i) => {
+			smoothed.forEach((v, i) => {
 				const x = (i / 100) * 300;
 				const y = (1 - v) * 150;
 				i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
 			});
 			ctx.stroke();
 			ctx.lineWidth = 1;
-			
+
 			requestAnimationFrame(draw);
 		};
 		draw();
@@ -214,13 +242,15 @@ function createInjectorShowcase(container: HTMLElement): void {
 			<p class="info">W3C PointerEvent emission. Binary: 011</p>
 		</div>
 	`;
-	
+
 	const log = container.querySelector('.event-stream') as HTMLElement;
 	const events = ['pointermove', 'pointerdown', 'pointerup', 'signal.emit'];
 	let count = 0;
-	
+	let eventIndex = 0; // Deterministic cycling (IR-0009 FIX)
+
 	setInterval(() => {
-		const event = events[Math.floor(Math.random() * events.length)];
+		const event = events[eventIndex % events.length];
+		eventIndex++;
 		const entry = document.createElement('div');
 		entry.className = 'event-entry';
 		entry.textContent = `[${new Date().toLocaleTimeString()}] ${event}`;
@@ -250,46 +280,46 @@ function createPalmConeShowcase(container: HTMLElement): void {
 			<p class="info">Anti-Midas Touch. Binary: 101</p>
 		</div>
 	`;
-	
+
 	const canvas = container.querySelector('canvas') as HTMLCanvasElement;
 	const ctx = canvas?.getContext('2d');
 	const stateEl = container.querySelector('[id^="pcg-state"]') as HTMLElement;
 	const angleEl = container.querySelector('[id^="pcg-angle"]') as HTMLElement;
-	
+
 	let gateState = createPalmConeGateState();
 	let angle = 45;
-	
+
 	if (ctx) {
 		const draw = () => {
 			// Oscillate angle
 			angle = 45 + Math.sin(Date.now() * 0.002) * 50;
-			
+
 			// Update gate
 			const result = updatePalmConeGate(gateState, angle, DEFAULT_PALM_CONE_CONFIG);
 			gateState = result.state;
-			
+
 			// Draw
 			ctx.fillStyle = '#1a1a2e';
 			ctx.fillRect(0, 0, 300, 150);
-			
+
 			// Draw cone
 			const coneColor = result.isOpen ? '#22c55e' : '#ef4444';
 			ctx.fillStyle = coneColor;
 			ctx.beginPath();
 			ctx.moveTo(150, 140);
-			const spread = angle * (Math.PI / 180) / 2;
+			const spread = (angle * (Math.PI / 180)) / 2;
 			ctx.lineTo(150 + Math.sin(spread) * 120, 140 - Math.cos(spread) * 120);
 			ctx.lineTo(150 - Math.sin(spread) * 120, 140 - Math.cos(spread) * 120);
 			ctx.closePath();
 			ctx.fill();
-			
+
 			// Update text
 			if (stateEl) {
 				stateEl.textContent = result.isOpen ? 'OPEN' : 'CLOSED';
 				stateEl.className = result.isOpen ? 'active' : 'inactive';
 			}
 			if (angleEl) angleEl.textContent = `${angle.toFixed(1)}°`;
-			
+
 			requestAnimationFrame(draw);
 		};
 		draw();
@@ -343,11 +373,11 @@ function createNavigatorShowcase(container: HTMLElement): void {
 			<p class="info">This shell! Binary: 111</p>
 		</div>
 	`;
-	
+
 	container.querySelector('#btn-reset-layout')?.addEventListener('click', () => {
 		location.reload();
 	});
-	
+
 	container.querySelector('#btn-save-layout')?.addEventListener('click', () => {
 		const layout = shell.getLayout();
 		console.log('[Shell] Layout saved:', layout);
@@ -359,7 +389,7 @@ function createNavigatorShowcase(container: HTMLElement): void {
 function createFSMShowcase(container: HTMLElement): void {
 	const states = ['DISARMED', 'ARMED', 'DOWN_COMMIT', 'DRAG'];
 	let current = 0;
-	
+
 	const render = () => {
 		container.innerHTML = `
 			<div class="showcase-panel" style="--port-color: #22c55e">
@@ -370,16 +400,20 @@ function createFSMShowcase(container: HTMLElement): void {
 				<h3>🎛️ XState FSM</h3>
 				<div class="showcase-content">
 					<div class="fsm-states">
-						${states.map((s, i) => `
+						${states
+							.map(
+								(s, i) => `
 							<div class="fsm-state ${i === current ? 'active' : ''}">${s}</div>
-						`).join('')}
+						`,
+							)
+							.join('')}
 					</div>
 					<button id="fsm-step">Step →</button>
 				</div>
 				<p class="info">Gesture state machine</p>
 			</div>
 		`;
-		
+
 		container.querySelector('#fsm-step')?.addEventListener('click', () => {
 			current = (current + 1) % states.length;
 			render();
@@ -403,36 +437,39 @@ function createRapierShowcase(container: HTMLElement): void {
 			<p class="info">WASM physics simulation</p>
 		</div>
 	`;
-	
+
 	const canvas = container.querySelector('canvas') as HTMLCanvasElement;
 	const ctx = canvas?.getContext('2d');
 	if (ctx) {
-		let balls: { x: number; y: number; vx: number; vy: number }[] = [
+		const balls: { x: number; y: number; vx: number; vy: number }[] = [
 			{ x: 50, y: 20, vx: 2, vy: 0 },
 			{ x: 150, y: 30, vx: -1, vy: 0 },
 			{ x: 250, y: 40, vx: 0, vy: 0 },
 		];
-		
+
 		const draw = () => {
 			ctx.fillStyle = '#1a1a2e';
 			ctx.fillRect(0, 0, 300, 150);
-			
-			balls.forEach(b => {
+
+			balls.forEach((b) => {
 				// Gravity
 				b.vy += 0.2;
 				b.x += b.vx;
 				b.y += b.vy;
-				
+
 				// Bounce
-				if (b.y > 140) { b.y = 140; b.vy *= -0.8; }
+				if (b.y > 140) {
+					b.y = 140;
+					b.vy *= -0.8;
+				}
 				if (b.x < 10 || b.x > 290) b.vx *= -1;
-				
+
 				ctx.fillStyle = '#06b6d4';
 				ctx.beginPath();
 				ctx.arc(b.x, b.y, 10, 0, Math.PI * 2);
 				ctx.fill();
 			});
-			
+
 			requestAnimationFrame(draw);
 		};
 		draw();
@@ -444,15 +481,87 @@ function createRapierShowcase(container: HTMLElement): void {
 // ============================================================================
 
 const SHOWCASES: ShowcaseInfo[] = [
-	{ id: 'observer', port: 0, name: 'Observer', commander: 'Lidless Legion', verb: 'SENSE', color: '#ff6b6b', factory: createObserverShowcase },
-	{ id: 'bridger', port: 1, name: 'Bridger', commander: 'Web Weaver', verb: 'FUSE', color: '#a371f7', factory: createBridgerShowcase },
-	{ id: 'shaper', port: 2, name: 'Shaper', commander: 'Mirror Magus', verb: 'SHAPE', color: '#58a6ff', factory: createShaperShowcase },
-	{ id: 'injector', port: 3, name: 'Injector', commander: 'Spore Storm', verb: 'DELIVER', color: '#f0883e', factory: createInjectorShowcase },
-	{ id: 'palmcone', port: 5, name: 'PalmConeGate', commander: 'Pyre Praetorian', verb: 'DEFEND', color: '#f85149', factory: createPalmConeShowcase },
-	{ id: 'substrate', port: 6, name: 'Substrate', commander: 'Kraken Keeper', verb: 'STORE', color: '#a371f7', factory: createSubstrateShowcase },
-	{ id: 'navigator', port: 7, name: 'Navigator', commander: 'Spider Sovereign', verb: 'DECIDE', color: '#ffd700', factory: createNavigatorShowcase },
-	{ id: 'fsm', port: 'FSM', name: 'FSM', commander: 'XState', verb: 'STATE', color: '#22c55e', factory: createFSMShowcase },
-	{ id: 'rapier', port: 'PHYS', name: 'Rapier', commander: 'Physics', verb: 'SIMULATE', color: '#06b6d4', factory: createRapierShowcase },
+	{
+		id: 'observer',
+		port: 0,
+		name: 'Observer',
+		commander: 'Lidless Legion',
+		verb: 'SENSE',
+		color: '#ff6b6b',
+		factory: createObserverShowcase,
+	},
+	{
+		id: 'bridger',
+		port: 1,
+		name: 'Bridger',
+		commander: 'Web Weaver',
+		verb: 'FUSE',
+		color: '#a371f7',
+		factory: createBridgerShowcase,
+	},
+	{
+		id: 'shaper',
+		port: 2,
+		name: 'Shaper',
+		commander: 'Mirror Magus',
+		verb: 'SHAPE',
+		color: '#58a6ff',
+		factory: createShaperShowcase,
+	},
+	{
+		id: 'injector',
+		port: 3,
+		name: 'Injector',
+		commander: 'Spore Storm',
+		verb: 'DELIVER',
+		color: '#f0883e',
+		factory: createInjectorShowcase,
+	},
+	{
+		id: 'palmcone',
+		port: 5,
+		name: 'PalmConeGate',
+		commander: 'Pyre Praetorian',
+		verb: 'DEFEND',
+		color: '#f85149',
+		factory: createPalmConeShowcase,
+	},
+	{
+		id: 'substrate',
+		port: 6,
+		name: 'Substrate',
+		commander: 'Kraken Keeper',
+		verb: 'STORE',
+		color: '#a371f7',
+		factory: createSubstrateShowcase,
+	},
+	{
+		id: 'navigator',
+		port: 7,
+		name: 'Navigator',
+		commander: 'Spider Sovereign',
+		verb: 'DECIDE',
+		color: '#ffd700',
+		factory: createNavigatorShowcase,
+	},
+	{
+		id: 'fsm',
+		port: 'FSM',
+		name: 'FSM',
+		commander: 'XState',
+		verb: 'STATE',
+		color: '#22c55e',
+		factory: createFSMShowcase,
+	},
+	{
+		id: 'rapier',
+		port: 'PHYS',
+		name: 'Rapier',
+		commander: 'Physics',
+		verb: 'SIMULATE',
+		color: '#06b6d4',
+		factory: createRapierShowcase,
+	},
 ];
 
 // ============================================================================
@@ -466,14 +575,14 @@ async function init(): Promise<void> {
 		console.error('[Launcher] Container #golden-container not found');
 		return;
 	}
-	
+
 	// Connect message bus
 	await bus.connect();
-	
+
 	// Register component factory for 'dom' type
 	shell.registerComponent('dom', (container, config) => {
 		const showcaseId = config.showcaseId as string;
-		const showcase = SHOWCASES.find(s => s.id === showcaseId);
+		const showcase = SHOWCASES.find((s) => s.id === showcaseId);
 		if (showcase) {
 			showcase.factory(container);
 		} else {
@@ -481,12 +590,12 @@ async function init(): Promise<void> {
 		}
 		return container;
 	});
-	
+
 	// Create initial layout config
 	const layoutConfig: UIShellConfig = {
 		shell: 'golden',
 		initialLayout: {
-			tiles: SHOWCASES.map(s => ({
+			tiles: SHOWCASES.map((s) => ({
 				id: s.id,
 				type: 'dom' as TileType,
 				title: `Port ${s.port} - ${s.name}`,
@@ -539,19 +648,19 @@ async function init(): Promise<void> {
 		allowSplit: true,
 		allowClose: false,
 	};
-	
+
 	// Initialize shell
 	await shell.initialize(shellContainer, layoutConfig);
-	
+
 	// Subscribe to layout changes
 	shell.onLayoutChange((layout) => {
 		console.log('[Launcher] Layout changed:', layout.tiles.length, 'tiles');
 	});
-	
+
 	shell.onTileFocus((tileId) => {
 		console.log('[Launcher] Tile focused:', tileId);
 	});
-	
+
 	console.log('[Launcher] Shell initialized with', SHOWCASES.length, 'showcases');
 }
 

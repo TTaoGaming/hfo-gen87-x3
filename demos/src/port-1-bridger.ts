@@ -491,25 +491,20 @@ function setupHandlers(): void {
 
 			if (result.success) {
 				validationResult.className = 'result pass';
-				validationResult.textContent =
-					'✅ VALGUARD PASS\n\nValidated data:\n' + JSON.stringify(result.data, null, 2);
+				validationResult.textContent = `✅ VALGUARD PASS\n\nValidated data:\n${JSON.stringify(result.data, null, 2)}`;
 				gateResult.className = 'result pass';
 				gateResult.textContent = '✅ All gates passed';
 			} else {
 				validationResult.className = 'result fail';
-				validationResult.textContent =
-					'❌ VALGUARD FAIL\n\n' +
-					`Error: ${result.error?.message}\n` +
-					`Path: ${result.error?.path.join('.')}\n\n` +
-					`Issues:\n${result.error?.issues
-						.map((i) => `  - ${i.path.join('.')}: ${i.message}`)
-						.join('\n')}`;
+				validationResult.textContent = `❌ VALGUARD FAIL\n\nError: ${result.error?.message}\nPath: ${result.error?.path.join('.')}\n\nIssues:\n${result.error?.issues
+					.map((i) => `  - ${i.path.join('.')}: ${i.message}`)
+					.join('\n')}`;
 				gateResult.className = 'result fail';
 				gateResult.textContent = `❌ Gate failed at: ${result.error?.path.join('.')}`;
 			}
 		} catch (e) {
 			validationResult.className = 'result fail';
-			validationResult.textContent = '❌ JSON PARSE ERROR\n\n' + (e as Error).message;
+			validationResult.textContent = `❌ JSON PARSE ERROR\n\n${(e as Error).message}`;
 			gateResult.className = 'result fail';
 			gateResult.textContent = '❌ Invalid JSON input';
 		}
@@ -526,11 +521,10 @@ function setupHandlers(): void {
 			const result = strictValguard(data);
 
 			validationResult.className = 'result pass';
-			validationResult.textContent =
-				'✅ STRICT PARSE SUCCESS\n\n' + JSON.stringify(result, null, 2);
+			validationResult.textContent = `✅ STRICT PARSE SUCCESS\n\n${JSON.stringify(result, null, 2)}`;
 		} catch (e) {
 			validationResult.className = 'result fail';
-			validationResult.textContent = '❌ STRICT PARSE THREW\n\n' + (e as Error).message;
+			validationResult.textContent = `❌ STRICT PARSE THREW\n\n${(e as Error).message}`;
 		}
 	});
 
@@ -545,19 +539,16 @@ function setupHandlers(): void {
 
 			if (result.success) {
 				validationResult.className = 'result pass';
-				validationResult.textContent =
-					'✅ SAFE PARSE SUCCESS\n\n' + JSON.stringify(result.data, null, 2);
+				validationResult.textContent = `✅ SAFE PARSE SUCCESS\n\n${JSON.stringify(result.data, null, 2)}`;
 			} else {
 				validationResult.className = 'result fail';
-				validationResult.textContent =
-					'❌ SAFE PARSE FAILED\n\n' +
-					result.error.issues
-						.map((i) => `${i.path.join('.')}: ${i.message} (${i.code})`)
-						.join('\n');
+				validationResult.textContent = `❌ SAFE PARSE FAILED\n\n${result.error.issues
+					.map((i) => `${i.path.join('.')}: ${i.message} (${i.code})`)
+					.join('\n')}`;
 			}
 		} catch (e) {
 			validationResult.className = 'result fail';
-			validationResult.textContent = '❌ JSON ERROR\n\n' + (e as Error).message;
+			validationResult.textContent = `❌ JSON ERROR\n\n${(e as Error).message}`;
 		}
 	});
 

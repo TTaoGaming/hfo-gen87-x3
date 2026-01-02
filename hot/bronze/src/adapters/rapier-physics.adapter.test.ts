@@ -431,8 +431,16 @@ describe('RapierPhysicsAdapter (Property-Based Tests)', () => {
 					fc.float({ min: Math.fround(0.6), max: Math.fround(0.9), noNaN: true }),
 					async (targetX, targetY) => {
 						// Use underdamped system to see difference more clearly
-						const lowStiffness = new RapierPhysicsAdapter({ mode: 'smoothed', stiffness: 100, damping: 0.7 });
-						const highStiffness = new RapierPhysicsAdapter({ mode: 'smoothed', stiffness: 600, damping: 0.7 });
+						const lowStiffness = new RapierPhysicsAdapter({
+							mode: 'smoothed',
+							stiffness: 100,
+							damping: 0.7,
+						});
+						const highStiffness = new RapierPhysicsAdapter({
+							mode: 'smoothed',
+							stiffness: 600,
+							damping: 0.7,
+						});
 
 						await Promise.all([lowStiffness.init(), highStiffness.init()]);
 
@@ -743,10 +751,10 @@ describe('MUTANT KILLERS - Predictive Mode Math Precision', () => {
 		// With positive velocity, prediction should be AHEAD of position
 		// If mutant changes + to -, prediction would be BEHIND
 		if (result.velocity.x > 0) {
-			expect(result.prediction!.x).toBeGreaterThanOrEqual(result.position.x);
+			expect(result.prediction?.x).toBeGreaterThanOrEqual(result.position.x);
 		}
 		if (result.velocity.y > 0) {
-			expect(result.prediction!.y).toBeGreaterThanOrEqual(result.position.y);
+			expect(result.prediction?.y).toBeGreaterThanOrEqual(result.position.y);
 		}
 	});
 
@@ -785,8 +793,8 @@ describe('MUTANT KILLERS - Predictive Mode Math Precision', () => {
 
 		// Longer prediction should look further ahead
 		// If mutant changes / to *, the relationship inverts
-		const shortDist = Math.abs(shortResult.prediction!.x - shortResult.position.x);
-		const longDist = Math.abs(longResult.prediction!.x - longResult.position.x);
+		const shortDist = Math.abs(shortResult.prediction?.x - shortResult.position.x);
+		const longDist = Math.abs(longResult.prediction?.x - longResult.position.x);
 
 		// Long prediction should extend further than short (or equal if velocity is 0)
 		expect(longDist).toBeGreaterThanOrEqual(shortDist - 0.001);

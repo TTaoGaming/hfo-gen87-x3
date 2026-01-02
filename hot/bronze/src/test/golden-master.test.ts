@@ -10,14 +10,14 @@
  * @source cold/silver/golden/*.landmarks.jsonl
  */
 
-import { existsSync, readFileSync } from 'fs';
-import { join } from 'path';
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
 import type { FSMState, NormalizedLandmark } from '../contracts/schemas.js';
 import {
-    calculatePalmAngle,
-    createPalmConeGate,
-    DEFAULT_PALM_CONE_CONFIG
+	DEFAULT_PALM_CONE_CONFIG,
+	calculatePalmAngle,
+	createPalmConeGate,
 } from '../gates/palm-cone-gate.js';
 
 // ============================================================================
@@ -119,9 +119,9 @@ function processGoldenMaster(frames: FrameLandmark[]): GoldenMasterResult {
 
 /**
  * Simplified FSM simulation for golden master testing
- * 
+ *
  * FSM States: DISARMED → ARMING → ARMED → DOWN_COMMIT
- * 
+ *
  * Transition rules:
  * - DISARMED + palmFacing + Open_Palm → ARMING
  * - ARMING + 200ms stable → ARMED
@@ -131,23 +131,23 @@ function processGoldenMaster(frames: FrameLandmark[]): GoldenMasterResult {
 function simulateFSM(
 	frames: FrameLandmark[],
 	palmFacingResults: boolean[],
-	gestures: (string | null)[]
+	gestures: (string | null)[],
 ): FSMSimulationResult {
 	let currentState: FSMState = 'DISARMED';
 	let armingStartMs: number | null = null;
 	const ARM_STABLE_MS = 200;
-	
+
 	const stateHistory: FSMState[] = [];
 	const actionHistory: Array<{ state: FSMState; action: string; frameNumber: number }> = [];
 	const transitions: Array<{ from: FSMState; to: FSMState; frameNumber: number }> = [];
 	let reachedDownCommit = false;
-	
+
 	for (let i = 0; i < frames.length; i++) {
 		const frame = frames[i];
 		const palmFacing = palmFacingResults[i] ?? false;
 		const gesture = gestures[i] ?? 'None';
 		const prevState = currentState;
-		
+
 		// State machine logic
 		switch (currentState) {
 			case 'DISARMED':
@@ -156,22 +156,21 @@ function simulateFSM(
 					armingStartMs = frame.timestampMs;
 				}
 				break;
-				
+
 			case 'ARMING':
 				if (!palmFacing || gesture !== 'Open_Palm') {
 					currentState = 'DISARMED';
 					armingStartMs = null;
-				} else if (armingStartMs !== null && 
-					frame.timestampMs - armingStartMs >= ARM_STABLE_MS) {
+				} else if (armingStartMs !== null && frame.timestampMs - armingStartMs >= ARM_STABLE_MS) {
 					currentState = 'ARMED';
-					actionHistory.push({ 
-						state: 'ARMED', 
-						action: 'enter_armed', 
-						frameNumber: frame.frameNumber 
+					actionHistory.push({
+						state: 'ARMED',
+						action: 'enter_armed',
+						frameNumber: frame.frameNumber,
 					});
 				}
 				break;
-				
+
 			case 'ARMED':
 				if (!palmFacing) {
 					currentState = 'DISARMED';
@@ -179,54 +178,54 @@ function simulateFSM(
 				} else if (gesture === 'Pointing_Up') {
 					currentState = 'DOWN_COMMIT';
 					reachedDownCommit = true;
-					actionHistory.push({ 
-						state: 'DOWN_COMMIT', 
-						action: 'pointer_down', 
-						frameNumber: frame.frameNumber 
+					actionHistory.push({
+						state: 'DOWN_COMMIT',
+						action: 'pointer_down',
+						frameNumber: frame.frameNumber,
 					});
 				}
 				break;
-				
+
 			case 'DOWN_COMMIT':
 				if (!palmFacing) {
 					currentState = 'DISARMED';
 					armingStartMs = null;
-					actionHistory.push({ 
-						state: 'DISARMED', 
-						action: 'pointer_cancel', 
-						frameNumber: frame.frameNumber 
+					actionHistory.push({
+						state: 'DISARMED',
+						action: 'pointer_cancel',
+						frameNumber: frame.frameNumber,
 					});
 				} else if (gesture === 'Open_Palm') {
 					currentState = 'ARMED';
-					actionHistory.push({ 
-						state: 'ARMED', 
-						action: 'pointer_up', 
-						frameNumber: frame.frameNumber 
+					actionHistory.push({
+						state: 'ARMED',
+						action: 'pointer_up',
+						frameNumber: frame.frameNumber,
 					});
 				}
 				break;
 		}
-		
+
 		stateHistory.push(currentState);
-		
+
 		if (prevState !== currentState) {
-			transitions.push({ 
-				from: prevState, 
-				to: currentState, 
-				frameNumber: frame.frameNumber 
+			transitions.push({
+				from: prevState,
+				to: currentState,
+				frameNumber: frame.frameNumber,
 			});
 		}
 	}
-	
+
 	// Check if we stayed DISARMED the entire time
-	const stayedDisarmed = stateHistory.every(s => s === 'DISARMED');
-	
+	const stayedDisarmed = stateHistory.every((s) => s === 'DISARMED');
+
 	return {
 		stateHistory,
 		actionHistory,
 		reachedDownCommit,
 		stayedDisarmed,
-		transitions
+		transitions,
 	};
 }
 
@@ -303,9 +302,7 @@ describe('Golden Master Video Tests', () => {
 			if (!result) return;
 			// Palm facing side = angle > 35° (disarmThreshold)
 			// Average should be higher than Video A
-			expect(result.summary.avgPalmAngle).toBeGreaterThan(
-				DEFAULT_PALM_CONE_CONFIG.disarmThreshold,
-			);
+			expect(result.summary.avgPalmAngle).toBeGreaterThan(DEFAULT_PALM_CONE_CONFIG.disarmThreshold);
 		});
 
 		it('should trigger palmFacing=false (stay DISARMED)', () => {
@@ -339,10 +336,9 @@ describe('Golden Master Video Tests', () => {
 
 	describe('W3C Trace Context Integration', () => {
 		it('should be available in pipeline', async () => {
-			const {
-				createTraceContext,
-				validateTraceparent,
-			} = await import('../shared/trace-context.js');
+			const { createTraceContext, validateTraceparent } = await import(
+				'../shared/trace-context.js'
+			);
 
 			const ctx = createTraceContext();
 			expect(validateTraceparent(ctx.traceparent)).toBe(true);
@@ -350,11 +346,9 @@ describe('Golden Master Video Tests', () => {
 		});
 
 		it('should propagate traceId across spans', async () => {
-			const {
-				createTraceContext,
-				propagateTrace,
-				extractTraceId,
-			} = await import('../shared/trace-context.js');
+			const { createTraceContext, propagateTrace, extractTraceId } = await import(
+				'../shared/trace-context.js'
+			);
 
 			const parent = createTraceContext();
 			const child = propagateTrace(parent);
@@ -366,10 +360,10 @@ describe('Golden Master Video Tests', () => {
 	describe('FSM Simulation: DOWN_COMMIT Verification', () => {
 		/**
 		 * Video A: open-palm-pointer-up-open-palm
-		 * 
+		 *
 		 * Expected gesture sequence: Open_Palm → Pointing_Up → Open_Palm
 		 * Expected FSM: DISARMED → ARMING → ARMED → DOWN_COMMIT → ARMED
-		 * 
+		 *
 		 * The video filename tells us this should trigger pointer DOWN
 		 */
 		it('Video A with gesture sequence SHOULD trigger DOWN_COMMIT', () => {
@@ -380,7 +374,7 @@ describe('Golden Master Video Tests', () => {
 			// Get palm facing results from palm cone gate
 			const gate = createPalmConeGate();
 			const palmFacingResults: boolean[] = [];
-			
+
 			for (const frame of frames) {
 				if (frame.handDetected && frame.landmarks) {
 					const landmarks = convertToNormalizedLandmarks(frame.landmarks);
@@ -396,13 +390,13 @@ describe('Golden Master Video Tests', () => {
 			// We create a realistic gesture pattern that matches the video intent
 			const totalFrames = frames.length;
 			const gestures: (string | null)[] = [];
-			
+
 			for (let i = 0; i < totalFrames; i++) {
 				if (!frames[i].handDetected) {
 					gestures.push(null);
 					continue;
 				}
-				
+
 				const progress = i / totalFrames;
 				// First 40%: Open_Palm (baseline)
 				// 40-60%: Pointing_Up (commit gesture)
@@ -420,16 +414,16 @@ describe('Golden Master Video Tests', () => {
 
 			// Video A SHOULD trigger DOWN_COMMIT (pointer down)
 			expect(fsmResult.reachedDownCommit).toBe(true);
-			
+
 			// Verify the action history shows pointer_down
-			const pointerDownAction = fsmResult.actionHistory.find(a => a.action === 'pointer_down');
+			const pointerDownAction = fsmResult.actionHistory.find((a) => a.action === 'pointer_down');
 			expect(pointerDownAction).toBeDefined();
 			expect(pointerDownAction?.state).toBe('DOWN_COMMIT');
 		});
 
 		/**
 		 * Video B: open-palm-side
-		 * 
+		 *
 		 * Expected: Palm facing sideways (high angle), should NEVER arm
 		 * FSM should stay in DISARMED the entire time
 		 */
@@ -441,7 +435,7 @@ describe('Golden Master Video Tests', () => {
 			// Get palm facing results from palm cone gate
 			const gate = createPalmConeGate();
 			const palmFacingResults: boolean[] = [];
-			
+
 			for (const frame of frames) {
 				if (frame.handDetected && frame.landmarks) {
 					const landmarks = convertToNormalizedLandmarks(frame.landmarks);
@@ -452,11 +446,9 @@ describe('Golden Master Video Tests', () => {
 				}
 			}
 
-			// Video B: Palm facing side - even if gesture was Open_Palm, 
+			// Video B: Palm facing side - even if gesture was Open_Palm,
 			// palm is NOT facing camera, so should NOT arm
-			const gestures: (string | null)[] = frames.map(f => 
-				f.handDetected ? 'Open_Palm' : null
-			);
+			const gestures: (string | null)[] = frames.map((f) => (f.handDetected ? 'Open_Palm' : null));
 
 			const fsmResult = simulateFSM(frames, palmFacingResults, gestures);
 
@@ -464,9 +456,9 @@ describe('Golden Master Video Tests', () => {
 			// The key test: even if we arm briefly, we should NEVER reach DOWN_COMMIT
 			// because we never do Pointing_Up gesture
 			expect(fsmResult.reachedDownCommit).toBe(false);
-			
+
 			// No pointer_down action should have been recorded
-			const pointerDownAction = fsmResult.actionHistory.find(a => a.action === 'pointer_down');
+			const pointerDownAction = fsmResult.actionHistory.find((a) => a.action === 'pointer_down');
 			expect(pointerDownAction).toBeUndefined();
 		});
 
@@ -476,7 +468,7 @@ describe('Golden Master Video Tests', () => {
 
 			const gate = createPalmConeGate();
 			const palmFacingResults: boolean[] = [];
-			
+
 			for (const frame of frames) {
 				if (frame.handDetected && frame.landmarks) {
 					const landmarks = convertToNormalizedLandmarks(frame.landmarks);
@@ -490,13 +482,13 @@ describe('Golden Master Video Tests', () => {
 			// Create gesture pattern: Open_Palm → Pointing_Up → Open_Palm
 			const totalFrames = frames.length;
 			const gestures: (string | null)[] = [];
-			
+
 			for (let i = 0; i < totalFrames; i++) {
 				if (!frames[i].handDetected) {
 					gestures.push(null);
 					continue;
 				}
-				
+
 				const progress = i / totalFrames;
 				if (progress < 0.4) {
 					gestures.push('Open_Palm');
@@ -512,8 +504,8 @@ describe('Golden Master Video Tests', () => {
 			// Should have at least these transitions when palm is facing:
 			// DISARMED → ARMING → ARMED → DOWN_COMMIT
 			if (fsmResult.transitions.length > 0) {
-				const transitionNames = fsmResult.transitions.map(t => `${t.from}→${t.to}`);
-				
+				const transitionNames = fsmResult.transitions.map((t) => `${t.from}→${t.to}`);
+
 				// If we reached DOWN_COMMIT, we must have gone through ARMING and ARMED
 				if (fsmResult.reachedDownCommit) {
 					expect(transitionNames).toContain('ARMED→DOWN_COMMIT');

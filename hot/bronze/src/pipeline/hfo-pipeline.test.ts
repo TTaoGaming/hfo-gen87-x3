@@ -1,7 +1,7 @@
 /**
  * HFO Pipeline Tests - PROOF That It Works
  * ==========================================
- * 
+ *
  * These tests prove:
  * 1. Noisy input → Smooth output (1€ filter works)
  * 2. Contracts are enforced (invalid data rejected)
@@ -12,15 +12,15 @@
 import * as fc from 'fast-check';
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
-    FuseAdapter,
-    generateNoisyPath,
-    HFOPipeline,
-    SenseAdapter,
-    ShapedFrameSchema,
-    ShapeSmootherAdapter,
-    type NoisyLandmark,
-    type Port0Sense,
-    type Port2Shape
+	FuseAdapter,
+	HFOPipeline,
+	type NoisyLandmark,
+	type Port0Sense,
+	type Port2Shape,
+	SenseAdapter,
+	ShapeSmootherAdapter,
+	ShapedFrameSchema,
+	generateNoisyPath,
 } from './hfo-pipeline.js';
 
 // ============================================================================
@@ -57,11 +57,13 @@ describe('HFO Pipeline - Real Data Flow', () => {
 	it('reduces deviation from ideal path on noisy input stream', () => {
 		const pipeline = new HFOPipeline();
 		const numFrames = 100;
-		const centerX = 0.5, centerY = 0.5, radius = 0.2;
-		
+		const centerX = 0.5;
+		const centerY = 0.5;
+		const radius = 0.2;
+
 		// Generate noisy circular path
 		const noisyFrames = generateNoisyPath(numFrames, centerX, centerY, 0.02);
-		
+
 		// Process through pipeline
 		const outputs = pipeline.processBatch(noisyFrames);
 
@@ -112,18 +114,15 @@ describe('Contract Enforcement', () => {
 		const sense = new SenseAdapter();
 
 		it('rejects invalid x coordinate (out of range)', () => {
-			expect(() => sense.sense({ x: 1.5, y: 0.5, timestamp: 1000 }))
-				.toThrow();
+			expect(() => sense.sense({ x: 1.5, y: 0.5, timestamp: 1000 })).toThrow();
 		});
 
 		it('rejects invalid y coordinate (out of range)', () => {
-			expect(() => sense.sense({ x: 0.5, y: -0.1, timestamp: 1000 }))
-				.toThrow();
+			expect(() => sense.sense({ x: 0.5, y: -0.1, timestamp: 1000 })).toThrow();
 		});
 
 		it('rejects negative timestamp', () => {
-			expect(() => sense.sense({ x: 0.5, y: 0.5, timestamp: -1 }))
-				.toThrow();
+			expect(() => sense.sense({ x: 0.5, y: 0.5, timestamp: -1 })).toThrow();
 		});
 
 		it('accepts valid input and tags with port metadata', () => {
@@ -251,16 +250,16 @@ describe('Property-Based Testing (100+ iterations)', () => {
 					// Use incrementing timestamps (1€ filter needs strictly increasing ts)
 					lastTs += 16.67;
 					const output = pipeline.process({ x, y, timestamp: lastTs, confidence: 0.9 });
-					
+
 					// Smoothed coordinates should be reasonable
 					// They might slightly exceed 0-1 due to filter dynamics, but not by much
 					expect(output.smooth.x).toBeGreaterThanOrEqual(-0.1);
 					expect(output.smooth.x).toBeLessThanOrEqual(1.1);
 					expect(output.smooth.y).toBeGreaterThanOrEqual(-0.1);
 					expect(output.smooth.y).toBeLessThanOrEqual(1.1);
-				}
+				},
 			),
-			{ numRuns: 100 }
+			{ numRuns: 100 },
 		);
 	});
 
@@ -276,9 +275,9 @@ describe('Property-Based Testing (100+ iterations)', () => {
 					lastTs += 16.67;
 					const output = pipeline.process({ x, y, timestamp: lastTs, confidence: 0.9 });
 					expect(output.jitter).toBeGreaterThanOrEqual(0);
-				}
+				},
 			),
-			{ numRuns: 100 }
+			{ numRuns: 100 },
 		);
 	});
 
@@ -304,9 +303,9 @@ describe('Property-Based Testing (100+ iterations)', () => {
 					const shaped = shape.shape(fused);
 					expect(shaped._port).toBe(2);
 					expect(shaped._verb).toBe('SHAPE');
-				}
+				},
 			),
-			{ numRuns: 100 }
+			{ numRuns: 100 },
 		);
 	});
 });
@@ -319,9 +318,11 @@ describe('Jitter Reduction Proof', () => {
 	it('smoothed path is closer to ideal than noisy path', () => {
 		const pipeline = new HFOPipeline();
 		const numFrames = 50;
-		const centerX = 0.5, centerY = 0.5, radius = 0.2;
+		const centerX = 0.5;
+		const centerY = 0.5;
+		const radius = 0.2;
 		const jitter = 0.02;
-		
+
 		// Generate noisy circular path
 		const frames = generateNoisyPath(numFrames, centerX, centerY, jitter);
 		const outputs = pipeline.processBatch(frames);
@@ -359,12 +360,12 @@ describe('Jitter Reduction Proof', () => {
 		const smoothVariances: number[] = [];
 
 		for (let i = 1; i < outputs.length; i++) {
-			const rawDx = outputs[i].raw.x - outputs[i-1].raw.x;
-			const rawDy = outputs[i].raw.y - outputs[i-1].raw.y;
+			const rawDx = outputs[i].raw.x - outputs[i - 1].raw.x;
+			const rawDy = outputs[i].raw.y - outputs[i - 1].raw.y;
 			rawVariances.push(rawDx * rawDx + rawDy * rawDy);
 
-			const smoothDx = outputs[i].smooth.x - outputs[i-1].smooth.x;
-			const smoothDy = outputs[i].smooth.y - outputs[i-1].smooth.y;
+			const smoothDx = outputs[i].smooth.x - outputs[i - 1].smooth.x;
+			const smoothDy = outputs[i].smooth.y - outputs[i - 1].smooth.y;
 			smoothVariances.push(smoothDx * smoothDx + smoothDy * smoothDy);
 		}
 
@@ -377,7 +378,7 @@ describe('Jitter Reduction Proof', () => {
 
 	it('handles stationary point with minimal overshoot', () => {
 		const pipeline = new HFOPipeline();
-		
+
 		// All points at exact same location
 		const frames: NoisyLandmark[] = [];
 		let ts = Date.now();

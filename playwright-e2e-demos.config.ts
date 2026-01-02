@@ -7,10 +7,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
 	testDir: './e2e',
-	testMatch: [
-		'fsm-showcase.spec.ts',
-		'e2e-pipeline-variant-b.spec.ts'
-	],
+	testMatch: ['fsm-showcase.spec.ts', 'e2e-pipeline-variant-b.spec.ts'],
 	fullyParallel: false, // Sequential to avoid port conflicts
 	timeout: 60000,
 	reporter: [['list'], ['html', { outputFolder: 'playwright-report-e2e' }]],

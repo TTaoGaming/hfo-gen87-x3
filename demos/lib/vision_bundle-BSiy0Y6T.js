@@ -1,21 +1,22 @@
-var t = "undefined" != typeof self ? self : {};
+const t = "undefined" !== typeof self ? self : {};
 function e() {
   throw Error("Invalid UTF8");
 }
 function n(t2, e2) {
   return e2 = String.fromCharCode.apply(null, e2), null == t2 ? e2 : t2 + e2;
 }
-let r, i;
-const s = "undefined" != typeof TextDecoder;
+let r;
+let i;
+const s = "undefined" !== typeof TextDecoder;
 let o;
-const a = "undefined" != typeof TextEncoder;
+const a = "undefined" !== typeof TextEncoder;
 function c(t2) {
   if (a) t2 = (o || (o = new TextEncoder())).encode(t2);
   else {
     let n2 = 0;
     const r2 = new Uint8Array(3 * t2.length);
     for (let i2 = 0; i2 < t2.length; i2++) {
-      var e2 = t2.charCodeAt(i2);
+      let e2 = t2.charCodeAt(i2);
       if (e2 < 128) r2[n2++] = e2;
       else {
         if (e2 < 2048) r2[n2++] = e2 >> 6 | 192;
@@ -40,23 +41,25 @@ function c(t2) {
   }
   return t2;
 }
-var h, u;
+let h;
+let u;
 t: {
-  for (var l = ["CLOSURE_FLAGS"], d = t, f = 0; f < l.length; f++) if (null == (d = d[l[f]])) {
+  for (let l = ["CLOSURE_FLAGS"], d = t, f = 0; f < l.length; f++) if (null == (d = d[l[f]])) {
     u = null;
     break t;
   }
   u = d;
 }
-var p, g = u && u[610401301];
+let p;
+const g = u?.[610401301];
 h = null != g && g;
 const m = t.navigator;
 function y(t2) {
-  return !!h && (!!p && p.brands.some(({ brand: e2 }) => e2 && -1 != e2.indexOf(t2)));
+  return !!h && (!!p && p.brands.some(({ brand: e2 }) => e2 && -1 !== e2.indexOf(t2)));
 }
 function _(e2) {
-  var n2;
-  return (n2 = t.navigator) && (n2 = n2.userAgent) || (n2 = ""), -1 != n2.indexOf(e2);
+  let n2;
+  return (n2 = t.navigator) && (n2 = n2.userAgent) || (n2 = ""), -1 !== n2.indexOf(e2);
 }
 function v() {
   return !!h && (!!p && p.brands.length > 0);
@@ -67,41 +70,47 @@ function E() {
 function w(t2) {
   return w[" "](t2), t2;
 }
-p = m && m.userAgentData || null, w[" "] = function() {
+p = m?.userAgentData || null, w[" "] = () => {
 };
-var T = !v() && (_("Trident") || _("MSIE"));
+const T = !v() && (_("Trident") || _("MSIE"));
 !_("Android") || E(), E(), _("Safari") && (E() || !v() && _("Coast") || !v() && _("Opera") || !v() && _("Edge") || (v() ? y("Microsoft Edge") : _("Edg/")) || v() && y("Opera"));
-var A = {}, b = null;
+const A = {};
+let b = null;
 function k(t2) {
   const e2 = t2.length;
   let n2 = 3 * e2 / 4;
-  n2 % 3 ? n2 = Math.floor(n2) : -1 != "=.".indexOf(t2[e2 - 1]) && (n2 = -1 != "=.".indexOf(t2[e2 - 2]) ? n2 - 2 : n2 - 1);
+  n2 % 3 ? n2 = Math.floor(n2) : -1 !== "=.".indexOf(t2[e2 - 1]) && (n2 = -1 !== "=.".indexOf(t2[e2 - 2]) ? n2 - 2 : n2 - 1);
   const r2 = new Uint8Array(n2);
   let i2 = 0;
-  return function(t3, e3) {
+  return ((t3, e3) => {
     function n3(e4) {
-      for (; r3 < t3.length; ) {
-        const e5 = t3.charAt(r3++), n4 = b[e5];
+      while (r3 < t3.length) {
+        const e5 = t3.charAt(r3++);
+        const n4 = b[e5];
         if (null != n4) return n4;
-        if (!/^[\s\xa0]*$/.test(e5)) throw Error("Unknown base64 encoding at char: " + e5);
+        if (!/^[\s\xa0]*$/.test(e5)) throw Error(`Unknown base64 encoding at char: ${e5}`);
       }
       return e4;
     }
     S();
     let r3 = 0;
     for (; ; ) {
-      const t4 = n3(-1), r4 = n3(0), i3 = n3(64), s2 = n3(64);
+      const t4 = n3(-1);
+      const r4 = n3(0);
+      const i3 = n3(64);
+      const s2 = n3(64);
       if (64 === s2 && -1 === t4) break;
-      e3(t4 << 2 | r4 >> 4), 64 != i3 && (e3(r4 << 4 & 240 | i3 >> 2), 64 != s2 && e3(i3 << 6 & 192 | s2));
+      e3(t4 << 2 | r4 >> 4), 64 !== i3 && (e3(r4 << 4 & 240 | i3 >> 2), 64 !== s2 && e3(i3 << 6 & 192 | s2));
     }
-  }(t2, function(t3) {
+  })(t2, (t3) => {
     r2[i2++] = t3;
   }), i2 !== n2 ? r2.subarray(0, i2) : r2;
 }
 function S() {
   if (!b) {
     b = {};
-    var t2 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".split(""), e2 = ["+/=", "+/", "-_=", "-_.", "-_"];
+    const t2 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".split("");
+    const e2 = ["+/=", "+/", "-_=", "-_.", "-_"];
     for (let n2 = 0; n2 < 5; n2++) {
       const r2 = t2.concat(e2[n2].split(""));
       A[n2] = r2;
@@ -112,15 +121,21 @@ function S() {
     }
   }
 }
-var x = "undefined" != typeof Uint8Array, L = !T && "function" == typeof btoa;
+const x = "undefined" !== typeof Uint8Array;
+const L = !T && "function" === typeof btoa;
 function R(t2) {
   if (!L) {
-    var e2;
+    let e2;
     void 0 === e2 && (e2 = 0), S(), e2 = A[e2];
-    var n2 = Array(Math.floor(t2.length / 3)), r2 = e2[64] || "";
-    let c2 = 0, h2 = 0;
+    const n2 = Array(Math.floor(t2.length / 3));
+    const r2 = e2[64] || "";
+    let c2 = 0;
+    let h2 = 0;
     for (; c2 < t2.length - 2; c2 += 3) {
-      var i2 = t2[c2], s2 = t2[c2 + 1], o2 = t2[c2 + 2], a2 = e2[i2 >> 2];
+      let i2 = t2[c2];
+      let s2 = t2[c2 + 1];
+      let o2 = t2[c2 + 2];
+      const a2 = e2[i2 >> 2];
       i2 = e2[(3 & i2) << 4 | s2 >> 4], s2 = e2[(15 & s2) << 2 | o2 >> 6], o2 = e2[63 & o2], n2[h2++] = a2 + i2 + s2 + o2;
     }
     switch (a2 = 0, o2 = r2, t2.length - c2) {
@@ -134,7 +149,8 @@ function R(t2) {
   for (e2 = "", n2 = 0, r2 = t2.length - 10240; n2 < r2; ) e2 += String.fromCharCode.apply(null, t2.subarray(n2, n2 += 10240));
   return e2 += String.fromCharCode.apply(null, n2 ? t2.subarray(n2) : t2), btoa(e2);
 }
-const F = /[-_.]/g, I = { "-": "+", _: "/", ".": "=" };
+const F = /[-_.]/g;
+const I = { "-": "+", _: "/", ".": "=" };
 function M(t2) {
   return I[t2] || "";
 }
@@ -148,16 +164,16 @@ function P(t2) {
 function C(t2) {
   return x && null != t2 && t2 instanceof Uint8Array;
 }
-var O = {};
+const O = {};
 function U() {
   return B || (B = new N(null, O));
 }
 function D(t2) {
   j(O);
-  var e2 = t2.g;
-  return null == (e2 = null == e2 || C(e2) ? e2 : "string" == typeof e2 ? P(e2) : null) ? e2 : t2.g = e2;
+  let e2 = t2.g;
+  return null == (e2 = null == e2 || C(e2) ? e2 : "string" === typeof e2 ? P(e2) : null) ? e2 : t2.g = e2;
 }
-var N = class {
+const N = class {
   h() {
     return new Uint8Array(D(this) || 0);
   }
@@ -165,7 +181,8 @@ var N = class {
     if (j(e2), this.g = t2, null != t2 && 0 === t2.length) throw Error("ByteString should be constructed with non-empty values");
   }
 };
-let B, G;
+let B;
+let G;
 function j(t2) {
   if (t2 !== O) throw Error("illegal external caller");
 }
@@ -177,20 +194,28 @@ function X(t2) {
 }
 function H(e2) {
   if (null != e2) {
-    var n2 = G ?? (G = {}), r2 = n2[e2] || 0;
-    r2 >= 5 || (n2[e2] = r2 + 1, V(e2 = Error(), "incident"), function(e3) {
+    const n2 = G ?? (G = {});
+    const r2 = n2[e2] || 0;
+    r2 >= 5 || (n2[e2] = r2 + 1, V(e2 = Error(), "incident"), ((e3) => {
       t.setTimeout(() => {
         throw e3;
       }, 0);
-    }(e2));
+    })(e2));
   }
 }
-var W = "function" == typeof Symbol && "symbol" == typeof Symbol();
+const W = "function" === typeof Symbol && "symbol" === typeof Symbol();
 function z(t2, e2, n2 = false) {
-  return "function" == typeof Symbol && "symbol" == typeof Symbol() ? n2 && Symbol.for && t2 ? Symbol.for(t2) : null != t2 ? Symbol(t2) : Symbol() : e2;
+  return "function" === typeof Symbol && "symbol" === typeof Symbol() ? n2 && Symbol.for && t2 ? Symbol.for(t2) : null != t2 ? Symbol(t2) : Symbol() : e2;
 }
-var K = z("jas", void 0, true), Y = z(void 0, "0di"), $ = z(void 0, "1oa"), q = z(void 0, Symbol()), J = z(void 0, "0actk"), Z = z(void 0, "8utk");
-const Q = W ? K : "Ea", tt = { Ea: { value: 0, configurable: true, writable: true, enumerable: false } }, et = Object.defineProperties;
+const K = z("jas", void 0, true);
+const Y = z(void 0, "0di");
+const $ = z(void 0, "1oa");
+const q = z(void 0, Symbol());
+const J = z(void 0, "0actk");
+const Z = z(void 0, "8utk");
+const Q = W ? K : "Ea";
+const tt = { Ea: { value: 0, configurable: true, writable: true, enumerable: false } };
+const et = Object.defineProperties;
 function nt(t2, e2) {
   W || Q in t2 || et(t2, tt), t2[Q] |= e2;
 }
@@ -207,18 +232,19 @@ function ot(t2, e2) {
   rt(e2, -15581 & (34 | t2));
 }
 function at() {
-  return "function" == typeof BigInt;
+  return "function" === typeof BigInt;
 }
 function ct(t2) {
   return Array.prototype.slice.call(t2);
 }
-var ht, ut = {};
+let ht;
+const ut = {};
 function lt(t2) {
-  return null !== t2 && "object" == typeof t2 && !Array.isArray(t2) && t2.constructor === Object;
+  return null !== t2 && "object" === typeof t2 && !Array.isArray(t2) && t2.constructor === Object;
 }
 function dt(t2, e2) {
   if (null != t2) {
-    if ("string" == typeof t2) t2 = t2 ? new N(t2, O) : U();
+    if ("string" === typeof t2) t2 = t2 ? new N(t2, O) : U();
     else if (t2.constructor !== N) if (C(t2)) t2 = t2.length ? new N(new Uint8Array(t2), O) : U();
     else {
       if (!e2) throw Error();
@@ -247,31 +273,40 @@ class gt {
 function mt(t2) {
   return q ? t2[q] : void 0;
 }
-var yt = Object.freeze({});
+const yt = Object.freeze({});
 function _t(t2) {
   return t2.Na = true, t2;
 }
-var vt = _t((t2) => "number" == typeof t2), Et = _t((t2) => "string" == typeof t2), wt = _t((t2) => "boolean" == typeof t2), Tt = "function" == typeof t.BigInt && "bigint" == typeof t.BigInt(0);
+const vt = _t((t2) => "number" === typeof t2);
+const Et = _t((t2) => "string" === typeof t2);
+const wt = _t((t2) => "boolean" === typeof t2);
+const Tt = "function" === typeof t.BigInt && "bigint" === typeof t.BigInt(0);
 function At(t2) {
-  var e2 = t2;
+  const e2 = t2;
   if (Et(e2)) {
     if (!/^\s*(?:-?[1-9]\d*|0)?\s*$/.test(e2)) throw Error(String(e2));
   } else if (vt(e2) && !Number.isSafeInteger(e2)) throw Error(String(e2));
   return Tt ? BigInt(t2) : t2 = wt(t2) ? t2 ? "1" : "0" : Et(t2) ? t2.trim() || "0" : String(t2);
 }
-var bt = _t((t2) => Tt ? t2 >= St && t2 <= Lt : "-" === t2[0] ? Rt(t2, kt) : Rt(t2, xt));
-const kt = Number.MIN_SAFE_INTEGER.toString(), St = Tt ? BigInt(Number.MIN_SAFE_INTEGER) : void 0, xt = Number.MAX_SAFE_INTEGER.toString(), Lt = Tt ? BigInt(Number.MAX_SAFE_INTEGER) : void 0;
+const bt = _t((t2) => Tt ? t2 >= St && t2 <= Lt : "-" === t2[0] ? Rt(t2, kt) : Rt(t2, xt));
+const kt = Number.MIN_SAFE_INTEGER.toString();
+const St = Tt ? BigInt(Number.MIN_SAFE_INTEGER) : void 0;
+const xt = Number.MAX_SAFE_INTEGER.toString();
+const Lt = Tt ? BigInt(Number.MAX_SAFE_INTEGER) : void 0;
 function Rt(t2, e2) {
   if (t2.length > e2.length) return false;
   if (t2.length < e2.length || t2 === e2) return true;
   for (let n2 = 0; n2 < t2.length; n2++) {
-    const r2 = t2[n2], i2 = e2[n2];
+    const r2 = t2[n2];
+    const i2 = e2[n2];
     if (r2 > i2) return false;
     if (r2 < i2) return true;
   }
 }
-const Ft = "function" == typeof Uint8Array.prototype.slice;
-let It, Mt = 0, Pt = 0;
+const Ft = "function" === typeof Uint8Array.prototype.slice;
+let It;
+let Mt = 0;
+let Pt = 0;
 function Ct(t2) {
   const e2 = t2 >>> 0;
   Mt = e2, Pt = (t2 - e2) / 4294967296 >>> 0;
@@ -293,22 +328,23 @@ function Dt(t2, e2) {
 }
 function Nt(t2, e2) {
   const n2 = 2147483648 & e2;
-  return n2 && (e2 = ~e2 >>> 0, 0 == (t2 = 1 + ~t2 >>> 0) && (e2 = e2 + 1 >>> 0)), "number" == typeof (t2 = Dt(t2, e2)) ? n2 ? -t2 : t2 : n2 ? "-" + t2 : t2;
+  return n2 && (e2 = ~e2 >>> 0, 0 === (t2 = 1 + ~t2 >>> 0) && (e2 = e2 + 1 >>> 0)), "number" === typeof (t2 = Dt(t2, e2)) ? n2 ? -t2 : t2 : n2 ? `-${t2}` : t2;
 }
 function Bt(t2, e2) {
-  if (t2 >>>= 0, (e2 >>>= 0) <= 2097151) var n2 = "" + (4294967296 * e2 + t2);
-  else at() ? n2 = "" + (BigInt(e2) << BigInt(32) | BigInt(t2)) : (t2 = (16777215 & t2) + 6777216 * (n2 = 16777215 & (t2 >>> 24 | e2 << 8)) + 6710656 * (e2 = e2 >> 16 & 65535), n2 += 8147497 * e2, e2 *= 2, t2 >= 1e7 && (n2 += t2 / 1e7 >>> 0, t2 %= 1e7), n2 >= 1e7 && (e2 += n2 / 1e7 >>> 0, n2 %= 1e7), n2 = e2 + Gt(n2) + Gt(t2));
+  if (t2 >>>= 0, (e2 >>>= 0) <= 2097151) let n2 = `${4294967296 * e2 + t2}`;
+  else at() ? n2 = `${BigInt(e2) << BigInt(32) | BigInt(t2)}` : (t2 = (16777215 & t2) + 6777216 * (n2 = 16777215 & (t2 >>> 24 | e2 << 8)) + 6710656 * (e2 = e2 >> 16 & 65535), n2 += 8147497 * e2, e2 *= 2, t2 >= 1e7 && (n2 += t2 / 1e7 >>> 0, t2 %= 1e7), n2 >= 1e7 && (e2 += n2 / 1e7 >>> 0, n2 %= 1e7), n2 = e2 + Gt(n2) + Gt(t2));
   return n2;
 }
 function Gt(t2) {
   return t2 = String(t2), "0000000".slice(t2.length) + t2;
 }
 function jt() {
-  var t2 = Mt, e2 = Pt;
-  if (2147483648 & e2) if (at()) t2 = "" + (BigInt(0 | e2) << BigInt(32) | BigInt(t2 >>> 0));
+  let t2 = Mt;
+  const e2 = Pt;
+  if (2147483648 & e2) if (at()) t2 = `${BigInt(0 | e2) << BigInt(32) | BigInt(t2 >>> 0)}`;
   else {
     const [n2, r2] = Xt(t2, e2);
-    t2 = "-" + Bt(n2, r2);
+    t2 = `-${Bt(n2, r2)}`;
   }
   else t2 = Bt(t2, e2);
   return t2;
@@ -333,12 +369,17 @@ function Vt(t2) {
 function Xt(t2, e2) {
   return e2 = ~e2, t2 ? t2 = 1 + ~t2 : e2 += 1, [t2, e2];
 }
-const Ht = "function" == typeof BigInt ? BigInt.asIntN : void 0, Wt = "function" == typeof BigInt ? BigInt.asUintN : void 0, zt = Number.isSafeInteger, Kt = Number.isFinite, Yt = Math.trunc, $t = At(0);
+const Ht = "function" === typeof BigInt ? BigInt.asIntN : void 0;
+const Wt = "function" === typeof BigInt ? BigInt.asUintN : void 0;
+const zt = Number.isSafeInteger;
+const Kt = Number.isFinite;
+const Yt = Math.trunc;
+const $t = At(0);
 function qt(t2) {
-  return null == t2 || "number" == typeof t2 ? t2 : "NaN" === t2 || "Infinity" === t2 || "-Infinity" === t2 ? Number(t2) : void 0;
+  return null == t2 || "number" === typeof t2 ? t2 : "NaN" === t2 || "Infinity" === t2 || "-Infinity" === t2 ? Number(t2) : void 0;
 }
 function Jt(t2) {
-  return null == t2 || "boolean" == typeof t2 ? t2 : "number" == typeof t2 ? !!t2 : void 0;
+  return null == t2 || "boolean" === typeof t2 ? t2 : "number" === typeof t2 ? !!t2 : void 0;
 }
 const Zt = /^-?([1-9][0-9]*|0)(\.[0-9]+)?$/;
 function Qt(t2) {
@@ -355,14 +396,14 @@ function Qt(t2) {
 }
 function te(t2) {
   if (null == t2) return t2;
-  if ("string" == typeof t2 && t2) t2 = +t2;
-  else if ("number" != typeof t2) return;
+  if ("string" === typeof t2 && t2) t2 = +t2;
+  else if ("number" !== typeof t2) return;
   return Kt(t2) ? 0 | t2 : void 0;
 }
 function ee(t2) {
   if (null == t2) return t2;
-  if ("string" == typeof t2 && t2) t2 = +t2;
-  else if ("number" != typeof t2) return;
+  if ("string" === typeof t2 && t2) t2 = +t2;
+  else if ("number" !== typeof t2) return;
   return Kt(t2) ? t2 >>> 0 : void 0;
 }
 function ne(t2) {
@@ -381,11 +422,11 @@ function se(t2) {
   return t2 = Yt(t2), zt(t2) || (Ot(t2), t2 = Nt(Mt, Pt)), t2;
 }
 function oe(t2) {
-  var e2 = Yt(Number(t2));
+  let e2 = Yt(Number(t2));
   return zt(e2) ? String(e2) : (-1 !== (e2 = t2.indexOf(".")) && (t2 = t2.substring(0, e2)), ie(t2));
 }
 function ae(t2) {
-  var e2 = Yt(Number(t2));
+  let e2 = Yt(Number(t2));
   return zt(e2) ? At(e2) : (-1 !== (e2 = t2.indexOf(".")) && (t2 = t2.substring(0, e2)), at() ? At(Ht(64, BigInt(t2))) : At(ie(t2)));
 }
 function ce(t2) {
@@ -401,37 +442,37 @@ function ce(t2) {
   return t2;
 }
 function he(t2) {
-  return null == t2 ? t2 : "bigint" == typeof t2 ? (bt(t2) ? t2 = Number(t2) : (t2 = Ht(64, t2), t2 = bt(t2) ? Number(t2) : String(t2)), t2) : Qt(t2) ? "number" == typeof t2 ? se(t2) : oe(t2) : void 0;
+  return null == t2 ? t2 : "bigint" === typeof t2 ? (bt(t2) ? t2 = Number(t2) : (t2 = Ht(64, t2), t2 = bt(t2) ? Number(t2) : String(t2)), t2) : Qt(t2) ? "number" === typeof t2 ? se(t2) : oe(t2) : void 0;
 }
 function ue(t2) {
   if (null == t2) return t2;
-  var e2 = typeof t2;
+  let e2 = typeof t2;
   if ("bigint" === e2) return String(Wt(64, t2));
   if (Qt(t2)) {
     if ("string" === e2) return e2 = Yt(Number(t2)), zt(e2) && e2 >= 0 ? t2 = String(e2) : (-1 !== (e2 = t2.indexOf(".")) && (t2 = t2.substring(0, e2)), ne(t2) || (Vt(t2), t2 = Bt(Mt, Pt))), t2;
-    if ("number" === e2) return (t2 = Yt(t2)) >= 0 && zt(t2) ? t2 : function(t3) {
+    if ("number" === e2) return (t2 = Yt(t2)) >= 0 && zt(t2) ? t2 : ((t3) => {
       if (t3 < 0) {
         Ot(t3);
-        var e3 = Bt(Mt, Pt);
+        const e3 = Bt(Mt, Pt);
         return t3 = Number(e3), zt(t3) ? t3 : e3;
       }
       return ne(e3 = String(t3)) ? e3 : (Ot(t3), Dt(Mt, Pt));
-    }(t2);
+    })(t2);
   }
 }
 function le(t2) {
-  if ("string" != typeof t2) throw Error();
+  if ("string" !== typeof t2) throw Error();
   return t2;
 }
 function de(t2) {
-  if (null != t2 && "string" != typeof t2) throw Error();
+  if (null != t2 && "string" !== typeof t2) throw Error();
   return t2;
 }
 function fe(t2) {
-  return null == t2 || "string" == typeof t2 ? t2 : void 0;
+  return null == t2 || "string" === typeof t2 ? t2 : void 0;
 }
 function pe(t2, e2, n2, r2) {
-  if (null != t2 && "object" == typeof t2 && t2.W === ut) return t2;
+  if (null != t2 && "object" === typeof t2 && t2.W === ut) return t2;
   if (!Array.isArray(t2)) return n2 ? 2 & r2 ? ((t2 = e2[Y]) || (it((t2 = new e2()).u), t2 = e2[Y] = t2), e2 = t2) : e2 = new e2() : e2 = void 0, e2;
   let i2 = n2 = 0 | t2[Q];
   return 0 === i2 && (i2 |= 32 & r2), i2 |= 2 & r2, i2 !== n2 && rt(t2, i2), new e2(t2);
@@ -457,17 +498,14 @@ function me(t2) {
   return t2;
 }
 const ye = {};
-let _e = function() {
+const _e = (() => {
   try {
     return w(new class extends Map {
-      constructor() {
-        super();
-      }
     }()), false;
   } catch {
     return true;
   }
-}();
+})();
 class ve {
   constructor() {
     this.g = /* @__PURE__ */ new Map();
@@ -504,9 +542,6 @@ class ve {
   }
 }
 const Ee = _e ? (Object.setPrototypeOf(ve.prototype, Map.prototype), Object.defineProperties(ve.prototype, { size: { value: 0, configurable: true, enumerable: true, writable: true } }), ve) : class extends Map {
-  constructor() {
-    super();
-  }
 };
 function we(t2) {
   return t2;
@@ -514,24 +549,26 @@ function we(t2) {
 function Te(t2) {
   if (2 & t2.M) throw Error("Cannot mutate an immutable Map");
 }
-var Ae = class extends Ee {
+const Ae = class extends Ee {
   constructor(t2, e2, n2 = we, r2 = we) {
     super();
     let i2 = 0 | t2[Q];
     i2 |= 64, rt(t2, i2), this.M = i2, this.I = e2, this.S = n2, this.X = this.I ? be : r2;
     for (let s2 = 0; s2 < t2.length; s2++) {
-      const o2 = t2[s2], a2 = n2(o2[0], false, true);
+      const o2 = t2[s2];
+      const a2 = n2(o2[0], false, true);
       let c2 = o2[1];
       e2 ? void 0 === c2 && (c2 = null) : c2 = r2(o2[1], false, true, void 0, void 0, i2), super.set(a2, c2);
     }
   }
   La() {
-    var t2 = Ce;
+    const t2 = Ce;
     if (0 !== this.size) return Array.from(super.entries(), (e2) => (e2[0] = t2(e2[0]), e2[1] = t2(e2[1]), e2));
   }
   da(t2 = ke) {
-    const e2 = [], n2 = super.entries();
-    for (var r2; !(r2 = n2.next()).done; ) (r2 = r2.value)[0] = t2(r2[0]), r2[1] = t2(r2[1]), e2.push(r2);
+    const e2 = [];
+    const n2 = super.entries();
+    for (let r2; !(r2 = n2.next()).done; ) (r2 = r2.value)[0] = t2(r2[0]), r2[1] = t2(r2[1]), e2.push(r2);
     return e2;
   }
   clear() {
@@ -542,14 +579,14 @@ var Ae = class extends Ee {
   }
   entries() {
     if (this.I) {
-      var t2 = super.keys();
+      let t2 = super.keys();
       t2 = new gt(t2, Se, this);
     } else t2 = super.entries();
     return t2;
   }
   values() {
     if (this.I) {
-      var t2 = super.keys();
+      let t2 = super.keys();
       t2 = new gt(t2, Ae.prototype.get, this);
     } else t2 = super.values();
     return t2;
@@ -573,7 +610,7 @@ var Ae = class extends Ee {
     t2 = this.S(t2, false, false);
     const e2 = super.get(t2);
     if (void 0 !== e2) {
-      var n2 = this.I;
+      let n2 = this.I;
       return n2 ? ((n2 = this.X(e2, false, true, n2, this.pa, this.M)) !== e2 && super.set(t2, n2), n2) : e2;
     }
   }
@@ -590,7 +627,10 @@ function ke(t2) {
 function Se(t2) {
   return [t2, this.get(t2)];
 }
-let xe, Le, Re, Fe;
+let xe;
+let Le;
+let Re;
+let Fe;
 function Ie() {
   return xe || (xe = new Ae(it([]), void 0, void 0, void 0, ye));
 }
@@ -604,15 +644,19 @@ function Me(t2, e2, n2, r2, i2) {
   }
 }
 function Pe(t2, e2, n2, r2, i2) {
-  const s2 = r2 || n2 ? 0 | t2[Q] : 0, o2 = r2 ? !!(32 & s2) : void 0;
+  const s2 = r2 || n2 ? 0 | t2[Q] : 0;
+  const o2 = r2 ? !!(32 & s2) : void 0;
   let a2 = 0;
   const c2 = (r2 = ct(t2)).length;
   for (let t3 = 0; t3 < c2; t3++) {
-    var h2 = r2[t3];
+    let h2 = r2[t3];
     if (t3 === c2 - 1 && lt(h2)) {
-      var u2 = e2, l = n2, d = o2, f = i2;
+      const u2 = e2;
+      const l = n2;
+      const d = o2;
+      const f = i2;
       let t4;
-      for (let e3 in h2) {
+      for (const e3 in h2) {
         const n3 = Me(h2[e3], u2, l, d, f);
         null != n3 && ((t4 ?? (t4 = {}))[e3] = n3);
       }
@@ -628,9 +672,9 @@ function Ce(t2) {
 function Oe(t2) {
   switch (typeof t2) {
     case "number":
-      return Number.isFinite(t2) ? t2 : "" + t2;
+      return Number.isFinite(t2) ? t2 : `${t2}`;
     case "bigint":
-      return bt(t2) ? Number(t2) : "" + t2;
+      return bt(t2) ? Number(t2) : `${t2}`;
     case "boolean":
       return t2 ? 1 : 0;
     case "object":
@@ -638,22 +682,24 @@ function Oe(t2) {
       if (t2.W === ut) return Ue(t2);
       if (t2 instanceof N) {
         const e2 = t2.g;
-        return null == e2 ? "" : "string" == typeof e2 ? e2 : t2.g = R(e2);
+        return null == e2 ? "" : "string" === typeof e2 ? e2 : t2.g = R(e2);
       }
       return t2 instanceof Ae ? t2.La() : void 0;
   }
   return t2;
 }
 function Ue(t2) {
-  var e2 = t2.u;
+  let e2 = t2.u;
   t2 = Pe(e2, Oe, void 0, void 0, false);
-  var n2 = 0 | e2[Q];
+  let n2 = 0 | e2[Q];
   if ((e2 = t2.length) && !(512 & n2)) {
-    var r2 = t2[e2 - 1], i2 = false;
+    let r2 = t2[e2 - 1];
+    let i2 = false;
     lt(r2) ? (e2--, i2 = true) : r2 = void 0;
-    var s2 = e2 - (n2 = 512 & n2 ? 0 : -1), o2 = (Le ?? me)(s2, n2, t2, r2);
+    let s2 = e2 - (n2 = 512 & n2 ? 0 : -1);
+    const o2 = (Le ?? me)(s2, n2, t2, r2);
     if (r2 && (t2[e2] = void 0), s2 < o2 && r2) {
-      for (var a2 in s2 = true, r2) {
+      for (const a2 in s2 = true, r2) {
         const c2 = +a2;
         c2 <= o2 ? (t2[i2 = c2 + n2] = r2[a2], e2 = Math.max(i2 + 1, e2), i2 = false, delete r2[a2]) : s2 = false;
       }
@@ -673,7 +719,7 @@ function De(t2, e2, n2) {
 }
 function Ne(t2, e2, n2, r2) {
   if (null == t2) {
-    var i2 = 96;
+    let i2 = 96;
     n2 ? (t2 = [n2], i2 |= 512) : t2 = [], e2 && (i2 = -16760833 & i2 | (1023 & e2) << 14);
   } else {
     if (!Array.isArray(t2)) throw Error("narr");
@@ -681,12 +727,12 @@ function Ne(t2, e2, n2, r2) {
     if (64 & i2) return t2;
     if (1 === r2 || 2 === r2 || (i2 |= 64), n2 && (i2 |= 512, n2 !== t2[0])) throw Error("mid");
     t: {
-      var s2 = (n2 = t2).length;
+      let s2 = (n2 = t2).length;
       if (s2) {
-        var o2 = s2 - 1;
+        let o2 = s2 - 1;
         if (lt(r2 = n2[o2])) {
           if ((o2 -= e2 = 512 & (i2 |= 256) ? 0 : -1) >= 1024) throw Error("pvtlmt");
-          for (var a2 in r2) (s2 = +a2) < o2 && (n2[s2 + e2] = r2[a2], delete r2[a2]);
+          for (const a2 in r2) (s2 = +a2) < o2 && (n2[s2 + e2] = r2[a2], delete r2[a2]);
           i2 = -16760833 & i2 | (1023 & o2) << 14;
           break t;
         }
@@ -703,17 +749,18 @@ function Be(t2, e2, n2 = ot) {
   if (null != t2) {
     if (x && t2 instanceof Uint8Array) return e2 ? t2 : new Uint8Array(t2);
     if (Array.isArray(t2)) {
-      var r2 = 0 | t2[Q];
+      const r2 = 0 | t2[Q];
       return 2 & r2 ? t2 : (e2 && (e2 = 0 === r2 || !!(32 & r2) && !(64 & r2 || !(16 & r2))), e2 ? (rt(t2, 34 | r2), 4 & r2 && Object.freeze(t2), t2) : Pe(t2, Be, 4 & r2 ? ot : n2, true, true));
     }
     return t2.W === ut ? t2 = 2 & (r2 = 0 | (n2 = t2.u)[Q]) ? t2 : new t2.constructor(Ge(n2, r2, true)) : t2 instanceof Ae && !(2 & t2.M) && (n2 = it(t2.da(Be)), t2 = new Ae(n2, t2.I, t2.S, t2.X)), t2;
   }
 }
 function Ge(t2, e2, n2) {
-  const r2 = n2 || 2 & e2 ? ot : st, i2 = !!(32 & e2);
-  return t2 = function(t3, e3, n3) {
+  const r2 = n2 || 2 & e2 ? ot : st;
+  const i2 = !!(32 & e2);
+  return t2 = ((t3, e3, n3) => {
     const r3 = ct(t3);
-    var i3 = r3.length;
+    let i3 = r3.length;
     const s2 = 256 & e3 ? r3[i3 - 1] : void 0;
     for (i3 += s2 ? -1 : 0, e3 = 512 & e3 ? 1 : 0; e3 < i3; e3++) r3[e3] = n3(r3[e3]);
     if (s2) {
@@ -721,10 +768,11 @@ function Ge(t2, e2, n2) {
       for (const t4 in s2) e3[t4] = n3(s2[t4]);
     }
     return (t3 = mt(t3)) && (r3[q] = ct(t3)), r3;
-  }(t2, e2, (t3) => Be(t3, i2, r2)), nt(t2, 32 | (n2 ? 2 : 0)), t2;
+  })(t2, e2, (t3) => Be(t3, i2, r2)), nt(t2, 32 | (n2 ? 2 : 0)), t2;
 }
 function je(t2) {
-  const e2 = t2.u, n2 = 0 | e2[Q];
+  const e2 = t2.u;
+  const n2 = 0 | e2[Q];
   return 2 & n2 ? new t2.constructor(Ge(e2, n2, false)) : t2;
 }
 function Ve(t2, e2) {
@@ -732,39 +780,45 @@ function Ve(t2, e2) {
 }
 function Xe(t2, e2, n2) {
   if (-1 === n2) return null;
-  const r2 = n2 + (512 & e2 ? 0 : -1), i2 = t2.length - 1;
+  const r2 = n2 + (512 & e2 ? 0 : -1);
+  const i2 = t2.length - 1;
   return r2 >= i2 && 256 & e2 ? t2[i2][n2] : r2 <= i2 ? t2[r2] : void 0;
 }
 function He(t2, e2, n2) {
   const r2 = t2.u;
-  let i2 = 0 | r2[Q];
+  const i2 = 0 | r2[Q];
   return pt(i2), We(r2, i2, e2, n2), t2;
 }
 function We(t2, e2, n2, r2) {
-  const i2 = 512 & e2 ? 0 : -1, s2 = n2 + i2;
-  var o2 = t2.length - 1;
+  const i2 = 512 & e2 ? 0 : -1;
+  const s2 = n2 + i2;
+  let o2 = t2.length - 1;
   return s2 >= o2 && 256 & e2 ? (t2[o2][n2] = r2, e2) : s2 <= o2 ? (t2[s2] = r2, e2) : (void 0 !== r2 && (n2 >= (o2 = e2 >> 14 & 1023 || 536870912) ? null != r2 && (t2[o2 + i2] = { [n2]: r2 }, rt(t2, e2 |= 256)) : t2[s2] = r2), e2);
 }
 function ze(t2, e2) {
-  let n2 = 0 | (t2 = t2.u)[Q];
-  const r2 = Xe(t2, n2, e2), i2 = qt(r2);
+  const n2 = 0 | (t2 = t2.u)[Q];
+  const r2 = Xe(t2, n2, e2);
+  const i2 = qt(r2);
   return null != i2 && i2 !== r2 && We(t2, n2, e2, i2), i2;
 }
 function Ke(t2) {
-  let e2 = 0 | (t2 = t2.u)[Q];
-  const n2 = Xe(t2, e2, 1), r2 = dt(n2, true);
+  const e2 = 0 | (t2 = t2.u)[Q];
+  const n2 = Xe(t2, e2, 1);
+  const r2 = dt(n2, true);
   return null != r2 && r2 !== n2 && We(t2, e2, 1, r2), r2;
 }
 function Ye() {
   return void 0 === yt ? 2 : 4;
 }
 function $e(t2, e2, n2, r2, i2) {
-  const s2 = t2.u, o2 = 2 & (t2 = 0 | s2[Q]) ? 1 : r2;
+  const s2 = t2.u;
+  const o2 = 2 & (t2 = 0 | s2[Q]) ? 1 : r2;
   i2 = !!i2;
   let a2 = 0 | (r2 = qe(s2, t2, e2))[Q];
   if (!(4 & a2)) {
     4 & a2 && (r2 = ct(r2), a2 = pn(a2, t2), t2 = We(s2, t2, e2, r2));
-    let i3 = 0, o3 = 0;
+    let i3 = 0;
+    let o3 = 0;
     for (; i3 < r2.length; i3++) {
       const t3 = n2(r2[i3]);
       null != t3 && (r2[o3++] = t3);
@@ -791,7 +845,7 @@ function Qe(t2) {
   return t2;
 }
 function tn(t2, e2, n2, r2) {
-  let i2 = 0 | (t2 = t2.u)[Q];
+  const i2 = 0 | (t2 = t2.u)[Q];
   pt(i2), We(t2, i2, e2, ("0" === r2 ? 0 === Number(n2) : n2 === r2) ? void 0 : n2);
 }
 function en(t2, e2, n2, r2) {
@@ -806,7 +860,7 @@ function en(t2, e2, n2, r2) {
   return i2;
 }
 function nn(t2, e2) {
-  var n2 = Ts;
+  const n2 = Ts;
   return on(rn(t2 = t2.u), t2, 0 | t2[Q], n2) === e2 ? e2 : -1;
 }
 function rn(t2) {
@@ -816,7 +870,8 @@ function rn(t2) {
   return Object.defineProperty(t2, $, { value: e2 }), e2;
 }
 function sn(t2, e2, n2, r2) {
-  const i2 = rn(t2), s2 = on(i2, t2, e2, n2);
+  const i2 = rn(t2);
+  const s2 = on(i2, t2, e2, n2);
   return s2 !== r2 && (s2 && (e2 = We(t2, e2, s2)), i2.set(n2, r2)), e2;
 }
 function on(t2, e2, n2, r2) {
@@ -830,7 +885,7 @@ function on(t2, e2, n2, r2) {
   return t2.set(r2, i2), i2;
 }
 function an(t2, e2, n2) {
-  let r2 = 0 | t2[Q];
+  const r2 = 0 | t2[Q];
   const i2 = Xe(t2, r2, n2);
   let s2;
   if (null != i2 && i2.W === ut) return (e2 = je(i2)) !== i2 && We(t2, r2, n2, e2), e2.u;
@@ -841,13 +896,13 @@ function an(t2, e2, n2) {
   return s2 !== i2 && We(t2, r2, n2, s2), s2;
 }
 function cn(t2, e2, n2) {
-  let r2 = 0 | (t2 = t2.u)[Q];
+  const r2 = 0 | (t2 = t2.u)[Q];
   const i2 = Xe(t2, r2, n2);
   return (e2 = pe(i2, e2, false, r2)) !== i2 && null != e2 && We(t2, r2, n2, e2), e2;
 }
 function hn(t2, e2, n2) {
   if (null == (e2 = cn(t2, e2, n2))) return e2;
-  let r2 = 0 | (t2 = t2.u)[Q];
+  const r2 = 0 | (t2 = t2.u)[Q];
   if (!(2 & r2)) {
     const i2 = je(e2);
     i2 !== e2 && We(t2, r2, n2, e2 = i2);
@@ -856,15 +911,19 @@ function hn(t2, e2, n2) {
 }
 function un(t2, e2, n2, r2, i2, s2, o2) {
   t2 = t2.u;
-  var a2 = !!(2 & e2);
+  let a2 = !!(2 & e2);
   const c2 = a2 ? 1 : i2;
   s2 = !!s2, o2 && (o2 = !a2);
-  var h2 = 0 | (i2 = qe(t2, e2, r2))[Q];
+  let h2 = 0 | (i2 = qe(t2, e2, r2))[Q];
   if (!(a2 = !!(4 & h2))) {
-    var u2 = i2, l = e2;
+    const u2 = i2;
+    let l = e2;
     const t3 = !!(2 & (h2 = Je(h2, e2)));
     t3 && (l |= 2);
-    let r3 = !t3, s3 = true, o3 = 0, a3 = 0;
+    let r3 = !t3;
+    let s3 = true;
+    let o3 = 0;
+    let a3 = 0;
     for (; o3 < u2.length; o3++) {
       const e3 = pe(u2[o3], n2, false, l);
       if (e3 instanceof n2) {
@@ -925,30 +984,33 @@ function En(t2, e2) {
   return ze(t2, e2) ?? 0;
 }
 function wn(t2, e2, n2) {
-  if (null != n2 && "boolean" != typeof n2) throw t2 = typeof n2, Error(`Expected boolean but got ${"object" != t2 ? t2 : n2 ? Array.isArray(n2) ? "array" : t2 : "null"}: ${n2}`);
+  if (null != n2 && "boolean" !== typeof n2) throw t2 = typeof n2, Error(`Expected boolean but got ${"object" !== t2 ? t2 : n2 ? Array.isArray(n2) ? "array" : t2 : "null"}: ${n2}`);
   He(t2, e2, n2);
 }
 function Tn(t2, e2, n2) {
   if (null != n2) {
-    if ("number" != typeof n2) throw X("int32");
+    if ("number" !== typeof n2) throw X("int32");
     if (!Kt(n2)) throw X("int32");
     n2 |= 0;
   }
   He(t2, e2, n2);
 }
 function An(t2, e2, n2) {
-  if (null != n2 && "number" != typeof n2) throw Error(`Value of float/double field must be a number, found ${typeof n2}: ${n2}`);
+  if (null != n2 && "number" !== typeof n2) throw Error(`Value of float/double field must be a number, found ${typeof n2}: ${n2}`);
   He(t2, e2, n2);
 }
 function bn(t2, e2, n2) {
   {
     const o2 = t2.u;
-    let a2 = 0 | o2[Q];
+    const a2 = 0 | o2[Q];
     if (pt(a2), null == n2) We(o2, a2, e2);
     else {
-      var r2 = t2 = 0 | n2[Q], i2 = Ze(t2), s2 = i2 || Object.isFrozen(n2);
+      let r2 = t2 = 0 | n2[Q];
+      let i2 = Ze(t2);
+      let s2 = i2 || Object.isFrozen(n2);
       for (i2 || (t2 = 0), s2 || (n2 = ct(n2), r2 = 0, t2 = gn(t2 = pn(t2, a2), a2, true), s2 = false), t2 |= 21, i2 = 0; i2 < n2.length; i2++) {
-        const e3 = n2[i2], o3 = le(e3);
+        const e3 = n2[i2];
+        const o3 = le(e3);
         Object.is(e3, o3) || (s2 && (n2 = ct(n2), r2 = 0, t2 = gn(t2 = pn(t2, a2), a2, true), s2 = false), n2[i2] = o3);
       }
       t2 !== r2 && (s2 && (n2 = ct(n2), t2 = gn(t2 = pn(t2, a2), a2, true)), rt(n2, t2)), We(o2, a2, e2, n2);
@@ -965,7 +1027,7 @@ function xn(t2, e2) {
   return Error(`Tried to read past the end of the data ${e2} > ${t2}`);
 }
 function Ln(t2) {
-  if ("string" == typeof t2) return { buffer: P(t2), O: false };
+  if ("string" === typeof t2) return { buffer: P(t2), O: false };
   if (Array.isArray(t2)) return { buffer: new Uint8Array(t2), O: false };
   if (t2.constructor === Uint8Array) return { buffer: t2, O: false };
   if (t2.constructor === ArrayBuffer) return { buffer: new Uint8Array(t2), O: false };
@@ -974,7 +1036,10 @@ function Ln(t2) {
   throw Error("Type not convertible to a Uint8Array, expected a Uint8Array, an ArrayBuffer, a base64 encoded string, a ByteString or an Array of numbers");
 }
 function Rn(t2, e2) {
-  let n2, r2 = 0, i2 = 0, s2 = 0;
+  let n2;
+  let r2 = 0;
+  let i2 = 0;
+  let s2 = 0;
   const o2 = t2.h;
   let a2 = t2.g;
   do {
@@ -985,17 +1050,21 @@ function Rn(t2, e2) {
   throw Sn();
 }
 function Fn(t2) {
-  let e2 = 0, n2 = t2.g;
-  const r2 = n2 + 10, i2 = t2.h;
-  for (; n2 < r2; ) {
+  let e2 = 0;
+  let n2 = t2.g;
+  const r2 = n2 + 10;
+  const i2 = t2.h;
+  while (n2 < r2) {
     const r3 = i2[n2++];
-    if (e2 |= r3, 0 == (128 & r3)) return Dn(t2, n2), !!(127 & e2);
+    if (e2 |= r3, 0 === (128 & r3)) return Dn(t2, n2), !!(127 & e2);
   }
   throw Sn();
 }
 function In(t2) {
   const e2 = t2.h;
-  let n2 = t2.g, r2 = e2[n2++], i2 = 127 & r2;
+  let n2 = t2.g;
+  let r2 = e2[n2++];
+  let i2 = 127 & r2;
   if (128 & r2 && (r2 = e2[n2++], i2 |= (127 & r2) << 7, 128 & r2 && (r2 = e2[n2++], i2 |= (127 & r2) << 14, 128 & r2 && (r2 = e2[n2++], i2 |= (127 & r2) << 21, 128 & r2 && (r2 = e2[n2++], i2 |= r2 << 28, 128 & r2 && 128 & e2[n2++] && 128 & e2[n2++] && 128 & e2[n2++] && 128 & e2[n2++] && 128 & e2[n2++]))))) throw Sn();
   return Dn(t2, n2), i2;
 }
@@ -1003,15 +1072,18 @@ function Mn(t2) {
   return In(t2) >>> 0;
 }
 function Pn(t2) {
-  var e2 = t2.h;
-  const n2 = t2.g, r2 = e2[n2], i2 = e2[n2 + 1], s2 = e2[n2 + 2];
+  let e2 = t2.h;
+  const n2 = t2.g;
+  const r2 = e2[n2];
+  const i2 = e2[n2 + 1];
+  const s2 = e2[n2 + 2];
   return e2 = e2[n2 + 3], Dn(t2, t2.g + 4), (r2 << 0 | i2 << 8 | s2 << 16 | e2 << 24) >>> 0;
 }
 function Cn(t2) {
-  var e2 = Pn(t2);
+  let e2 = Pn(t2);
   t2 = 2 * (e2 >> 31) + 1;
   const n2 = e2 >>> 23 & 255;
-  return e2 &= 8388607, 255 == n2 ? e2 ? NaN : t2 * (1 / 0) : 0 == n2 ? 1401298464324817e-60 * t2 * e2 : t2 * Math.pow(2, n2 - 150) * (e2 + 8388608);
+  return e2 &= 8388607, 255 === n2 ? e2 ? Number.NaN : t2 * (1 / 0) : 0 === n2 ? 1401298464324817e-60 * t2 * e2 : t2 * 2 ** (n2 - 150) * (e2 + 8388608);
 }
 function On(t2) {
   return In(t2);
@@ -1024,22 +1096,23 @@ function Dn(t2, e2) {
 }
 function Nn(t2, e2) {
   if (e2 < 0) throw Error(`Tried to read a negative byte length: ${e2}`);
-  const n2 = t2.g, r2 = n2 + e2;
+  const n2 = t2.g;
+  const r2 = n2 + e2;
   if (r2 > t2.l) throw xn(e2, t2.l - n2);
   return t2.g = r2, n2;
 }
 function Bn(t2, e2) {
-  if (0 == e2) return U();
-  var n2 = Nn(t2, e2);
-  return t2.aa && t2.m ? n2 = t2.h.subarray(n2, n2 + e2) : (t2 = t2.h, n2 = n2 === (e2 = n2 + e2) ? new Uint8Array(0) : Ft ? t2.slice(n2, e2) : new Uint8Array(t2.subarray(n2, e2))), 0 == n2.length ? U() : new N(n2, O);
+  if (0 === e2) return U();
+  let n2 = Nn(t2, e2);
+  return t2.aa && t2.m ? n2 = t2.h.subarray(n2, n2 + e2) : (t2 = t2.h, n2 = n2 === (e2 = n2 + e2) ? new Uint8Array(0) : Ft ? t2.slice(n2, e2) : new Uint8Array(t2.subarray(n2, e2))), 0 === n2.length ? U() : new N(n2, O);
 }
 Ae.prototype.toJSON = void 0;
-var Gn = [];
+const Gn = [];
 function jn(t2) {
-  var e2 = t2.g;
-  if (e2.g == e2.l) return false;
+  let e2 = t2.g;
+  if (e2.g === e2.l) return false;
   t2.l = t2.g.g;
-  var n2 = Mn(t2.g);
+  let n2 = Mn(t2.g);
   if (e2 = n2 >>> 3, !((n2 &= 7) >= 0 && n2 <= 5)) throw kn(n2, t2.l);
   if (e2 < 1) throw Error(`Invalid field number: ${e2} (at position ${t2.l})`);
   return t2.m = e2, t2.h = n2, true;
@@ -1047,15 +1120,15 @@ function jn(t2) {
 function Vn(t2) {
   switch (t2.h) {
     case 0:
-      0 != t2.h ? Vn(t2) : Fn(t2.g);
+      0 !== t2.h ? Vn(t2) : Fn(t2.g);
       break;
     case 1:
       Dn(t2 = t2.g, t2.g + 8);
       break;
     case 2:
-      if (2 != t2.h) Vn(t2);
+      if (2 !== t2.h) Vn(t2);
       else {
-        var e2 = Mn(t2.g);
+        const e2 = Mn(t2.g);
         Dn(t2 = t2.g, t2.g + e2);
       }
       break;
@@ -1065,8 +1138,8 @@ function Vn(t2) {
     case 3:
       for (e2 = t2.m; ; ) {
         if (!jn(t2)) throw Error("Unmatched start-group tag: stream EOF");
-        if (4 == t2.h) {
-          if (t2.m != e2) throw Error("Unmatched end-group tag");
+        if (4 === t2.h) {
+          if (t2.m !== e2) throw Error("Unmatched end-group tag");
           break;
         }
         Vn(t2);
@@ -1077,18 +1150,22 @@ function Vn(t2) {
   }
 }
 function Xn(t2, e2, n2) {
-  const r2 = t2.g.l, i2 = Mn(t2.g), s2 = t2.g.g + i2;
+  const r2 = t2.g.l;
+  const i2 = Mn(t2.g);
+  const s2 = t2.g.g + i2;
   let o2 = s2 - r2;
   if (o2 <= 0 && (t2.g.l = s2, n2(e2, t2, void 0, void 0, void 0), o2 = s2 - t2.g.g), o2) throw Error(`Message parsing ended unexpectedly. Expected to read ${i2} bytes, instead read ${i2 - o2} bytes, either the data ended unexpectedly or the message misreported its own length`);
   return t2.g.g = s2, t2.g.l = r2, e2;
 }
 function Hn(t2) {
-  var o2 = Mn(t2.g), a2 = Nn(t2 = t2.g, o2);
+  let o2 = Mn(t2.g);
+  let a2 = Nn(t2 = t2.g, o2);
   if (t2 = t2.h, s) {
-    var c2, h2 = t2;
+    let c2;
+    let h2 = t2;
     (c2 = i) || (c2 = i = new TextDecoder("utf-8", { fatal: true })), o2 = a2 + o2, h2 = 0 === a2 && o2 === h2.length ? h2 : h2.subarray(a2, o2);
     try {
-      var u2 = c2.decode(h2);
+      const u2 = c2.decode(h2);
     } catch (t3) {
       if (void 0 === r) {
         try {
@@ -1105,10 +1182,11 @@ function Hn(t2) {
     }
   } else {
     o2 = (u2 = a2) + o2, a2 = [];
-    let r2, i2 = null;
-    for (; u2 < o2; ) {
-      var l = t2[u2++];
-      l < 128 ? a2.push(l) : l < 224 ? u2 >= o2 ? e() : (r2 = t2[u2++], l < 194 || 128 != (192 & r2) ? (u2--, e()) : a2.push((31 & l) << 6 | 63 & r2)) : l < 240 ? u2 >= o2 - 1 ? e() : (r2 = t2[u2++], 128 != (192 & r2) || 224 === l && r2 < 160 || 237 === l && r2 >= 160 || 128 != (192 & (c2 = t2[u2++])) ? (u2--, e()) : a2.push((15 & l) << 12 | (63 & r2) << 6 | 63 & c2)) : l <= 244 ? u2 >= o2 - 2 ? e() : (r2 = t2[u2++], 128 != (192 & r2) || r2 - 144 + (l << 28) >> 30 != 0 || 128 != (192 & (c2 = t2[u2++])) || 128 != (192 & (h2 = t2[u2++])) ? (u2--, e()) : (l = (7 & l) << 18 | (63 & r2) << 12 | (63 & c2) << 6 | 63 & h2, l -= 65536, a2.push(55296 + (l >> 10 & 1023), 56320 + (1023 & l)))) : e(), a2.length >= 8192 && (i2 = n(i2, a2), a2.length = 0);
+    let r2;
+    let i2 = null;
+    while (u2 < o2) {
+      let l = t2[u2++];
+      l < 128 ? a2.push(l) : l < 224 ? u2 >= o2 ? e() : (r2 = t2[u2++], l < 194 || 128 !== (192 & r2) ? (u2--, e()) : a2.push((31 & l) << 6 | 63 & r2)) : l < 240 ? u2 >= o2 - 1 ? e() : (r2 = t2[u2++], 128 !== (192 & r2) || 224 === l && r2 < 160 || 237 === l && r2 >= 160 || 128 !== (192 & (c2 = t2[u2++])) ? (u2--, e()) : a2.push((15 & l) << 12 | (63 & r2) << 6 | 63 & c2)) : l <= 244 ? u2 >= o2 - 2 ? e() : (r2 = t2[u2++], 128 !== (192 & r2) || r2 - 144 + (l << 28) >> 30 !== 0 || 128 !== (192 & (c2 = t2[u2++])) || 128 !== (192 & (h2 = t2[u2++])) ? (u2--, e()) : (l = (7 & l) << 18 | (63 & r2) << 12 | (63 & c2) << 6 | 63 & h2, l -= 65536, a2.push(55296 + (l >> 10 & 1023), 56320 + (1023 & l)))) : e(), a2.length >= 8192 && (i2 = n(i2, a2), a2.length = 0);
     }
     u2 = n(i2, a2);
   }
@@ -1119,27 +1197,27 @@ function Wn(t2) {
   return Bn(t2.g, e2);
 }
 function zn(t2, e2, n2) {
-  var r2 = Mn(t2.g);
+  let r2 = Mn(t2.g);
   for (r2 = t2.g.g + r2; t2.g.g < r2; ) n2.push(e2(t2.g));
 }
-var Kn = [];
+const Kn = [];
 function Yn(t2, e2, n2) {
   e2.g ? e2.m(t2, e2.g, e2.h, n2) : e2.m(t2, e2.h, n2);
 }
-var $n = class {
+const $n = class {
   constructor(t2, e2) {
     this.u = Ne(t2, e2);
   }
   toJSON() {
     try {
-      var t2 = Ue(this);
+      const t2 = Ue(this);
     } finally {
       Le = void 0;
     }
     return t2;
   }
   l() {
-    var t2 = _o;
+    const t2 = _o;
     return t2.g ? t2.l(this, t2.g, t2.h) : t2.l(this, t2.h, t2.defaultValue);
   }
   clone() {
@@ -1156,7 +1234,7 @@ function qn(t2) {
 $n.prototype.W = ut, $n.prototype.toString = function() {
   return this.u.toString();
 };
-var Jn = class {
+const Jn = class {
   constructor(t2, e2) {
     this.h = t2 >>> 0, this.g = e2 >>> 0;
   }
@@ -1165,18 +1243,18 @@ let Zn;
 function Qn(t2) {
   return t2 ? /^-?\d+$/.test(t2) ? (Vt(t2), new tr(Mt, Pt)) : null : er || (er = new tr(0, 0));
 }
-var tr = class {
+const tr = class {
   constructor(t2, e2) {
     this.h = t2 >>> 0, this.g = e2 >>> 0;
   }
 };
 let er;
 function nr(t2, e2, n2) {
-  for (; n2 > 0 || e2 > 127; ) t2.g.push(127 & e2 | 128), e2 = (e2 >>> 7 | n2 << 25) >>> 0, n2 >>>= 7;
+  while (n2 > 0 || e2 > 127) t2.g.push(127 & e2 | 128), e2 = (e2 >>> 7 | n2 << 25) >>> 0, n2 >>>= 7;
   t2.g.push(e2);
 }
 function rr(t2, e2) {
-  for (; e2 > 127; ) t2.g.push(127 & e2 | 128), e2 >>>= 7;
+  while (e2 > 127) t2.g.push(127 & e2 | 128), e2 >>>= 7;
   t2.g.push(e2);
 }
 function ir(t2, e2) {
@@ -1199,7 +1277,7 @@ function cr(t2, e2) {
   return ar(t2, e2, 2), e2 = t2.g.end(), or(t2, e2), e2.push(t2.h), e2;
 }
 function hr(t2, e2) {
-  var n2 = e2.pop();
+  let n2 = e2.pop();
   for (n2 = t2.h + t2.g.length() - n2; n2 > 127; ) e2.push(127 & n2 | 128), n2 >>>= 7, t2.h++;
   e2.push(n2), t2.h++;
 }
@@ -1217,7 +1295,16 @@ function dr() {
   };
   return Object.setPrototypeOf(t2, t2.prototype), t2;
 }
-var fr = dr(), pr = dr(), gr = dr(), mr = dr(), yr = dr(), _r = dr(), vr = dr(), Er = dr(), wr = dr(), Tr = class {
+const fr = dr();
+const pr = dr();
+const gr = dr();
+const mr = dr();
+const yr = dr();
+const _r = dr();
+const vr = dr();
+const Er = dr();
+const wr = dr();
+const Tr = class {
   constructor(t2, e2, n2) {
     this.g = t2, this.h = e2, t2 = fr, this.l = !!t2 && n2 === t2 || false;
   }
@@ -1228,17 +1315,18 @@ function Ar(t2, e2) {
 function br(t2, e2, n2, r2, i2) {
   lr(t2, n2, Or(e2, r2), i2);
 }
-const kr = Ar(function(t2, e2, n2, r2, i2) {
-  return 2 === t2.h && (Xn(t2, an(e2, r2, n2), i2), true);
-}, br), Sr = Ar(function(t2, e2, n2, r2, i2) {
-  return 2 === t2.h && (Xn(t2, an(e2, r2, n2), i2), true);
-}, br);
-var xr = Symbol(), Lr = Symbol(), Rr = Symbol(), Fr = Symbol();
-let Ir, Mr;
+const kr = Ar((t2, e2, n2, r2, i2) => 2 === t2.h && (Xn(t2, an(e2, r2, n2), i2), true), br);
+const Sr = Ar((t2, e2, n2, r2, i2) => 2 === t2.h && (Xn(t2, an(e2, r2, n2), i2), true), br);
+const xr = Symbol();
+const Lr = Symbol();
+const Rr = Symbol();
+const Fr = Symbol();
+let Ir;
+let Mr;
 function Pr(t2, e2, n2, r2) {
-  var i2 = r2[t2];
+  let i2 = r2[t2];
   if (i2) return i2;
-  (i2 = {}).Ma = r2, i2.T = function(t3) {
+  (i2 = {}).Ma = r2, i2.T = ((t3) => {
     switch (typeof t3) {
       case "boolean":
         return Re || (Re = [0, void 0, true]);
@@ -1249,25 +1337,25 @@ function Pr(t2, e2, n2, r2) {
       case "object":
         return t3;
     }
-  }(r2[0]);
-  var s2 = r2[1];
+  })(r2[0]);
+  let s2 = r2[1];
   let o2 = 1;
-  s2 && s2.constructor === Object && (i2.ga = s2, "function" == typeof (s2 = r2[++o2]) && (i2.la = true, Ir ?? (Ir = s2), Mr ?? (Mr = r2[o2 + 1]), s2 = r2[o2 += 2]));
+  s2 && s2.constructor === Object && (i2.ga = s2, "function" === typeof (s2 = r2[++o2]) && (i2.la = true, Ir ?? (Ir = s2), Mr ?? (Mr = r2[o2 + 1]), s2 = r2[o2 += 2]));
   const a2 = {};
-  for (; s2 && Array.isArray(s2) && s2.length && "number" == typeof s2[0] && s2[0] > 0; ) {
-    for (var c2 = 0; c2 < s2.length; c2++) a2[s2[c2]] = s2;
+  while (s2 && Array.isArray(s2) && s2.length && "number" === typeof s2[0] && s2[0] > 0) {
+    for (let c2 = 0; c2 < s2.length; c2++) a2[s2[c2]] = s2;
     s2 = r2[++o2];
   }
   for (c2 = 1; void 0 !== s2; ) {
     let t3;
-    "number" == typeof s2 && (c2 += s2, s2 = r2[++o2]);
-    var h2 = void 0;
+    "number" === typeof s2 && (c2 += s2, s2 = r2[++o2]);
+    let h2 = void 0;
     if (s2 instanceof Tr ? t3 = s2 : (t3 = kr, o2--), t3 == null ? void 0 : t3.l) {
       s2 = r2[++o2], h2 = r2;
-      var u2 = o2;
-      "function" == typeof s2 && (s2 = s2(), h2[u2] = s2), h2 = s2;
+      const u2 = o2;
+      "function" === typeof s2 && (s2 = s2(), h2[u2] = s2), h2 = s2;
     }
-    for (u2 = c2 + 1, "number" == typeof (s2 = r2[++o2]) && s2 < 0 && (u2 -= s2, s2 = r2[++o2]); c2 < u2; c2++) {
+    for (u2 = c2 + 1, "number" === typeof (s2 = r2[++o2]) && s2 < 0 && (u2 -= s2, s2 = r2[++o2]); c2 < u2; c2++) {
       const r3 = a2[c2];
       h2 ? n2(i2, c2, t3, h2, r3) : e2(i2, c2, t3, r3);
     }
@@ -1286,7 +1374,8 @@ function Ur(t2, e2, n2, r2) {
 }
 function Dr(t2, e2, n2, r2, i2) {
   const s2 = n2.g;
-  let o2, a2;
+  let o2;
+  let a2;
   t2[e2] = (t3, e3, n3) => s2(t3, e3, n3, a2 || (a2 = Pr(Lr, Ur, Dr, r2).T), o2 || (o2 = Nr(r2)), i2);
 }
 function Nr(t2) {
@@ -1295,10 +1384,11 @@ function Nr(t2) {
   const n2 = Pr(Lr, Ur, Dr, t2);
   return e2 = n2.la ? (t3, e3) => Ir(t3, e3, n2) : (t3, e3) => {
     const r2 = 0 | t3[Q];
-    for (; jn(e3) && 4 != e3.h; ) {
-      var i2 = e3.m, s2 = n2[i2];
+    while (jn(e3) && 4 !== e3.h) {
+      let i2 = e3.m;
+      let s2 = n2[i2];
       if (null == s2) {
-        var o2 = n2.ga;
+        let o2 = n2.ga;
         o2 && (o2 = o2[i2]) && (null != (o2 = Br(o2)) && (s2 = n2[i2] = o2));
       }
       null != s2 && s2(e3, t3, i2) || (i2 = (s2 = e3).l, Vn(s2), s2.fa ? s2 = void 0 : (o2 = s2.g.g - i2, s2.g.g = i2, s2 = Bn(s2.g, o2)), i2 = t3, s2 && ((o2 = i2[q]) ? o2.push(s2) : i2[q] = [s2]));
@@ -1309,7 +1399,8 @@ function Nr(t2) {
 function Br(t2) {
   const e2 = (t2 = Cr(t2))[0].g;
   if (t2 = t2[1]) {
-    const n2 = Nr(t2), r2 = Pr(Lr, Ur, Dr, t2).T;
+    const n2 = Nr(t2);
+    const r2 = Pr(Lr, Ur, Dr, t2).T;
     return (t3, i2, s2) => e2(t3, i2, s2, r2, n2);
   }
   return e2;
@@ -1318,7 +1409,8 @@ function Gr(t2, e2, n2) {
   t2[e2] = n2.h;
 }
 function jr(t2, e2, n2, r2) {
-  let i2, s2;
+  let i2;
+  let s2;
   const o2 = n2.h;
   t2[e2] = (t3, e3, n3) => o2(t3, e3, n3, s2 || (s2 = Pr(xr, Gr, jr, r2).T), i2 || (i2 = Vr(r2)));
 }
@@ -1331,39 +1423,42 @@ function Vr(t2) {
   return e2;
 }
 function Xr(t2, e2, n2) {
-  !function(t3, e3, n3) {
-    const r2 = 512 & e3 ? 0 : -1, i2 = t3.length, s2 = i2 + ((e3 = 64 & e3 ? 256 & e3 : !!i2 && lt(t3[i2 - 1])) ? -1 : 0);
+  !((t3, e3, n3) => {
+    const r2 = 512 & e3 ? 0 : -1;
+    const i2 = t3.length;
+    const s2 = i2 + ((e3 = 64 & e3 ? 256 & e3 : !!i2 && lt(t3[i2 - 1])) ? -1 : 0);
     for (let e4 = 0; e4 < s2; e4++) n3(e4 - r2, t3[e4]);
     if (e3) {
       t3 = t3[i2 - 1];
-      for (const e4 in t3) !isNaN(e4) && n3(+e4, t3[e4]);
+      for (const e4 in t3) !Number.isNaN(e4) && n3(+e4, t3[e4]);
     }
-  }(t2, 0 | t2[Q] | (n2.T[1] ? 512 : 0), (t3, r2) => {
+  })(t2, 0 | t2[Q] | (n2.T[1] ? 512 : 0), (t3, r2) => {
     if (null != r2) {
-      var i2 = function(t4, e3) {
-        var n3 = t4[e3];
+      const i2 = ((t4, e3) => {
+        let n3 = t4[e3];
         if (n3) return n3;
         if ((n3 = t4.ga) && (n3 = n3[e3])) {
-          var r3 = (n3 = Cr(n3))[0].h;
+          const r3 = (n3 = Cr(n3))[0].h;
           if (n3 = n3[1]) {
-            const e4 = Vr(n3), i3 = Pr(xr, Gr, jr, n3).T;
+            const e4 = Vr(n3);
+            const i3 = Pr(xr, Gr, jr, n3).T;
             n3 = t4.la ? Mr(i3, e4) : (t5, n4, s2) => r3(t5, n4, s2, i3, e4);
           } else n3 = r3;
           return t4[e3] = n3;
         }
-      }(n2, t3);
-      i2 && i2(e2, r2, t3);
+      })(n2, t3);
+      i2?.(e2, r2, t3);
     }
-  }), (t2 = mt(t2)) && function(t3, e3) {
+  }), (t2 = mt(t2)) && ((t3, e3) => {
     or(t3, t3.g.end());
     for (let n3 = 0; n3 < e3.length; n3++) or(t3, D(e3[n3]) || new Uint8Array(0));
-  }(e2, t2);
+  })(e2, t2);
 }
 function Hr(t2, e2) {
   if (Array.isArray(e2)) {
-    var n2 = 0 | e2[Q];
+    const n2 = 0 | e2[Q];
     if (4 & n2) return e2;
-    for (var r2 = 0, i2 = 0; r2 < e2.length; r2++) {
+    for (let r2 = 0, i2 = 0; r2 < e2.length; r2++) {
       const n3 = t2(e2[r2]);
       null != n3 && (e2[i2++] = n3);
     }
@@ -1379,9 +1474,7 @@ function zr(t2, e2, n2) {
 function Kr(t2, e2, n2) {
   We(t2, 0 | t2[Q], e2, n2);
 }
-var Yr = Ar(function(t2, e2, n2, r2, i2) {
-  return 2 === t2.h && (t2 = Xn(t2, De([void 0, void 0], r2, true), i2), pt(r2 = 0 | e2[Q]), (i2 = Xe(e2, r2, n2)) instanceof Ae ? 0 != (2 & i2.M) ? ((i2 = i2.da()).push(t2), We(e2, r2, n2, i2)) : i2.Ja(t2) : Array.isArray(i2) ? (2 & (0 | i2[Q]) && We(e2, r2, n2, i2 = Qe(i2)), i2.push(t2)) : We(e2, r2, n2, [t2]), true);
-}, function(t2, e2, n2, r2, i2) {
+const Yr = Ar((t2, e2, n2, r2, i2) => 2 === t2.h && (t2 = Xn(t2, De([void 0, void 0], r2, true), i2), pt(r2 = 0 | e2[Q]), (i2 = Xe(e2, r2, n2)) instanceof Ae ? 0 !== (2 & i2.M) ? ((i2 = i2.da()).push(t2), We(e2, r2, n2, i2)) : i2.Ja(t2) : Array.isArray(i2) ? (2 & (0 | i2[Q]) && We(e2, r2, n2, i2 = Qe(i2)), i2.push(t2)) : We(e2, r2, n2, [t2]), true), (t2, e2, n2, r2, i2) => {
   if (e2 instanceof Ae) e2.forEach((e3, s2) => {
     lr(t2, n2, De([s2, e3], r2, false), i2);
   });
@@ -1391,7 +1484,7 @@ var Yr = Ar(function(t2, e2, n2, r2, i2) {
   }
 });
 function $r(t2, e2, n2) {
-  if (e2 = function(t3) {
+  if (e2 = ((t3) => {
     if (null == t3) return t3;
     const e3 = typeof t3;
     if ("bigint" === e3) return String(Ht(64, t3));
@@ -1399,8 +1492,8 @@ function $r(t2, e2, n2) {
       if ("string" === e3) return oe(t3);
       if ("number" === e3) return se(t3);
     }
-  }(e2), null != e2) {
-    if ("string" == typeof e2) Qn(e2);
+  })(e2), null != e2) {
+    if ("string" === typeof e2) Qn(e2);
     if (null != e2) switch (ar(t2, n2, 0), typeof e2) {
       case "number":
         t2 = t2.g, Ot(e2), nr(t2, Mt, Pt);
@@ -1426,44 +1519,44 @@ function Qr(t2, e2, n2, r2, i2) {
   lr(t2, n2, Or(e2, r2), i2);
 }
 function ti(t2, e2, n2) {
-  null == e2 || "string" == typeof e2 || e2 instanceof N || (C(e2) ? C(e2) && H(Z) : e2 = void 0), null != e2 && ur(t2, n2, Ln(e2).buffer);
+  null == e2 || "string" === typeof e2 || e2 instanceof N || (C(e2) ? C(e2) && H(Z) : e2 = void 0), null != e2 && ur(t2, n2, Ln(e2).buffer);
 }
 function ei(t2, e2, n2) {
-  return (5 === t2.h || 2 === t2.h) && (e2 = en(e2, 0 | e2[Q], n2, false), 2 == t2.h ? zn(t2, Cn, e2) : e2.push(Cn(t2.g)), true);
+  return (5 === t2.h || 2 === t2.h) && (e2 = en(e2, 0 | e2[Q], n2, false), 2 === t2.h ? zn(t2, Cn, e2) : e2.push(Cn(t2.g)), true);
 }
-var ni = Wr(function(t2, e2, n2) {
+const ni = Wr((t2, e2, n2) => {
   if (1 !== t2.h) return false;
-  var r2 = t2.g;
+  let r2 = t2.g;
   t2 = Pn(r2);
   const i2 = Pn(r2);
   r2 = 2 * (i2 >> 31) + 1;
   const s2 = i2 >>> 20 & 2047;
-  return t2 = 4294967296 * (1048575 & i2) + t2, Kr(e2, n2, 2047 == s2 ? t2 ? NaN : r2 * (1 / 0) : 0 == s2 ? 5e-324 * r2 * t2 : r2 * Math.pow(2, s2 - 1075) * (t2 + 4503599627370496)), true;
-}, function(t2, e2, n2) {
+  return t2 = 4294967296 * (1048575 & i2) + t2, Kr(e2, n2, 2047 === s2 ? t2 ? Number.NaN : r2 * (1 / 0) : 0 === s2 ? 5e-324 * r2 * t2 : r2 * 2 ** (s2 - 1075) * (t2 + 4503599627370496)), true;
+}, (t2, e2, n2) => {
   null != (e2 = qt(e2)) && (ar(t2, n2, 1), t2 = t2.g, (n2 = It || (It = new DataView(new ArrayBuffer(8)))).setFloat64(0, +e2, true), Mt = n2.getUint32(0, true), Pt = n2.getUint32(4, true), sr(t2, Mt), sr(t2, Pt));
-}, dr()), ri = Wr(function(t2, e2, n2) {
-  return 5 === t2.h && (Kr(e2, n2, Cn(t2.g)), true);
-}, function(t2, e2, n2) {
+}, dr());
+const ri = Wr((t2, e2, n2) => 5 === t2.h && (Kr(e2, n2, Cn(t2.g)), true), (t2, e2, n2) => {
   null != (e2 = qt(e2)) && (ar(t2, n2, 5), t2 = t2.g, Ut(e2), sr(t2, Mt));
-}, vr), ii = zr(ei, function(t2, e2, n2) {
+}, vr);
+const ii = zr(ei, (t2, e2, n2) => {
   if (null != (e2 = Hr(qt, e2))) for (let o2 = 0; o2 < e2.length; o2++) {
-    var r2 = t2, i2 = n2, s2 = e2[o2];
+    let r2 = t2;
+    const i2 = n2;
+    const s2 = e2[o2];
     null != s2 && (ar(r2, i2, 5), r2 = r2.g, Ut(s2), sr(r2, Mt));
   }
-}, vr), si = zr(ei, function(t2, e2, n2) {
+}, vr);
+const si = zr(ei, (t2, e2, n2) => {
   if (null != (e2 = Hr(qt, e2)) && e2.length) {
     ar(t2, n2, 2), rr(t2.g, 4 * e2.length);
     for (let r2 = 0; r2 < e2.length; r2++) n2 = t2.g, Ut(e2[r2]), sr(n2, Mt);
   }
-}, vr), oi = Wr(function(t2, e2, n2) {
-  return 0 === t2.h && (Kr(e2, n2, Rn(t2.g, Nt)), true);
-}, $r, _r), ai = Wr(function(t2, e2, n2) {
-  return 0 === t2.h && (Kr(e2, n2, 0 === (t2 = Rn(t2.g, Nt)) ? void 0 : t2), true);
-}, $r, _r), ci = Wr(function(t2, e2, n2) {
-  return 0 === t2.h && (Kr(e2, n2, Rn(t2.g, Dt)), true);
-}, function(t2, e2, n2) {
+}, vr);
+const oi = Wr((t2, e2, n2) => 0 === t2.h && (Kr(e2, n2, Rn(t2.g, Nt)), true), $r, _r);
+const ai = Wr((t2, e2, n2) => 0 === t2.h && (Kr(e2, n2, 0 === (t2 = Rn(t2.g, Nt)) ? void 0 : t2), true), $r, _r);
+const ci = Wr((t2, e2, n2) => 0 === t2.h && (Kr(e2, n2, Rn(t2.g, Dt)), true), (t2, e2, n2) => {
   if (null != (e2 = ue(e2))) {
-    if ("string" == typeof e2) qn(e2);
+    if ("string" === typeof e2) qn(e2);
     if (null != e2) switch (ar(t2, n2, 0), typeof e2) {
       case "number":
         t2 = t2.g, Ot(e2), nr(t2, Mt, Pt);
@@ -1475,58 +1568,46 @@ var ni = Wr(function(t2, e2, n2) {
         n2 = qn(e2), nr(t2.g, n2.h, n2.g);
     }
   }
-}, dr()), hi = Wr(function(t2, e2, n2) {
-  return 0 === t2.h && (Kr(e2, n2, In(t2.g)), true);
-}, qr, mr), ui = zr(function(t2, e2, n2) {
-  return (0 === t2.h || 2 === t2.h) && (e2 = en(e2, 0 | e2[Q], n2, false), 2 == t2.h ? zn(t2, In, e2) : e2.push(In(t2.g)), true);
-}, function(t2, e2, n2) {
+}, dr());
+const hi = Wr((t2, e2, n2) => 0 === t2.h && (Kr(e2, n2, In(t2.g)), true), qr, mr);
+const ui = zr((t2, e2, n2) => (0 === t2.h || 2 === t2.h) && (e2 = en(e2, 0 | e2[Q], n2, false), 2 === t2.h ? zn(t2, In, e2) : e2.push(In(t2.g)), true), (t2, e2, n2) => {
   if (null != (e2 = Hr(te, e2)) && e2.length) {
     n2 = cr(t2, n2);
     for (let n3 = 0; n3 < e2.length; n3++) ir(t2.g, e2[n3]);
     hr(t2, n2);
   }
-}, mr), li = Wr(function(t2, e2, n2) {
-  return 0 === t2.h && (Kr(e2, n2, 0 === (t2 = In(t2.g)) ? void 0 : t2), true);
-}, qr, mr), di = Wr(function(t2, e2, n2) {
-  return 0 === t2.h && (Kr(e2, n2, Fn(t2.g)), true);
-}, Jr, pr), fi = Wr(function(t2, e2, n2) {
-  return 0 === t2.h && (Kr(e2, n2, false === (t2 = Fn(t2.g)) ? void 0 : t2), true);
-}, Jr, pr), pi = zr(function(t2, e2, n2) {
-  return 2 === t2.h && (t2 = Hn(t2), en(e2, 0 | e2[Q], n2, false).push(t2), true);
-}, function(t2, e2, n2) {
+}, mr);
+const li = Wr((t2, e2, n2) => 0 === t2.h && (Kr(e2, n2, 0 === (t2 = In(t2.g)) ? void 0 : t2), true), qr, mr);
+const di = Wr((t2, e2, n2) => 0 === t2.h && (Kr(e2, n2, Fn(t2.g)), true), Jr, pr);
+const fi = Wr((t2, e2, n2) => 0 === t2.h && (Kr(e2, n2, false === (t2 = Fn(t2.g)) ? void 0 : t2), true), Jr, pr);
+const pi = zr((t2, e2, n2) => 2 === t2.h && (t2 = Hn(t2), en(e2, 0 | e2[Q], n2, false).push(t2), true), (t2, e2, n2) => {
   if (null != (e2 = Hr(fe, e2))) for (let o2 = 0; o2 < e2.length; o2++) {
-    var r2 = t2, i2 = n2, s2 = e2[o2];
+    const r2 = t2;
+    const i2 = n2;
+    const s2 = e2[o2];
     null != s2 && ur(r2, i2, c(s2));
   }
-}, gr), gi = Wr(function(t2, e2, n2) {
-  return 2 === t2.h && (Kr(e2, n2, "" === (t2 = Hn(t2)) ? void 0 : t2), true);
-}, Zr, gr), mi = Wr(function(t2, e2, n2) {
-  return 2 === t2.h && (Kr(e2, n2, Hn(t2)), true);
-}, Zr, gr), yi = function(t2, e2, n2 = fr) {
-  return new Tr(t2, e2, n2);
-}(function(t2, e2, n2, r2, i2) {
-  return 2 === t2.h && (r2 = De(void 0, r2, true), en(e2, 0 | e2[Q], n2, true).push(r2), Xn(t2, r2, i2), true);
-}, function(t2, e2, n2, r2, i2) {
+}, gr);
+const gi = Wr((t2, e2, n2) => 2 === t2.h && (Kr(e2, n2, "" === (t2 = Hn(t2)) ? void 0 : t2), true), Zr, gr);
+const mi = Wr((t2, e2, n2) => 2 === t2.h && (Kr(e2, n2, Hn(t2)), true), Zr, gr);
+const yi = ((t2, e2, n2 = fr) => new Tr(t2, e2, n2))((t2, e2, n2, r2, i2) => 2 === t2.h && (r2 = De(void 0, r2, true), en(e2, 0 | e2[Q], n2, true).push(r2), Xn(t2, r2, i2), true), (t2, e2, n2, r2, i2) => {
   if (Array.isArray(e2)) for (let s2 = 0; s2 < e2.length; s2++) Qr(t2, e2[s2], n2, r2, i2);
-}), _i = Ar(function(t2, e2, n2, r2, i2, s2) {
-  return 2 === t2.h && (sn(e2, 0 | e2[Q], s2, n2), Xn(t2, e2 = an(e2, r2, n2), i2), true);
-}, Qr), vi = Wr(function(t2, e2, n2) {
-  return 2 === t2.h && (Kr(e2, n2, Wn(t2)), true);
-}, ti, Er), Ei = zr(function(t2, e2, n2) {
-  return (0 === t2.h || 2 === t2.h) && (e2 = en(e2, 0 | e2[Q], n2, false), 2 == t2.h ? zn(t2, Mn, e2) : e2.push(Mn(t2.g)), true);
-}, function(t2, e2, n2) {
+});
+const _i = Ar((t2, e2, n2, r2, i2, s2) => 2 === t2.h && (sn(e2, 0 | e2[Q], s2, n2), Xn(t2, e2 = an(e2, r2, n2), i2), true), Qr);
+const vi = Wr((t2, e2, n2) => 2 === t2.h && (Kr(e2, n2, Wn(t2)), true), ti, Er);
+const Ei = zr((t2, e2, n2) => (0 === t2.h || 2 === t2.h) && (e2 = en(e2, 0 | e2[Q], n2, false), 2 === t2.h ? zn(t2, Mn, e2) : e2.push(Mn(t2.g)), true), (t2, e2, n2) => {
   if (null != (e2 = Hr(ee, e2))) for (let o2 = 0; o2 < e2.length; o2++) {
-    var r2 = t2, i2 = n2, s2 = e2[o2];
+    const r2 = t2;
+    const i2 = n2;
+    const s2 = e2[o2];
     null != s2 && (ar(r2, i2, 0), rr(r2.g, s2));
   }
-}, yr), wi = Wr(function(t2, e2, n2) {
-  return 0 === t2.h && (Kr(e2, n2, 0 === (t2 = Mn(t2.g)) ? void 0 : t2), true);
-}, function(t2, e2, n2) {
+}, yr);
+const wi = Wr((t2, e2, n2) => 0 === t2.h && (Kr(e2, n2, 0 === (t2 = Mn(t2.g)) ? void 0 : t2), true), (t2, e2, n2) => {
   null != (e2 = ee(e2)) && null != e2 && (ar(t2, n2, 0), rr(t2.g, e2));
-}, yr), Ti = Wr(function(t2, e2, n2) {
-  return 0 === t2.h && (Kr(e2, n2, In(t2.g)), true);
-}, function(t2, e2, n2) {
-  null != (e2 = te(e2)) && (e2 = parseInt(e2, 10), ar(t2, n2, 0), ir(t2.g, e2));
+}, yr);
+const Ti = Wr((t2, e2, n2) => 0 === t2.h && (Kr(e2, n2, In(t2.g)), true), (t2, e2, n2) => {
+  null != (e2 = te(e2)) && (e2 = Number.parseInt(e2, 10), ar(t2, n2, 0), ir(t2.g, e2));
 }, wr);
 class Ai {
   constructor(t2, e2) {
@@ -1564,9 +1645,10 @@ function ki(t2, e2) {
       }
     }(n2, r2);
     try {
-      const r3 = new t2(), s2 = r3.u;
+      const r3 = new t2();
+      const s2 = r3.u;
       Nr(e2)(s2, n2);
-      var i2 = r3;
+      const i2 = r3;
     } finally {
       n2.g.clear(), n2.m = -1, n2.h = -1, Kn.length < 100 && Kn.push(n2);
     }
@@ -1592,7 +1674,9 @@ function Si(t2) {
       }
     }();
     Xr(this.u, e2, Pr(xr, Gr, jr, t2)), or(e2, e2.g.end());
-    const n2 = new Uint8Array(e2.h), r2 = e2.l, i2 = r2.length;
+    const n2 = new Uint8Array(e2.h);
+    const r2 = e2.l;
+    const i2 = r2.length;
     let s2 = 0;
     for (let t3 = 0; t3 < i2; t3++) {
       const e3 = r2[t3];
@@ -1601,13 +1685,9 @@ function Si(t2) {
     return e2.l = [n2], n2;
   };
 }
-var xi = class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
-}, Li = [0, gi, Wr(function(t2, e2, n2) {
-  return 2 === t2.h && (Kr(e2, n2, (t2 = Wn(t2)) === U() ? void 0 : t2), true);
-}, function(t2, e2, n2) {
+const xi = class extends $n {
+};
+const Li = [0, gi, Wr((t2, e2, n2) => 2 === t2.h && (Kr(e2, n2, (t2 = Wn(t2)) === U() ? void 0 : t2), true), (t2, e2, n2) => {
   if (null != e2) {
     if (e2 instanceof $n) {
       const r2 = e2.Oa;
@@ -1617,9 +1697,10 @@ var xi = class extends $n {
   }
   ti(t2, e2, n2);
 }, Er)];
-let Ri, Fi = globalThis.trustedTypes;
+let Ri;
+const Fi = globalThis.trustedTypes;
 function Ii(t2) {
-  void 0 === Ri && (Ri = function() {
+  void 0 === Ri && (Ri = (() => {
     let t3 = null;
     if (!Fi) return t3;
     try {
@@ -1628,14 +1709,14 @@ function Ii(t2) {
     } catch (t4) {
     }
     return t3;
-  }());
-  var e2 = Ri;
+  })());
+  const e2 = Ri;
   return new class {
     constructor(t3) {
       this.g = t3;
     }
     toString() {
-      return this.g + "";
+      return `${this.g}`;
     }
   }(e2 ? e2.createScriptURL(t2) : t2);
 }
@@ -1645,29 +1726,29 @@ function Mi(t2, ...e2) {
   for (let r2 = 0; r2 < e2.length; r2++) n2 += encodeURIComponent(e2[r2]) + t2[r2 + 1];
   return Ii(n2);
 }
-var Pi = [0, hi, Ti, di, -1, ui, Ti, -1], Ci = class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
-}, Oi = [0, di, mi, di, Ti, -1, zr(function(t2, e2, n2) {
-  return (0 === t2.h || 2 === t2.h) && (e2 = en(e2, 0 | e2[Q], n2, false), 2 == t2.h ? zn(t2, On, e2) : e2.push(In(t2.g)), true);
-}, function(t2, e2, n2) {
+const Pi = [0, hi, Ti, di, -1, ui, Ti, -1];
+const Ci = class extends $n {
+};
+const Oi = [0, di, mi, di, Ti, -1, zr((t2, e2, n2) => (0 === t2.h || 2 === t2.h) && (e2 = en(e2, 0 | e2[Q], n2, false), 2 === t2.h ? zn(t2, On, e2) : e2.push(In(t2.g)), true), (t2, e2, n2) => {
   if (null != (e2 = Hr(te, e2)) && e2.length) {
     n2 = cr(t2, n2);
     for (let n3 = 0; n3 < e2.length; n3++) ir(t2.g, e2[n3]);
     hr(t2, n2);
   }
-}, wr), mi, -1, [0, di, -1], Ti, di, -1], Ui = [0, mi, -2], Di = class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
-}, Ni = [0], Bi = [0, hi, di, 1, di, -3], Gi = class extends $n {
+}, wr), mi, -1, [0, di, -1], Ti, di, -1];
+const Ui = [0, mi, -2];
+const Di = class extends $n {
+};
+const Ni = [0];
+const Bi = [0, hi, di, 1, di, -3];
+const Gi = class extends $n {
   constructor(t2) {
     super(t2, 2);
   }
-}, ji = {};
+};
+const ji = {};
 ji[336783863] = [0, mi, di, -1, hi, [0, [1, 2, 3, 4, 5, 6, 7, 8, 9], _i, Ni, _i, Oi, _i, Ui, _i, Bi, _i, Pi, _i, [0, mi, -2], _i, [0, mi, Ti], _i, [0, Ti, mi, -1], _i, [0, Ti, -1]], [0, mi], di, [0, [1, 3], [2, 4], _i, [0, ui], -1, _i, [0, pi], -1, yi, [0, mi, -1]], mi];
-var Vi = [0, ai, -1, fi, -3, ai, ui, gi, li, ai, -1, fi, li, fi, -2, gi];
+const Vi = [0, ai, -1, fi, -3, ai, ui, gi, li, ai, -1, fi, li, fi, -2, gi];
 function Xi(t2, e2) {
   tn(t2, 2, de(e2), "");
 }
@@ -1677,14 +1758,17 @@ function Hi(t2, e2) {
 function Wi(t2, e2) {
   mn(t2, 4, e2);
 }
-var zi = class extends $n {
+const zi = class extends $n {
   constructor(t2) {
     super(t2, 500);
   }
   o(t2) {
     return dn(this, 0, 7, t2);
   }
-}, Ki = [-1, {}], Yi = [0, mi, 1, Ki], $i = [0, mi, pi, Ki];
+};
+const Ki = [-1, {}];
+const Yi = [0, mi, 1, Ki];
+const $i = [0, mi, pi, Ki];
 function qi(t2, e2) {
   yn(t2, 1, zi, e2);
 }
@@ -1694,247 +1778,180 @@ function Ji(t2, e2) {
 function Zi(t2, e2) {
   mn(t2, 15, e2);
 }
-var Qi = class extends $n {
+const Qi = class extends $n {
   constructor(t2) {
     super(t2, 500);
   }
   o(t2) {
     return dn(this, 0, 1001, t2);
   }
-}, ts = [-500, yi, [-500, gi, -1, pi, -3, [-2, ji, di], yi, Li, li, -1, Yi, $i, yi, [0, gi, fi], gi, Vi, li, pi, 987, pi], 4, yi, [-500, mi, -1, [-1, {}], 998, mi], yi, [-500, mi, pi, -1, [-2, {}, di], 997, pi, -1], li, yi, [-500, mi, pi, Ki, 998, pi], pi, li, Yi, $i, yi, [0, gi, -1, Ki], pi, -2, Vi, gi, -1, fi, [0, fi, wi], 978, Ki, yi, Li];
+};
+const ts = [-500, yi, [-500, gi, -1, pi, -3, [-2, ji, di], yi, Li, li, -1, Yi, $i, yi, [0, gi, fi], gi, Vi, li, pi, 987, pi], 4, yi, [-500, mi, -1, [-1, {}], 998, mi], yi, [-500, mi, pi, -1, [-2, {}, di], 997, pi, -1], li, yi, [-500, mi, pi, Ki, 998, pi], pi, li, Yi, $i, yi, [0, gi, -1, Ki], pi, -2, Vi, gi, -1, fi, [0, fi, wi], 978, Ki, yi, Li];
 Qi.prototype.g = Si(ts);
-var es = ki(Qi, ts), ns = class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
-}, rs = class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
+const es = ki(Qi, ts);
+const ns = class extends $n {
+};
+const rs = class extends $n {
   g() {
     return ln(this, ns, 1);
   }
-}, is = [0, yi, [0, hi, ri, mi, -1]], ss = ki(rs, is), os = class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
-}, as = class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
-}, cs = class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
+};
+const is = [0, yi, [0, hi, ri, mi, -1]];
+const ss = ki(rs, is);
+const os = class extends $n {
+};
+const as = class extends $n {
+};
+const cs = class extends $n {
   h() {
     return hn(this, os, 2);
   }
   g() {
     return ln(this, as, 5);
   }
-}, hs = ki(class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
-}, [0, pi, ui, si, [0, Ti, [0, hi, -3], [0, ri, -3], [0, hi, -1, [0, yi, [0, hi, -2]]], yi, [0, ri, -1, mi, ri]], mi, -1, oi, yi, [0, hi, ri], pi, oi]), us = class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
-}, ls = ki(class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
-}, [0, yi, [0, ri, -4]]), ds = class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
-}, fs = ki(class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
-}, [0, yi, [0, ri, -4]]), ps = class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
-}, gs = [0, hi, -1, si, Ti], ms = class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
+};
+const hs = ki(class extends $n {
+}, [0, pi, ui, si, [0, Ti, [0, hi, -3], [0, ri, -3], [0, hi, -1, [0, yi, [0, hi, -2]]], yi, [0, ri, -1, mi, ri]], mi, -1, oi, yi, [0, hi, ri], pi, oi]);
+const us = class extends $n {
+};
+const ls = ki(class extends $n {
+}, [0, yi, [0, ri, -4]]);
+const ds = class extends $n {
+};
+const fs = ki(class extends $n {
+}, [0, yi, [0, ri, -4]]);
+const ps = class extends $n {
+};
+const gs = [0, hi, -1, si, Ti];
+const ms = class extends $n {
 };
 ms.prototype.g = Si([0, ri, -4, oi]);
-var ys = class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
-}, _s = ki(class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
-}, [0, yi, [0, 1, hi, mi, is], oi]), vs = class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
-}, Es = class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
+const ys = class extends $n {
+};
+const _s = ki(class extends $n {
+}, [0, yi, [0, 1, hi, mi, is], oi]);
+const vs = class extends $n {
+};
+const Es = class extends $n {
   ma() {
     const t2 = Ke(this);
     return null == t2 ? U() : t2;
   }
-}, ws = class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
-}, Ts = [1, 2], As = ki(class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
-}, [0, yi, [0, Ts, _i, [0, si], _i, [0, vi], hi, mi], oi]), bs = class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
-}, ks = [0, mi, hi, ri, pi, -1], Ss = class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
-}, xs = [0, di, -1], Ls = class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
-}, Rs = [1, 2, 3, 4, 5], Fs = class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
+};
+const ws = class extends $n {
+};
+const Ts = [1, 2];
+const As = ki(class extends $n {
+}, [0, yi, [0, Ts, _i, [0, si], _i, [0, vi], hi, mi], oi]);
+const bs = class extends $n {
+};
+const ks = [0, mi, hi, ri, pi, -1];
+const Ss = class extends $n {
+};
+const xs = [0, di, -1];
+const Ls = class extends $n {
+};
+const Rs = [1, 2, 3, 4, 5];
+const Fs = class extends $n {
   g() {
     return null != Ke(this);
   }
   h() {
     return null != vn(this, 2);
   }
-}, Is = class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
+};
+const Is = class extends $n {
   g() {
     return Jt(Ve(this, 2)) ?? false;
   }
-}, Ms = [0, vi, mi, [0, hi, oi, -1], [0, ci, oi]], Ps = [0, Ms, di, [0, Rs, _i, Bi, _i, Oi, _i, Pi, _i, Ni, _i, Ui], Ti], Cs = class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
-}, Os = [0, Ps, ri, -1, hi], Us = bi(502141897, Cs);
+};
+const Ms = [0, vi, mi, [0, hi, oi, -1], [0, ci, oi]];
+const Ps = [0, Ms, di, [0, Rs, _i, Bi, _i, Oi, _i, Pi, _i, Ni, _i, Ui], Ti];
+const Cs = class extends $n {
+};
+const Os = [0, Ps, ri, -1, hi];
+const Us = bi(502141897, Cs);
 ji[502141897] = Os;
-var Ds = ki(class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
-}, [0, [0, Ti, -1, ii, Ei], gs]), Ns = class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
-}, Bs = class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
-}, Gs = [0, Ps, ri, [0, Ps], di], js = [0, Ps, Os, Gs, ri, [0, [0, Ms]]], Vs = bi(508968150, Bs);
+const Ds = ki(class extends $n {
+}, [0, [0, Ti, -1, ii, Ei], gs]);
+const Ns = class extends $n {
+};
+const Bs = class extends $n {
+};
+const Gs = [0, Ps, ri, [0, Ps], di];
+const js = [0, Ps, Os, Gs, ri, [0, [0, Ms]]];
+const Vs = bi(508968150, Bs);
 ji[508968150] = js, ji[508968149] = Gs;
-var Xs = class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
-}, Hs = bi(513916220, Xs);
+const Xs = class extends $n {
+};
+const Hs = bi(513916220, Xs);
 ji[513916220] = [0, Ps, js, hi];
-var Ws = class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
+const Ws = class extends $n {
   h() {
     return hn(this, bs, 2);
   }
   g() {
     He(this, 2);
   }
-}, zs = [0, Ps, ks];
+};
+const zs = [0, Ps, ks];
 ji[478825465] = zs;
-var Ks = class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
-}, Ys = class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
-}, $s = class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
-}, qs = class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
-}, Js = class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
-}, Zs = [0, Ps, [0, Ps], zs, -1], Qs = [0, Ps, ri, hi], to = [0, Ps, ri], eo = [0, Ps, Qs, to, ri], no = bi(479097054, Js);
+const Ks = class extends $n {
+};
+const Ys = class extends $n {
+};
+const $s = class extends $n {
+};
+const qs = class extends $n {
+};
+const Js = class extends $n {
+};
+const Zs = [0, Ps, [0, Ps], zs, -1];
+const Qs = [0, Ps, ri, hi];
+const to = [0, Ps, ri];
+const eo = [0, Ps, Qs, to, ri];
+const no = bi(479097054, Js);
 ji[479097054] = [0, Ps, eo, Zs], ji[463370452] = Zs, ji[464864288] = Qs;
-var ro = bi(462713202, qs);
+const ro = bi(462713202, qs);
 ji[462713202] = eo, ji[474472470] = to;
-var io = class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
-}, so = class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
-}, oo = class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
-}, ao = class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
-}, co = [0, Ps, ri, -1, hi], ho = [0, Ps, ri, di];
+const io = class extends $n {
+};
+const so = class extends $n {
+};
+const oo = class extends $n {
+};
+const ao = class extends $n {
+};
+const co = [0, Ps, ri, -1, hi];
+const ho = [0, Ps, ri, di];
 ao.prototype.g = Si([0, Ps, to, [0, Ps], Os, Gs, co, ho]);
-var uo = class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
-}, lo = bi(456383383, uo);
+const uo = class extends $n {
+};
+const lo = bi(456383383, uo);
 ji[456383383] = [0, Ps, ks];
-var fo = class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
-}, po = bi(476348187, fo);
+const fo = class extends $n {
+};
+const po = bi(476348187, fo);
 ji[476348187] = [0, Ps, xs];
-var go = class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
-}, mo = class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
-}, yo = [0, Ti, -1], _o = bi(458105876, class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
+const go = class extends $n {
+};
+const mo = class extends $n {
+};
+const yo = [0, Ti, -1];
+const _o = bi(458105876, class extends $n {
   g() {
-    var t2 = this.u;
-    const e2 = 0 | t2[Q], n2 = 2 & e2;
-    return t2 = function(t3, e3, n3) {
-      var r2 = mo;
+    let t2 = this.u;
+    const e2 = 0 | t2[Q];
+    const n2 = 2 & e2;
+    return t2 = ((t3, e3, n3) => {
+      let r2 = mo;
       const i2 = 2 & e3;
       let s2 = false;
       if (null == n3) {
         if (i2) return Ie();
         n3 = [];
       } else if (n3.constructor === Ae) {
-        if (0 == (2 & n3.M) || i2) return n3;
+        if (0 === (2 & n3.M) || i2) return n3;
         n3 = n3.da();
       } else Array.isArray(n3) ? s2 = !!(2 & (0 | n3[Q])) : n3 = [];
       if (i2) {
@@ -1942,27 +1959,21 @@ var go = class extends $n {
         s2 || (s2 = true, it(n3));
       } else s2 && (s2 = false, n3 = Qe(n3));
       return s2 || (64 & (0 | n3[Q]) ? n3[Q] &= -33 : 32 & e3 && nt(n3, 32)), We(t3, e3, 2, r2 = new Ae(n3, r2, ge, void 0)), r2;
-    }(t2, e2, Xe(t2, e2, 2)), !n2 && mo && (t2.pa = true), t2;
+    })(t2, e2, Xe(t2, e2, 2)), !n2 && mo && (t2.pa = true), t2;
   }
 });
 ji[458105876] = [0, yo, Yr, [true, oi, [0, mi, -1, pi]]];
-var vo = class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
-}, Eo = bi(458105758, vo);
+const vo = class extends $n {
+};
+const Eo = bi(458105758, vo);
 ji[458105758] = [0, Ps, mi, yo];
-var wo = class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
-}, To = bi(443442058, wo);
+const wo = class extends $n {
+};
+const To = bi(443442058, wo);
 ji[443442058] = [0, Ps, mi, hi, ri, pi, -1, di, ri], ji[514774813] = co;
-var Ao = class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
-}, bo = bi(516587230, Ao);
+const Ao = class extends $n {
+};
+const bo = bi(516587230, Ao);
 function ko(t2, e2) {
   return e2 = e2 ? e2.clone() : new bs(), void 0 !== t2.displayNamesLocale ? He(e2, 1, de(t2.displayNamesLocale)) : void 0 === t2.displayNamesLocale && He(e2, 1), void 0 !== t2.maxResults ? Tn(e2, 2, t2.maxResults) : "maxResults" in t2 && He(e2, 2), void 0 !== t2.scoreThreshold ? An(e2, 3, t2.scoreThreshold) : "scoreThreshold" in t2 && He(e2, 3), void 0 !== t2.categoryAllowlist ? bn(e2, 4, t2.categoryAllowlist) : "categoryAllowlist" in t2 && He(e2, 4), void 0 !== t2.categoryDenylist ? bn(e2, 5, t2.categoryDenylist) : "categoryDenylist" in t2 && He(e2, 5), e2;
 }
@@ -1970,8 +1981,12 @@ function So(t2, e2 = -1, n2 = "") {
   return { categories: t2.map((t3) => ({ index: _n(t3, 1) ?? 0 ?? -1, score: En(t3, 2) ?? 0, categoryName: vn(t3, 3) ?? "" ?? "", displayName: vn(t3, 4) ?? "" ?? "" })), headIndex: e2, headName: n2 };
 }
 function xo(t2) {
-  var _a2, _b;
-  var e2 = $e(t2, 3, qt, Ye()), n2 = $e(t2, 2, te, Ye()), r2 = $e(t2, 1, fe, Ye()), i2 = $e(t2, 9, fe, Ye());
+  let _a2;
+  let _b;
+  let e2 = $e(t2, 3, qt, Ye());
+  const n2 = $e(t2, 2, te, Ye());
+  const r2 = $e(t2, 1, fe, Ye());
+  const i2 = $e(t2, 9, fe, Ye());
   const s2 = { categories: [], keypoints: [] };
   for (let t3 = 0; t3 < e2.length; t3++) s2.categories.push({ score: e2[t3], index: n2[t3] ?? -1, categoryName: r2[t3] ?? "", displayName: i2[t3] ?? "" });
   if ((e2 = (_a2 = hn(t2, cs, 4)) == null ? void 0 : _a2.h()) && (s2.boundingBox = { originX: _n(e2, 1) ?? 0, originY: _n(e2, 2) ?? 0, width: _n(e2, 3) ?? 0, height: _n(e2, 4) ?? 0, angle: 0 }), (_b = hn(t2, cs, 4)) == null ? void 0 : _b.g().length) for (const e3 of hn(t2, cs, 4).g()) s2.keypoints.push({ x: ze(e3, 1) ?? 0, y: ze(e3, 2) ?? 0, score: ze(e3, 4) ?? 0, label: vn(e3, 3) ?? "" });
@@ -1992,7 +2007,9 @@ function Fo(t2) {
 }
 function Io(t2, e2) {
   if (t2.length !== e2.length) throw Error(`Cannot compute cosine similarity between embeddings of different sizes (${t2.length} vs. ${e2.length}).`);
-  let n2 = 0, r2 = 0, i2 = 0;
+  let n2 = 0;
+  let r2 = 0;
+  let i2 = 0;
   for (let s2 = 0; s2 < t2.length; s2++) n2 += t2[s2] * e2[s2], r2 += t2[s2] * t2[s2], i2 += e2[s2] * e2[s2];
   if (r2 <= 0 || i2 <= 0) throw Error("Cannot compute cosine similarity on embedding with 0 norm.");
   return n2 / Math.sqrt(r2 * i2);
@@ -2012,16 +2029,14 @@ async function Oo(t2, e2 = Mi``) {
   const n2 = await Co() ? "wasm_internal" : "wasm_nosimd_internal";
   return { wasmLoaderPath: `${e2}/${t2}_${n2}.js`, wasmBinaryPath: `${e2}/${t2}_${n2}.wasm` };
 }
-var Uo = class {
+const Uo = class {
 };
 function Do() {
-  var t2 = navigator;
-  return "undefined" != typeof OffscreenCanvas && (!function(t3 = navigator) {
-    return (t3 = t3.userAgent).includes("Safari") && !t3.includes("Chrome");
-  }(t2) || !!((t2 = t2.userAgent.match(/Version\/([\d]+).*Safari/)) && t2.length >= 1 && Number(t2[1]) >= 17));
+  let t2 = navigator;
+  return "undefined" !== typeof OffscreenCanvas && (!((t3 = navigator) => (t3 = t3.userAgent).includes("Safari") && !t3.includes("Chrome"))(t2) || !!((t2 = t2.userAgent.match(/Version\/([\d]+).*Safari/)) && t2.length >= 1 && Number(t2[1]) >= 17));
 }
 async function No(t2) {
-  if ("function" != typeof importScripts) {
+  if ("function" !== typeof importScripts) {
     const e2 = document.createElement("script");
     return e2.src = t2.toString(), e2.crossOrigin = "anonymous", new Promise((t3, n2) => {
       e2.addEventListener("load", () => {
@@ -2063,19 +2078,7 @@ function Ho(t2, e2, n2) {
     e3 ? (n2(r2, i2), r2 = []) : r2.push(t3);
   };
 }
-Uo.forVisionTasks = function(t2) {
-  return Oo("vision", t2);
-}, Uo.forTextTasks = function(t2) {
-  return Oo("text", t2);
-}, Uo.forGenAiExperimentalTasks = function(t2) {
-  return Oo("genai_experimental", t2);
-}, Uo.forGenAiTasks = function(t2) {
-  return Oo("genai", t2);
-}, Uo.forAudioTasks = function(t2) {
-  return Oo("audio", t2);
-}, Uo.isSimdSupported = function() {
-  return Co();
-};
+Uo.forVisionTasks = (t2) => Oo("vision", t2), Uo.forTextTasks = (t2) => Oo("text", t2), Uo.forGenAiExperimentalTasks = (t2) => Oo("genai_experimental", t2), Uo.forGenAiTasks = (t2) => Oo("genai", t2), Uo.forAudioTasks = (t2) => Oo("audio", t2), Uo.isSimdSupported = () => Co();
 async function Wo(t2, e2, n2, r2) {
   return t2 = await (async (t3, e3, n3, r3, i2) => {
     if (e3 && await No(e3), !self.ModuleFactory) throw Error("ModuleFactory not set.");
@@ -2085,13 +2088,13 @@ async function Wo(t2, e2, n2, r2) {
 }
 function zo(t2, e2) {
   const n2 = hn(t2.baseOptions, Fs, 1) || new Fs();
-  "string" == typeof e2 ? (He(n2, 2, de(e2)), He(n2, 1)) : e2 instanceof Uint8Array && (He(n2, 1, dt(e2, false)), He(n2, 2)), dn(t2.baseOptions, 0, 1, n2);
+  "string" === typeof e2 ? (He(n2, 2, de(e2)), He(n2, 1)) : e2 instanceof Uint8Array && (He(n2, 1, dt(e2, false)), He(n2, 2)), dn(t2.baseOptions, 0, 1, n2);
 }
 function Ko(t2) {
   try {
     const e2 = t2.G.length;
     if (1 === e2) throw Error(t2.G[0].message);
-    if (e2 > 1) throw Error("Encountered multiple errors: " + t2.G.map((t3) => t3.message).join(", "));
+    if (e2 > 1) throw Error(`Encountered multiple errors: ${t2.G.map((t3) => t3.message).join(", ")}`);
   } finally {
     t2.G = [];
   }
@@ -2103,29 +2106,35 @@ function $o(t2, e2) {
   t2.A = new zi(), Xi(t2.A, "PassThroughCalculator"), Hi(t2.A, "free_memory"), Wi(t2.A, "free_memory_unused_out"), Ji(e2, "free_memory"), qi(e2, t2.A);
 }
 function qo(t2, e2) {
-  Hi(t2.A, e2), Wi(t2.A, e2 + "_unused_out");
+  Hi(t2.A, e2), Wi(t2.A, `${e2}_unused_out`);
 }
 function Jo(t2) {
   t2.g.addBoolToStream(true, "free_memory", t2.B);
 }
-var Zo = class {
+const Zo = class {
   constructor(t2) {
     this.g = t2, this.G = [], this.B = 0, this.g.setAutoRenderToScreen(false);
   }
   l(t2, e2 = true) {
-    var _a2, _b, _c2, _d, _e2, _f;
+    let _a2;
+    let _b;
+    let _c2;
+    let _d;
+    let _e2;
+    let _f;
     if (e2) {
       const e3 = t2.baseOptions || {};
       if (((_a2 = t2.baseOptions) == null ? void 0 : _a2.modelAssetBuffer) && ((_b = t2.baseOptions) == null ? void 0 : _b.modelAssetPath)) throw Error("Cannot set both baseOptions.modelAssetPath and baseOptions.modelAssetBuffer");
       if (!(((_c2 = hn(this.baseOptions, Fs, 1)) == null ? void 0 : _c2.g()) || ((_d = hn(this.baseOptions, Fs, 1)) == null ? void 0 : _d.h()) || ((_e2 = t2.baseOptions) == null ? void 0 : _e2.modelAssetBuffer) || ((_f = t2.baseOptions) == null ? void 0 : _f.modelAssetPath))) throw Error("Either baseOptions.modelAssetPath or baseOptions.modelAssetBuffer must be set");
-      if (function(t3, e4) {
+      if (((t3, e4) => {
         let n2 = hn(t3.baseOptions, Ls, 3);
         if (!n2) {
-          var r2 = n2 = new Ls(), i2 = new Di();
+          const r2 = n2 = new Ls();
+          const i2 = new Di();
           fn(r2, 4, Rs, i2);
         }
         "delegate" in e4 && ("GPU" === e4.delegate ? (e4 = n2, r2 = new Ci(), fn(e4, 2, Rs, r2)) : (e4 = n2, r2 = new Di(), fn(e4, 4, Rs, r2))), dn(t3.baseOptions, 0, 3, n2);
-      }(this, e3), e3.modelAssetPath) return fetch(e3.modelAssetPath.toString()).then((t3) => {
+      })(this, e3), e3.modelAssetPath) return fetch(e3.modelAssetPath.toString()).then((t3) => {
         if (t3.ok) return t3.arrayBuffer();
         throw Error(`Failed to fetch model: ${e3.modelAssetPath} (${t3.status})`);
       }).then((t3) => {
@@ -2136,9 +2145,9 @@ var Zo = class {
         this.g.i.FS_createDataFile("/", "model.dat", new Uint8Array(t3), true, false, false), zo(this, "/model.dat"), this.m(), this.J();
       });
       if (e3.modelAssetBuffer instanceof Uint8Array) zo(this, e3.modelAssetBuffer);
-      else if (e3.modelAssetBuffer) return async function(t3) {
+      else if (e3.modelAssetBuffer) return (async (t3) => {
         const e4 = [];
-        for (var n2 = 0; ; ) {
+        for (let n2 = 0; ; ) {
           const { done: r2, value: i2 } = await t3.read();
           if (r2) break;
           e4.push(i2), n2 += i2.length;
@@ -2148,7 +2157,7 @@ var Zo = class {
         t3 = new Uint8Array(n2), n2 = 0;
         for (const r2 of e4) t3.set(r2, n2), n2 += r2.length;
         return t3;
-      }(e3.modelAssetBuffer).then((t3) => {
+      })(e3.modelAssetBuffer).then((t3) => {
         zo(this, t3), this.m(), this.J();
       });
     }
@@ -2197,7 +2206,8 @@ function ea(t2, e2, n2) {
   return r2.attachShader(t2.h, n2), n2;
 }
 function na(t2, e2) {
-  const n2 = t2.g, r2 = Qo(n2.createVertexArray(), "Failed to create vertex array");
+  const n2 = t2.g;
+  const r2 = Qo(n2.createVertexArray(), "Failed to create vertex array");
   n2.bindVertexArray(r2);
   const i2 = Qo(n2.createBuffer(), "Failed to create buffer");
   n2.bindBuffer(n2.ARRAY_BUFFER, i2), n2.enableVertexAttribArray(t2.P), n2.vertexAttribPointer(t2.P, 2, n2.FLOAT, false, 0, 0), n2.bufferData(n2.ARRAY_BUFFER, new Float32Array([-1, -1, -1, 1, 1, 1, 1, -1]), n2.STATIC_DRAW);
@@ -2219,10 +2229,10 @@ function oa(t2, e2, n2) {
   ra(t2, e2), t2.A || (t2.A = Qo(e2.createFramebuffer(), "Failed to create framebuffe.")), e2.bindFramebuffer(e2.FRAMEBUFFER, t2.A), e2.framebufferTexture2D(e2.FRAMEBUFFER, e2.COLOR_ATTACHMENT0, e2.TEXTURE_2D, n2, 0);
 }
 function aa(t2) {
-  var _a2;
+  let _a2;
   (_a2 = t2.g) == null ? void 0 : _a2.bindFramebuffer(t2.g.FRAMEBUFFER, null);
 }
-var ca = class {
+const ca = class {
   G() {
     return "\n  precision mediump float;\n  varying vec2 vTex;\n  uniform sampler2D inputTexture;\n  void main() {\n    gl_FragColor = texture2D(inputTexture, vTex);\n  }\n ";
   }
@@ -2240,7 +2250,7 @@ var ca = class {
       const t2 = this.g;
       t2.deleteProgram(this.h), t2.deleteShader(this.Z), t2.deleteShader(this.Y);
     }
-    this.A && this.g.deleteFramebuffer(this.A), this.v && this.v.close(), this.s && this.s.close();
+    this.A && this.g.deleteFramebuffer(this.A), this.v?.close(), this.s?.close();
   }
 };
 function la(t2, e2) {
@@ -2250,19 +2260,19 @@ function la(t2, e2) {
     case 1:
       return t2.g.find((t3) => t3 instanceof Float32Array);
     case 2:
-      return t2.g.find((t3) => "undefined" != typeof WebGLTexture && t3 instanceof WebGLTexture);
+      return t2.g.find((t3) => "undefined" !== typeof WebGLTexture && t3 instanceof WebGLTexture);
     default:
       throw Error(`Type is not supported: ${e2}`);
   }
 }
 function da(t2) {
-  var e2 = la(t2, 1);
+  let e2 = la(t2, 1);
   if (!e2) {
     if (e2 = la(t2, 0)) e2 = new Float32Array(e2).map((t3) => t3 / 255);
     else {
       e2 = new Float32Array(t2.width * t2.height);
       const r2 = pa(t2);
-      var n2 = ma(t2);
+      let n2 = ma(t2);
       if (oa(n2, r2, fa(t2)), "iPad Simulator;iPhone Simulator;iPod Simulator;iPad;iPhone;iPod".split(";").includes(navigator.platform) || navigator.userAgent.includes("Mac") && "document" in self && "ontouchend" in self.document) {
         n2 = new Float32Array(t2.width * t2.height * 4), r2.readPixels(0, 0, t2.width, t2.height, r2.RGBA, r2.FLOAT, n2);
         for (let t3 = 0, r3 = 0; t3 < e2.length; ++t3, r3 += 4) e2[t3] = n2[r3];
@@ -2277,7 +2287,8 @@ function fa(t2) {
   if (!e2) {
     const n2 = pa(t2);
     e2 = ya(t2);
-    const r2 = da(t2), i2 = ga(t2);
+    const r2 = da(t2);
+    const i2 = ga(t2);
     n2.texImage2D(n2.TEXTURE_2D, 0, i2, t2.width, t2.height, 0, n2.RED, n2.FLOAT, r2), _a(t2);
   }
   return e2;
@@ -2306,7 +2317,8 @@ function ya(t2) {
 function _a(t2) {
   t2.h.bindTexture(t2.h.TEXTURE_2D, null);
 }
-var va, Ea = class {
+let va;
+const Ea = class {
   constructor(t2, e2, n2, r2, i2, s2, o2) {
     this.g = t2, this.m = e2, this.j = n2, this.canvas = r2, this.l = i2, this.width = s2, this.height = o2, this.j && (0 === --wa && console.error("You seem to be creating MPMask instances without invoking .close(). This leaks resources."));
   }
@@ -2321,7 +2333,8 @@ var va, Ea = class {
   }
   ia() {
     return (e2 = la(t2 = this, 0)) || (e2 = da(t2), e2 = new Uint8Array(e2.map((t3) => 255 * t3)), t2.g.push(e2)), e2;
-    var t2, e2;
+    let t2;
+    let e2;
   }
   ha() {
     return da(this);
@@ -2338,7 +2351,8 @@ var va, Ea = class {
       else {
         if (!(e2 instanceof WebGLTexture)) throw Error(`Type is not supported: ${e2}`);
         {
-          const t3 = pa(this), e3 = ma(this);
+          const t3 = pa(this);
+          const e3 = ma(this);
           t3.activeTexture(t3.TEXTURE1), n2 = sa(e3, t3, this.m ? t3.LINEAR : t3.NEAREST), t3.bindTexture(t3.TEXTURE_2D, n2);
           const r2 = ga(this);
           t3.texImage2D(t3.TEXTURE_2D, 0, r2, this.width, this.height, 0, t3.RED, t3.FLOAT, null), t3.bindTexture(t3.TEXTURE_2D, null), oa(e3, t3, n2), ia(e3, t3, false, () => {
@@ -2355,24 +2369,25 @@ var va, Ea = class {
   }
 };
 Ea.prototype.close = Ea.prototype.close, Ea.prototype.clone = Ea.prototype.clone, Ea.prototype.getAsWebGLTexture = Ea.prototype.N, Ea.prototype.getAsFloat32Array = Ea.prototype.ha, Ea.prototype.getAsUint8Array = Ea.prototype.ia, Ea.prototype.hasWebGLTexture = Ea.prototype.R, Ea.prototype.hasFloat32Array = Ea.prototype.ja, Ea.prototype.hasUint8Array = Ea.prototype.Da;
-var wa = 250;
+let wa = 250;
 function Ma(t2, e2) {
   switch (e2) {
     case 0:
       return t2.g.find((t3) => t3 instanceof ImageData);
     case 1:
-      return t2.g.find((t3) => "undefined" != typeof ImageBitmap && t3 instanceof ImageBitmap);
+      return t2.g.find((t3) => "undefined" !== typeof ImageBitmap && t3 instanceof ImageBitmap);
     case 2:
-      return t2.g.find((t3) => "undefined" != typeof WebGLTexture && t3 instanceof WebGLTexture);
+      return t2.g.find((t3) => "undefined" !== typeof WebGLTexture && t3 instanceof WebGLTexture);
     default:
       throw Error(`Type is not supported: ${e2}`);
   }
 }
 function Pa(t2) {
-  var e2 = Ma(t2, 0);
+  let e2 = Ma(t2, 0);
   if (!e2) {
     e2 = Oa(t2);
-    const n2 = Ua(t2), r2 = new Uint8Array(t2.width * t2.height * 4);
+    const n2 = Ua(t2);
+    const r2 = new Uint8Array(t2.width * t2.height * 4);
     oa(n2, e2, Ca(t2)), e2.readPixels(0, 0, t2.width, t2.height, e2.RGBA, e2.UNSIGNED_BYTE, r2), aa(n2), e2 = new ImageData(new Uint8ClampedArray(r2.buffer), t2.width, t2.height), t2.g.push(e2);
   }
   return e2;
@@ -2405,17 +2420,18 @@ function Na(t2) {
 }
 function Ba(t2) {
   const e2 = Oa(t2);
-  return ia(Ua(t2), e2, true, () => function(t3, e3) {
+  return ia(Ua(t2), e2, true, () => ((t3, e3) => {
     const n2 = t3.canvas;
     if (n2.width === t3.width && n2.height === t3.height) return e3();
-    const r2 = n2.width, i2 = n2.height;
+    const r2 = n2.width;
+    const i2 = n2.height;
     return n2.width = t3.width, n2.height = t3.height, t3 = e3(), n2.width = r2, n2.height = i2, t3;
-  }(t2, () => {
+  })(t2, () => {
     if (e2.bindFramebuffer(e2.FRAMEBUFFER, null), e2.clearColor(0, 0, 0, 0), e2.clear(e2.COLOR_BUFFER_BIT), e2.drawArrays(e2.TRIANGLE_FAN, 0, 4), !(t2.canvas instanceof OffscreenCanvas)) throw Error("Conversion to ImageBitmap requires that the MediaPipe Tasks is initialized with an OffscreenCanvas");
     return t2.canvas.transferToImageBitmap();
   }));
 }
-var Ga = class {
+const Ga = class {
   constructor(t2, e2, n2, r2, i2, s2, o2) {
     this.g = t2, this.j = e2, this.m = n2, this.canvas = r2, this.l = i2, this.width = s2, this.height = o2, (this.j || this.m) && (0 === --ja && console.error("You seem to be creating MPImage instances without invoking .close(). This leaks resources."));
   }
@@ -2432,7 +2448,7 @@ var Ga = class {
     return Pa(this);
   }
   za() {
-    var t2 = Ma(this, 1);
+    let t2 = Ma(this, 1);
     return t2 || (Ca(this), Da(this), t2 = Ba(this), Na(this), this.g.push(t2), this.j = true), t2;
   }
   N() {
@@ -2444,7 +2460,8 @@ var Ga = class {
       let n2;
       if (e2 instanceof ImageData) n2 = new ImageData(e2.data, this.width, this.height);
       else if (e2 instanceof WebGLTexture) {
-        const t3 = Oa(this), e3 = Ua(this);
+        const t3 = Oa(this);
+        const e3 = Ua(this);
         t3.activeTexture(t3.TEXTURE1), n2 = sa(e3, t3), t3.bindTexture(t3.TEXTURE_2D, n2), t3.texImage2D(t3.TEXTURE_2D, 0, t3.RGBA, this.width, this.height, 0, t3.RGBA, t3.UNSIGNED_BYTE, null), t3.bindTexture(t3.TEXTURE_2D, null), oa(e3, t3, n2), ia(e3, t3, false, () => {
           Da(this), t3.clearColor(0, 0, 0, 0), t3.clear(t3.COLOR_BUFFER_BIT), t3.drawArrays(t3.TRIANGLE_FAN, 0, 4), Na(this);
         }), aa(e3), Na(this);
@@ -2461,19 +2478,17 @@ var Ga = class {
   }
 };
 Ga.prototype.close = Ga.prototype.close, Ga.prototype.clone = Ga.prototype.clone, Ga.prototype.getAsWebGLTexture = Ga.prototype.N, Ga.prototype.getAsImageBitmap = Ga.prototype.za, Ga.prototype.getAsImageData = Ga.prototype.Aa, Ga.prototype.hasWebGLTexture = Ga.prototype.R, Ga.prototype.hasImageBitmap = Ga.prototype.ka, Ga.prototype.hasImageData = Ga.prototype.Ca;
-var ja = 250;
+let ja = 250;
 function Va(...t2) {
   return t2.map(([t3, e2]) => ({ start: t3, end: e2 }));
 }
-const Xa = /* @__PURE__ */ function(t2) {
-  return class extends t2 {
+const Xa = /* @__PURE__ */ ((t2) => class extends t2 {
     Ha() {
       this.i._registerModelResourcesGraphService();
     }
-  };
-}((Ha = class {
+  })((Ha = class {
   constructor(t2, e2) {
-    this.l = true, this.i = t2, this.g = null, this.h = 0, this.m = "function" == typeof this.i._addIntToInputStream, void 0 !== e2 ? this.i.canvas = e2 : Do() ? this.i.canvas = new OffscreenCanvas(1, 1) : (console.warn("OffscreenCanvas not supported and GraphRunner constructor glCanvas parameter is undefined. Creating backup canvas."), this.i.canvas = document.createElement("canvas"));
+    this.l = true, this.i = t2, this.g = null, this.h = 0, this.m = "function" === typeof this.i._addIntToInputStream, void 0 !== e2 ? this.i.canvas = e2 : Do() ? this.i.canvas = new OffscreenCanvas(1, 1) : (console.warn("OffscreenCanvas not supported and GraphRunner constructor glCanvas parameter is undefined. Creating backup canvas."), this.i.canvas = document.createElement("canvas"));
   }
   async initializeGraph(t2) {
     const e2 = await (await fetch(t2)).arrayBuffer();
@@ -2483,7 +2498,8 @@ const Xa = /* @__PURE__ */ function(t2) {
     this.setGraph(new TextEncoder().encode(t2), false);
   }
   setGraph(t2, e2) {
-    const n2 = t2.length, r2 = this.i._malloc(n2);
+    const n2 = t2.length;
+    const r2 = this.i._malloc(n2);
     this.i.HEAPU8.set(t2, r2), e2 ? this.i._changeBinaryGraph(n2, r2) : this.i._changeTextGraph(n2, r2), this.i._free(r2);
   }
   configureAudio(t2, e2, n2, r2, i2) {
@@ -2507,7 +2523,7 @@ const Xa = /* @__PURE__ */ function(t2) {
       t2(e2);
     }), Go(this, "__graph_config__", (t3) => {
       this.i._getGraphConfig(t3, void 0);
-    }), delete this.i.simpleListeners.__graph_config__;
+    }), this.i.simpleListeners.__graph_config__ = undefined;
   }
   attachErrorListener(t2) {
     this.i.errorListener = t2;
@@ -2828,26 +2844,25 @@ const Xa = /* @__PURE__ */ function(t2) {
     });
   }
 }));
-var Ha, Wa = class extends Xa {
+let Ha;
+const Wa = class extends Xa {
 };
 async function za(t2, e2, n2) {
-  return async function(t3, e3, n3, r2) {
-    return Wo(t3, e3, n3, r2);
-  }(t2, n2.canvas ?? (Do() ? void 0 : document.createElement("canvas")), e2, n2);
+  return (async (t3, e3, n3, r2) => Wo(t3, e3, n3, r2))(t2, n2.canvas ?? (Do() ? void 0 : document.createElement("canvas")), e2, n2);
 }
 function Ka(t2, e2, n2, r2) {
   if (t2.U) {
     const s2 = new ms();
     if (n2 == null ? void 0 : n2.regionOfInterest) {
       if (!t2.na) throw Error("This task doesn't support region-of-interest.");
-      var i2 = n2.regionOfInterest;
+      const i2 = n2.regionOfInterest;
       if (i2.left >= i2.right || i2.top >= i2.bottom) throw Error("Expected RectF with left < right and top < bottom.");
       if (i2.left < 0 || i2.top < 0 || i2.right > 1 || i2.bottom > 1) throw Error("Expected RectF values to be in [0,1].");
       An(s2, 1, (i2.left + i2.right) / 2), An(s2, 2, (i2.top + i2.bottom) / 2), An(s2, 4, i2.right - i2.left), An(s2, 3, i2.bottom - i2.top);
     } else An(s2, 1, 0.5), An(s2, 2, 0.5), An(s2, 4, 1), An(s2, 3, 1);
     if (n2 == null ? void 0 : n2.rotationDegrees) {
-      if ((n2 == null ? void 0 : n2.rotationDegrees) % 90 != 0) throw Error("Expected rotation to be a multiple of 90\xB0.");
-      if (An(s2, 5, -Math.PI * n2.rotationDegrees / 180), (n2 == null ? void 0 : n2.rotationDegrees) % 180 != 0) {
+      if ((n2 == null ? void 0 : n2.rotationDegrees) % 90 !== 0) throw Error("Expected rotation to be a multiple of 90\xB0.");
+      if (An(s2, 5, -Math.PI * n2.rotationDegrees / 180), (n2 == null ? void 0 : n2.rotationDegrees) % 180 !== 0) {
         const [t3, r3] = Bo(e2);
         n2 = En(s2, 3) * r3 / t3, i2 = En(s2, 4) * t3 / r3, An(s2, 4, n2), An(s2, 3, i2);
       }
@@ -2857,22 +2872,23 @@ function Ka(t2, e2, n2, r2) {
   t2.g.oa(e2, t2.Z, r2 ?? performance.now()), t2.finishProcessing();
 }
 function Ya(t2, e2, n2) {
-  var _a2;
+  let _a2;
   if ((_a2 = t2.baseOptions) == null ? void 0 : _a2.g()) throw Error("Task is not initialized with image mode. 'runningMode' must be set to 'IMAGE'.");
   Ka(t2, e2, n2, t2.B + 1);
 }
 function $a(t2, e2, n2, r2) {
-  var _a2;
+  let _a2;
   if (!((_a2 = t2.baseOptions) == null ? void 0 : _a2.g())) throw Error("Task is not initialized with video mode. 'runningMode' must be set to 'VIDEO'.");
   Ka(t2, e2, n2, r2);
 }
 function qa(t2, e2, n2, r2) {
-  var i2 = e2.data;
-  const s2 = e2.width, o2 = s2 * (e2 = e2.height);
-  if ((i2 instanceof Uint8Array || i2 instanceof Float32Array) && i2.length !== o2) throw Error("Unsupported channel count: " + i2.length / o2);
+  const i2 = e2.data;
+  const s2 = e2.width;
+  const o2 = s2 * (e2 = e2.height);
+  if ((i2 instanceof Uint8Array || i2 instanceof Float32Array) && i2.length !== o2) throw Error(`Unsupported channel count: ${i2.length / o2}`);
   return t2 = new Ea([i2], n2, false, t2.g.i.canvas, t2.P, s2, e2), r2 ? t2.clone() : t2;
 }
-var Ja = class extends Zo {
+const Ja = class extends Zo {
   constructor(t2, e2, n2, r2) {
     super(t2), this.g = t2, this.Z = e2, this.U = n2, this.na = r2, this.P = new ca();
   }
@@ -2885,7 +2901,7 @@ var Ja = class extends Zo {
   }
 };
 Ja.prototype.close = Ja.prototype.close;
-var Za = class extends Ja {
+const Za = class extends Ja {
   constructor(t2, e2) {
     super(new Wa(t2, e2), "image_in", "norm_rect_in", false), this.j = { detections: [] }, dn(t2 = this.h = new Cs(), 0, 1, e2 = new Is()), An(this.h, 2, 0.5), An(this.h, 3, 0.3);
   }
@@ -2905,7 +2921,7 @@ var Za = class extends Ja {
     return this.j = { detections: [] }, $a(this, t2, n2, e2), this.j;
   }
   m() {
-    var t2 = new Qi();
+    let t2 = new Qi();
     Ji(t2, "image_in"), Ji(t2, "norm_rect_in"), Zi(t2, "detections");
     const e2 = new Gi();
     Yn(e2, Us, this.h);
@@ -2918,18 +2934,21 @@ var Za = class extends Ja {
     }), t2 = t2.g(), this.setGraph(new Uint8Array(t2), true);
   }
 };
-Za.prototype.detectForVideo = Za.prototype.F, Za.prototype.detect = Za.prototype.D, Za.prototype.setOptions = Za.prototype.o, Za.createFromModelPath = async function(t2, e2) {
-  return za(Za, t2, { baseOptions: { modelAssetPath: e2 } });
-}, Za.createFromModelBuffer = function(t2, e2) {
-  return za(Za, t2, { baseOptions: { modelAssetBuffer: e2 } });
-}, Za.createFromOptions = function(t2, e2) {
-  return za(Za, t2, e2);
-};
-var Qa = Va([61, 146], [146, 91], [91, 181], [181, 84], [84, 17], [17, 314], [314, 405], [405, 321], [321, 375], [375, 291], [61, 185], [185, 40], [40, 39], [39, 37], [37, 0], [0, 267], [267, 269], [269, 270], [270, 409], [409, 291], [78, 95], [95, 88], [88, 178], [178, 87], [87, 14], [14, 317], [317, 402], [402, 318], [318, 324], [324, 308], [78, 191], [191, 80], [80, 81], [81, 82], [82, 13], [13, 312], [312, 311], [311, 310], [310, 415], [415, 308]), tc = Va([263, 249], [249, 390], [390, 373], [373, 374], [374, 380], [380, 381], [381, 382], [382, 362], [263, 466], [466, 388], [388, 387], [387, 386], [386, 385], [385, 384], [384, 398], [398, 362]), ec = Va([276, 283], [283, 282], [282, 295], [295, 285], [300, 293], [293, 334], [334, 296], [296, 336]), nc = Va([474, 475], [475, 476], [476, 477], [477, 474]), rc = Va([33, 7], [7, 163], [163, 144], [144, 145], [145, 153], [153, 154], [154, 155], [155, 133], [33, 246], [246, 161], [161, 160], [160, 159], [159, 158], [158, 157], [157, 173], [173, 133]), ic = Va([46, 53], [53, 52], [52, 65], [65, 55], [70, 63], [63, 105], [105, 66], [66, 107]), sc = Va([469, 470], [470, 471], [471, 472], [472, 469]), oc = Va([10, 338], [338, 297], [297, 332], [332, 284], [284, 251], [251, 389], [389, 356], [356, 454], [454, 323], [323, 361], [361, 288], [288, 397], [397, 365], [365, 379], [379, 378], [378, 400], [400, 377], [377, 152], [152, 148], [148, 176], [176, 149], [149, 150], [150, 136], [136, 172], [172, 58], [58, 132], [132, 93], [93, 234], [234, 127], [127, 162], [162, 21], [21, 54], [54, 103], [103, 67], [67, 109], [109, 10]), ac = [...Qa, ...tc, ...ec, ...rc, ...ic, ...oc], cc = Va([127, 34], [34, 139], [139, 127], [11, 0], [0, 37], [37, 11], [232, 231], [231, 120], [120, 232], [72, 37], [37, 39], [39, 72], [128, 121], [121, 47], [47, 128], [232, 121], [121, 128], [128, 232], [104, 69], [69, 67], [67, 104], [175, 171], [171, 148], [148, 175], [118, 50], [50, 101], [101, 118], [73, 39], [39, 40], [40, 73], [9, 151], [151, 108], [108, 9], [48, 115], [115, 131], [131, 48], [194, 204], [204, 211], [211, 194], [74, 40], [40, 185], [185, 74], [80, 42], [42, 183], [183, 80], [40, 92], [92, 186], [186, 40], [230, 229], [229, 118], [118, 230], [202, 212], [212, 214], [214, 202], [83, 18], [18, 17], [17, 83], [76, 61], [61, 146], [146, 76], [160, 29], [29, 30], [30, 160], [56, 157], [157, 173], [173, 56], [106, 204], [204, 194], [194, 106], [135, 214], [214, 192], [192, 135], [203, 165], [165, 98], [98, 203], [21, 71], [71, 68], [68, 21], [51, 45], [45, 4], [4, 51], [144, 24], [24, 23], [23, 144], [77, 146], [146, 91], [91, 77], [205, 50], [50, 187], [187, 205], [201, 200], [200, 18], [18, 201], [91, 106], [106, 182], [182, 91], [90, 91], [91, 181], [181, 90], [85, 84], [84, 17], [17, 85], [206, 203], [203, 36], [36, 206], [148, 171], [171, 140], [140, 148], [92, 40], [40, 39], [39, 92], [193, 189], [189, 244], [244, 193], [159, 158], [158, 28], [28, 159], [247, 246], [246, 161], [161, 247], [236, 3], [3, 196], [196, 236], [54, 68], [68, 104], [104, 54], [193, 168], [168, 8], [8, 193], [117, 228], [228, 31], [31, 117], [189, 193], [193, 55], [55, 189], [98, 97], [97, 99], [99, 98], [126, 47], [47, 100], [100, 126], [166, 79], [79, 218], [218, 166], [155, 154], [154, 26], [26, 155], [209, 49], [49, 131], [131, 209], [135, 136], [136, 150], [150, 135], [47, 126], [126, 217], [217, 47], [223, 52], [52, 53], [53, 223], [45, 51], [51, 134], [134, 45], [211, 170], [170, 140], [140, 211], [67, 69], [69, 108], [108, 67], [43, 106], [106, 91], [91, 43], [230, 119], [119, 120], [120, 230], [226, 130], [130, 247], [247, 226], [63, 53], [53, 52], [52, 63], [238, 20], [20, 242], [242, 238], [46, 70], [70, 156], [156, 46], [78, 62], [62, 96], [96, 78], [46, 53], [53, 63], [63, 46], [143, 34], [34, 227], [227, 143], [123, 117], [117, 111], [111, 123], [44, 125], [125, 19], [19, 44], [236, 134], [134, 51], [51, 236], [216, 206], [206, 205], [205, 216], [154, 153], [153, 22], [22, 154], [39, 37], [37, 167], [167, 39], [200, 201], [201, 208], [208, 200], [36, 142], [142, 100], [100, 36], [57, 212], [212, 202], [202, 57], [20, 60], [60, 99], [99, 20], [28, 158], [158, 157], [157, 28], [35, 226], [226, 113], [113, 35], [160, 159], [159, 27], [27, 160], [204, 202], [202, 210], [210, 204], [113, 225], [225, 46], [46, 113], [43, 202], [202, 204], [204, 43], [62, 76], [76, 77], [77, 62], [137, 123], [123, 116], [116, 137], [41, 38], [38, 72], [72, 41], [203, 129], [129, 142], [142, 203], [64, 98], [98, 240], [240, 64], [49, 102], [102, 64], [64, 49], [41, 73], [73, 74], [74, 41], [212, 216], [216, 207], [207, 212], [42, 74], [74, 184], [184, 42], [169, 170], [170, 211], [211, 169], [170, 149], [149, 176], [176, 170], [105, 66], [66, 69], [69, 105], [122, 6], [6, 168], [168, 122], [123, 147], [147, 187], [187, 123], [96, 77], [77, 90], [90, 96], [65, 55], [55, 107], [107, 65], [89, 90], [90, 180], [180, 89], [101, 100], [100, 120], [120, 101], [63, 105], [105, 104], [104, 63], [93, 137], [137, 227], [227, 93], [15, 86], [86, 85], [85, 15], [129, 102], [102, 49], [49, 129], [14, 87], [87, 86], [86, 14], [55, 8], [8, 9], [9, 55], [100, 47], [47, 121], [121, 100], [145, 23], [23, 22], [22, 145], [88, 89], [89, 179], [179, 88], [6, 122], [122, 196], [196, 6], [88, 95], [95, 96], [96, 88], [138, 172], [172, 136], [136, 138], [215, 58], [58, 172], [172, 215], [115, 48], [48, 219], [219, 115], [42, 80], [80, 81], [81, 42], [195, 3], [3, 51], [51, 195], [43, 146], [146, 61], [61, 43], [171, 175], [175, 199], [199, 171], [81, 82], [82, 38], [38, 81], [53, 46], [46, 225], [225, 53], [144, 163], [163, 110], [110, 144], [52, 65], [65, 66], [66, 52], [229, 228], [228, 117], [117, 229], [34, 127], [127, 234], [234, 34], [107, 108], [108, 69], [69, 107], [109, 108], [108, 151], [151, 109], [48, 64], [64, 235], [235, 48], [62, 78], [78, 191], [191, 62], [129, 209], [209, 126], [126, 129], [111, 35], [35, 143], [143, 111], [117, 123], [123, 50], [50, 117], [222, 65], [65, 52], [52, 222], [19, 125], [125, 141], [141, 19], [221, 55], [55, 65], [65, 221], [3, 195], [195, 197], [197, 3], [25, 7], [7, 33], [33, 25], [220, 237], [237, 44], [44, 220], [70, 71], [71, 139], [139, 70], [122, 193], [193, 245], [245, 122], [247, 130], [130, 33], [33, 247], [71, 21], [21, 162], [162, 71], [170, 169], [169, 150], [150, 170], [188, 174], [174, 196], [196, 188], [216, 186], [186, 92], [92, 216], [2, 97], [97, 167], [167, 2], [141, 125], [125, 241], [241, 141], [164, 167], [167, 37], [37, 164], [72, 38], [38, 12], [12, 72], [38, 82], [82, 13], [13, 38], [63, 68], [68, 71], [71, 63], [226, 35], [35, 111], [111, 226], [101, 50], [50, 205], [205, 101], [206, 92], [92, 165], [165, 206], [209, 198], [198, 217], [217, 209], [165, 167], [167, 97], [97, 165], [220, 115], [115, 218], [218, 220], [133, 112], [112, 243], [243, 133], [239, 238], [238, 241], [241, 239], [214, 135], [135, 169], [169, 214], [190, 173], [173, 133], [133, 190], [171, 208], [208, 32], [32, 171], [125, 44], [44, 237], [237, 125], [86, 87], [87, 178], [178, 86], [85, 86], [86, 179], [179, 85], [84, 85], [85, 180], [180, 84], [83, 84], [84, 181], [181, 83], [201, 83], [83, 182], [182, 201], [137, 93], [93, 132], [132, 137], [76, 62], [62, 183], [183, 76], [61, 76], [76, 184], [184, 61], [57, 61], [61, 185], [185, 57], [212, 57], [57, 186], [186, 212], [214, 207], [207, 187], [187, 214], [34, 143], [143, 156], [156, 34], [79, 239], [239, 237], [237, 79], [123, 137], [137, 177], [177, 123], [44, 1], [1, 4], [4, 44], [201, 194], [194, 32], [32, 201], [64, 102], [102, 129], [129, 64], [213, 215], [215, 138], [138, 213], [59, 166], [166, 219], [219, 59], [242, 99], [99, 97], [97, 242], [2, 94], [94, 141], [141, 2], [75, 59], [59, 235], [235, 75], [24, 110], [110, 228], [228, 24], [25, 130], [130, 226], [226, 25], [23, 24], [24, 229], [229, 23], [22, 23], [23, 230], [230, 22], [26, 22], [22, 231], [231, 26], [112, 26], [26, 232], [232, 112], [189, 190], [190, 243], [243, 189], [221, 56], [56, 190], [190, 221], [28, 56], [56, 221], [221, 28], [27, 28], [28, 222], [222, 27], [29, 27], [27, 223], [223, 29], [30, 29], [29, 224], [224, 30], [247, 30], [30, 225], [225, 247], [238, 79], [79, 20], [20, 238], [166, 59], [59, 75], [75, 166], [60, 75], [75, 240], [240, 60], [147, 177], [177, 215], [215, 147], [20, 79], [79, 166], [166, 20], [187, 147], [147, 213], [213, 187], [112, 233], [233, 244], [244, 112], [233, 128], [128, 245], [245, 233], [128, 114], [114, 188], [188, 128], [114, 217], [217, 174], [174, 114], [131, 115], [115, 220], [220, 131], [217, 198], [198, 236], [236, 217], [198, 131], [131, 134], [134, 198], [177, 132], [132, 58], [58, 177], [143, 35], [35, 124], [124, 143], [110, 163], [163, 7], [7, 110], [228, 110], [110, 25], [25, 228], [356, 389], [389, 368], [368, 356], [11, 302], [302, 267], [267, 11], [452, 350], [350, 349], [349, 452], [302, 303], [303, 269], [269, 302], [357, 343], [343, 277], [277, 357], [452, 453], [453, 357], [357, 452], [333, 332], [332, 297], [297, 333], [175, 152], [152, 377], [377, 175], [347, 348], [348, 330], [330, 347], [303, 304], [304, 270], [270, 303], [9, 336], [336, 337], [337, 9], [278, 279], [279, 360], [360, 278], [418, 262], [262, 431], [431, 418], [304, 408], [408, 409], [409, 304], [310, 415], [415, 407], [407, 310], [270, 409], [409, 410], [410, 270], [450, 348], [348, 347], [347, 450], [422, 430], [430, 434], [434, 422], [313, 314], [314, 17], [17, 313], [306, 307], [307, 375], [375, 306], [387, 388], [388, 260], [260, 387], [286, 414], [414, 398], [398, 286], [335, 406], [406, 418], [418, 335], [364, 367], [367, 416], [416, 364], [423, 358], [358, 327], [327, 423], [251, 284], [284, 298], [298, 251], [281, 5], [5, 4], [4, 281], [373, 374], [374, 253], [253, 373], [307, 320], [320, 321], [321, 307], [425, 427], [427, 411], [411, 425], [421, 313], [313, 18], [18, 421], [321, 405], [405, 406], [406, 321], [320, 404], [404, 405], [405, 320], [315, 16], [16, 17], [17, 315], [426, 425], [425, 266], [266, 426], [377, 400], [400, 369], [369, 377], [322, 391], [391, 269], [269, 322], [417, 465], [465, 464], [464, 417], [386, 257], [257, 258], [258, 386], [466, 260], [260, 388], [388, 466], [456, 399], [399, 419], [419, 456], [284, 332], [332, 333], [333, 284], [417, 285], [285, 8], [8, 417], [346, 340], [340, 261], [261, 346], [413, 441], [441, 285], [285, 413], [327, 460], [460, 328], [328, 327], [355, 371], [371, 329], [329, 355], [392, 439], [439, 438], [438, 392], [382, 341], [341, 256], [256, 382], [429, 420], [420, 360], [360, 429], [364, 394], [394, 379], [379, 364], [277, 343], [343, 437], [437, 277], [443, 444], [444, 283], [283, 443], [275, 440], [440, 363], [363, 275], [431, 262], [262, 369], [369, 431], [297, 338], [338, 337], [337, 297], [273, 375], [375, 321], [321, 273], [450, 451], [451, 349], [349, 450], [446, 342], [342, 467], [467, 446], [293, 334], [334, 282], [282, 293], [458, 461], [461, 462], [462, 458], [276, 353], [353, 383], [383, 276], [308, 324], [324, 325], [325, 308], [276, 300], [300, 293], [293, 276], [372, 345], [345, 447], [447, 372], [352, 345], [345, 340], [340, 352], [274, 1], [1, 19], [19, 274], [456, 248], [248, 281], [281, 456], [436, 427], [427, 425], [425, 436], [381, 256], [256, 252], [252, 381], [269, 391], [391, 393], [393, 269], [200, 199], [199, 428], [428, 200], [266, 330], [330, 329], [329, 266], [287, 273], [273, 422], [422, 287], [250, 462], [462, 328], [328, 250], [258, 286], [286, 384], [384, 258], [265, 353], [353, 342], [342, 265], [387, 259], [259, 257], [257, 387], [424, 431], [431, 430], [430, 424], [342, 353], [353, 276], [276, 342], [273, 335], [335, 424], [424, 273], [292, 325], [325, 307], [307, 292], [366, 447], [447, 345], [345, 366], [271, 303], [303, 302], [302, 271], [423, 266], [266, 371], [371, 423], [294, 455], [455, 460], [460, 294], [279, 278], [278, 294], [294, 279], [271, 272], [272, 304], [304, 271], [432, 434], [434, 427], [427, 432], [272, 407], [407, 408], [408, 272], [394, 430], [430, 431], [431, 394], [395, 369], [369, 400], [400, 395], [334, 333], [333, 299], [299, 334], [351, 417], [417, 168], [168, 351], [352, 280], [280, 411], [411, 352], [325, 319], [319, 320], [320, 325], [295, 296], [296, 336], [336, 295], [319, 403], [403, 404], [404, 319], [330, 348], [348, 349], [349, 330], [293, 298], [298, 333], [333, 293], [323, 454], [454, 447], [447, 323], [15, 16], [16, 315], [315, 15], [358, 429], [429, 279], [279, 358], [14, 15], [15, 316], [316, 14], [285, 336], [336, 9], [9, 285], [329, 349], [349, 350], [350, 329], [374, 380], [380, 252], [252, 374], [318, 402], [402, 403], [403, 318], [6, 197], [197, 419], [419, 6], [318, 319], [319, 325], [325, 318], [367, 364], [364, 365], [365, 367], [435, 367], [367, 397], [397, 435], [344, 438], [438, 439], [439, 344], [272, 271], [271, 311], [311, 272], [195, 5], [5, 281], [281, 195], [273, 287], [287, 291], [291, 273], [396, 428], [428, 199], [199, 396], [311, 271], [271, 268], [268, 311], [283, 444], [444, 445], [445, 283], [373, 254], [254, 339], [339, 373], [282, 334], [334, 296], [296, 282], [449, 347], [347, 346], [346, 449], [264, 447], [447, 454], [454, 264], [336, 296], [296, 299], [299, 336], [338, 10], [10, 151], [151, 338], [278, 439], [439, 455], [455, 278], [292, 407], [407, 415], [415, 292], [358, 371], [371, 355], [355, 358], [340, 345], [345, 372], [372, 340], [346, 347], [347, 280], [280, 346], [442, 443], [443, 282], [282, 442], [19, 94], [94, 370], [370, 19], [441, 442], [442, 295], [295, 441], [248, 419], [419, 197], [197, 248], [263, 255], [255, 359], [359, 263], [440, 275], [275, 274], [274, 440], [300, 383], [383, 368], [368, 300], [351, 412], [412, 465], [465, 351], [263, 467], [467, 466], [466, 263], [301, 368], [368, 389], [389, 301], [395, 378], [378, 379], [379, 395], [412, 351], [351, 419], [419, 412], [436, 426], [426, 322], [322, 436], [2, 164], [164, 393], [393, 2], [370, 462], [462, 461], [461, 370], [164, 0], [0, 267], [267, 164], [302, 11], [11, 12], [12, 302], [268, 12], [12, 13], [13, 268], [293, 300], [300, 301], [301, 293], [446, 261], [261, 340], [340, 446], [330, 266], [266, 425], [425, 330], [426, 423], [423, 391], [391, 426], [429, 355], [355, 437], [437, 429], [391, 327], [327, 326], [326, 391], [440, 457], [457, 438], [438, 440], [341, 382], [382, 362], [362, 341], [459, 457], [457, 461], [461, 459], [434, 430], [430, 394], [394, 434], [414, 463], [463, 362], [362, 414], [396, 369], [369, 262], [262, 396], [354, 461], [461, 457], [457, 354], [316, 403], [403, 402], [402, 316], [315, 404], [404, 403], [403, 315], [314, 405], [405, 404], [404, 314], [313, 406], [406, 405], [405, 313], [421, 418], [418, 406], [406, 421], [366, 401], [401, 361], [361, 366], [306, 408], [408, 407], [407, 306], [291, 409], [409, 408], [408, 291], [287, 410], [410, 409], [409, 287], [432, 436], [436, 410], [410, 432], [434, 416], [416, 411], [411, 434], [264, 368], [368, 383], [383, 264], [309, 438], [438, 457], [457, 309], [352, 376], [376, 401], [401, 352], [274, 275], [275, 4], [4, 274], [421, 428], [428, 262], [262, 421], [294, 327], [327, 358], [358, 294], [433, 416], [416, 367], [367, 433], [289, 455], [455, 439], [439, 289], [462, 370], [370, 326], [326, 462], [2, 326], [326, 370], [370, 2], [305, 460], [460, 455], [455, 305], [254, 449], [449, 448], [448, 254], [255, 261], [261, 446], [446, 255], [253, 450], [450, 449], [449, 253], [252, 451], [451, 450], [450, 252], [256, 452], [452, 451], [451, 256], [341, 453], [453, 452], [452, 341], [413, 464], [464, 463], [463, 413], [441, 413], [413, 414], [414, 441], [258, 442], [442, 441], [441, 258], [257, 443], [443, 442], [442, 257], [259, 444], [444, 443], [443, 259], [260, 445], [445, 444], [444, 260], [467, 342], [342, 445], [445, 467], [459, 458], [458, 250], [250, 459], [289, 392], [392, 290], [290, 289], [290, 328], [328, 460], [460, 290], [376, 433], [433, 435], [435, 376], [250, 290], [290, 392], [392, 250], [411, 416], [416, 433], [433, 411], [341, 463], [463, 464], [464, 341], [453, 464], [464, 465], [465, 453], [357, 465], [465, 412], [412, 357], [343, 412], [412, 399], [399, 343], [360, 363], [363, 440], [440, 360], [437, 399], [399, 456], [456, 437], [420, 456], [456, 363], [363, 420], [401, 435], [435, 288], [288, 401], [372, 383], [383, 353], [353, 372], [339, 255], [255, 249], [249, 339], [448, 261], [261, 255], [255, 448], [133, 243], [243, 190], [190, 133], [133, 155], [155, 112], [112, 133], [33, 246], [246, 247], [247, 33], [33, 130], [130, 25], [25, 33], [398, 384], [384, 286], [286, 398], [362, 398], [398, 414], [414, 362], [362, 463], [463, 341], [341, 362], [263, 359], [359, 467], [467, 263], [263, 249], [249, 255], [255, 263], [466, 467], [467, 260], [260, 466], [75, 60], [60, 166], [166, 75], [238, 239], [239, 79], [79, 238], [162, 127], [127, 139], [139, 162], [72, 11], [11, 37], [37, 72], [121, 232], [232, 120], [120, 121], [73, 72], [72, 39], [39, 73], [114, 128], [128, 47], [47, 114], [233, 232], [232, 128], [128, 233], [103, 104], [104, 67], [67, 103], [152, 175], [175, 148], [148, 152], [119, 118], [118, 101], [101, 119], [74, 73], [73, 40], [40, 74], [107, 9], [9, 108], [108, 107], [49, 48], [48, 131], [131, 49], [32, 194], [194, 211], [211, 32], [184, 74], [74, 185], [185, 184], [191, 80], [80, 183], [183, 191], [185, 40], [40, 186], [186, 185], [119, 230], [230, 118], [118, 119], [210, 202], [202, 214], [214, 210], [84, 83], [83, 17], [17, 84], [77, 76], [76, 146], [146, 77], [161, 160], [160, 30], [30, 161], [190, 56], [56, 173], [173, 190], [182, 106], [106, 194], [194, 182], [138, 135], [135, 192], [192, 138], [129, 203], [203, 98], [98, 129], [54, 21], [21, 68], [68, 54], [5, 51], [51, 4], [4, 5], [145, 144], [144, 23], [23, 145], [90, 77], [77, 91], [91, 90], [207, 205], [205, 187], [187, 207], [83, 201], [201, 18], [18, 83], [181, 91], [91, 182], [182, 181], [180, 90], [90, 181], [181, 180], [16, 85], [85, 17], [17, 16], [205, 206], [206, 36], [36, 205], [176, 148], [148, 140], [140, 176], [165, 92], [92, 39], [39, 165], [245, 193], [193, 244], [244, 245], [27, 159], [159, 28], [28, 27], [30, 247], [247, 161], [161, 30], [174, 236], [236, 196], [196, 174], [103, 54], [54, 104], [104, 103], [55, 193], [193, 8], [8, 55], [111, 117], [117, 31], [31, 111], [221, 189], [189, 55], [55, 221], [240, 98], [98, 99], [99, 240], [142, 126], [126, 100], [100, 142], [219, 166], [166, 218], [218, 219], [112, 155], [155, 26], [26, 112], [198, 209], [209, 131], [131, 198], [169, 135], [135, 150], [150, 169], [114, 47], [47, 217], [217, 114], [224, 223], [223, 53], [53, 224], [220, 45], [45, 134], [134, 220], [32, 211], [211, 140], [140, 32], [109, 67], [67, 108], [108, 109], [146, 43], [43, 91], [91, 146], [231, 230], [230, 120], [120, 231], [113, 226], [226, 247], [247, 113], [105, 63], [63, 52], [52, 105], [241, 238], [238, 242], [242, 241], [124, 46], [46, 156], [156, 124], [95, 78], [78, 96], [96, 95], [70, 46], [46, 63], [63, 70], [116, 143], [143, 227], [227, 116], [116, 123], [123, 111], [111, 116], [1, 44], [44, 19], [19, 1], [3, 236], [236, 51], [51, 3], [207, 216], [216, 205], [205, 207], [26, 154], [154, 22], [22, 26], [165, 39], [39, 167], [167, 165], [199, 200], [200, 208], [208, 199], [101, 36], [36, 100], [100, 101], [43, 57], [57, 202], [202, 43], [242, 20], [20, 99], [99, 242], [56, 28], [28, 157], [157, 56], [124, 35], [35, 113], [113, 124], [29, 160], [160, 27], [27, 29], [211, 204], [204, 210], [210, 211], [124, 113], [113, 46], [46, 124], [106, 43], [43, 204], [204, 106], [96, 62], [62, 77], [77, 96], [227, 137], [137, 116], [116, 227], [73, 41], [41, 72], [72, 73], [36, 203], [203, 142], [142, 36], [235, 64], [64, 240], [240, 235], [48, 49], [49, 64], [64, 48], [42, 41], [41, 74], [74, 42], [214, 212], [212, 207], [207, 214], [183, 42], [42, 184], [184, 183], [210, 169], [169, 211], [211, 210], [140, 170], [170, 176], [176, 140], [104, 105], [105, 69], [69, 104], [193, 122], [122, 168], [168, 193], [50, 123], [123, 187], [187, 50], [89, 96], [96, 90], [90, 89], [66, 65], [65, 107], [107, 66], [179, 89], [89, 180], [180, 179], [119, 101], [101, 120], [120, 119], [68, 63], [63, 104], [104, 68], [234, 93], [93, 227], [227, 234], [16, 15], [15, 85], [85, 16], [209, 129], [129, 49], [49, 209], [15, 14], [14, 86], [86, 15], [107, 55], [55, 9], [9, 107], [120, 100], [100, 121], [121, 120], [153, 145], [145, 22], [22, 153], [178, 88], [88, 179], [179, 178], [197, 6], [6, 196], [196, 197], [89, 88], [88, 96], [96, 89], [135, 138], [138, 136], [136, 135], [138, 215], [215, 172], [172, 138], [218, 115], [115, 219], [219, 218], [41, 42], [42, 81], [81, 41], [5, 195], [195, 51], [51, 5], [57, 43], [43, 61], [61, 57], [208, 171], [171, 199], [199, 208], [41, 81], [81, 38], [38, 41], [224, 53], [53, 225], [225, 224], [24, 144], [144, 110], [110, 24], [105, 52], [52, 66], [66, 105], [118, 229], [229, 117], [117, 118], [227, 34], [34, 234], [234, 227], [66, 107], [107, 69], [69, 66], [10, 109], [109, 151], [151, 10], [219, 48], [48, 235], [235, 219], [183, 62], [62, 191], [191, 183], [142, 129], [129, 126], [126, 142], [116, 111], [111, 143], [143, 116], [118, 117], [117, 50], [50, 118], [223, 222], [222, 52], [52, 223], [94, 19], [19, 141], [141, 94], [222, 221], [221, 65], [65, 222], [196, 3], [3, 197], [197, 196], [45, 220], [220, 44], [44, 45], [156, 70], [70, 139], [139, 156], [188, 122], [122, 245], [245, 188], [139, 71], [71, 162], [162, 139], [149, 170], [170, 150], [150, 149], [122, 188], [188, 196], [196, 122], [206, 216], [216, 92], [92, 206], [164, 2], [2, 167], [167, 164], [242, 141], [141, 241], [241, 242], [0, 164], [164, 37], [37, 0], [11, 72], [72, 12], [12, 11], [12, 38], [38, 13], [13, 12], [70, 63], [63, 71], [71, 70], [31, 226], [226, 111], [111, 31], [36, 101], [101, 205], [205, 36], [203, 206], [206, 165], [165, 203], [126, 209], [209, 217], [217, 126], [98, 165], [165, 97], [97, 98], [237, 220], [220, 218], [218, 237], [237, 239], [239, 241], [241, 237], [210, 214], [214, 169], [169, 210], [140, 171], [171, 32], [32, 140], [241, 125], [125, 237], [237, 241], [179, 86], [86, 178], [178, 179], [180, 85], [85, 179], [179, 180], [181, 84], [84, 180], [180, 181], [182, 83], [83, 181], [181, 182], [194, 201], [201, 182], [182, 194], [177, 137], [137, 132], [132, 177], [184, 76], [76, 183], [183, 184], [185, 61], [61, 184], [184, 185], [186, 57], [57, 185], [185, 186], [216, 212], [212, 186], [186, 216], [192, 214], [214, 187], [187, 192], [139, 34], [34, 156], [156, 139], [218, 79], [79, 237], [237, 218], [147, 123], [123, 177], [177, 147], [45, 44], [44, 4], [4, 45], [208, 201], [201, 32], [32, 208], [98, 64], [64, 129], [129, 98], [192, 213], [213, 138], [138, 192], [235, 59], [59, 219], [219, 235], [141, 242], [242, 97], [97, 141], [97, 2], [2, 141], [141, 97], [240, 75], [75, 235], [235, 240], [229, 24], [24, 228], [228, 229], [31, 25], [25, 226], [226, 31], [230, 23], [23, 229], [229, 230], [231, 22], [22, 230], [230, 231], [232, 26], [26, 231], [231, 232], [233, 112], [112, 232], [232, 233], [244, 189], [189, 243], [243, 244], [189, 221], [221, 190], [190, 189], [222, 28], [28, 221], [221, 222], [223, 27], [27, 222], [222, 223], [224, 29], [29, 223], [223, 224], [225, 30], [30, 224], [224, 225], [113, 247], [247, 225], [225, 113], [99, 60], [60, 240], [240, 99], [213, 147], [147, 215], [215, 213], [60, 20], [20, 166], [166, 60], [192, 187], [187, 213], [213, 192], [243, 112], [112, 244], [244, 243], [244, 233], [233, 245], [245, 244], [245, 128], [128, 188], [188, 245], [188, 114], [114, 174], [174, 188], [134, 131], [131, 220], [220, 134], [174, 217], [217, 236], [236, 174], [236, 198], [198, 134], [134, 236], [215, 177], [177, 58], [58, 215], [156, 143], [143, 124], [124, 156], [25, 110], [110, 7], [7, 25], [31, 228], [228, 25], [25, 31], [264, 356], [356, 368], [368, 264], [0, 11], [11, 267], [267, 0], [451, 452], [452, 349], [349, 451], [267, 302], [302, 269], [269, 267], [350, 357], [357, 277], [277, 350], [350, 452], [452, 357], [357, 350], [299, 333], [333, 297], [297, 299], [396, 175], [175, 377], [377, 396], [280, 347], [347, 330], [330, 280], [269, 303], [303, 270], [270, 269], [151, 9], [9, 337], [337, 151], [344, 278], [278, 360], [360, 344], [424, 418], [418, 431], [431, 424], [270, 304], [304, 409], [409, 270], [272, 310], [310, 407], [407, 272], [322, 270], [270, 410], [410, 322], [449, 450], [450, 347], [347, 449], [432, 422], [422, 434], [434, 432], [18, 313], [313, 17], [17, 18], [291, 306], [306, 375], [375, 291], [259, 387], [387, 260], [260, 259], [424, 335], [335, 418], [418, 424], [434, 364], [364, 416], [416, 434], [391, 423], [423, 327], [327, 391], [301, 251], [251, 298], [298, 301], [275, 281], [281, 4], [4, 275], [254, 373], [373, 253], [253, 254], [375, 307], [307, 321], [321, 375], [280, 425], [425, 411], [411, 280], [200, 421], [421, 18], [18, 200], [335, 321], [321, 406], [406, 335], [321, 320], [320, 405], [405, 321], [314, 315], [315, 17], [17, 314], [423, 426], [426, 266], [266, 423], [396, 377], [377, 369], [369, 396], [270, 322], [322, 269], [269, 270], [413, 417], [417, 464], [464, 413], [385, 386], [386, 258], [258, 385], [248, 456], [456, 419], [419, 248], [298, 284], [284, 333], [333, 298], [168, 417], [417, 8], [8, 168], [448, 346], [346, 261], [261, 448], [417, 413], [413, 285], [285, 417], [326, 327], [327, 328], [328, 326], [277, 355], [355, 329], [329, 277], [309, 392], [392, 438], [438, 309], [381, 382], [382, 256], [256, 381], [279, 429], [429, 360], [360, 279], [365, 364], [364, 379], [379, 365], [355, 277], [277, 437], [437, 355], [282, 443], [443, 283], [283, 282], [281, 275], [275, 363], [363, 281], [395, 431], [431, 369], [369, 395], [299, 297], [297, 337], [337, 299], [335, 273], [273, 321], [321, 335], [348, 450], [450, 349], [349, 348], [359, 446], [446, 467], [467, 359], [283, 293], [293, 282], [282, 283], [250, 458], [458, 462], [462, 250], [300, 276], [276, 383], [383, 300], [292, 308], [308, 325], [325, 292], [283, 276], [276, 293], [293, 283], [264, 372], [372, 447], [447, 264], [346, 352], [352, 340], [340, 346], [354, 274], [274, 19], [19, 354], [363, 456], [456, 281], [281, 363], [426, 436], [436, 425], [425, 426], [380, 381], [381, 252], [252, 380], [267, 269], [269, 393], [393, 267], [421, 200], [200, 428], [428, 421], [371, 266], [266, 329], [329, 371], [432, 287], [287, 422], [422, 432], [290, 250], [250, 328], [328, 290], [385, 258], [258, 384], [384, 385], [446, 265], [265, 342], [342, 446], [386, 387], [387, 257], [257, 386], [422, 424], [424, 430], [430, 422], [445, 342], [342, 276], [276, 445], [422, 273], [273, 424], [424, 422], [306, 292], [292, 307], [307, 306], [352, 366], [366, 345], [345, 352], [268, 271], [271, 302], [302, 268], [358, 423], [423, 371], [371, 358], [327, 294], [294, 460], [460, 327], [331, 279], [279, 294], [294, 331], [303, 271], [271, 304], [304, 303], [436, 432], [432, 427], [427, 436], [304, 272], [272, 408], [408, 304], [395, 394], [394, 431], [431, 395], [378, 395], [395, 400], [400, 378], [296, 334], [334, 299], [299, 296], [6, 351], [351, 168], [168, 6], [376, 352], [352, 411], [411, 376], [307, 325], [325, 320], [320, 307], [285, 295], [295, 336], [336, 285], [320, 319], [319, 404], [404, 320], [329, 330], [330, 349], [349, 329], [334, 293], [293, 333], [333, 334], [366, 323], [323, 447], [447, 366], [316, 15], [15, 315], [315, 316], [331, 358], [358, 279], [279, 331], [317, 14], [14, 316], [316, 317], [8, 285], [285, 9], [9, 8], [277, 329], [329, 350], [350, 277], [253, 374], [374, 252], [252, 253], [319, 318], [318, 403], [403, 319], [351, 6], [6, 419], [419, 351], [324, 318], [318, 325], [325, 324], [397, 367], [367, 365], [365, 397], [288, 435], [435, 397], [397, 288], [278, 344], [344, 439], [439, 278], [310, 272], [272, 311], [311, 310], [248, 195], [195, 281], [281, 248], [375, 273], [273, 291], [291, 375], [175, 396], [396, 199], [199, 175], [312, 311], [311, 268], [268, 312], [276, 283], [283, 445], [445, 276], [390, 373], [373, 339], [339, 390], [295, 282], [282, 296], [296, 295], [448, 449], [449, 346], [346, 448], [356, 264], [264, 454], [454, 356], [337, 336], [336, 299], [299, 337], [337, 338], [338, 151], [151, 337], [294, 278], [278, 455], [455, 294], [308, 292], [292, 415], [415, 308], [429, 358], [358, 355], [355, 429], [265, 340], [340, 372], [372, 265], [352, 346], [346, 280], [280, 352], [295, 442], [442, 282], [282, 295], [354, 19], [19, 370], [370, 354], [285, 441], [441, 295], [295, 285], [195, 248], [248, 197], [197, 195], [457, 440], [440, 274], [274, 457], [301, 300], [300, 368], [368, 301], [417, 351], [351, 465], [465, 417], [251, 301], [301, 389], [389, 251], [394, 395], [395, 379], [379, 394], [399, 412], [412, 419], [419, 399], [410, 436], [436, 322], [322, 410], [326, 2], [2, 393], [393, 326], [354, 370], [370, 461], [461, 354], [393, 164], [164, 267], [267, 393], [268, 302], [302, 12], [12, 268], [312, 268], [268, 13], [13, 312], [298, 293], [293, 301], [301, 298], [265, 446], [446, 340], [340, 265], [280, 330], [330, 425], [425, 280], [322, 426], [426, 391], [391, 322], [420, 429], [429, 437], [437, 420], [393, 391], [391, 326], [326, 393], [344, 440], [440, 438], [438, 344], [458, 459], [459, 461], [461, 458], [364, 434], [434, 394], [394, 364], [428, 396], [396, 262], [262, 428], [274, 354], [354, 457], [457, 274], [317, 316], [316, 402], [402, 317], [316, 315], [315, 403], [403, 316], [315, 314], [314, 404], [404, 315], [314, 313], [313, 405], [405, 314], [313, 421], [421, 406], [406, 313], [323, 366], [366, 361], [361, 323], [292, 306], [306, 407], [407, 292], [306, 291], [291, 408], [408, 306], [291, 287], [287, 409], [409, 291], [287, 432], [432, 410], [410, 287], [427, 434], [434, 411], [411, 427], [372, 264], [264, 383], [383, 372], [459, 309], [309, 457], [457, 459], [366, 352], [352, 401], [401, 366], [1, 274], [274, 4], [4, 1], [418, 421], [421, 262], [262, 418], [331, 294], [294, 358], [358, 331], [435, 433], [433, 367], [367, 435], [392, 289], [289, 439], [439, 392], [328, 462], [462, 326], [326, 328], [94, 2], [2, 370], [370, 94], [289, 305], [305, 455], [455, 289], [339, 254], [254, 448], [448, 339], [359, 255], [255, 446], [446, 359], [254, 253], [253, 449], [449, 254], [253, 252], [252, 450], [450, 253], [252, 256], [256, 451], [451, 252], [256, 341], [341, 452], [452, 256], [414, 413], [413, 463], [463, 414], [286, 441], [441, 414], [414, 286], [286, 258], [258, 441], [441, 286], [258, 257], [257, 442], [442, 258], [257, 259], [259, 443], [443, 257], [259, 260], [260, 444], [444, 259], [260, 467], [467, 445], [445, 260], [309, 459], [459, 250], [250, 309], [305, 289], [289, 290], [290, 305], [305, 290], [290, 460], [460, 305], [401, 376], [376, 435], [435, 401], [309, 250], [250, 392], [392, 309], [376, 411], [411, 433], [433, 376], [453, 341], [341, 464], [464, 453], [357, 453], [453, 465], [465, 357], [343, 357], [357, 412], [412, 343], [437, 343], [343, 399], [399, 437], [344, 360], [360, 440], [440, 344], [420, 437], [437, 456], [456, 420], [360, 420], [420, 363], [363, 360], [361, 401], [401, 288], [288, 361], [265, 372], [372, 353], [353, 265], [390, 339], [339, 249], [249, 390], [339, 448], [448, 255], [255, 339]);
+Za.prototype.detectForVideo = Za.prototype.F, Za.prototype.detect = Za.prototype.D, Za.prototype.setOptions = Za.prototype.o, Za.createFromModelPath = async (t2, e2) => za(Za, t2, { baseOptions: { modelAssetPath: e2 } }), Za.createFromModelBuffer = (t2, e2) => za(Za, t2, { baseOptions: { modelAssetBuffer: e2 } }), Za.createFromOptions = (t2, e2) => za(Za, t2, e2);
+const Qa = Va([61, 146], [146, 91], [91, 181], [181, 84], [84, 17], [17, 314], [314, 405], [405, 321], [321, 375], [375, 291], [61, 185], [185, 40], [40, 39], [39, 37], [37, 0], [0, 267], [267, 269], [269, 270], [270, 409], [409, 291], [78, 95], [95, 88], [88, 178], [178, 87], [87, 14], [14, 317], [317, 402], [402, 318], [318, 324], [324, 308], [78, 191], [191, 80], [80, 81], [81, 82], [82, 13], [13, 312], [312, 311], [311, 310], [310, 415], [415, 308]);
+const tc = Va([263, 249], [249, 390], [390, 373], [373, 374], [374, 380], [380, 381], [381, 382], [382, 362], [263, 466], [466, 388], [388, 387], [387, 386], [386, 385], [385, 384], [384, 398], [398, 362]);
+const ec = Va([276, 283], [283, 282], [282, 295], [295, 285], [300, 293], [293, 334], [334, 296], [296, 336]);
+const nc = Va([474, 475], [475, 476], [476, 477], [477, 474]);
+const rc = Va([33, 7], [7, 163], [163, 144], [144, 145], [145, 153], [153, 154], [154, 155], [155, 133], [33, 246], [246, 161], [161, 160], [160, 159], [159, 158], [158, 157], [157, 173], [173, 133]);
+const ic = Va([46, 53], [53, 52], [52, 65], [65, 55], [70, 63], [63, 105], [105, 66], [66, 107]);
+const sc = Va([469, 470], [470, 471], [471, 472], [472, 469]);
+const oc = Va([10, 338], [338, 297], [297, 332], [332, 284], [284, 251], [251, 389], [389, 356], [356, 454], [454, 323], [323, 361], [361, 288], [288, 397], [397, 365], [365, 379], [379, 378], [378, 400], [400, 377], [377, 152], [152, 148], [148, 176], [176, 149], [149, 150], [150, 136], [136, 172], [172, 58], [58, 132], [132, 93], [93, 234], [234, 127], [127, 162], [162, 21], [21, 54], [54, 103], [103, 67], [67, 109], [109, 10]);
+const ac = [...Qa, ...tc, ...ec, ...rc, ...ic, ...oc];
+const cc = Va([127, 34], [34, 139], [139, 127], [11, 0], [0, 37], [37, 11], [232, 231], [231, 120], [120, 232], [72, 37], [37, 39], [39, 72], [128, 121], [121, 47], [47, 128], [232, 121], [121, 128], [128, 232], [104, 69], [69, 67], [67, 104], [175, 171], [171, 148], [148, 175], [118, 50], [50, 101], [101, 118], [73, 39], [39, 40], [40, 73], [9, 151], [151, 108], [108, 9], [48, 115], [115, 131], [131, 48], [194, 204], [204, 211], [211, 194], [74, 40], [40, 185], [185, 74], [80, 42], [42, 183], [183, 80], [40, 92], [92, 186], [186, 40], [230, 229], [229, 118], [118, 230], [202, 212], [212, 214], [214, 202], [83, 18], [18, 17], [17, 83], [76, 61], [61, 146], [146, 76], [160, 29], [29, 30], [30, 160], [56, 157], [157, 173], [173, 56], [106, 204], [204, 194], [194, 106], [135, 214], [214, 192], [192, 135], [203, 165], [165, 98], [98, 203], [21, 71], [71, 68], [68, 21], [51, 45], [45, 4], [4, 51], [144, 24], [24, 23], [23, 144], [77, 146], [146, 91], [91, 77], [205, 50], [50, 187], [187, 205], [201, 200], [200, 18], [18, 201], [91, 106], [106, 182], [182, 91], [90, 91], [91, 181], [181, 90], [85, 84], [84, 17], [17, 85], [206, 203], [203, 36], [36, 206], [148, 171], [171, 140], [140, 148], [92, 40], [40, 39], [39, 92], [193, 189], [189, 244], [244, 193], [159, 158], [158, 28], [28, 159], [247, 246], [246, 161], [161, 247], [236, 3], [3, 196], [196, 236], [54, 68], [68, 104], [104, 54], [193, 168], [168, 8], [8, 193], [117, 228], [228, 31], [31, 117], [189, 193], [193, 55], [55, 189], [98, 97], [97, 99], [99, 98], [126, 47], [47, 100], [100, 126], [166, 79], [79, 218], [218, 166], [155, 154], [154, 26], [26, 155], [209, 49], [49, 131], [131, 209], [135, 136], [136, 150], [150, 135], [47, 126], [126, 217], [217, 47], [223, 52], [52, 53], [53, 223], [45, 51], [51, 134], [134, 45], [211, 170], [170, 140], [140, 211], [67, 69], [69, 108], [108, 67], [43, 106], [106, 91], [91, 43], [230, 119], [119, 120], [120, 230], [226, 130], [130, 247], [247, 226], [63, 53], [53, 52], [52, 63], [238, 20], [20, 242], [242, 238], [46, 70], [70, 156], [156, 46], [78, 62], [62, 96], [96, 78], [46, 53], [53, 63], [63, 46], [143, 34], [34, 227], [227, 143], [123, 117], [117, 111], [111, 123], [44, 125], [125, 19], [19, 44], [236, 134], [134, 51], [51, 236], [216, 206], [206, 205], [205, 216], [154, 153], [153, 22], [22, 154], [39, 37], [37, 167], [167, 39], [200, 201], [201, 208], [208, 200], [36, 142], [142, 100], [100, 36], [57, 212], [212, 202], [202, 57], [20, 60], [60, 99], [99, 20], [28, 158], [158, 157], [157, 28], [35, 226], [226, 113], [113, 35], [160, 159], [159, 27], [27, 160], [204, 202], [202, 210], [210, 204], [113, 225], [225, 46], [46, 113], [43, 202], [202, 204], [204, 43], [62, 76], [76, 77], [77, 62], [137, 123], [123, 116], [116, 137], [41, 38], [38, 72], [72, 41], [203, 129], [129, 142], [142, 203], [64, 98], [98, 240], [240, 64], [49, 102], [102, 64], [64, 49], [41, 73], [73, 74], [74, 41], [212, 216], [216, 207], [207, 212], [42, 74], [74, 184], [184, 42], [169, 170], [170, 211], [211, 169], [170, 149], [149, 176], [176, 170], [105, 66], [66, 69], [69, 105], [122, 6], [6, 168], [168, 122], [123, 147], [147, 187], [187, 123], [96, 77], [77, 90], [90, 96], [65, 55], [55, 107], [107, 65], [89, 90], [90, 180], [180, 89], [101, 100], [100, 120], [120, 101], [63, 105], [105, 104], [104, 63], [93, 137], [137, 227], [227, 93], [15, 86], [86, 85], [85, 15], [129, 102], [102, 49], [49, 129], [14, 87], [87, 86], [86, 14], [55, 8], [8, 9], [9, 55], [100, 47], [47, 121], [121, 100], [145, 23], [23, 22], [22, 145], [88, 89], [89, 179], [179, 88], [6, 122], [122, 196], [196, 6], [88, 95], [95, 96], [96, 88], [138, 172], [172, 136], [136, 138], [215, 58], [58, 172], [172, 215], [115, 48], [48, 219], [219, 115], [42, 80], [80, 81], [81, 42], [195, 3], [3, 51], [51, 195], [43, 146], [146, 61], [61, 43], [171, 175], [175, 199], [199, 171], [81, 82], [82, 38], [38, 81], [53, 46], [46, 225], [225, 53], [144, 163], [163, 110], [110, 144], [52, 65], [65, 66], [66, 52], [229, 228], [228, 117], [117, 229], [34, 127], [127, 234], [234, 34], [107, 108], [108, 69], [69, 107], [109, 108], [108, 151], [151, 109], [48, 64], [64, 235], [235, 48], [62, 78], [78, 191], [191, 62], [129, 209], [209, 126], [126, 129], [111, 35], [35, 143], [143, 111], [117, 123], [123, 50], [50, 117], [222, 65], [65, 52], [52, 222], [19, 125], [125, 141], [141, 19], [221, 55], [55, 65], [65, 221], [3, 195], [195, 197], [197, 3], [25, 7], [7, 33], [33, 25], [220, 237], [237, 44], [44, 220], [70, 71], [71, 139], [139, 70], [122, 193], [193, 245], [245, 122], [247, 130], [130, 33], [33, 247], [71, 21], [21, 162], [162, 71], [170, 169], [169, 150], [150, 170], [188, 174], [174, 196], [196, 188], [216, 186], [186, 92], [92, 216], [2, 97], [97, 167], [167, 2], [141, 125], [125, 241], [241, 141], [164, 167], [167, 37], [37, 164], [72, 38], [38, 12], [12, 72], [38, 82], [82, 13], [13, 38], [63, 68], [68, 71], [71, 63], [226, 35], [35, 111], [111, 226], [101, 50], [50, 205], [205, 101], [206, 92], [92, 165], [165, 206], [209, 198], [198, 217], [217, 209], [165, 167], [167, 97], [97, 165], [220, 115], [115, 218], [218, 220], [133, 112], [112, 243], [243, 133], [239, 238], [238, 241], [241, 239], [214, 135], [135, 169], [169, 214], [190, 173], [173, 133], [133, 190], [171, 208], [208, 32], [32, 171], [125, 44], [44, 237], [237, 125], [86, 87], [87, 178], [178, 86], [85, 86], [86, 179], [179, 85], [84, 85], [85, 180], [180, 84], [83, 84], [84, 181], [181, 83], [201, 83], [83, 182], [182, 201], [137, 93], [93, 132], [132, 137], [76, 62], [62, 183], [183, 76], [61, 76], [76, 184], [184, 61], [57, 61], [61, 185], [185, 57], [212, 57], [57, 186], [186, 212], [214, 207], [207, 187], [187, 214], [34, 143], [143, 156], [156, 34], [79, 239], [239, 237], [237, 79], [123, 137], [137, 177], [177, 123], [44, 1], [1, 4], [4, 44], [201, 194], [194, 32], [32, 201], [64, 102], [102, 129], [129, 64], [213, 215], [215, 138], [138, 213], [59, 166], [166, 219], [219, 59], [242, 99], [99, 97], [97, 242], [2, 94], [94, 141], [141, 2], [75, 59], [59, 235], [235, 75], [24, 110], [110, 228], [228, 24], [25, 130], [130, 226], [226, 25], [23, 24], [24, 229], [229, 23], [22, 23], [23, 230], [230, 22], [26, 22], [22, 231], [231, 26], [112, 26], [26, 232], [232, 112], [189, 190], [190, 243], [243, 189], [221, 56], [56, 190], [190, 221], [28, 56], [56, 221], [221, 28], [27, 28], [28, 222], [222, 27], [29, 27], [27, 223], [223, 29], [30, 29], [29, 224], [224, 30], [247, 30], [30, 225], [225, 247], [238, 79], [79, 20], [20, 238], [166, 59], [59, 75], [75, 166], [60, 75], [75, 240], [240, 60], [147, 177], [177, 215], [215, 147], [20, 79], [79, 166], [166, 20], [187, 147], [147, 213], [213, 187], [112, 233], [233, 244], [244, 112], [233, 128], [128, 245], [245, 233], [128, 114], [114, 188], [188, 128], [114, 217], [217, 174], [174, 114], [131, 115], [115, 220], [220, 131], [217, 198], [198, 236], [236, 217], [198, 131], [131, 134], [134, 198], [177, 132], [132, 58], [58, 177], [143, 35], [35, 124], [124, 143], [110, 163], [163, 7], [7, 110], [228, 110], [110, 25], [25, 228], [356, 389], [389, 368], [368, 356], [11, 302], [302, 267], [267, 11], [452, 350], [350, 349], [349, 452], [302, 303], [303, 269], [269, 302], [357, 343], [343, 277], [277, 357], [452, 453], [453, 357], [357, 452], [333, 332], [332, 297], [297, 333], [175, 152], [152, 377], [377, 175], [347, 348], [348, 330], [330, 347], [303, 304], [304, 270], [270, 303], [9, 336], [336, 337], [337, 9], [278, 279], [279, 360], [360, 278], [418, 262], [262, 431], [431, 418], [304, 408], [408, 409], [409, 304], [310, 415], [415, 407], [407, 310], [270, 409], [409, 410], [410, 270], [450, 348], [348, 347], [347, 450], [422, 430], [430, 434], [434, 422], [313, 314], [314, 17], [17, 313], [306, 307], [307, 375], [375, 306], [387, 388], [388, 260], [260, 387], [286, 414], [414, 398], [398, 286], [335, 406], [406, 418], [418, 335], [364, 367], [367, 416], [416, 364], [423, 358], [358, 327], [327, 423], [251, 284], [284, 298], [298, 251], [281, 5], [5, 4], [4, 281], [373, 374], [374, 253], [253, 373], [307, 320], [320, 321], [321, 307], [425, 427], [427, 411], [411, 425], [421, 313], [313, 18], [18, 421], [321, 405], [405, 406], [406, 321], [320, 404], [404, 405], [405, 320], [315, 16], [16, 17], [17, 315], [426, 425], [425, 266], [266, 426], [377, 400], [400, 369], [369, 377], [322, 391], [391, 269], [269, 322], [417, 465], [465, 464], [464, 417], [386, 257], [257, 258], [258, 386], [466, 260], [260, 388], [388, 466], [456, 399], [399, 419], [419, 456], [284, 332], [332, 333], [333, 284], [417, 285], [285, 8], [8, 417], [346, 340], [340, 261], [261, 346], [413, 441], [441, 285], [285, 413], [327, 460], [460, 328], [328, 327], [355, 371], [371, 329], [329, 355], [392, 439], [439, 438], [438, 392], [382, 341], [341, 256], [256, 382], [429, 420], [420, 360], [360, 429], [364, 394], [394, 379], [379, 364], [277, 343], [343, 437], [437, 277], [443, 444], [444, 283], [283, 443], [275, 440], [440, 363], [363, 275], [431, 262], [262, 369], [369, 431], [297, 338], [338, 337], [337, 297], [273, 375], [375, 321], [321, 273], [450, 451], [451, 349], [349, 450], [446, 342], [342, 467], [467, 446], [293, 334], [334, 282], [282, 293], [458, 461], [461, 462], [462, 458], [276, 353], [353, 383], [383, 276], [308, 324], [324, 325], [325, 308], [276, 300], [300, 293], [293, 276], [372, 345], [345, 447], [447, 372], [352, 345], [345, 340], [340, 352], [274, 1], [1, 19], [19, 274], [456, 248], [248, 281], [281, 456], [436, 427], [427, 425], [425, 436], [381, 256], [256, 252], [252, 381], [269, 391], [391, 393], [393, 269], [200, 199], [199, 428], [428, 200], [266, 330], [330, 329], [329, 266], [287, 273], [273, 422], [422, 287], [250, 462], [462, 328], [328, 250], [258, 286], [286, 384], [384, 258], [265, 353], [353, 342], [342, 265], [387, 259], [259, 257], [257, 387], [424, 431], [431, 430], [430, 424], [342, 353], [353, 276], [276, 342], [273, 335], [335, 424], [424, 273], [292, 325], [325, 307], [307, 292], [366, 447], [447, 345], [345, 366], [271, 303], [303, 302], [302, 271], [423, 266], [266, 371], [371, 423], [294, 455], [455, 460], [460, 294], [279, 278], [278, 294], [294, 279], [271, 272], [272, 304], [304, 271], [432, 434], [434, 427], [427, 432], [272, 407], [407, 408], [408, 272], [394, 430], [430, 431], [431, 394], [395, 369], [369, 400], [400, 395], [334, 333], [333, 299], [299, 334], [351, 417], [417, 168], [168, 351], [352, 280], [280, 411], [411, 352], [325, 319], [319, 320], [320, 325], [295, 296], [296, 336], [336, 295], [319, 403], [403, 404], [404, 319], [330, 348], [348, 349], [349, 330], [293, 298], [298, 333], [333, 293], [323, 454], [454, 447], [447, 323], [15, 16], [16, 315], [315, 15], [358, 429], [429, 279], [279, 358], [14, 15], [15, 316], [316, 14], [285, 336], [336, 9], [9, 285], [329, 349], [349, 350], [350, 329], [374, 380], [380, 252], [252, 374], [318, 402], [402, 403], [403, 318], [6, 197], [197, 419], [419, 6], [318, 319], [319, 325], [325, 318], [367, 364], [364, 365], [365, 367], [435, 367], [367, 397], [397, 435], [344, 438], [438, 439], [439, 344], [272, 271], [271, 311], [311, 272], [195, 5], [5, 281], [281, 195], [273, 287], [287, 291], [291, 273], [396, 428], [428, 199], [199, 396], [311, 271], [271, 268], [268, 311], [283, 444], [444, 445], [445, 283], [373, 254], [254, 339], [339, 373], [282, 334], [334, 296], [296, 282], [449, 347], [347, 346], [346, 449], [264, 447], [447, 454], [454, 264], [336, 296], [296, 299], [299, 336], [338, 10], [10, 151], [151, 338], [278, 439], [439, 455], [455, 278], [292, 407], [407, 415], [415, 292], [358, 371], [371, 355], [355, 358], [340, 345], [345, 372], [372, 340], [346, 347], [347, 280], [280, 346], [442, 443], [443, 282], [282, 442], [19, 94], [94, 370], [370, 19], [441, 442], [442, 295], [295, 441], [248, 419], [419, 197], [197, 248], [263, 255], [255, 359], [359, 263], [440, 275], [275, 274], [274, 440], [300, 383], [383, 368], [368, 300], [351, 412], [412, 465], [465, 351], [263, 467], [467, 466], [466, 263], [301, 368], [368, 389], [389, 301], [395, 378], [378, 379], [379, 395], [412, 351], [351, 419], [419, 412], [436, 426], [426, 322], [322, 436], [2, 164], [164, 393], [393, 2], [370, 462], [462, 461], [461, 370], [164, 0], [0, 267], [267, 164], [302, 11], [11, 12], [12, 302], [268, 12], [12, 13], [13, 268], [293, 300], [300, 301], [301, 293], [446, 261], [261, 340], [340, 446], [330, 266], [266, 425], [425, 330], [426, 423], [423, 391], [391, 426], [429, 355], [355, 437], [437, 429], [391, 327], [327, 326], [326, 391], [440, 457], [457, 438], [438, 440], [341, 382], [382, 362], [362, 341], [459, 457], [457, 461], [461, 459], [434, 430], [430, 394], [394, 434], [414, 463], [463, 362], [362, 414], [396, 369], [369, 262], [262, 396], [354, 461], [461, 457], [457, 354], [316, 403], [403, 402], [402, 316], [315, 404], [404, 403], [403, 315], [314, 405], [405, 404], [404, 314], [313, 406], [406, 405], [405, 313], [421, 418], [418, 406], [406, 421], [366, 401], [401, 361], [361, 366], [306, 408], [408, 407], [407, 306], [291, 409], [409, 408], [408, 291], [287, 410], [410, 409], [409, 287], [432, 436], [436, 410], [410, 432], [434, 416], [416, 411], [411, 434], [264, 368], [368, 383], [383, 264], [309, 438], [438, 457], [457, 309], [352, 376], [376, 401], [401, 352], [274, 275], [275, 4], [4, 274], [421, 428], [428, 262], [262, 421], [294, 327], [327, 358], [358, 294], [433, 416], [416, 367], [367, 433], [289, 455], [455, 439], [439, 289], [462, 370], [370, 326], [326, 462], [2, 326], [326, 370], [370, 2], [305, 460], [460, 455], [455, 305], [254, 449], [449, 448], [448, 254], [255, 261], [261, 446], [446, 255], [253, 450], [450, 449], [449, 253], [252, 451], [451, 450], [450, 252], [256, 452], [452, 451], [451, 256], [341, 453], [453, 452], [452, 341], [413, 464], [464, 463], [463, 413], [441, 413], [413, 414], [414, 441], [258, 442], [442, 441], [441, 258], [257, 443], [443, 442], [442, 257], [259, 444], [444, 443], [443, 259], [260, 445], [445, 444], [444, 260], [467, 342], [342, 445], [445, 467], [459, 458], [458, 250], [250, 459], [289, 392], [392, 290], [290, 289], [290, 328], [328, 460], [460, 290], [376, 433], [433, 435], [435, 376], [250, 290], [290, 392], [392, 250], [411, 416], [416, 433], [433, 411], [341, 463], [463, 464], [464, 341], [453, 464], [464, 465], [465, 453], [357, 465], [465, 412], [412, 357], [343, 412], [412, 399], [399, 343], [360, 363], [363, 440], [440, 360], [437, 399], [399, 456], [456, 437], [420, 456], [456, 363], [363, 420], [401, 435], [435, 288], [288, 401], [372, 383], [383, 353], [353, 372], [339, 255], [255, 249], [249, 339], [448, 261], [261, 255], [255, 448], [133, 243], [243, 190], [190, 133], [133, 155], [155, 112], [112, 133], [33, 246], [246, 247], [247, 33], [33, 130], [130, 25], [25, 33], [398, 384], [384, 286], [286, 398], [362, 398], [398, 414], [414, 362], [362, 463], [463, 341], [341, 362], [263, 359], [359, 467], [467, 263], [263, 249], [249, 255], [255, 263], [466, 467], [467, 260], [260, 466], [75, 60], [60, 166], [166, 75], [238, 239], [239, 79], [79, 238], [162, 127], [127, 139], [139, 162], [72, 11], [11, 37], [37, 72], [121, 232], [232, 120], [120, 121], [73, 72], [72, 39], [39, 73], [114, 128], [128, 47], [47, 114], [233, 232], [232, 128], [128, 233], [103, 104], [104, 67], [67, 103], [152, 175], [175, 148], [148, 152], [119, 118], [118, 101], [101, 119], [74, 73], [73, 40], [40, 74], [107, 9], [9, 108], [108, 107], [49, 48], [48, 131], [131, 49], [32, 194], [194, 211], [211, 32], [184, 74], [74, 185], [185, 184], [191, 80], [80, 183], [183, 191], [185, 40], [40, 186], [186, 185], [119, 230], [230, 118], [118, 119], [210, 202], [202, 214], [214, 210], [84, 83], [83, 17], [17, 84], [77, 76], [76, 146], [146, 77], [161, 160], [160, 30], [30, 161], [190, 56], [56, 173], [173, 190], [182, 106], [106, 194], [194, 182], [138, 135], [135, 192], [192, 138], [129, 203], [203, 98], [98, 129], [54, 21], [21, 68], [68, 54], [5, 51], [51, 4], [4, 5], [145, 144], [144, 23], [23, 145], [90, 77], [77, 91], [91, 90], [207, 205], [205, 187], [187, 207], [83, 201], [201, 18], [18, 83], [181, 91], [91, 182], [182, 181], [180, 90], [90, 181], [181, 180], [16, 85], [85, 17], [17, 16], [205, 206], [206, 36], [36, 205], [176, 148], [148, 140], [140, 176], [165, 92], [92, 39], [39, 165], [245, 193], [193, 244], [244, 245], [27, 159], [159, 28], [28, 27], [30, 247], [247, 161], [161, 30], [174, 236], [236, 196], [196, 174], [103, 54], [54, 104], [104, 103], [55, 193], [193, 8], [8, 55], [111, 117], [117, 31], [31, 111], [221, 189], [189, 55], [55, 221], [240, 98], [98, 99], [99, 240], [142, 126], [126, 100], [100, 142], [219, 166], [166, 218], [218, 219], [112, 155], [155, 26], [26, 112], [198, 209], [209, 131], [131, 198], [169, 135], [135, 150], [150, 169], [114, 47], [47, 217], [217, 114], [224, 223], [223, 53], [53, 224], [220, 45], [45, 134], [134, 220], [32, 211], [211, 140], [140, 32], [109, 67], [67, 108], [108, 109], [146, 43], [43, 91], [91, 146], [231, 230], [230, 120], [120, 231], [113, 226], [226, 247], [247, 113], [105, 63], [63, 52], [52, 105], [241, 238], [238, 242], [242, 241], [124, 46], [46, 156], [156, 124], [95, 78], [78, 96], [96, 95], [70, 46], [46, 63], [63, 70], [116, 143], [143, 227], [227, 116], [116, 123], [123, 111], [111, 116], [1, 44], [44, 19], [19, 1], [3, 236], [236, 51], [51, 3], [207, 216], [216, 205], [205, 207], [26, 154], [154, 22], [22, 26], [165, 39], [39, 167], [167, 165], [199, 200], [200, 208], [208, 199], [101, 36], [36, 100], [100, 101], [43, 57], [57, 202], [202, 43], [242, 20], [20, 99], [99, 242], [56, 28], [28, 157], [157, 56], [124, 35], [35, 113], [113, 124], [29, 160], [160, 27], [27, 29], [211, 204], [204, 210], [210, 211], [124, 113], [113, 46], [46, 124], [106, 43], [43, 204], [204, 106], [96, 62], [62, 77], [77, 96], [227, 137], [137, 116], [116, 227], [73, 41], [41, 72], [72, 73], [36, 203], [203, 142], [142, 36], [235, 64], [64, 240], [240, 235], [48, 49], [49, 64], [64, 48], [42, 41], [41, 74], [74, 42], [214, 212], [212, 207], [207, 214], [183, 42], [42, 184], [184, 183], [210, 169], [169, 211], [211, 210], [140, 170], [170, 176], [176, 140], [104, 105], [105, 69], [69, 104], [193, 122], [122, 168], [168, 193], [50, 123], [123, 187], [187, 50], [89, 96], [96, 90], [90, 89], [66, 65], [65, 107], [107, 66], [179, 89], [89, 180], [180, 179], [119, 101], [101, 120], [120, 119], [68, 63], [63, 104], [104, 68], [234, 93], [93, 227], [227, 234], [16, 15], [15, 85], [85, 16], [209, 129], [129, 49], [49, 209], [15, 14], [14, 86], [86, 15], [107, 55], [55, 9], [9, 107], [120, 100], [100, 121], [121, 120], [153, 145], [145, 22], [22, 153], [178, 88], [88, 179], [179, 178], [197, 6], [6, 196], [196, 197], [89, 88], [88, 96], [96, 89], [135, 138], [138, 136], [136, 135], [138, 215], [215, 172], [172, 138], [218, 115], [115, 219], [219, 218], [41, 42], [42, 81], [81, 41], [5, 195], [195, 51], [51, 5], [57, 43], [43, 61], [61, 57], [208, 171], [171, 199], [199, 208], [41, 81], [81, 38], [38, 41], [224, 53], [53, 225], [225, 224], [24, 144], [144, 110], [110, 24], [105, 52], [52, 66], [66, 105], [118, 229], [229, 117], [117, 118], [227, 34], [34, 234], [234, 227], [66, 107], [107, 69], [69, 66], [10, 109], [109, 151], [151, 10], [219, 48], [48, 235], [235, 219], [183, 62], [62, 191], [191, 183], [142, 129], [129, 126], [126, 142], [116, 111], [111, 143], [143, 116], [118, 117], [117, 50], [50, 118], [223, 222], [222, 52], [52, 223], [94, 19], [19, 141], [141, 94], [222, 221], [221, 65], [65, 222], [196, 3], [3, 197], [197, 196], [45, 220], [220, 44], [44, 45], [156, 70], [70, 139], [139, 156], [188, 122], [122, 245], [245, 188], [139, 71], [71, 162], [162, 139], [149, 170], [170, 150], [150, 149], [122, 188], [188, 196], [196, 122], [206, 216], [216, 92], [92, 206], [164, 2], [2, 167], [167, 164], [242, 141], [141, 241], [241, 242], [0, 164], [164, 37], [37, 0], [11, 72], [72, 12], [12, 11], [12, 38], [38, 13], [13, 12], [70, 63], [63, 71], [71, 70], [31, 226], [226, 111], [111, 31], [36, 101], [101, 205], [205, 36], [203, 206], [206, 165], [165, 203], [126, 209], [209, 217], [217, 126], [98, 165], [165, 97], [97, 98], [237, 220], [220, 218], [218, 237], [237, 239], [239, 241], [241, 237], [210, 214], [214, 169], [169, 210], [140, 171], [171, 32], [32, 140], [241, 125], [125, 237], [237, 241], [179, 86], [86, 178], [178, 179], [180, 85], [85, 179], [179, 180], [181, 84], [84, 180], [180, 181], [182, 83], [83, 181], [181, 182], [194, 201], [201, 182], [182, 194], [177, 137], [137, 132], [132, 177], [184, 76], [76, 183], [183, 184], [185, 61], [61, 184], [184, 185], [186, 57], [57, 185], [185, 186], [216, 212], [212, 186], [186, 216], [192, 214], [214, 187], [187, 192], [139, 34], [34, 156], [156, 139], [218, 79], [79, 237], [237, 218], [147, 123], [123, 177], [177, 147], [45, 44], [44, 4], [4, 45], [208, 201], [201, 32], [32, 208], [98, 64], [64, 129], [129, 98], [192, 213], [213, 138], [138, 192], [235, 59], [59, 219], [219, 235], [141, 242], [242, 97], [97, 141], [97, 2], [2, 141], [141, 97], [240, 75], [75, 235], [235, 240], [229, 24], [24, 228], [228, 229], [31, 25], [25, 226], [226, 31], [230, 23], [23, 229], [229, 230], [231, 22], [22, 230], [230, 231], [232, 26], [26, 231], [231, 232], [233, 112], [112, 232], [232, 233], [244, 189], [189, 243], [243, 244], [189, 221], [221, 190], [190, 189], [222, 28], [28, 221], [221, 222], [223, 27], [27, 222], [222, 223], [224, 29], [29, 223], [223, 224], [225, 30], [30, 224], [224, 225], [113, 247], [247, 225], [225, 113], [99, 60], [60, 240], [240, 99], [213, 147], [147, 215], [215, 213], [60, 20], [20, 166], [166, 60], [192, 187], [187, 213], [213, 192], [243, 112], [112, 244], [244, 243], [244, 233], [233, 245], [245, 244], [245, 128], [128, 188], [188, 245], [188, 114], [114, 174], [174, 188], [134, 131], [131, 220], [220, 134], [174, 217], [217, 236], [236, 174], [236, 198], [198, 134], [134, 236], [215, 177], [177, 58], [58, 215], [156, 143], [143, 124], [124, 156], [25, 110], [110, 7], [7, 25], [31, 228], [228, 25], [25, 31], [264, 356], [356, 368], [368, 264], [0, 11], [11, 267], [267, 0], [451, 452], [452, 349], [349, 451], [267, 302], [302, 269], [269, 267], [350, 357], [357, 277], [277, 350], [350, 452], [452, 357], [357, 350], [299, 333], [333, 297], [297, 299], [396, 175], [175, 377], [377, 396], [280, 347], [347, 330], [330, 280], [269, 303], [303, 270], [270, 269], [151, 9], [9, 337], [337, 151], [344, 278], [278, 360], [360, 344], [424, 418], [418, 431], [431, 424], [270, 304], [304, 409], [409, 270], [272, 310], [310, 407], [407, 272], [322, 270], [270, 410], [410, 322], [449, 450], [450, 347], [347, 449], [432, 422], [422, 434], [434, 432], [18, 313], [313, 17], [17, 18], [291, 306], [306, 375], [375, 291], [259, 387], [387, 260], [260, 259], [424, 335], [335, 418], [418, 424], [434, 364], [364, 416], [416, 434], [391, 423], [423, 327], [327, 391], [301, 251], [251, 298], [298, 301], [275, 281], [281, 4], [4, 275], [254, 373], [373, 253], [253, 254], [375, 307], [307, 321], [321, 375], [280, 425], [425, 411], [411, 280], [200, 421], [421, 18], [18, 200], [335, 321], [321, 406], [406, 335], [321, 320], [320, 405], [405, 321], [314, 315], [315, 17], [17, 314], [423, 426], [426, 266], [266, 423], [396, 377], [377, 369], [369, 396], [270, 322], [322, 269], [269, 270], [413, 417], [417, 464], [464, 413], [385, 386], [386, 258], [258, 385], [248, 456], [456, 419], [419, 248], [298, 284], [284, 333], [333, 298], [168, 417], [417, 8], [8, 168], [448, 346], [346, 261], [261, 448], [417, 413], [413, 285], [285, 417], [326, 327], [327, 328], [328, 326], [277, 355], [355, 329], [329, 277], [309, 392], [392, 438], [438, 309], [381, 382], [382, 256], [256, 381], [279, 429], [429, 360], [360, 279], [365, 364], [364, 379], [379, 365], [355, 277], [277, 437], [437, 355], [282, 443], [443, 283], [283, 282], [281, 275], [275, 363], [363, 281], [395, 431], [431, 369], [369, 395], [299, 297], [297, 337], [337, 299], [335, 273], [273, 321], [321, 335], [348, 450], [450, 349], [349, 348], [359, 446], [446, 467], [467, 359], [283, 293], [293, 282], [282, 283], [250, 458], [458, 462], [462, 250], [300, 276], [276, 383], [383, 300], [292, 308], [308, 325], [325, 292], [283, 276], [276, 293], [293, 283], [264, 372], [372, 447], [447, 264], [346, 352], [352, 340], [340, 346], [354, 274], [274, 19], [19, 354], [363, 456], [456, 281], [281, 363], [426, 436], [436, 425], [425, 426], [380, 381], [381, 252], [252, 380], [267, 269], [269, 393], [393, 267], [421, 200], [200, 428], [428, 421], [371, 266], [266, 329], [329, 371], [432, 287], [287, 422], [422, 432], [290, 250], [250, 328], [328, 290], [385, 258], [258, 384], [384, 385], [446, 265], [265, 342], [342, 446], [386, 387], [387, 257], [257, 386], [422, 424], [424, 430], [430, 422], [445, 342], [342, 276], [276, 445], [422, 273], [273, 424], [424, 422], [306, 292], [292, 307], [307, 306], [352, 366], [366, 345], [345, 352], [268, 271], [271, 302], [302, 268], [358, 423], [423, 371], [371, 358], [327, 294], [294, 460], [460, 327], [331, 279], [279, 294], [294, 331], [303, 271], [271, 304], [304, 303], [436, 432], [432, 427], [427, 436], [304, 272], [272, 408], [408, 304], [395, 394], [394, 431], [431, 395], [378, 395], [395, 400], [400, 378], [296, 334], [334, 299], [299, 296], [6, 351], [351, 168], [168, 6], [376, 352], [352, 411], [411, 376], [307, 325], [325, 320], [320, 307], [285, 295], [295, 336], [336, 285], [320, 319], [319, 404], [404, 320], [329, 330], [330, 349], [349, 329], [334, 293], [293, 333], [333, 334], [366, 323], [323, 447], [447, 366], [316, 15], [15, 315], [315, 316], [331, 358], [358, 279], [279, 331], [317, 14], [14, 316], [316, 317], [8, 285], [285, 9], [9, 8], [277, 329], [329, 350], [350, 277], [253, 374], [374, 252], [252, 253], [319, 318], [318, 403], [403, 319], [351, 6], [6, 419], [419, 351], [324, 318], [318, 325], [325, 324], [397, 367], [367, 365], [365, 397], [288, 435], [435, 397], [397, 288], [278, 344], [344, 439], [439, 278], [310, 272], [272, 311], [311, 310], [248, 195], [195, 281], [281, 248], [375, 273], [273, 291], [291, 375], [175, 396], [396, 199], [199, 175], [312, 311], [311, 268], [268, 312], [276, 283], [283, 445], [445, 276], [390, 373], [373, 339], [339, 390], [295, 282], [282, 296], [296, 295], [448, 449], [449, 346], [346, 448], [356, 264], [264, 454], [454, 356], [337, 336], [336, 299], [299, 337], [337, 338], [338, 151], [151, 337], [294, 278], [278, 455], [455, 294], [308, 292], [292, 415], [415, 308], [429, 358], [358, 355], [355, 429], [265, 340], [340, 372], [372, 265], [352, 346], [346, 280], [280, 352], [295, 442], [442, 282], [282, 295], [354, 19], [19, 370], [370, 354], [285, 441], [441, 295], [295, 285], [195, 248], [248, 197], [197, 195], [457, 440], [440, 274], [274, 457], [301, 300], [300, 368], [368, 301], [417, 351], [351, 465], [465, 417], [251, 301], [301, 389], [389, 251], [394, 395], [395, 379], [379, 394], [399, 412], [412, 419], [419, 399], [410, 436], [436, 322], [322, 410], [326, 2], [2, 393], [393, 326], [354, 370], [370, 461], [461, 354], [393, 164], [164, 267], [267, 393], [268, 302], [302, 12], [12, 268], [312, 268], [268, 13], [13, 312], [298, 293], [293, 301], [301, 298], [265, 446], [446, 340], [340, 265], [280, 330], [330, 425], [425, 280], [322, 426], [426, 391], [391, 322], [420, 429], [429, 437], [437, 420], [393, 391], [391, 326], [326, 393], [344, 440], [440, 438], [438, 344], [458, 459], [459, 461], [461, 458], [364, 434], [434, 394], [394, 364], [428, 396], [396, 262], [262, 428], [274, 354], [354, 457], [457, 274], [317, 316], [316, 402], [402, 317], [316, 315], [315, 403], [403, 316], [315, 314], [314, 404], [404, 315], [314, 313], [313, 405], [405, 314], [313, 421], [421, 406], [406, 313], [323, 366], [366, 361], [361, 323], [292, 306], [306, 407], [407, 292], [306, 291], [291, 408], [408, 306], [291, 287], [287, 409], [409, 291], [287, 432], [432, 410], [410, 287], [427, 434], [434, 411], [411, 427], [372, 264], [264, 383], [383, 372], [459, 309], [309, 457], [457, 459], [366, 352], [352, 401], [401, 366], [1, 274], [274, 4], [4, 1], [418, 421], [421, 262], [262, 418], [331, 294], [294, 358], [358, 331], [435, 433], [433, 367], [367, 435], [392, 289], [289, 439], [439, 392], [328, 462], [462, 326], [326, 328], [94, 2], [2, 370], [370, 94], [289, 305], [305, 455], [455, 289], [339, 254], [254, 448], [448, 339], [359, 255], [255, 446], [446, 359], [254, 253], [253, 449], [449, 254], [253, 252], [252, 450], [450, 253], [252, 256], [256, 451], [451, 252], [256, 341], [341, 452], [452, 256], [414, 413], [413, 463], [463, 414], [286, 441], [441, 414], [414, 286], [286, 258], [258, 441], [441, 286], [258, 257], [257, 442], [442, 258], [257, 259], [259, 443], [443, 257], [259, 260], [260, 444], [444, 259], [260, 467], [467, 445], [445, 260], [309, 459], [459, 250], [250, 309], [305, 289], [289, 290], [290, 305], [305, 290], [290, 460], [460, 305], [401, 376], [376, 435], [435, 401], [309, 250], [250, 392], [392, 309], [376, 411], [411, 433], [433, 376], [453, 341], [341, 464], [464, 453], [357, 453], [453, 465], [465, 357], [343, 357], [357, 412], [412, 343], [437, 343], [343, 399], [399, 437], [344, 360], [360, 440], [440, 344], [420, 437], [437, 456], [456, 420], [360, 420], [420, 363], [363, 360], [361, 401], [401, 288], [288, 361], [265, 372], [372, 353], [353, 265], [390, 339], [339, 249], [249, 390], [339, 448], [448, 255], [255, 339]);
 function hc(t2) {
   t2.j = { faceLandmarks: [], faceBlendshapes: [], facialTransformationMatrixes: [] };
 }
-var uc = class extends Ja {
+const uc = class extends Ja {
   constructor(t2, e2) {
     super(new Wa(t2, e2), "image_in", "norm_rect", false), this.j = { faceLandmarks: [], faceBlendshapes: [], facialTransformationMatrixes: [] }, this.outputFacialTransformationMatrixes = this.outputFaceBlendshapes = false, dn(t2 = this.h = new Bs(), 0, 1, e2 = new Is()), this.v = new Ns(), dn(this.h, 0, 3, this.v), this.s = new Cs(), dn(this.h, 0, 2, this.s), Tn(this.s, 4, 1), An(this.s, 2, 0.5), An(this.v, 2, 0.5), An(this.h, 4, 0.5);
   }
@@ -2949,7 +2968,7 @@ var uc = class extends Ja {
     return hc(this), $a(this, t2, n2, e2), this.j;
   }
   m() {
-    var t2 = new Qi();
+    let t2 = new Qi();
     Ji(t2, "image_in"), Ji(t2, "norm_rect"), Zi(t2, "face_landmarks");
     const e2 = new Gi();
     Yn(e2, Vs, this.h);
@@ -2972,14 +2991,8 @@ var uc = class extends Ja {
     })), t2 = t2.g(), this.setGraph(new Uint8Array(t2), true);
   }
 };
-uc.prototype.detectForVideo = uc.prototype.F, uc.prototype.detect = uc.prototype.D, uc.prototype.setOptions = uc.prototype.o, uc.createFromModelPath = function(t2, e2) {
-  return za(uc, t2, { baseOptions: { modelAssetPath: e2 } });
-}, uc.createFromModelBuffer = function(t2, e2) {
-  return za(uc, t2, { baseOptions: { modelAssetBuffer: e2 } });
-}, uc.createFromOptions = function(t2, e2) {
-  return za(uc, t2, e2);
-}, uc.FACE_LANDMARKS_LIPS = Qa, uc.FACE_LANDMARKS_LEFT_EYE = tc, uc.FACE_LANDMARKS_LEFT_EYEBROW = ec, uc.FACE_LANDMARKS_LEFT_IRIS = nc, uc.FACE_LANDMARKS_RIGHT_EYE = rc, uc.FACE_LANDMARKS_RIGHT_EYEBROW = ic, uc.FACE_LANDMARKS_RIGHT_IRIS = sc, uc.FACE_LANDMARKS_FACE_OVAL = oc, uc.FACE_LANDMARKS_CONTOURS = ac, uc.FACE_LANDMARKS_TESSELATION = cc;
-var lc = class extends Ja {
+uc.prototype.detectForVideo = uc.prototype.F, uc.prototype.detect = uc.prototype.D, uc.prototype.setOptions = uc.prototype.o, uc.createFromModelPath = (t2, e2) => za(uc, t2, { baseOptions: { modelAssetPath: e2 } }), uc.createFromModelBuffer = (t2, e2) => za(uc, t2, { baseOptions: { modelAssetBuffer: e2 } }), uc.createFromOptions = (t2, e2) => za(uc, t2, e2), uc.FACE_LANDMARKS_LIPS = Qa, uc.FACE_LANDMARKS_LEFT_EYE = tc, uc.FACE_LANDMARKS_LEFT_EYEBROW = ec, uc.FACE_LANDMARKS_LEFT_IRIS = nc, uc.FACE_LANDMARKS_RIGHT_EYE = rc, uc.FACE_LANDMARKS_RIGHT_EYEBROW = ic, uc.FACE_LANDMARKS_RIGHT_IRIS = sc, uc.FACE_LANDMARKS_FACE_OVAL = oc, uc.FACE_LANDMARKS_CONTOURS = ac, uc.FACE_LANDMARKS_TESSELATION = cc;
+const lc = class extends Ja {
   constructor(t2, e2) {
     super(new Wa(t2, e2), "image_in", "norm_rect", true), dn(t2 = this.j = new Xs(), 0, 1, e2 = new Is());
   }
@@ -2993,41 +3006,37 @@ var lc = class extends Ja {
     return super.l(t2);
   }
   Ka(t2, e2, n2) {
-    const r2 = "function" != typeof e2 ? e2 : {};
-    if (this.h = "function" == typeof e2 ? e2 : n2, Ya(this, t2, r2 ?? {}), !this.h) return this.s;
+    const r2 = "function" !== typeof e2 ? e2 : {};
+    if (this.h = "function" === typeof e2 ? e2 : n2, Ya(this, t2, r2 ?? {}), !this.h) return this.s;
   }
   m() {
-    var t2 = new Qi();
+    let t2 = new Qi();
     Ji(t2, "image_in"), Ji(t2, "norm_rect"), Zi(t2, "stylized_image");
     const e2 = new Gi();
     Yn(e2, Hs, this.j);
     const n2 = new zi();
     Xi(n2, "mediapipe.tasks.vision.face_stylizer.FaceStylizerGraph"), Hi(n2, "IMAGE:image_in"), Hi(n2, "NORM_RECT:norm_rect"), Wi(n2, "STYLIZED_IMAGE:stylized_image"), n2.o(e2), qi(t2, n2), this.g.V("stylized_image", (t3, e3) => {
-      var n3 = !this.h, r2 = t3.data, i2 = t3.width;
+      let n3 = !this.h;
+      let r2 = t3.data;
+      let i2 = t3.width;
       const s2 = i2 * (t3 = t3.height);
       if (r2 instanceof Uint8Array) if (r2.length === 3 * s2) {
         const e4 = new Uint8ClampedArray(4 * s2);
         for (let t4 = 0; t4 < s2; ++t4) e4[4 * t4] = r2[3 * t4], e4[4 * t4 + 1] = r2[3 * t4 + 1], e4[4 * t4 + 2] = r2[3 * t4 + 2], e4[4 * t4 + 3] = 255;
         r2 = new ImageData(e4, i2, t3);
       } else {
-        if (r2.length !== 4 * s2) throw Error("Unsupported channel count: " + r2.length / s2);
+        if (r2.length !== 4 * s2) throw Error(`Unsupported channel count: ${r2.length / s2}`);
         r2 = new ImageData(new Uint8ClampedArray(r2.buffer, r2.byteOffset, r2.length), i2, t3);
       }
       else if (!(r2 instanceof WebGLTexture)) throw Error(`Unsupported format: ${r2.constructor.name}`);
-      i2 = new Ga([r2], false, false, this.g.i.canvas, this.P, i2, t3), this.s = n3 = n3 ? i2.clone() : i2, this.h && this.h(n3), Yo(this, e3);
+      i2 = new Ga([r2], false, false, this.g.i.canvas, this.P, i2, t3), this.s = n3 = n3 ? i2.clone() : i2, this.h?.(n3), Yo(this, e3);
     }), this.g.attachEmptyPacketListener("stylized_image", (t3) => {
-      this.s = null, this.h && this.h(null), Yo(this, t3);
+      this.s = null, this.h?.(null), Yo(this, t3);
     }), t2 = t2.g(), this.setGraph(new Uint8Array(t2), true);
   }
 };
-lc.prototype.stylize = lc.prototype.Ka, lc.prototype.setOptions = lc.prototype.o, lc.createFromModelPath = function(t2, e2) {
-  return za(lc, t2, { baseOptions: { modelAssetPath: e2 } });
-}, lc.createFromModelBuffer = function(t2, e2) {
-  return za(lc, t2, { baseOptions: { modelAssetBuffer: e2 } });
-}, lc.createFromOptions = function(t2, e2) {
-  return za(lc, t2, e2);
-};
-var dc = Va([0, 1], [1, 2], [2, 3], [3, 4], [0, 5], [5, 6], [6, 7], [7, 8], [5, 9], [9, 10], [10, 11], [11, 12], [9, 13], [13, 14], [14, 15], [15, 16], [13, 17], [0, 17], [17, 18], [18, 19], [19, 20]);
+lc.prototype.stylize = lc.prototype.Ka, lc.prototype.setOptions = lc.prototype.o, lc.createFromModelPath = (t2, e2) => za(lc, t2, { baseOptions: { modelAssetPath: e2 } }), lc.createFromModelBuffer = (t2, e2) => za(lc, t2, { baseOptions: { modelAssetBuffer: e2 } }), lc.createFromOptions = (t2, e2) => za(lc, t2, e2);
+const dc = Va([0, 1], [1, 2], [2, 3], [3, 4], [0, 5], [5, 6], [6, 7], [7, 8], [5, 9], [9, 10], [10, 11], [11, 12], [9, 13], [13, 14], [14, 15], [15, 16], [13, 17], [0, 17], [17, 18], [18, 19], [19, 20]);
 function fc(t2) {
   t2.gestures = [], t2.landmarks = [], t2.worldLandmarks = [], t2.handedness = [];
 }
@@ -3037,14 +3046,14 @@ function pc(t2) {
 function gc(t2, e2 = true) {
   const n2 = [];
   for (const i2 of t2) {
-    var r2 = ss(i2);
+    let r2 = ss(i2);
     t2 = [];
     for (const n3 of r2.g()) r2 = e2 && null != _n(n3, 1) ? _n(n3, 1) ?? 0 : -1, t2.push({ score: En(n3, 2) ?? 0, index: r2, categoryName: vn(n3, 3) ?? "" ?? "", displayName: vn(n3, 4) ?? "" ?? "" });
     n2.push(t2);
   }
   return n2;
 }
-var mc = class extends Ja {
+const mc = class extends Ja {
   constructor(t2, e2) {
     super(new Wa(t2, e2), "image_in", "norm_rect", false), this.gestures = [], this.landmarks = [], this.worldLandmarks = [], this.handedness = [], dn(t2 = this.j = new Js(), 0, 1, e2 = new Is()), this.s = new qs(), dn(this.j, 0, 2, this.s), this.C = new $s(), dn(this.s, 0, 3, this.C), this.v = new Ys(), dn(this.s, 0, 2, this.v), this.h = new Ks(), dn(this.j, 0, 3, this.h), An(this.v, 2, 0.5), An(this.s, 4, 0.5), An(this.C, 2, 0.5);
   }
@@ -3055,9 +3064,14 @@ var mc = class extends Ja {
     dn(this.j, 0, 1, t2);
   }
   o(t2) {
-    var _a2, _b, _c2, _d;
+    let _a2;
+    let _b;
+    let _c2;
+    let _d;
     if (Tn(this.v, 3, t2.numHands ?? 1), "minHandDetectionConfidence" in t2 && An(this.v, 2, t2.minHandDetectionConfidence ?? 0.5), "minTrackingConfidence" in t2 && An(this.s, 4, t2.minTrackingConfidence ?? 0.5), "minHandPresenceConfidence" in t2 && An(this.C, 2, t2.minHandPresenceConfidence ?? 0.5), t2.cannedGesturesClassifierOptions) {
-      var e2 = new Ws(), n2 = e2, r2 = ko(t2.cannedGesturesClassifierOptions, (_a2 = hn(this.h, Ws, 3)) == null ? void 0 : _a2.h());
+      const e2 = new Ws();
+      const n2 = e2;
+      const r2 = ko(t2.cannedGesturesClassifierOptions, (_a2 = hn(this.h, Ws, 3)) == null ? void 0 : _a2.h());
       dn(n2, 0, 2, r2), dn(this.h, 0, 3, e2);
     } else void 0 === t2.cannedGesturesClassifierOptions && ((_b = hn(this.h, Ws, 3)) == null ? void 0 : _b.g());
     return t2.customGesturesClassifierOptions ? (dn(n2 = e2 = new Ws(), 0, 2, r2 = ko(t2.customGesturesClassifierOptions, (_c2 = hn(this.h, Ws, 4)) == null ? void 0 : _c2.h())), dn(this.h, 0, 4, e2)) : void 0 === t2.customGesturesClassifierOptions && ((_d = hn(this.h, Ws, 4)) == null ? void 0 : _d.g()), this.l(t2);
@@ -3069,7 +3083,7 @@ var mc = class extends Ja {
     return fc(this), $a(this, t2, n2, e2), pc(this);
   }
   m() {
-    var t2 = new Qi();
+    let t2 = new Qi();
     Ji(t2, "image_in"), Ji(t2, "norm_rect"), Zi(t2, "hand_gestures"), Zi(t2, "hand_landmarks"), Zi(t2, "world_hand_landmarks"), Zi(t2, "handedness");
     const e2 = new Gi();
     Yn(e2, no, this.j);
@@ -3108,14 +3122,8 @@ var mc = class extends Ja {
 function yc(t2) {
   return { landmarks: t2.landmarks, worldLandmarks: t2.worldLandmarks, handednesses: t2.handedness, handedness: t2.handedness };
 }
-mc.prototype.recognizeForVideo = mc.prototype.Ga, mc.prototype.recognize = mc.prototype.Fa, mc.prototype.setOptions = mc.prototype.o, mc.createFromModelPath = function(t2, e2) {
-  return za(mc, t2, { baseOptions: { modelAssetPath: e2 } });
-}, mc.createFromModelBuffer = function(t2, e2) {
-  return za(mc, t2, { baseOptions: { modelAssetBuffer: e2 } });
-}, mc.createFromOptions = function(t2, e2) {
-  return za(mc, t2, e2);
-}, mc.HAND_CONNECTIONS = dc;
-var _c = class extends Ja {
+mc.prototype.recognizeForVideo = mc.prototype.Ga, mc.prototype.recognize = mc.prototype.Fa, mc.prototype.setOptions = mc.prototype.o, mc.createFromModelPath = (t2, e2) => za(mc, t2, { baseOptions: { modelAssetPath: e2 } }), mc.createFromModelBuffer = (t2, e2) => za(mc, t2, { baseOptions: { modelAssetBuffer: e2 } }), mc.createFromOptions = (t2, e2) => za(mc, t2, e2), mc.HAND_CONNECTIONS = dc;
+const _c = class extends Ja {
   constructor(t2, e2) {
     super(new Wa(t2, e2), "image_in", "norm_rect", false), this.landmarks = [], this.worldLandmarks = [], this.handedness = [], dn(t2 = this.h = new qs(), 0, 1, e2 = new Is()), this.s = new $s(), dn(this.h, 0, 3, this.s), this.j = new Ys(), dn(this.h, 0, 2, this.j), Tn(this.j, 3, 1), An(this.j, 2, 0.5), An(this.s, 2, 0.5), An(this.h, 4, 0.5);
   }
@@ -3135,7 +3143,7 @@ var _c = class extends Ja {
     return this.landmarks = [], this.worldLandmarks = [], this.handedness = [], $a(this, t2, n2, e2), yc(this);
   }
   m() {
-    var t2 = new Qi();
+    let t2 = new Qi();
     Ji(t2, "image_in"), Ji(t2, "norm_rect"), Zi(t2, "hand_landmarks"), Zi(t2, "world_hand_landmarks"), Zi(t2, "handedness");
     const e2 = new Gi();
     Yn(e2, ro, this.h);
@@ -3151,7 +3159,8 @@ var _c = class extends Ja {
     }), this.g.attachEmptyPacketListener("world_hand_landmarks", (t3) => {
       Yo(this, t3);
     }), this.g.attachProtoVectorListener("handedness", (t3, e3) => {
-      var n3 = this.handedness, r2 = n3.push;
+      const n3 = this.handedness;
+      const r2 = n3.push;
       const i2 = [];
       for (const e4 of t3) {
         t3 = ss(e4);
@@ -3165,14 +3174,8 @@ var _c = class extends Ja {
     }), t2 = t2.g(), this.setGraph(new Uint8Array(t2), true);
   }
 };
-_c.prototype.detectForVideo = _c.prototype.F, _c.prototype.detect = _c.prototype.D, _c.prototype.setOptions = _c.prototype.o, _c.createFromModelPath = function(t2, e2) {
-  return za(_c, t2, { baseOptions: { modelAssetPath: e2 } });
-}, _c.createFromModelBuffer = function(t2, e2) {
-  return za(_c, t2, { baseOptions: { modelAssetBuffer: e2 } });
-}, _c.createFromOptions = function(t2, e2) {
-  return za(_c, t2, e2);
-}, _c.HAND_CONNECTIONS = dc;
-var vc = Va([0, 1], [1, 2], [2, 3], [3, 7], [0, 4], [4, 5], [5, 6], [6, 8], [9, 10], [11, 12], [11, 13], [13, 15], [15, 17], [15, 19], [15, 21], [17, 19], [12, 14], [14, 16], [16, 18], [16, 20], [16, 22], [18, 20], [11, 23], [12, 24], [23, 24], [23, 25], [24, 26], [25, 27], [26, 28], [27, 29], [28, 30], [29, 31], [30, 32], [27, 31], [28, 32]);
+_c.prototype.detectForVideo = _c.prototype.F, _c.prototype.detect = _c.prototype.D, _c.prototype.setOptions = _c.prototype.o, _c.createFromModelPath = (t2, e2) => za(_c, t2, { baseOptions: { modelAssetPath: e2 } }), _c.createFromModelBuffer = (t2, e2) => za(_c, t2, { baseOptions: { modelAssetBuffer: e2 } }), _c.createFromOptions = (t2, e2) => za(_c, t2, e2), _c.HAND_CONNECTIONS = dc;
+const vc = Va([0, 1], [1, 2], [2, 3], [3, 7], [0, 4], [4, 5], [5, 6], [6, 8], [9, 10], [11, 12], [11, 13], [13, 15], [15, 17], [15, 19], [15, 21], [17, 19], [12, 14], [14, 16], [16, 18], [16, 20], [16, 22], [18, 20], [11, 23], [12, 24], [23, 24], [23, 25], [24, 26], [25, 27], [26, 28], [27, 29], [28, 30], [29, 31], [30, 32], [27, 31], [28, 32]);
 function Ec(t2) {
   t2.h = { faceLandmarks: [], faceBlendshapes: [], poseLandmarks: [], poseWorldLandmarks: [], poseSegmentationMasks: [], leftHandLandmarks: [], leftHandWorldLandmarks: [], rightHandLandmarks: [], rightHandWorldLandmarks: [] };
 }
@@ -3187,7 +3190,7 @@ function wc(t2) {
 function Tc(t2, e2) {
   t2 = fs(t2), e2.push(Lo(t2));
 }
-var Ac = class extends Ja {
+const Ac = class extends Ja {
   constructor(t2, e2) {
     super(new Wa(t2, e2), "input_frames_image", null, false), this.h = { faceLandmarks: [], faceBlendshapes: [], poseLandmarks: [], poseWorldLandmarks: [], poseSegmentationMasks: [], leftHandLandmarks: [], leftHandWorldLandmarks: [], rightHandLandmarks: [], rightHandWorldLandmarks: [] }, this.outputPoseSegmentationMasks = this.outputFaceBlendshapes = false, dn(t2 = this.j = new ao(), 0, 1, e2 = new Is()), this.K = new $s(), dn(this.j, 0, 2, this.K), this.Y = new io(), dn(this.j, 0, 3, this.Y), this.s = new Cs(), dn(this.j, 0, 4, this.s), this.H = new Ns(), dn(this.j, 0, 5, this.H), this.v = new so(), dn(this.j, 0, 6, this.v), this.L = new oo(), dn(this.j, 0, 7, this.L), An(this.s, 2, 0.5), An(this.s, 3, 0.3), An(this.H, 2, 0.5), An(this.v, 2, 0.5), An(this.v, 3, 0.3), An(this.L, 2, 0.5), An(this.K, 2, 0.5);
   }
@@ -3201,31 +3204,32 @@ var Ac = class extends Ja {
     return "minFaceDetectionConfidence" in t2 && An(this.s, 2, t2.minFaceDetectionConfidence ?? 0.5), "minFaceSuppressionThreshold" in t2 && An(this.s, 3, t2.minFaceSuppressionThreshold ?? 0.3), "minFacePresenceConfidence" in t2 && An(this.H, 2, t2.minFacePresenceConfidence ?? 0.5), "outputFaceBlendshapes" in t2 && (this.outputFaceBlendshapes = !!t2.outputFaceBlendshapes), "minPoseDetectionConfidence" in t2 && An(this.v, 2, t2.minPoseDetectionConfidence ?? 0.5), "minPoseSuppressionThreshold" in t2 && An(this.v, 3, t2.minPoseSuppressionThreshold ?? 0.3), "minPosePresenceConfidence" in t2 && An(this.L, 2, t2.minPosePresenceConfidence ?? 0.5), "outputPoseSegmentationMasks" in t2 && (this.outputPoseSegmentationMasks = !!t2.outputPoseSegmentationMasks), "minHandLandmarksConfidence" in t2 && An(this.K, 2, t2.minHandLandmarksConfidence ?? 0.5), this.l(t2);
   }
   D(t2, e2, n2) {
-    const r2 = "function" != typeof e2 ? e2 : {};
-    return this.C = "function" == typeof e2 ? e2 : n2, Ec(this), Ya(this, t2, r2), wc(this);
+    const r2 = "function" !== typeof e2 ? e2 : {};
+    return this.C = "function" === typeof e2 ? e2 : n2, Ec(this), Ya(this, t2, r2), wc(this);
   }
   F(t2, e2, n2, r2) {
-    const i2 = "function" != typeof n2 ? n2 : {};
-    return this.C = "function" == typeof n2 ? n2 : r2, Ec(this), $a(this, t2, i2, e2), wc(this);
+    const i2 = "function" !== typeof n2 ? n2 : {};
+    return this.C = "function" === typeof n2 ? n2 : r2, Ec(this), $a(this, t2, i2, e2), wc(this);
   }
   m() {
-    var t2 = new Qi();
+    let t2 = new Qi();
     Ji(t2, "input_frames_image"), Zi(t2, "pose_landmarks"), Zi(t2, "pose_world_landmarks"), Zi(t2, "face_landmarks"), Zi(t2, "left_hand_landmarks"), Zi(t2, "left_hand_world_landmarks"), Zi(t2, "right_hand_landmarks"), Zi(t2, "right_hand_world_landmarks");
-    const e2 = new Gi(), n2 = new xi();
-    tn(n2, 1, de("type.googleapis.com/mediapipe.tasks.vision.holistic_landmarker.proto.HolisticLandmarkerGraphOptions"), ""), function(t3, e3) {
+    const e2 = new Gi();
+    const n2 = new xi();
+    tn(n2, 1, de("type.googleapis.com/mediapipe.tasks.vision.holistic_landmarker.proto.HolisticLandmarkerGraphOptions"), ""), ((t3, e3) => {
       if (null != e3) if (Array.isArray(e3)) He(t3, 2, Pe(e3, Oe, void 0, void 0, false));
       else {
-        if (!("string" == typeof e3 || e3 instanceof N || C(e3))) throw Error("invalid value in Any.value field: " + e3 + " expected a ByteString, a base64 encoded string, a Uint8Array or a jspb array");
+        if (!("string" === typeof e3 || e3 instanceof N || C(e3))) throw Error(`invalid value in Any.value field: ${e3} expected a ByteString, a base64 encoded string, a Uint8Array or a jspb array`);
         tn(t3, 2, dt(e3, false), U());
       }
-    }(n2, this.j.g());
+    })(n2, this.j.g());
     const r2 = new zi();
     Xi(r2, "mediapipe.tasks.vision.holistic_landmarker.HolisticLandmarkerGraph"), yn(r2, 8, xi, n2), Hi(r2, "IMAGE:input_frames_image"), Wi(r2, "POSE_LANDMARKS:pose_landmarks"), Wi(r2, "POSE_WORLD_LANDMARKS:pose_world_landmarks"), Wi(r2, "FACE_LANDMARKS:face_landmarks"), Wi(r2, "LEFT_HAND_LANDMARKS:left_hand_landmarks"), Wi(r2, "LEFT_HAND_WORLD_LANDMARKS:left_hand_world_landmarks"), Wi(r2, "RIGHT_HAND_LANDMARKS:right_hand_landmarks"), Wi(r2, "RIGHT_HAND_WORLD_LANDMARKS:right_hand_world_landmarks"), r2.o(e2), qi(t2, r2), $o(this, t2), this.g.attachProtoListener("pose_landmarks", (t3, e3) => {
       Tc(t3, this.h.poseLandmarks), Yo(this, e3);
     }), this.g.attachEmptyPacketListener("pose_landmarks", (t3) => {
       Yo(this, t3);
     }), this.g.attachProtoListener("pose_world_landmarks", (t3, e3) => {
-      var n3 = this.h.poseWorldLandmarks;
+      const n3 = this.h.poseWorldLandmarks;
       t3 = ls(t3), n3.push(Ro(t3)), Yo(this, e3);
     }), this.g.attachEmptyPacketListener("pose_world_landmarks", (t3) => {
       Yo(this, t3);
@@ -3238,7 +3242,7 @@ var Ac = class extends Ja {
     }), this.g.attachEmptyPacketListener("face_landmarks", (t3) => {
       Yo(this, t3);
     }), this.outputFaceBlendshapes && (Zi(t2, "extra_blendshapes"), Wi(r2, "FACE_BLENDSHAPES:extra_blendshapes"), this.g.attachProtoListener("extra_blendshapes", (t3, e3) => {
-      var n3 = this.h.faceBlendshapes;
+      const n3 = this.h.faceBlendshapes;
       this.outputFaceBlendshapes && (t3 = ss(t3), n3.push(So(t3.g() ?? []))), Yo(this, e3);
     }), this.g.attachEmptyPacketListener("extra_blendshapes", (t3) => {
       Yo(this, t3);
@@ -3247,7 +3251,7 @@ var Ac = class extends Ja {
     }), this.g.attachEmptyPacketListener("left_hand_landmarks", (t3) => {
       Yo(this, t3);
     }), this.g.attachProtoListener("left_hand_world_landmarks", (t3, e3) => {
-      var n3 = this.h.leftHandWorldLandmarks;
+      const n3 = this.h.leftHandWorldLandmarks;
       t3 = ls(t3), n3.push(Ro(t3)), Yo(this, e3);
     }), this.g.attachEmptyPacketListener("left_hand_world_landmarks", (t3) => {
       Yo(this, t3);
@@ -3256,21 +3260,15 @@ var Ac = class extends Ja {
     }), this.g.attachEmptyPacketListener("right_hand_landmarks", (t3) => {
       Yo(this, t3);
     }), this.g.attachProtoListener("right_hand_world_landmarks", (t3, e3) => {
-      var n3 = this.h.rightHandWorldLandmarks;
+      const n3 = this.h.rightHandWorldLandmarks;
       t3 = ls(t3), n3.push(Ro(t3)), Yo(this, e3);
     }), this.g.attachEmptyPacketListener("right_hand_world_landmarks", (t3) => {
       Yo(this, t3);
     }), t2 = t2.g(), this.setGraph(new Uint8Array(t2), true);
   }
 };
-Ac.prototype.detectForVideo = Ac.prototype.F, Ac.prototype.detect = Ac.prototype.D, Ac.prototype.setOptions = Ac.prototype.o, Ac.createFromModelPath = function(t2, e2) {
-  return za(Ac, t2, { baseOptions: { modelAssetPath: e2 } });
-}, Ac.createFromModelBuffer = function(t2, e2) {
-  return za(Ac, t2, { baseOptions: { modelAssetBuffer: e2 } });
-}, Ac.createFromOptions = function(t2, e2) {
-  return za(Ac, t2, e2);
-}, Ac.HAND_CONNECTIONS = dc, Ac.POSE_CONNECTIONS = vc, Ac.FACE_LANDMARKS_LIPS = Qa, Ac.FACE_LANDMARKS_LEFT_EYE = tc, Ac.FACE_LANDMARKS_LEFT_EYEBROW = ec, Ac.FACE_LANDMARKS_LEFT_IRIS = nc, Ac.FACE_LANDMARKS_RIGHT_EYE = rc, Ac.FACE_LANDMARKS_RIGHT_EYEBROW = ic, Ac.FACE_LANDMARKS_RIGHT_IRIS = sc, Ac.FACE_LANDMARKS_FACE_OVAL = oc, Ac.FACE_LANDMARKS_CONTOURS = ac, Ac.FACE_LANDMARKS_TESSELATION = cc;
-var bc = class extends Ja {
+Ac.prototype.detectForVideo = Ac.prototype.F, Ac.prototype.detect = Ac.prototype.D, Ac.prototype.setOptions = Ac.prototype.o, Ac.createFromModelPath = (t2, e2) => za(Ac, t2, { baseOptions: { modelAssetPath: e2 } }), Ac.createFromModelBuffer = (t2, e2) => za(Ac, t2, { baseOptions: { modelAssetBuffer: e2 } }), Ac.createFromOptions = (t2, e2) => za(Ac, t2, e2), Ac.HAND_CONNECTIONS = dc, Ac.POSE_CONNECTIONS = vc, Ac.FACE_LANDMARKS_LIPS = Qa, Ac.FACE_LANDMARKS_LEFT_EYE = tc, Ac.FACE_LANDMARKS_LEFT_EYEBROW = ec, Ac.FACE_LANDMARKS_LEFT_IRIS = nc, Ac.FACE_LANDMARKS_RIGHT_EYE = rc, Ac.FACE_LANDMARKS_RIGHT_EYEBROW = ic, Ac.FACE_LANDMARKS_RIGHT_IRIS = sc, Ac.FACE_LANDMARKS_FACE_OVAL = oc, Ac.FACE_LANDMARKS_CONTOURS = ac, Ac.FACE_LANDMARKS_TESSELATION = cc;
+const bc = class extends Ja {
   constructor(t2, e2) {
     super(new Wa(t2, e2), "input_image", "norm_rect", true), this.j = { classifications: [] }, dn(t2 = this.h = new uo(), 0, 1, e2 = new Is());
   }
@@ -3290,32 +3288,26 @@ var bc = class extends Ja {
     return this.j = { classifications: [] }, $a(this, t2, n2, e2), this.j;
   }
   m() {
-    var t2 = new Qi();
+    let t2 = new Qi();
     Ji(t2, "input_image"), Ji(t2, "norm_rect"), Zi(t2, "classifications");
     const e2 = new Gi();
     Yn(e2, lo, this.h);
     const n2 = new zi();
     Xi(n2, "mediapipe.tasks.vision.image_classifier.ImageClassifierGraph"), Hi(n2, "IMAGE:input_image"), Hi(n2, "NORM_RECT:norm_rect"), Wi(n2, "CLASSIFICATIONS:classifications"), n2.o(e2), qi(t2, n2), this.g.attachProtoListener("classifications", (t3, e3) => {
-      this.j = function(t4) {
+      this.j = ((t4) => {
         const e4 = { classifications: ln(t4, ys, 1).map((t5) => {
-          var _a2;
+          let _a2;
           return So(((_a2 = hn(t5, rs, 4)) == null ? void 0 : _a2.g()) ?? [], _n(t5, 2) ?? 0, vn(t5, 3) ?? "");
         }) };
         return null != he(Ve(t4, 2)) && (e4.timestampMs = he(Ve(t4, 2)) ?? 0), e4;
-      }(_s(t3)), Yo(this, e3);
+      })(_s(t3)), Yo(this, e3);
     }), this.g.attachEmptyPacketListener("classifications", (t3) => {
       Yo(this, t3);
     }), t2 = t2.g(), this.setGraph(new Uint8Array(t2), true);
   }
 };
-bc.prototype.classifyForVideo = bc.prototype.ra, bc.prototype.classify = bc.prototype.qa, bc.prototype.setOptions = bc.prototype.o, bc.createFromModelPath = function(t2, e2) {
-  return za(bc, t2, { baseOptions: { modelAssetPath: e2 } });
-}, bc.createFromModelBuffer = function(t2, e2) {
-  return za(bc, t2, { baseOptions: { modelAssetBuffer: e2 } });
-}, bc.createFromOptions = function(t2, e2) {
-  return za(bc, t2, e2);
-};
-var kc = class extends Ja {
+bc.prototype.classifyForVideo = bc.prototype.ra, bc.prototype.classify = bc.prototype.qa, bc.prototype.setOptions = bc.prototype.o, bc.createFromModelPath = (t2, e2) => za(bc, t2, { baseOptions: { modelAssetPath: e2 } }), bc.createFromModelBuffer = (t2, e2) => za(bc, t2, { baseOptions: { modelAssetBuffer: e2 } }), bc.createFromOptions = (t2, e2) => za(bc, t2, e2);
+const kc = class extends Ja {
   constructor(t2, e2) {
     super(new Wa(t2, e2), "image_in", "norm_rect", true), this.h = new fo(), this.embeddings = { embeddings: [] }, dn(t2 = this.h, 0, 1, e2 = new Is());
   }
@@ -3326,7 +3318,8 @@ var kc = class extends Ja {
     dn(this.h, 0, 1, t2);
   }
   o(t2) {
-    var e2 = this.h, n2 = hn(this.h, Ss, 2);
+    const e2 = this.h;
+    let n2 = hn(this.h, Ss, 2);
     return n2 = n2 ? n2.clone() : new Ss(), void 0 !== t2.l2Normalize ? wn(n2, 1, t2.l2Normalize) : "l2Normalize" in t2 && He(n2, 1), void 0 !== t2.quantize ? wn(n2, 2, t2.quantize) : "quantize" in t2 && He(n2, 2), dn(e2, 0, 2, n2), this.l(t2);
   }
   xa(t2, e2) {
@@ -3336,15 +3329,15 @@ var kc = class extends Ja {
     return $a(this, t2, n2, e2), this.embeddings;
   }
   m() {
-    var t2 = new Qi();
+    let t2 = new Qi();
     Ji(t2, "image_in"), Ji(t2, "norm_rect"), Zi(t2, "embeddings_out");
     const e2 = new Gi();
     Yn(e2, po, this.h);
     const n2 = new zi();
     Xi(n2, "mediapipe.tasks.vision.image_embedder.ImageEmbedderGraph"), Hi(n2, "IMAGE:image_in"), Hi(n2, "NORM_RECT:norm_rect"), Wi(n2, "EMBEDDINGS:embeddings_out"), n2.o(e2), qi(t2, n2), this.g.attachProtoListener("embeddings_out", (t3, e3) => {
-      t3 = As(t3), this.embeddings = function(t4) {
-        return { embeddings: ln(t4, ws, 1).map((t5) => {
-          var _a2, _b;
+      t3 = As(t3), this.embeddings = ((t4) => ({ embeddings: ln(t4, ws, 1).map((t5) => {
+          let _a2;
+          let _b;
           const e4 = { headIndex: _n(t5, 3) ?? 0 ?? -1, headName: vn(t5, 4) ?? "" ?? "" };
           if (void 0 !== cn(t5, vs, nn(t5, 1))) t5 = $e(t5 = hn(t5, vs, nn(t5, 1)), 1, qt, Ye()), e4.floatEmbedding = t5.slice();
           else {
@@ -3352,33 +3345,27 @@ var kc = class extends Ja {
             e4.quantizedEmbedding = ((_b = (_a2 = hn(t5, Es, nn(t5, 2))) == null ? void 0 : _a2.ma()) == null ? void 0 : _b.h()) ?? n3;
           }
           return e4;
-        }), timestampMs: he(Ve(t4, 2)) ?? 0 };
-      }(t3), Yo(this, e3);
+        }), timestampMs: he(Ve(t4, 2)) ?? 0 }))(t3), Yo(this, e3);
     }), this.g.attachEmptyPacketListener("embeddings_out", (t3) => {
       Yo(this, t3);
     }), t2 = t2.g(), this.setGraph(new Uint8Array(t2), true);
   }
 };
-kc.cosineSimilarity = function(t2, e2) {
+kc.cosineSimilarity = (t2, e2) => {
   if (t2.floatEmbedding && e2.floatEmbedding) t2 = Io(t2.floatEmbedding, e2.floatEmbedding);
   else {
     if (!t2.quantizedEmbedding || !e2.quantizedEmbedding) throw Error("Cannot compute cosine similarity between quantized and float embeddings.");
     t2 = Io(Fo(t2.quantizedEmbedding), Fo(e2.quantizedEmbedding));
   }
   return t2;
-}, kc.prototype.embedForVideo = kc.prototype.ya, kc.prototype.embed = kc.prototype.xa, kc.prototype.setOptions = kc.prototype.o, kc.createFromModelPath = function(t2, e2) {
-  return za(kc, t2, { baseOptions: { modelAssetPath: e2 } });
-}, kc.createFromModelBuffer = function(t2, e2) {
-  return za(kc, t2, { baseOptions: { modelAssetBuffer: e2 } });
-}, kc.createFromOptions = function(t2, e2) {
-  return za(kc, t2, e2);
-};
-var Sc = class {
+}, kc.prototype.embedForVideo = kc.prototype.ya, kc.prototype.embed = kc.prototype.xa, kc.prototype.setOptions = kc.prototype.o, kc.createFromModelPath = (t2, e2) => za(kc, t2, { baseOptions: { modelAssetPath: e2 } }), kc.createFromModelBuffer = (t2, e2) => za(kc, t2, { baseOptions: { modelAssetBuffer: e2 } }), kc.createFromOptions = (t2, e2) => za(kc, t2, e2);
+const Sc = class {
   constructor(t2, e2, n2) {
     this.confidenceMasks = t2, this.categoryMask = e2, this.qualityScores = n2;
   }
   close() {
-    var _a2, _b;
+    let _a2;
+    let _b;
     (_a2 = this.confidenceMasks) == null ? void 0 : _a2.forEach((t2) => {
       t2.close();
     }), (_b = this.categoryMask) == null ? void 0 : _b.close();
@@ -3397,7 +3384,7 @@ function Lc(t2) {
   }
 }
 Sc.prototype.close = Sc.prototype.close;
-var Rc = class extends Ja {
+const Rc = class extends Ja {
   constructor(t2, e2) {
     super(new Wa(t2, e2), "image_in", "norm_rect", false), this.s = [], this.outputCategoryMask = false, this.outputConfidenceMasks = true, this.h = new vo(), this.v = new go(), dn(this.h, 0, 3, this.v), dn(t2 = this.h, 0, 1, e2 = new Is());
   }
@@ -3411,28 +3398,29 @@ var Rc = class extends Ja {
     return void 0 !== t2.displayNamesLocale ? He(this.h, 2, de(t2.displayNamesLocale)) : "displayNamesLocale" in t2 && He(this.h, 2), "outputCategoryMask" in t2 && (this.outputCategoryMask = t2.outputCategoryMask ?? false), "outputConfidenceMasks" in t2 && (this.outputConfidenceMasks = t2.outputConfidenceMasks ?? true), super.l(t2);
   }
   J() {
-    !function(t2) {
-      var _a2, _b;
+    !((t2) => {
+      let _a2;
+      let _b;
       const e2 = ln(t2.ca(), zi, 1).filter((t3) => (vn(t3, 1) ?? "").includes("mediapipe.tasks.TensorsToSegmentationCalculator"));
       if (t2.s = [], e2.length > 1) throw Error("The graph has more than one mediapipe.tasks.TensorsToSegmentationCalculator.");
       1 === e2.length && (((_b = (_a2 = hn(e2[0], Gi, 7)) == null ? void 0 : _a2.l()) == null ? void 0 : _b.g()) ?? /* @__PURE__ */ new Map()).forEach((e3, n2) => {
         t2.s[Number(n2)] = vn(e3, 1) ?? "";
       });
-    }(this);
+    })(this);
   }
   segment(t2, e2, n2) {
-    const r2 = "function" != typeof e2 ? e2 : {};
-    return this.j = "function" == typeof e2 ? e2 : n2, xc(this), Ya(this, t2, r2), Lc(this);
+    const r2 = "function" !== typeof e2 ? e2 : {};
+    return this.j = "function" === typeof e2 ? e2 : n2, xc(this), Ya(this, t2, r2), Lc(this);
   }
   Ia(t2, e2, n2, r2) {
-    const i2 = "function" != typeof n2 ? n2 : {};
-    return this.j = "function" == typeof n2 ? n2 : r2, xc(this), $a(this, t2, i2, e2), Lc(this);
+    const i2 = "function" !== typeof n2 ? n2 : {};
+    return this.j = "function" === typeof n2 ? n2 : r2, xc(this), $a(this, t2, i2, e2), Lc(this);
   }
   Ba() {
     return this.s;
   }
   m() {
-    var t2 = new Qi();
+    let t2 = new Qi();
     Ji(t2, "image_in"), Ji(t2, "norm_rect");
     const e2 = new Gi();
     Yn(e2, Eo, this.h);
@@ -3452,48 +3440,38 @@ var Rc = class extends Ja {
     }), t2 = t2.g(), this.setGraph(new Uint8Array(t2), true);
   }
 };
-Rc.prototype.getLabels = Rc.prototype.Ba, Rc.prototype.segmentForVideo = Rc.prototype.Ia, Rc.prototype.segment = Rc.prototype.segment, Rc.prototype.setOptions = Rc.prototype.o, Rc.createFromModelPath = function(t2, e2) {
-  return za(Rc, t2, { baseOptions: { modelAssetPath: e2 } });
-}, Rc.createFromModelBuffer = function(t2, e2) {
-  return za(Rc, t2, { baseOptions: { modelAssetBuffer: e2 } });
-}, Rc.createFromOptions = function(t2, e2) {
-  return za(Rc, t2, e2);
-};
-var Fc = class {
+Rc.prototype.getLabels = Rc.prototype.Ba, Rc.prototype.segmentForVideo = Rc.prototype.Ia, Rc.prototype.segment = Rc.prototype.segment, Rc.prototype.setOptions = Rc.prototype.o, Rc.createFromModelPath = (t2, e2) => za(Rc, t2, { baseOptions: { modelAssetPath: e2 } }), Rc.createFromModelBuffer = (t2, e2) => za(Rc, t2, { baseOptions: { modelAssetBuffer: e2 } }), Rc.createFromOptions = (t2, e2) => za(Rc, t2, e2);
+const Fc = class {
   constructor(t2, e2, n2) {
     this.confidenceMasks = t2, this.categoryMask = e2, this.qualityScores = n2;
   }
   close() {
-    var _a2, _b;
+    let _a2;
+    let _b;
     (_a2 = this.confidenceMasks) == null ? void 0 : _a2.forEach((t2) => {
       t2.close();
     }), (_b = this.categoryMask) == null ? void 0 : _b.close();
   }
 };
 Fc.prototype.close = Fc.prototype.close;
-var Ic = class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
-}, Mc = [0, hi, -2], Pc = [0, ni, -3, di, ni, -1], Cc = [0, Pc], Oc = [0, Pc, hi, -1], Uc = class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
-}, Dc = [0, ni, -1, di], Nc = class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
-}, Bc = class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
-}, Gc = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 14, 15], jc = class extends $n {
-  constructor(t2) {
-    super(t2);
-  }
+const Ic = class extends $n {
+};
+const Mc = [0, hi, -2];
+const Pc = [0, ni, -3, di, ni, -1];
+const Cc = [0, Pc];
+const Oc = [0, Pc, hi, -1];
+const Uc = class extends $n {
+};
+const Dc = [0, ni, -1, di];
+const Nc = class extends $n {
+};
+const Bc = class extends $n {
+};
+const Gc = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 14, 15];
+const jc = class extends $n {
 };
 jc.prototype.g = Si([0, yi, [0, Gc, _i, Pc, _i, [0, Pc, Mc], _i, Cc, _i, [0, Cc, Mc], _i, Dc, _i, [0, ni, -3, di, Ti], _i, [0, ni, -3, di], _i, [0, mi, ni, -2, di, hi, di, -1, 2, ni, Mc], _i, Oc, _i, [0, Oc, Mc], ni, Mc, mi, _i, [0, ni, -3, di, Mc, -1], _i, [0, yi, Dc]], mi, [0, mi, hi, -1, di]]);
-var Vc = class extends Ja {
+const Vc = class extends Ja {
   constructor(t2, e2) {
     super(new Wa(t2, e2), "image_in", "norm_rect_in", false), this.outputCategoryMask = false, this.outputConfidenceMasks = true, this.h = new vo(), this.s = new go(), dn(this.h, 0, 3, this.s), dn(t2 = this.h, 0, 1, e2 = new Is());
   }
@@ -3507,13 +3485,13 @@ var Vc = class extends Ja {
     return "outputCategoryMask" in t2 && (this.outputCategoryMask = t2.outputCategoryMask ?? false), "outputConfidenceMasks" in t2 && (this.outputConfidenceMasks = t2.outputConfidenceMasks ?? true), super.l(t2);
   }
   segment(t2, e2, n2, r2) {
-    const i2 = "function" != typeof n2 ? n2 : {};
-    this.j = "function" == typeof n2 ? n2 : r2, this.qualityScores = this.categoryMask = this.confidenceMasks = void 0, n2 = this.B + 1, r2 = new jc();
+    const i2 = "function" !== typeof n2 ? n2 : {};
+    this.j = "function" === typeof n2 ? n2 : r2, this.qualityScores = this.categoryMask = this.confidenceMasks = void 0, n2 = this.B + 1, r2 = new jc();
     const s2 = new Bc();
-    var o2 = new Ic();
+    let o2 = new Ic();
     if (Tn(o2, 1, 255), dn(s2, 0, 12, o2), e2.keypoint && e2.scribble) throw Error("Cannot provide both keypoint and scribble.");
     if (e2.keypoint) {
-      var a2 = new Uc();
+      const a2 = new Uc();
       wn(a2, 3, true), An(a2, 1, e2.keypoint.x), An(a2, 2, e2.keypoint.y), fn(s2, 5, Gc, a2);
     } else {
       if (!e2.scribble) throw Error("Must provide either a keypoint or a scribble.");
@@ -3525,7 +3503,7 @@ var Vc = class extends Ja {
       try {
         const t3 = new Fc(this.confidenceMasks, this.categoryMask, this.qualityScores);
         if (!this.j) {
-          var c2 = t3;
+          const c2 = t3;
           break t;
         }
         this.j(t3);
@@ -3537,7 +3515,7 @@ var Vc = class extends Ja {
     return c2;
   }
   m() {
-    var t2 = new Qi();
+    let t2 = new Qi();
     Ji(t2, "image_in"), Ji(t2, "roi_in"), Ji(t2, "norm_rect_in");
     const e2 = new Gi();
     Yn(e2, Eo, this.h);
@@ -3557,14 +3535,8 @@ var Vc = class extends Ja {
     }), t2 = t2.g(), this.setGraph(new Uint8Array(t2), true);
   }
 };
-Vc.prototype.segment = Vc.prototype.segment, Vc.prototype.setOptions = Vc.prototype.o, Vc.createFromModelPath = function(t2, e2) {
-  return za(Vc, t2, { baseOptions: { modelAssetPath: e2 } });
-}, Vc.createFromModelBuffer = function(t2, e2) {
-  return za(Vc, t2, { baseOptions: { modelAssetBuffer: e2 } });
-}, Vc.createFromOptions = function(t2, e2) {
-  return za(Vc, t2, e2);
-};
-var Xc = class extends Ja {
+Vc.prototype.segment = Vc.prototype.segment, Vc.prototype.setOptions = Vc.prototype.o, Vc.createFromModelPath = (t2, e2) => za(Vc, t2, { baseOptions: { modelAssetPath: e2 } }), Vc.createFromModelBuffer = (t2, e2) => za(Vc, t2, { baseOptions: { modelAssetBuffer: e2 } }), Vc.createFromOptions = (t2, e2) => za(Vc, t2, e2);
+const Xc = class extends Ja {
   constructor(t2, e2) {
     super(new Wa(t2, e2), "input_frame_gpu", "norm_rect", false), this.j = { detections: [] }, dn(t2 = this.h = new wo(), 0, 1, e2 = new Is());
   }
@@ -3584,7 +3556,7 @@ var Xc = class extends Ja {
     return this.j = { detections: [] }, $a(this, t2, n2, e2), this.j;
   }
   m() {
-    var t2 = new Qi();
+    let t2 = new Qi();
     Ji(t2, "input_frame_gpu"), Ji(t2, "norm_rect"), Zi(t2, "detections");
     const e2 = new Gi();
     Yn(e2, To, this.h);
@@ -3597,19 +3569,13 @@ var Xc = class extends Ja {
     }), t2 = t2.g(), this.setGraph(new Uint8Array(t2), true);
   }
 };
-Xc.prototype.detectForVideo = Xc.prototype.F, Xc.prototype.detect = Xc.prototype.D, Xc.prototype.setOptions = Xc.prototype.o, Xc.createFromModelPath = async function(t2, e2) {
-  return za(Xc, t2, { baseOptions: { modelAssetPath: e2 } });
-}, Xc.createFromModelBuffer = function(t2, e2) {
-  return za(Xc, t2, { baseOptions: { modelAssetBuffer: e2 } });
-}, Xc.createFromOptions = function(t2, e2) {
-  return za(Xc, t2, e2);
-};
-var Hc = class {
+Xc.prototype.detectForVideo = Xc.prototype.F, Xc.prototype.detect = Xc.prototype.D, Xc.prototype.setOptions = Xc.prototype.o, Xc.createFromModelPath = async (t2, e2) => za(Xc, t2, { baseOptions: { modelAssetPath: e2 } }), Xc.createFromModelBuffer = (t2, e2) => za(Xc, t2, { baseOptions: { modelAssetBuffer: e2 } }), Xc.createFromOptions = (t2, e2) => za(Xc, t2, e2);
+const Hc = class {
   constructor(t2, e2, n2) {
     this.landmarks = t2, this.worldLandmarks = e2, this.segmentationMasks = n2;
   }
   close() {
-    var _a2;
+    let _a2;
     (_a2 = this.segmentationMasks) == null ? void 0 : _a2.forEach((t2) => {
       t2.close();
     });
@@ -3628,7 +3594,7 @@ function zc(t2) {
   }
 }
 Hc.prototype.close = Hc.prototype.close;
-var Kc = class extends Ja {
+const Kc = class extends Ja {
   constructor(t2, e2) {
     super(new Wa(t2, e2), "image_in", "norm_rect", false), this.landmarks = [], this.worldLandmarks = [], this.outputSegmentationMasks = false, dn(t2 = this.h = new Ao(), 0, 1, e2 = new Is()), this.v = new oo(), dn(this.h, 0, 3, this.v), this.j = new so(), dn(this.h, 0, 2, this.j), Tn(this.j, 4, 1), An(this.j, 2, 0.5), An(this.v, 2, 0.5), An(this.h, 4, 0.5);
   }
@@ -3642,15 +3608,15 @@ var Kc = class extends Ja {
     return "numPoses" in t2 && Tn(this.j, 4, t2.numPoses ?? 1), "minPoseDetectionConfidence" in t2 && An(this.j, 2, t2.minPoseDetectionConfidence ?? 0.5), "minTrackingConfidence" in t2 && An(this.h, 4, t2.minTrackingConfidence ?? 0.5), "minPosePresenceConfidence" in t2 && An(this.v, 2, t2.minPosePresenceConfidence ?? 0.5), "outputSegmentationMasks" in t2 && (this.outputSegmentationMasks = t2.outputSegmentationMasks ?? false), this.l(t2);
   }
   D(t2, e2, n2) {
-    const r2 = "function" != typeof e2 ? e2 : {};
-    return this.s = "function" == typeof e2 ? e2 : n2, Wc(this), Ya(this, t2, r2), zc(this);
+    const r2 = "function" !== typeof e2 ? e2 : {};
+    return this.s = "function" === typeof e2 ? e2 : n2, Wc(this), Ya(this, t2, r2), zc(this);
   }
   F(t2, e2, n2, r2) {
-    const i2 = "function" != typeof n2 ? n2 : {};
-    return this.s = "function" == typeof n2 ? n2 : r2, Wc(this), $a(this, t2, i2, e2), zc(this);
+    const i2 = "function" !== typeof n2 ? n2 : {};
+    return this.s = "function" === typeof n2 ? n2 : r2, Wc(this), $a(this, t2, i2, e2), zc(this);
   }
   m() {
-    var t2 = new Qi();
+    let t2 = new Qi();
     Ji(t2, "image_in"), Ji(t2, "norm_rect"), Zi(t2, "normalized_landmarks"), Zi(t2, "world_landmarks"), Zi(t2, "segmentation_masks");
     const e2 = new Gi();
     Yn(e2, bo, this.h);
@@ -3674,13 +3640,7 @@ var Kc = class extends Ja {
     })), t2 = t2.g(), this.setGraph(new Uint8Array(t2), true);
   }
 };
-Kc.prototype.detectForVideo = Kc.prototype.F, Kc.prototype.detect = Kc.prototype.D, Kc.prototype.setOptions = Kc.prototype.o, Kc.createFromModelPath = function(t2, e2) {
-  return za(Kc, t2, { baseOptions: { modelAssetPath: e2 } });
-}, Kc.createFromModelBuffer = function(t2, e2) {
-  return za(Kc, t2, { baseOptions: { modelAssetBuffer: e2 } });
-}, Kc.createFromOptions = function(t2, e2) {
-  return za(Kc, t2, e2);
-}, Kc.POSE_CONNECTIONS = vc;
+Kc.prototype.detectForVideo = Kc.prototype.F, Kc.prototype.detect = Kc.prototype.D, Kc.prototype.setOptions = Kc.prototype.o, Kc.createFromModelPath = (t2, e2) => za(Kc, t2, { baseOptions: { modelAssetPath: e2 } }), Kc.createFromModelBuffer = (t2, e2) => za(Kc, t2, { baseOptions: { modelAssetBuffer: e2 } }), Kc.createFromOptions = (t2, e2) => za(Kc, t2, e2), Kc.POSE_CONNECTIONS = vc;
 export {
   Za as FaceDetector,
   uc as FaceLandmarker,

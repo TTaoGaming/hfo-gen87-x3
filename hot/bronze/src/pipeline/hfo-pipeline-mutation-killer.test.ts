@@ -10,15 +10,15 @@
 
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
-    DebugPipeline,
-    FuseAdapter,
-    FusedFrameSchema,
-    type NoisyLandmark,
-    SenseAdapter,
-    SensedFrameSchema,
-    ShapeSmootherAdapter,
-    ShapedFrameSchema,
-    validatePipelineFrame,
+	DebugPipeline,
+	FuseAdapter,
+	FusedFrameSchema,
+	type NoisyLandmark,
+	SenseAdapter,
+	SensedFrameSchema,
+	ShapeSmootherAdapter,
+	ShapedFrameSchema,
+	validatePipelineFrame,
 } from './hfo-pipeline.js';
 
 // ============================================================================
@@ -300,8 +300,8 @@ describe('DebugPipeline', () => {
 
 		expect(result).toBeDefined();
 		expect(debug.length).toBeGreaterThan(0);
-		expect(debug[0]!.inputValid).toBe(true);
-		expect(debug[0]!.outputValid).toBe(true);
+		expect(debug[0]?.inputValid).toBe(true);
+		expect(debug[0]?.outputValid).toBe(true);
 	});
 
 	it('records processing time', () => {
@@ -314,7 +314,7 @@ describe('DebugPipeline', () => {
 
 		const { debug } = debugPipeline.processWithDebug(input);
 
-		expect(debug[0]!.processingTimeMs).toBeGreaterThanOrEqual(0);
+		expect(debug[0]?.processingTimeMs).toBeGreaterThanOrEqual(0);
 	});
 
 	it('maintains debug log', () => {
@@ -879,8 +879,8 @@ describe('DebugPipeline - Processing Time Arithmetic', () => {
 		// performance.now() returns milliseconds since page load, typically thousands
 		// end - start should be small (< 100ms for simple processing)
 		// end + start would be > 1000ms (sum of both timestamps)
-		expect(debug[0]!.processingTimeMs).toBeLessThan(100);
-		expect(debug[0]!.processingTimeMs).toBeGreaterThanOrEqual(0);
+		expect(debug[0]?.processingTimeMs).toBeLessThan(100);
+		expect(debug[0]?.processingTimeMs).toBeGreaterThanOrEqual(0);
 	});
 });
 
@@ -897,7 +897,7 @@ describe('DebugPipeline - Validation Conditional Paths', () => {
 		const { debug } = debugPipeline.processWithDebug(validInput);
 
 		// With valid input, inputValid should be true
-		expect(debug[0]!.inputValid).toBe(true);
+		expect(debug[0]?.inputValid).toBe(true);
 	});
 
 	it('outputValidation.success drives outputValid (kills ConditionalExpression mutation)', () => {
@@ -912,7 +912,7 @@ describe('DebugPipeline - Validation Conditional Paths', () => {
 		const { debug } = debugPipeline.processWithDebug(validInput);
 
 		// With valid pipeline, outputValid should be true
-		expect(debug[0]!.outputValid).toBe(true);
+		expect(debug[0]?.outputValid).toBe(true);
 	});
 });
 
@@ -1004,7 +1004,7 @@ describe('Error Path Coverage', () => {
 		const { debug } = debugPipeline.processWithDebug(validInput);
 
 		// With valid input, errors should be empty
-		expect(debug[0]!.errors.length).toBe(0);
+		expect(debug[0]?.errors.length).toBe(0);
 	});
 });
 
@@ -1200,7 +1200,7 @@ describe('ShapeSmootherAdapter reset() - BlockStatement mutation killer', () => 
 		}
 
 		// Remember the smoothed output after 10 frames
-		const smoothAfter10 = { x: lastShaped!.smooth.x, y: lastShaped!.smooth.y };
+		const smoothAfter10 = { x: lastShaped?.smooth.x, y: lastShaped?.smooth.y };
 
 		// Now reset the adapter
 		adapter.reset();
@@ -1260,7 +1260,7 @@ describe('DebugPipeline - validation error collection (understanding dead code)'
 		const { debug } = debugPipeline.processWithDebug(input);
 
 		// Output is always valid from a working adapter
-		expect(debug[0]!.outputValid).toBe(true);
+		expect(debug[0]?.outputValid).toBe(true);
 	});
 });
 
@@ -1490,8 +1490,8 @@ describe('Config defaults - LogicalOperator ?? vs && mutations', () => {
 		}
 
 		// Both should produce valid output
-		expect(lastBeta0!.smooth.x).toBeGreaterThanOrEqual(0);
-		expect(lastBeta1!.smooth.x).toBeGreaterThanOrEqual(0);
+		expect(lastBeta0?.smooth.x).toBeGreaterThanOrEqual(0);
+		expect(lastBeta1?.smooth.x).toBeGreaterThanOrEqual(0);
 	});
 
 	it('freq must default to truthy value (60), proving ?? not &&', () => {
@@ -1522,7 +1522,7 @@ describe('Config defaults - LogicalOperator ?? vs && mutations', () => {
 
 		// If freq was undefined (from &&), the smoother would produce NaN or throw
 		expect(result).toBeDefined();
-		expect(Number.isNaN(result!.smooth.x)).toBe(false);
-		expect(result!.smooth.x).toBeGreaterThanOrEqual(0);
+		expect(Number.isNaN(result?.smooth.x)).toBe(false);
+		expect(result?.smooth.x).toBeGreaterThanOrEqual(0);
 	});
 });

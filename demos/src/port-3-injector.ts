@@ -561,7 +561,7 @@ export function startPort3Demo(): void {
 	canvas.addEventListener('contextmenu', (e) => e.preventDefault());
 
 	// Button handlers
-	document.getElementById('btnClear')!.addEventListener('click', () => {
+	document.getElementById('btnClear')?.addEventListener('click', () => {
 		eventStream.clear();
 		moveCount = 0;
 		downCount = 0;
@@ -574,7 +574,7 @@ export function startPort3Demo(): void {
 		signalLog.innerHTML = '<div style="color:#8b949e;">Signals cleared...</div>';
 	});
 
-	document.getElementById('btnEmitSignal')!.addEventListener('click', () => {
+	document.getElementById('btnEmitSignal')?.addEventListener('click', () => {
 		eventStream.emitSignal({
 			ts: new Date().toISOString(),
 			mark: 1.0,

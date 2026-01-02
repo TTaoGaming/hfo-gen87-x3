@@ -24,7 +24,17 @@ import {
 	type SensorFrame,
 	type SmoothedFrame,
 	XStateFSMAdapter,
+	addJitter,
+	createSensorFrameFromMouse,
 } from '../../hot/bronze/src/browser/index.js';
+
+// Type-safe window extension for demo globals
+declare global {
+	interface Window {
+		setGesture: (gesture: string) => void;
+		togglePalm: () => void;
+	}
+}
 
 // ============================================================================
 // REAL ADAPTER INSTANTIATION (Constraint Test Will Verify This)
@@ -103,17 +113,15 @@ let gestureIndex = 0;
 function processFrame(x: number, y: number): void {
 	const ts = performance.now();
 
-	// Create sensor frame with current gesture state
-	const sensorFrame: SensorFrame = {
+	// Create sensor frame with current gesture state using factory (IR-0012 FIX)
+	const sensorFrame: SensorFrame = createSensorFrameFromMouse(
+		x,
+		y,
 		ts,
-		handId: 'right',
-		trackingOk: true,
-		palmFacing: state.palmFacing,
-		label: state.currentGesture as SensorFrame['label'],
-		confidence: state.confidence,
-		indexTip: { x, y, z: 0, visibility: 1.0 },
-		landmarks: null,
-	};
+		state.currentGesture as SensorFrame['label'],
+		state.palmFacing,
+		state.confidence,
+	);
 
 	// Stage 2: Smooth
 	const smoothedFrame: SmoothedFrame = smoother.smooth(sensorFrame);
@@ -232,13 +240,13 @@ function renderVisualization(): void {
 // GLOBAL CONTROLS
 // ============================================================================
 
-// @ts-expect-error - Global for onclick handlers
+// Type-safe global assignments (see declaration at top of file)
 window.setGesture = (gesture: string) => {
 	state.currentGesture = gesture;
 	processFrame(0.5, 0.5);
 };
 
-// @ts-expect-error - Global for onclick handlers
+// Type-safe global assignment
 window.togglePalm = () => {
 	state.palmFacing = !state.palmFacing;
 	processFrame(0.5, 0.5);
@@ -290,7 +298,8 @@ function init(): void {
 		if (state.palmFacing) {
 			gestureIndex = (gestureIndex + 1) % GESTURE_SEQUENCE.length;
 			state.currentGesture = GESTURE_SEQUENCE[gestureIndex];
-			processFrame(0.5 + Math.random() * 0.1, 0.5 + Math.random() * 0.1);
+			// Use addJitter for deterministic jitter (IR-0009 FIX)
+			processFrame(addJitter(0.5, 0.05), addJitter(0.5, 0.05));
 		}
 	}, 1000);
 }

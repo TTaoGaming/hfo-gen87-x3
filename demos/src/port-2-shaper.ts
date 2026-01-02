@@ -1,40 +1,44 @@
 /**
  * Port 2 - Shaper Demo (Mirror Magus) - REAL ADAPTERS
- * 
+ *
  * Gen87.X3 | SHAPE | Smoothing Algorithms + FSM + W3C Trace
- * 
+ *
  * @port 2
  * @verb SHAPE
  * @binary 010
  * @element Water - Flowing, taking shape of container
- * 
+ *
  * This demo uses REAL adapters from hot/bronze/src/browser:
  * - OneEuroExemplarAdapter (Casiez CHI 2012)
  * - DoubleExponentialPredictor (LaViola 2003)
  * - Simple Moving Average (baseline, not an HFO adapter)
- * 
+ *
  * CAN: read, transform, tag
  * CANNOT: persist, decide, emit_output, invoke_external
  */
 
 import {
-  // REAL ADAPTERS
-  OneEuroExemplarAdapter,
-  DoubleExponentialPredictor,
-  // Types
-  type SensorFrame,
-  type SmoothedFrame,
-  // Utilities
-  createSensorFrameFromMouse,
+	DoubleExponentialPredictor,
+	// REAL ADAPTERS
+	OneEuroExemplarAdapter,
+	PointerEventAdapter,
+	// Types
+	type SensorFrame,
+	type SmoothedFrame,
+	XStateFSMAdapter,
+	addJitter, // IR-0009 FIX: Use controlled deterministic jitter
+	// Utilities
+	createSensorFrameFromMouse,
 } from '../../hot/bronze/src/browser/index.js';
+import type { AdapterTarget } from '../../hot/bronze/src/contracts/schemas.js';
 
-import { 
-  createTraceContext, 
-  propagateTrace, 
-  validateTraceparent,
-  extractTraceId,
-  extractSpanId,
-  type TraceContext 
+import {
+	type TraceContext,
+	createTraceContext,
+	extractSpanId,
+	extractTraceId,
+	propagateTrace,
+	validateTraceparent,
 } from '../../hot/bronze/src/shared/trace-context.js';
 
 // ============================================================================
@@ -47,47 +51,51 @@ const oneEuroSmoother = new OneEuroExemplarAdapter({ minCutoff: 1.0, beta: 0.007
 // Port 2 - DESP (REAL - LaViola 2003)
 const despSmoother = new DoubleExponentialPredictor({ alpha: 0.5, gamma: 0.5 });
 
+// IR-0012 FIX: Complete pipeline - add FSM and Emitter
+const fsm = new XStateFSMAdapter();
+const pointerEmitter = new PointerEventAdapter(1, 'touch');
+
 // Simple Moving Average (baseline comparison, not an HFO adapter)
 class SimpleMovingAverage {
-  private bufferX: number[] = [];
-  private bufferY: number[] = [];
-  
-  constructor(private windowSize: number = 5) {}
-  
-  smooth(frame: SensorFrame): SmoothedFrame {
-    const x = frame.indexTip?.x ?? 0.5;
-    const y = frame.indexTip?.y ?? 0.5;
-    
-    this.bufferX.push(x);
-    this.bufferY.push(y);
-    
-    if (this.bufferX.length > this.windowSize) {
-      this.bufferX.shift();
-      this.bufferY.shift();
-    }
-    
-    const avgX = this.bufferX.reduce((a, b) => a + b, 0) / this.bufferX.length;
-    const avgY = this.bufferY.reduce((a, b) => a + b, 0) / this.bufferY.length;
-    
-    return {
-      ts: frame.ts,
-      handId: frame.handId,
-      trackingOk: frame.trackingOk,
-      palmFacing: frame.palmFacing,
-      label: frame.label,
-      confidence: frame.confidence,
-      position: { x: avgX, y: avgY },
-      velocity: { x: 0, y: 0 },
-      jitter: 0,
-      filterType: 'moving-average',
-      source: 'port-2-demo',
-    };
-  }
-  
-  reset(): void {
-    this.bufferX = [];
-    this.bufferY = [];
-  }
+	private bufferX: number[] = [];
+	private bufferY: number[] = [];
+
+	constructor(private windowSize = 5) {}
+
+	smooth(frame: SensorFrame): SmoothedFrame {
+		const x = frame.indexTip?.x ?? 0.5;
+		const y = frame.indexTip?.y ?? 0.5;
+
+		this.bufferX.push(x);
+		this.bufferY.push(y);
+
+		if (this.bufferX.length > this.windowSize) {
+			this.bufferX.shift();
+			this.bufferY.shift();
+		}
+
+		const avgX = this.bufferX.reduce((a, b) => a + b, 0) / this.bufferX.length;
+		const avgY = this.bufferY.reduce((a, b) => a + b, 0) / this.bufferY.length;
+
+		return {
+			ts: frame.ts,
+			handId: frame.handId,
+			trackingOk: frame.trackingOk,
+			palmFacing: frame.palmFacing,
+			label: frame.label,
+			confidence: frame.confidence,
+			position: { x: avgX, y: avgY },
+			velocity: { x: 0, y: 0 },
+			jitter: 0,
+			filterType: 'moving-average',
+			source: 'port-2-demo',
+		};
+	}
+
+	reset(): void {
+		this.bufferX = [];
+		this.bufferY = [];
+	}
 }
 
 const maSmoother = new SimpleMovingAverage(5);
@@ -99,8 +107,8 @@ const maSmoother = new SimpleMovingAverage(5);
 type FSMState = 'DISARMED' | 'ARMING' | 'ARMED' | 'DOWN_COMMIT' | 'DOWN_NAV' | 'ZOOM';
 
 interface FSMContext {
-  state: FSMState;
-  trace: TraceContext;
+	state: FSMState;
+	trace: TraceContext;
 }
 
 // ============================================================================
@@ -108,24 +116,24 @@ interface FSMContext {
 // ============================================================================
 
 interface DemoState {
-  rawHistory: Array<{ x: number; y: number }>;
-  euroHistory: Array<{ x: number; y: number }>;
-  despHistory: Array<{ x: number; y: number }>;
-  maHistory: Array<{ x: number; y: number }>;
-  fsm: FSMContext;
-  transitionCount: number;
+	rawHistory: Array<{ x: number; y: number }>;
+	euroHistory: Array<{ x: number; y: number }>;
+	despHistory: Array<{ x: number; y: number }>;
+	maHistory: Array<{ x: number; y: number }>;
+	fsm: FSMContext;
+	transitionCount: number;
 }
 
 const state: DemoState = {
-  rawHistory: [],
-  euroHistory: [],
-  despHistory: [],
-  maHistory: [],
-  fsm: {
-    state: 'DISARMED',
-    trace: createTraceContext(),
-  },
-  transitionCount: 0,
+	rawHistory: [],
+	euroHistory: [],
+	despHistory: [],
+	maHistory: [],
+	fsm: {
+		state: 'DISARMED',
+		trace: createTraceContext(),
+	},
+	transitionCount: 0,
 };
 
 const MAX_HISTORY = 100;
@@ -135,8 +143,8 @@ const MAX_HISTORY = 100;
 // ============================================================================
 
 function createDemoUI(): void {
-  const container = document.getElementById('app') ?? document.body;
-  container.innerHTML = `
+	const container = document.getElementById('app') ?? document.body;
+	container.innerHTML = `
     <style>
       * { box-sizing: border-box; margin: 0; padding: 0; }
       body { 
@@ -314,58 +322,66 @@ function createDemoUI(): void {
 // CANVAS RENDERING
 // ============================================================================
 
-function drawPath(ctx: CanvasRenderingContext2D, points: Array<{ x: number; y: number }>, color: string): void {
-  if (points.length < 2) return;
-  
-  ctx.beginPath();
-  ctx.strokeStyle = color;
-  ctx.lineWidth = 2;
-  
-  const width = ctx.canvas.width;
-  const height = ctx.canvas.height;
-  const padding = 20;
-  
-  points.forEach((p, i) => {
-    const x = padding + (i / (MAX_HISTORY - 1)) * (width - 2 * padding);
-    const y = height - padding - p.y * (height - 2 * padding);
-    
-    if (i === 0) ctx.moveTo(x, y);
-    else ctx.lineTo(x, y);
-  });
-  
-  ctx.stroke();
+function drawPath(
+	ctx: CanvasRenderingContext2D,
+	points: Array<{ x: number; y: number }>,
+	color: string,
+): void {
+	if (points.length < 2) return;
+
+	ctx.beginPath();
+	ctx.strokeStyle = color;
+	ctx.lineWidth = 2;
+
+	const width = ctx.canvas.width;
+	const height = ctx.canvas.height;
+	const padding = 20;
+
+	points.forEach((p, i) => {
+		const x = padding + (i / (MAX_HISTORY - 1)) * (width - 2 * padding);
+		const y = height - padding - p.y * (height - 2 * padding);
+
+		if (i === 0) ctx.moveTo(x, y);
+		else ctx.lineTo(x, y);
+	});
+
+	ctx.stroke();
 }
 
-function renderCanvas(canvasId: string, history: Array<{ x: number; y: number }>, color: string): void {
-  const canvas = document.getElementById(canvasId) as HTMLCanvasElement;
-  if (!canvas) return;
-  
-  const ctx = canvas.getContext('2d');
-  if (!ctx) return;
-  
-  // Set actual canvas resolution
-  const rect = canvas.getBoundingClientRect();
-  canvas.width = rect.width * window.devicePixelRatio;
-  canvas.height = rect.height * window.devicePixelRatio;
-  ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-  
-  // Clear
-  ctx.fillStyle = '#0d1117';
-  ctx.fillRect(0, 0, rect.width, rect.height);
-  
-  // Draw grid
-  ctx.strokeStyle = '#21262d';
-  ctx.lineWidth = 1;
-  for (let i = 0; i <= 10; i++) {
-    const y = rect.height * (i / 10);
-    ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(rect.width, y);
-    ctx.stroke();
-  }
-  
-  // Draw path
-  drawPath(ctx, history, color);
+function renderCanvas(
+	canvasId: string,
+	history: Array<{ x: number; y: number }>,
+	color: string,
+): void {
+	const canvas = document.getElementById(canvasId) as HTMLCanvasElement;
+	if (!canvas) return;
+
+	const ctx = canvas.getContext('2d');
+	if (!ctx) return;
+
+	// Set actual canvas resolution
+	const rect = canvas.getBoundingClientRect();
+	canvas.width = rect.width * window.devicePixelRatio;
+	canvas.height = rect.height * window.devicePixelRatio;
+	ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+	// Clear
+	ctx.fillStyle = '#0d1117';
+	ctx.fillRect(0, 0, rect.width, rect.height);
+
+	// Draw grid
+	ctx.strokeStyle = '#21262d';
+	ctx.lineWidth = 1;
+	for (let i = 0; i <= 10; i++) {
+		const y = rect.height * (i / 10);
+		ctx.beginPath();
+		ctx.moveTo(0, y);
+		ctx.lineTo(rect.width, y);
+		ctx.stroke();
+	}
+
+	// Draw path
+	drawPath(ctx, history, color);
 }
 
 // ============================================================================
@@ -373,16 +389,16 @@ function renderCanvas(canvasId: string, history: Array<{ x: number; y: number }>
 // ============================================================================
 
 function calculateJitter(history: Array<{ x: number; y: number }>): number {
-  if (history.length < 2) return 0;
-  
-  let totalJitter = 0;
-  for (let i = 1; i < history.length; i++) {
-    const dx = history[i].x - history[i - 1].x;
-    const dy = history[i].y - history[i - 1].y;
-    totalJitter += Math.sqrt(dx * dx + dy * dy);
-  }
-  
-  return totalJitter / (history.length - 1);
+	if (history.length < 2) return 0;
+
+	let totalJitter = 0;
+	for (let i = 1; i < history.length; i++) {
+		const dx = history[i].x - history[i - 1].x;
+		const dy = history[i].y - history[i - 1].y;
+		totalJitter += Math.sqrt(dx * dx + dy * dy);
+	}
+
+	return totalJitter / (history.length - 1);
 }
 
 // ============================================================================
@@ -390,33 +406,26 @@ function calculateJitter(history: Array<{ x: number; y: number }>): number {
 // ============================================================================
 
 function transitionFSM(newState: FSMState): void {
-  if (state.fsm.state !== newState) {
-    state.fsm.state = newState;
-    state.fsm.trace = propagateTrace(state.fsm.trace);
-    state.transitionCount++;
-    updateFSMDisplay();
-  }
+	if (state.fsm.state !== newState) {
+		state.fsm.state = newState;
+		state.fsm.trace = propagateTrace(state.fsm.trace);
+		state.transitionCount++;
+		updateFSMDisplay();
+	}
 }
 
 function updateFSMDisplay(): void {
-  // Update state badges
-  document.querySelectorAll('.fsm-state').forEach(el => el.classList.remove('active'));
-  document.getElementById(`fsm-${state.fsm.state}`)?.classList.add('active');
-  
-  // Update trace display
-  const traceEl = document.getElementById('traceDisplay');
-  if (traceEl) {
-    const isValid = validateTraceparent(state.fsm.trace.traceparent);
-    traceEl.className = `trace-display ${isValid ? 'trace-valid' : 'trace-invalid'}`;
-    traceEl.textContent = 
-      `traceparent: ${state.fsm.trace.traceparent}\n` +
-      `tracestate:  ${state.fsm.trace.tracestate}\n` +
-      `────────────────────────────────────────────\n` +
-      `traceId:     ${extractTraceId(state.fsm.trace.traceparent)}\n` +
-      `spanId:      ${extractSpanId(state.fsm.trace.traceparent)}\n` +
-      `valid:       ${isValid ? '✅ W3C Compliant' : '❌ Invalid'}\n` +
-      `transitions: ${state.transitionCount}`;
-  }
+	// Update state badges
+	document.querySelectorAll('.fsm-state').forEach((el) => el.classList.remove('active'));
+	document.getElementById(`fsm-${state.fsm.state}`)?.classList.add('active');
+
+	// Update trace display
+	const traceEl = document.getElementById('traceDisplay');
+	if (traceEl) {
+		const isValid = validateTraceparent(state.fsm.trace.traceparent);
+		traceEl.className = `trace-display ${isValid ? 'trace-valid' : 'trace-invalid'}`;
+		traceEl.textContent = `traceparent: ${state.fsm.trace.traceparent}\ntracestate:  ${state.fsm.trace.tracestate}\n────────────────────────────────────────────\ntraceId:     ${extractTraceId(state.fsm.trace.traceparent)}\nspanId:      ${extractSpanId(state.fsm.trace.traceparent)}\nvalid:       ${isValid ? '✅ W3C Compliant' : '❌ Invalid'}\ntransitions: ${state.transitionCount}`;
+	}
 }
 
 // ============================================================================
@@ -424,43 +433,55 @@ function updateFSMDisplay(): void {
 // ============================================================================
 
 function processFrame(mouseX: number, mouseY: number): void {
-  const ts = performance.now();
-  
-  // Add jitter to simulate noisy input
-  const noise = 0.02;
-  const rawX = Math.max(0, Math.min(1, mouseX + (Math.random() - 0.5) * noise));
-  const rawY = Math.max(0, Math.min(1, mouseY + (Math.random() - 0.5) * noise));
-  
-  // Create SensorFrame using REAL utility
-  const sensorFrame: SensorFrame = createSensorFrameFromMouse(rawX, rawY, ts);
-  
-  // Apply REAL smoothers
-  const euroResult: SmoothedFrame = oneEuroSmoother.smooth(sensorFrame);
-  const despResult: SmoothedFrame = despSmoother.smooth(sensorFrame);
-  const maResult: SmoothedFrame = maSmoother.smooth(sensorFrame);
-  
-  // Update histories
-  const addToHistory = (arr: Array<{ x: number; y: number }>, x: number, y: number) => {
-    arr.push({ x, y });
-    if (arr.length > MAX_HISTORY) arr.shift();
-  };
-  
-  addToHistory(state.rawHistory, rawX, rawY);
-  addToHistory(state.euroHistory, euroResult.position.x, euroResult.position.y);
-  addToHistory(state.despHistory, despResult.position.x, despResult.position.y);
-  addToHistory(state.maHistory, maResult.position.x, maResult.position.y);
-  
-  // Render canvases
-  renderCanvas('canvasRaw', state.rawHistory, '#ff6b6b');
-  renderCanvas('canvasEuro', state.euroHistory, '#58a6ff');
-  renderCanvas('canvasDesp', state.despHistory, '#a371f7');
-  renderCanvas('canvasMA', state.maHistory, '#3fb950');
-  
-  // Update jitter stats
-  document.getElementById('rawJitter')!.textContent = calculateJitter(state.rawHistory).toFixed(4);
-  document.getElementById('euroJitter')!.textContent = calculateJitter(state.euroHistory).toFixed(4);
-  document.getElementById('despJitter')!.textContent = calculateJitter(state.despHistory).toFixed(4);
-  document.getElementById('maJitter')!.textContent = calculateJitter(state.maHistory).toFixed(4);
+	const ts = performance.now();
+
+	// Add jitter using APPROVED addJitter utility (IR-0009 FIX)
+	const noise = 0.02;
+	const rawX = Math.max(0, Math.min(1, addJitter(mouseX, noise)));
+	const rawY = Math.max(0, Math.min(1, addJitter(mouseY, noise)));
+
+	// Create SensorFrame using REAL utility
+	const sensorFrame: SensorFrame = createSensorFrameFromMouse(rawX, rawY, ts);
+
+	// Apply REAL smoothers
+	const euroResult: SmoothedFrame = oneEuroSmoother.smooth(sensorFrame);
+	const despResult: SmoothedFrame = despSmoother.smooth(sensorFrame);
+	const maResult: SmoothedFrame = maSmoother.smooth(sensorFrame);
+
+	// IR-0012 FIX: Complete pipeline - FSM + Emit (using primary smoother output)
+	const action = fsm.process(euroResult);
+	const target: AdapterTarget = {
+		id: 'shaper-demo',
+		bounds: { left: 0, top: 0, width: 800, height: 600 },
+	};
+	pointerEmitter.emit(action, target);
+
+	// Update histories
+	const addToHistory = (arr: Array<{ x: number; y: number }>, x: number, y: number) => {
+		arr.push({ x, y });
+		if (arr.length > MAX_HISTORY) arr.shift();
+	};
+
+	addToHistory(state.rawHistory, rawX, rawY);
+	addToHistory(state.euroHistory, euroResult.position.x, euroResult.position.y);
+	addToHistory(state.despHistory, despResult.position.x, despResult.position.y);
+	addToHistory(state.maHistory, maResult.position.x, maResult.position.y);
+
+	// Render canvases
+	renderCanvas('canvasRaw', state.rawHistory, '#ff6b6b');
+	renderCanvas('canvasEuro', state.euroHistory, '#58a6ff');
+	renderCanvas('canvasDesp', state.despHistory, '#a371f7');
+	renderCanvas('canvasMA', state.maHistory, '#3fb950');
+
+	// Update jitter stats
+	document.getElementById('rawJitter')!.textContent = calculateJitter(state.rawHistory).toFixed(4);
+	document.getElementById('euroJitter')!.textContent = calculateJitter(state.euroHistory).toFixed(
+		4,
+	);
+	document.getElementById('despJitter')!.textContent = calculateJitter(state.despHistory).toFixed(
+		4,
+	);
+	document.getElementById('maJitter')!.textContent = calculateJitter(state.maHistory).toFixed(4);
 }
 
 // ============================================================================
@@ -468,68 +489,68 @@ function processFrame(mouseX: number, mouseY: number): void {
 // ============================================================================
 
 export function startPort2Demo(): void {
-  createDemoUI();
-  updateFSMDisplay();
-  
-  // FSM button handlers
-  document.getElementById('btnArm')?.addEventListener('click', () => {
-    if (state.fsm.state === 'DISARMED') transitionFSM('ARMING');
-    else if (state.fsm.state === 'ARMING') transitionFSM('ARMED');
-  });
-  
-  document.getElementById('btnClick')?.addEventListener('click', () => {
-    if (state.fsm.state === 'ARMED') transitionFSM('DOWN_COMMIT');
-    else if (state.fsm.state === 'DOWN_COMMIT') transitionFSM('ARMED');
-  });
-  
-  document.getElementById('btnPan')?.addEventListener('click', () => {
-    if (state.fsm.state === 'ARMED') transitionFSM('DOWN_NAV');
-    else if (state.fsm.state === 'DOWN_NAV') transitionFSM('ARMED');
-  });
-  
-  document.getElementById('btnDisarm')?.addEventListener('click', () => {
-    transitionFSM('DISARMED');
-  });
-  
-  document.getElementById('btnReset')?.addEventListener('click', () => {
-    state.fsm.trace = createTraceContext();
-    state.transitionCount = 0;
-    transitionFSM('DISARMED');
-    oneEuroSmoother.reset();
-    despSmoother.reset();
-    maSmoother.reset();
-    state.rawHistory = [];
-    state.euroHistory = [];
-    state.despHistory = [];
-    state.maHistory = [];
-  });
-  
-  // Mouse tracking
-  let mouseX = 0.5;
-  let mouseY = 0.5;
-  
-  document.addEventListener('mousemove', (e) => {
-    mouseX = e.clientX / window.innerWidth;
-    mouseY = 1 - (e.clientY / window.innerHeight);
-  });
-  
-  // Animation loop
-  function loop(): void {
-    processFrame(mouseX, mouseY);
-    requestAnimationFrame(loop);
-  }
-  
-  loop();
+	createDemoUI();
+	updateFSMDisplay();
+
+	// FSM button handlers
+	document.getElementById('btnArm')?.addEventListener('click', () => {
+		if (state.fsm.state === 'DISARMED') transitionFSM('ARMING');
+		else if (state.fsm.state === 'ARMING') transitionFSM('ARMED');
+	});
+
+	document.getElementById('btnClick')?.addEventListener('click', () => {
+		if (state.fsm.state === 'ARMED') transitionFSM('DOWN_COMMIT');
+		else if (state.fsm.state === 'DOWN_COMMIT') transitionFSM('ARMED');
+	});
+
+	document.getElementById('btnPan')?.addEventListener('click', () => {
+		if (state.fsm.state === 'ARMED') transitionFSM('DOWN_NAV');
+		else if (state.fsm.state === 'DOWN_NAV') transitionFSM('ARMED');
+	});
+
+	document.getElementById('btnDisarm')?.addEventListener('click', () => {
+		transitionFSM('DISARMED');
+	});
+
+	document.getElementById('btnReset')?.addEventListener('click', () => {
+		state.fsm.trace = createTraceContext();
+		state.transitionCount = 0;
+		transitionFSM('DISARMED');
+		oneEuroSmoother.reset();
+		despSmoother.reset();
+		maSmoother.reset();
+		state.rawHistory = [];
+		state.euroHistory = [];
+		state.despHistory = [];
+		state.maHistory = [];
+	});
+
+	// Mouse tracking
+	let mouseX = 0.5;
+	let mouseY = 0.5;
+
+	document.addEventListener('mousemove', (e) => {
+		mouseX = e.clientX / window.innerWidth;
+		mouseY = 1 - e.clientY / window.innerHeight;
+	});
+
+	// Animation loop
+	function loop(): void {
+		processFrame(mouseX, mouseY);
+		requestAnimationFrame(loop);
+	}
+
+	loop();
 }
 
 // Auto-start
 if (typeof document !== 'undefined') {
-  document.addEventListener('DOMContentLoaded', () => {
-    if (!document.getElementById('app')) {
-      const app = document.createElement('div');
-      app.id = 'app';
-      document.body.appendChild(app);
-    }
-    startPort2Demo();
-  });
+	document.addEventListener('DOMContentLoaded', () => {
+		if (!document.getElementById('app')) {
+			const app = document.createElement('div');
+			app.id = 'app';
+			document.body.appendChild(app);
+		}
+		startPort2Demo();
+	});
 }

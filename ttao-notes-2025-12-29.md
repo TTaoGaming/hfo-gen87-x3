@@ -282,3 +282,16 @@ One I want you to make sure you save some of this pattern to the memory MC and y
 OK what I need you to do is to essentially archive all my old tests so tests that start with 11 12 or 13 showcases all the numbers need to be archived and then the sensor demo right like I'm not sure if it's using the correct one The idea right now is for us to get all the primitive pieces together and make sure that they work using my existing architecture the idea is to build this up a step at a time right now in my mind what I'm trying to do is to build the medallion silver level adapters making sure they pass mutations has making sure they're actually working well to get them ready for composition and promotion to the gold level But the problem that's happening right now is that the AI constantly reward hacks and fakes my architecture even though I am very specific with my requirements So we cannot trust the AI we have to enforce it Please let me know if my enforcements are weak One of the ways that I'm trying to enforce everything is with strict mutation testing requirements of 80% or more
 ---
 we need to restorre all our demos because ai is now hallucinating like crazy. right now nothing is working correctly. what I want is a demo of each port so mediapipeline landmark and gesture passthrough for port 0 observer. and then contracts and gating for port 1, then the different smoothing for shaper the FSM should also be the shaper with w3c and then injector should be the delivery
+---
+Run cold start protocol and take a look at the Obsidian blackboard and tell me what our progress is and what our next priority steps are I want you to act as my spider sovereign and help me prioritize I'm trying mainly to get the showcase working but there seems to be a lot of issues with Vite TypeScript and the demos and showcases not actually using my architecture The biggest thing is I don't think the AI even knows when my real architecture is it should be with a bunch of things that you need to find for example using media pipeline landmarks media pipeline gesture €1 filter Rapier 2D physics with smoothing and prediction going into a finite state machine using W3C pointer level three events output wrapped around golden layout in a UI layer and then I can put whatever output and consumer of W3C pointer inside golden layout
+---
+Camera → MediaPipeAdapter.sense() 
+       → SensorFrame (Zod validated)
+       → OneEuroExemplarAdapter.smooth() OR RapierPhysicsAdapter.smooth()
+       → SmoothedFrame (Zod validated)  
+       → XStateFSMAdapter.transition()
+       → FSM State + Actions
+       → PointerEventAdapter.emit()
+       → W3C PointerEvent
+       → GoldenLayoutShellAdapter displays tiles
+---

@@ -1,26 +1,26 @@
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import { fileURLToPath } from 'node:url';
 /**
  * DOWN_COMMIT Visual Verification Test
- * 
+ *
  * Gen87.X3 | VALIDATE Phase
- * 
- * Purpose: 
+ *
+ * Purpose:
  * 1. Verify video playback triggers DOWN_COMMIT state
  * 2. Capture screenshot at DOWN_COMMIT moment
  * 3. Check layout correctness
  * 4. Verify cursor elements are rendered
  */
-import { expect, test, type Page } from '@playwright/test';
-import * as fs from 'node:fs';
-import * as path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { type Page, expect, test } from '@playwright/test';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const FIXTURES_DIR = path.join(__dirname, '../cold/silver');
 const SCREENSHOTS_DIR = path.join(__dirname, '../test-results/down-commit-screenshots');
-const BASE_URL = 'http://localhost:8081';  // GoldenLayout demo server
-const DEMO_PAGE = '12-golden-unified.html';  // Unified demo with visible video panel
+const BASE_URL = 'http://localhost:8081'; // GoldenLayout demo server
+const DEMO_PAGE = '12-golden-unified.html'; // Unified demo with visible video panel
 
 // Ensure screenshots directory exists
 if (!fs.existsSync(SCREENSHOTS_DIR)) {
@@ -58,11 +58,15 @@ async function injectVideoAsCamera(page: Page, videoPath: string): Promise<void>
 					console.log('[VIDEO_FIXTURE] Injecting video as camera source');
 
 					await new Promise<void>((resolve) => {
-						video.addEventListener('loadedmetadata', () => {
-							canvas.width = video.videoWidth || 640;
-							canvas.height = video.videoHeight || 480;
-							resolve();
-						}, { once: true });
+						video.addEventListener(
+							'loadedmetadata',
+							() => {
+								canvas.width = video.videoWidth || 640;
+								canvas.height = video.videoHeight || 480;
+								resolve();
+							},
+							{ once: true },
+						);
 						video.load();
 					});
 
@@ -74,11 +78,15 @@ async function injectVideoAsCamera(page: Page, videoPath: string): Promise<void>
 						console.error('[VIDEO_FIXTURE] Play failed:', e);
 					}
 
-					video.addEventListener('ended', () => {
-						videoEnded = true;
-						console.log('[VIDEO_FIXTURE] Video playback ended');
-						window.dispatchEvent(new CustomEvent('video-fixture-ended'));
-					}, { once: true });
+					video.addEventListener(
+						'ended',
+						() => {
+							videoEnded = true;
+							console.log('[VIDEO_FIXTURE] Video playback ended');
+							window.dispatchEvent(new CustomEvent('video-fixture-ended'));
+						},
+						{ once: true },
+					);
 
 					function drawFrame() {
 						if (!videoEnded && isPlaying) {
@@ -104,16 +112,18 @@ async function injectVideoAsCamera(page: Page, videoPath: string): Promise<void>
 
 			console.log('[VIDEO_FIXTURE] Camera mock installed');
 		},
-		{ videoDataUrl }
+		{ videoDataUrl },
 	);
 }
 
 test.describe('DOWN_COMMIT Visual Verification', () => {
 	test.describe.configure({ mode: 'serial' });
 
-	test('Video A (open-palm-pointer-up-open-palm) should reach DOWN_COMMIT and show correct cursors', async ({ page }) => {
+	test('Video A (open-palm-pointer-up-open-palm) should reach DOWN_COMMIT and show correct cursors', async ({
+		page,
+	}) => {
 		const videoPath = path.join(FIXTURES_DIR, 'open-palm-pointer-up-open-palm.mp4');
-		
+
 		if (!fs.existsSync(videoPath)) {
 			test.skip(true, `Video not found: ${videoPath}`);
 			return;
@@ -173,30 +183,31 @@ test.describe('DOWN_COMMIT Visual Verification', () => {
 			// Check FSM state - 12-golden-unified uses both #fsmStateText and .fsm-state.active
 			const fsmStateText = await page.locator('#fsmStateText').textContent();
 			const activeStateEl = page.locator('.fsm-state.active');
-			const activeState = await activeStateEl.count() > 0 ? await activeStateEl.textContent() : null;
-			
+			const activeState =
+				(await activeStateEl.count()) > 0 ? await activeStateEl.textContent() : null;
+
 			const currentState = fsmStateText || activeState || 'UNKNOWN';
-			
+
 			fsmStates.push({ state: currentState, timestamp: elapsed });
-			
+
 			console.log(`[${elapsed}ms] FSM State: ${currentState}`);
 
 			// If DOWN_COMMIT detected, take screenshot immediately
 			if (currentState === 'DOWN_COMMIT') {
 				downCommitDetected = true;
 				console.log('🎯 DOWN_COMMIT DETECTED! Taking screenshot...');
-				
+
 				await page.screenshot({
 					path: path.join(SCREENSHOTS_DIR, 'DOWN_COMMIT-moment.png'),
 					fullPage: true,
 				});
-				
+
 				// Also take a screenshot of just the target area
 				const targetArea = page.locator('#targetArea');
 				await targetArea.screenshot({
 					path: path.join(SCREENSHOTS_DIR, 'DOWN_COMMIT-target-area.png'),
 				});
-				
+
 				screenshotTaken = true;
 				console.log('📸 DOWN_COMMIT screenshots saved!');
 			}
@@ -214,28 +225,30 @@ test.describe('DOWN_COMMIT Visual Verification', () => {
 
 		// Verify DOWN_COMMIT was reached
 		console.log('\n📊 FSM State History:');
-		const uniqueStates = [...new Set(fsmStates.map(s => s.state))];
+		const uniqueStates = [...new Set(fsmStates.map((s) => s.state))];
 		console.log(`   States visited: ${uniqueStates.join(' → ')}`);
 
 		expect(downCommitDetected, 'Video A should trigger DOWN_COMMIT state').toBe(true);
 
 		// Verify cursor elements exist in the page (12-golden-unified uses #cursorDot)
 		console.log('\n🔍 Cursor Element Verification:');
-		
+
 		const cursorDot = page.locator('#cursorDot');
 		const cursorDotVisible = await cursorDot.isVisible();
 		console.log(`   Cursor dot visible: ${cursorDotVisible}`);
-		
+
 		const cursorDotClasses = await cursorDot.getAttribute('class');
 		console.log(`   Cursor dot classes: ${cursorDotClasses}`);
-		
+
 		// Cursor should have 'pressing' class during DOWN_COMMIT
 		const isPressing = cursorDotClasses?.includes('pressing') || false;
 		console.log(`   Cursor pressing: ${isPressing}`);
 
 		// Verify FSM state indicator shows DOWN_COMMIT
 		const downCommitState = page.locator('#fsm-DOWN_COMMIT');
-		const downCommitActive = await downCommitState.evaluate(el => el.classList.contains('active'));
+		const downCommitActive = await downCommitState.evaluate((el) =>
+			el.classList.contains('active'),
+		);
 		console.log(`   FSM DOWN_COMMIT active: ${downCommitActive}`);
 
 		expect(cursorDotVisible, 'Cursor dot should be visible').toBe(true);
@@ -244,7 +257,7 @@ test.describe('DOWN_COMMIT Visual Verification', () => {
 
 	test('Video B (open-palm-side) should stay DISARMED', async ({ page }) => {
 		const videoPath = path.join(FIXTURES_DIR, 'open-palm-side.mp4');
-		
+
 		if (!fs.existsSync(videoPath)) {
 			test.skip(true, `Video not found: ${videoPath}`);
 			return;
@@ -267,7 +280,7 @@ test.describe('DOWN_COMMIT Visual Verification', () => {
 
 		// Check FSM state - should be DISARMED
 		const fsmStateText = await page.locator('#fsmStateText').textContent();
-		
+
 		// Take screenshot of final state
 		await page.screenshot({
 			path: path.join(SCREENSHOTS_DIR, 'video-b-disarmed.png'),
@@ -292,7 +305,7 @@ test.describe('DOWN_COMMIT Visual Verification', () => {
 
 		// Verify GoldenLayout structure
 		console.log('\n📐 GoldenLayout Panel Verification:');
-		
+
 		// GoldenLayout root should exist
 		const goldenLayout = page.locator('.lm_goldenlayout');
 		expect(await goldenLayout.isVisible()).toBe(true);
@@ -303,8 +316,8 @@ test.describe('DOWN_COMMIT Visual Verification', () => {
 		const targetBox = await targetArea.boundingBox();
 		console.log(`   Target area (P7): ${JSON.stringify(targetBox)}`);
 		expect(targetBox).not.toBeNull();
-		expect(targetBox!.width).toBeGreaterThan(100);
-		expect(targetBox!.height).toBeGreaterThan(100);
+		expect(targetBox?.width).toBeGreaterThan(100);
+		expect(targetBox?.height).toBeGreaterThan(100);
 
 		// Video panel (Port 0) - should be visible, not hidden
 		const videoElement = page.locator('#videoEl');

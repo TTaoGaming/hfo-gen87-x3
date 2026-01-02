@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual Interlock Breadboard</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #121212;
+            color: #e0e0e0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #00d4ff;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+        }
+        .controls {
+            margin-bottom: 20px;
+        }
+        button {
+            background: #00d4ff;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:disabled {
+            background: #444;
+            color: #888;
+            cursor: not-allowed;
+        }
+        #debug-console {
+            background: #000;
+            border: 1px solid #333;
+            padding: 15px;
+            height: 400px;
+            overflow-y: auto;
+            font-family: "Fira Code", monospace;
+            font-size: 12px;
+            line-height: 1.5;
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+        .log-entry {
+            margin-bottom: 4px;
+        }
+        .log-info { color: #00ff00; }
+        .log-warn { color: #ffff00; }
+        .log-error { color: #ff0000; }
+        .log-boundary { color: #ff00ff; font-weight: bold; }
+        video {
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid #333;
+            margin-top: 10px;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>HFO Manual Interlock Breadboard</h1>
+        <p>Phase: I (Interlock) | Port 0 → Port 2 Pipeline</p>
+        
+        <div class="controls">
+            <button id="start-btn">Start Pipeline</button>
+        </div>
+
+        <video id="video" autoplay playsinline></video>
+        
+        <div id="debug-console"></div>
+    </div>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "zod": "https://cdn.jsdelivr.net/npm/zod@3.25.76/+esm",
+            "xstate": "https://cdn.jsdelivr.net/npm/xstate@5.25.0/+esm",
+            "1eurofilter": "https://cdn.jsdelivr.net/npm/1eurofilter@1.2.2/+esm",
+            "@mediapipe/tasks-vision": "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.18/+esm"
+        }
+    }
+    </script>
+
+    <script type="module">
+        // Requirement 1: Import from /demos/dist/hfo.bundle.js
+        import { 
+            MediaPipeAdapter, 
+            OneEuroExemplarAdapter, 
+            XStateFSMAdapter,
+            SensorFrameSchema 
+        } from './dist/hfo.bundle.js';
+        
+        const startBtn = document.getElementById('start-btn');
+        const debugConsole = document.getElementById('debug-console');
+        const video = document.getElementById('video');
+
+        function log(msg, type = 'info') {
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            debugConsole.appendChild(entry);
+            debugConsole.scrollTop = debugConsole.scrollHeight;
+        }
+
+        // Initialize Adapters
+        const sensor = new MediaPipeAdapter();
+        const smoother = new OneEuroExemplarAdapter();
+        // XStateFSMAdapter is imported but not used in this simple 0->2 pipeline as per requirements
+        log('Adapters instantiated.');
+
+        async function start() {
+            try {
+                log('Initializing MediaPipe sensor...');
+                await sensor.initialize();
+                log('MediaPipe initialized successfully.');
+
+                log('Requesting camera access...');
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { width: 640, height: 480 } 
+                });
+                video.srcObject = stream;
+                log('Camera stream active.');
+
+                startBtn.disabled = true;
+                log('Pipeline starting...', 'boundary');
+                
+                // Start loop
+                requestAnimationFrame(tick);
+            } catch (err) {
+                log(`Initialization failed: ${err.message}`, 'error');
+                console.error(err);
+            }
+        }
+
+        async function tick() {
+            if (!video.videoWidth) {
+                requestAnimationFrame(tick);
+                return;
+            }
+
+            const timestamp = performance.now();
+            
+            try {
+                // Port 0: SENSE
+                const rawFrame = await sensor.sense(video, timestamp);
+                
+                // Step: Validate (Requirement 3)
+                const validation = SensorFrameSchema.safeParse(rawFrame);
+                log(`VALIDATE: success=${validation.success}`, validation.success ? 'info' : 'error');
+
+                if (validation.success) {
+                    const validatedFrame = validation.data;
+                    
+                    // Port 2: SHAPE (Smoother) (Requirement 3)
+                    const smoothedFrame = smoother.smooth(validatedFrame);
+                    
+                    if (smoothedFrame.trackingOk) {
+                        const { x, y } = smoothedFrame.position;
+                        log(`SMOOTHED: x=${x.toFixed(4)}, y=${y.toFixed(4)}`, 'info');
+                    } else {
+                        if (timestamp % 1000 < 20) { // Throttle logs
+                            log('Waiting for hand detection...', 'warn');
+                        }
+                    }
+                }
+            } catch (err) {
+                log(`Pipeline Error: ${err.message}`, 'error');
+            }
+
+            requestAnimationFrame(tick);
+        }
+
+        startBtn.addEventListener('click', start);
+    </script>
+</body>
+</html>

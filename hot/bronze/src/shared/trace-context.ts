@@ -165,11 +165,11 @@ export function createDeterministicTrace(seed: string): TraceContext {
 		return Math.abs(h).toString(16).padStart(8, '0');
 	};
 
-	const traceId = (hash(seed) + hash(seed + '1') + hash(seed + '2') + hash(seed + '3')).slice(
+	const traceId = (hash(seed) + hash(`${seed}1`) + hash(`${seed}2`) + hash(`${seed}3`)).slice(
 		0,
 		32,
 	);
-	const spanId = (hash(seed + 'span') + hash(seed + 'span2')).slice(0, 16);
+	const spanId = (hash(`${seed}span`) + hash(`${seed}span2`)).slice(0, 16);
 
 	return {
 		traceparent: `00-${traceId}-${spanId}-01`,

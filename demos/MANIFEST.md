@@ -35,6 +35,7 @@ demos/
 | **Pointer** | `showcase-pointer.html` | `src/showcase-pointer.ts` | ✅ | Pointer event pipeline |
 | **Rapier** | `showcase-rapier.html` | `src/showcase-rapier.ts` | ✅ | Physics simulation |
 | **Substrate** | `showcase-substrate.html` | `src/showcase-substrate.ts` | ✅ | InMemory/NATS messaging |
+| **🆕 Webcam** | `showcase-webcam.html` | `src/showcase-webcam.ts` | ✅ | **FULL Pipeline: Webcam → W3C Pointer Level 3** |
 
 ---
 

@@ -20,22 +20,36 @@
 import {
 	GestureLabels,
 	InMemorySubstrateAdapter,
+	PointerEventAdapter,
 	RapierPhysicsAdapter,
+	XStateFSMAdapter,
 	createSensorFrameFromMouse,
 } from '../../hot/bronze/src/browser/index.js';
+import type { AdapterTarget } from '../../hot/bronze/src/contracts/schemas.js';
 
 // ============================================================================
 // REAL ADAPTER INSTANTIATION (Constraint Test Will Verify This)
 // ============================================================================
 
 // Port 2 - Rapier Physics (THREE MODES)
-const rapierSmoothed = new RapierPhysicsAdapter({ mode: 'smoothed', stiffness: 200, damping: 1.2 });
-const rapierPredictive = new RapierPhysicsAdapter({ mode: 'predictive', predictionMs: 50 });
-const rapierAdaptive = new RapierPhysicsAdapter({
-	mode: 'adaptive',
+// Store configs for type-safe display (adapters have private config)
+const rapierSmoothedConfig = { mode: 'smoothed' as const, stiffness: 200, damping: 1.2 };
+const rapierPredictiveConfig = { mode: 'predictive' as const, predictionMs: 50 };
+const rapierAdaptiveConfig = {
+	mode: 'adaptive' as const,
 	minStiffness: 50,
 	speedCoefficient: 300,
-});
+};
+
+const rapierSmoothed = new RapierPhysicsAdapter(rapierSmoothedConfig);
+const rapierPredictive = new RapierPhysicsAdapter(rapierPredictiveConfig);
+const rapierAdaptive = new RapierPhysicsAdapter(rapierAdaptiveConfig);
+
+// Port 3 - FSM (IR-0012 FIX: Complete pipeline)
+const fsm = new XStateFSMAdapter();
+
+// Port 5 - Pointer Event Emitter (IR-0012 FIX: Complete pipeline)
+const pointerEmitter = new PointerEventAdapter(1, 'touch');
 
 // Message Bus
 const bus = new InMemorySubstrateAdapter();
@@ -192,6 +206,21 @@ function getActiveAdapter(): RapierPhysicsAdapter {
 	}
 }
 
+// Type-safe config access (adapters have private config)
+function getActiveConfig():
+	| typeof rapierSmoothedConfig
+	| typeof rapierPredictiveConfig
+	| typeof rapierAdaptiveConfig {
+	switch (state.activeMode) {
+		case 'smoothed':
+			return rapierSmoothedConfig;
+		case 'predictive':
+			return rapierPredictiveConfig;
+		case 'adaptive':
+			return rapierAdaptiveConfig;
+	}
+}
+
 async function processFrame(x: number, y: number): Promise<void> {
 	const ts = performance.now();
 	state.rawPosition = { x, y };
@@ -199,7 +228,7 @@ async function processFrame(x: number, y: number): Promise<void> {
 	// Create sensor frame
 	const sensorFrame = createSensorFrameFromMouse(x, y, ts, GestureLabels.OPEN_PALM);
 
-	// Smooth with active adapter
+	// Smooth with active adapter (Port 2 - SHAPE)
 	const adapter = getActiveAdapter();
 	const smoothed = adapter.smooth(sensorFrame);
 
@@ -211,6 +240,16 @@ async function processFrame(x: number, y: number): Promise<void> {
 		if (state.trail.length > 100) state.trail.shift();
 	}
 
+	// IR-0012 FIX: Complete pipeline - FSM (Port 3)
+	const action = fsm.process(smoothed);
+
+	// IR-0012 FIX: Complete pipeline - Emit (Port 5)
+	const target: AdapterTarget = {
+		id: 'rapier-canvas',
+		bounds: canvas ? canvas.getBoundingClientRect() : { left: 0, top: 0, width: 800, height: 600 },
+	};
+	const pointerEvent = pointerEmitter.emit(action, target);
+
 	state.frameCount++;
 	state.lastTs = ts;
 
@@ -219,6 +258,8 @@ async function processFrame(x: number, y: number): Promise<void> {
 		mode: state.activeMode,
 		raw: state.rawPosition,
 		smoothed: state.smoothedPosition,
+		action: action.action,
+		pointerEvent: pointerEvent?.type,
 		ts,
 	});
 
@@ -234,8 +275,18 @@ function updateStats(): void {
 	const statsEl = document.getElementById('stats');
 	if (!statsEl) return;
 
-	const adapter = getActiveAdapter();
-	const config = (adapter as any).config;
+	// Type-safe config access (config stored separately to avoid casting)
+	const config = getActiveConfig();
+
+	// Build config display based on mode (different modes have different properties)
+	let configDisplay = '';
+	if ('stiffness' in config && 'damping' in config) {
+		configDisplay = `stiffness=${config.stiffness}, damping=${config.damping}`;
+	} else if ('predictionMs' in config) {
+		configDisplay = `predictionMs=${config.predictionMs}`;
+	} else if ('minStiffness' in config && 'speedCoefficient' in config) {
+		configDisplay = `minStiffness=${config.minStiffness}, speedCoeff=${config.speedCoefficient}`;
+	}
 
 	statsEl.innerHTML = `
 		<div class="stat">
@@ -256,7 +307,7 @@ function updateStats(): void {
 		</div>
 		<div class="stat">
 			<span class="label">Config</span>
-			<span class="value">stiffness=${config.stiffness}, damping=${config.damping}</span>
+			<span class="value">${configDisplay}</span>
 		</div>
 	`;
 }
@@ -370,11 +421,8 @@ async function init(): Promise<void> {
 	await bus.connect();
 
 	// Initialize all adapters (WASM needs async init)
-	await Promise.all([
-		rapierSmoothed.initialize(),
-		rapierPredictive.initialize(),
-		rapierAdaptive.initialize(),
-	]);
+	// NOTE: Method is init(), not initialize()
+	await Promise.all([rapierSmoothed.init(), rapierPredictive.init(), rapierAdaptive.init()]);
 
 	// Inject styles
 	const style = document.createElement('style');

@@ -176,7 +176,10 @@ export class OneEuroExemplarAdapter implements SmootherPort {
 	private createPassthroughFrame(frame: SensorFrame): SmoothedFrame {
 		// If indexTip exists, pass it through unfiltered
 		const position = frame.indexTip
-			? { x: Math.max(0, Math.min(1, frame.indexTip.x)), y: Math.max(0, Math.min(1, frame.indexTip.y)) }
+			? {
+					x: Math.max(0, Math.min(1, frame.indexTip.x)),
+					y: Math.max(0, Math.min(1, frame.indexTip.y)),
+				}
 			: null;
 
 		return SmoothedFrameSchema.parse({

@@ -36,7 +36,7 @@
  * @source Zod: https://zod.dev/
  * @source Design by Contract: Meyer (1992)
  */
-import { z, ZodSchema, ZodError } from 'zod';
+import { ZodError, ZodSchema, z } from 'zod';
 
 // Re-export Zod for convenience
 export { z, ZodSchema, ZodError };
@@ -48,24 +48,24 @@ export { z, ZodSchema, ZodError };
 // Port 0 schemas (SENSE)
 import {
 	CameraConstraintsSchema,
-	VideoFrameSchema,
+	GestureLabels,
+	HandLandmarksSchema,
 	MediaPipeConfigSchema,
 	NormalizedLandmarkSchema,
-	HandLandmarksSchema,
-	GestureLabels,
-	SensorFrameSchema,
 	type SensorFrame,
+	SensorFrameSchema,
+	VideoFrameSchema,
 } from './port-0-lidless-legion.js';
 
 // Core schemas (from schemas.ts - will migrate to port files)
 import {
-	SmoothedFrameSchema,
-	FSMActionSchema,
-	PointerEventOutSchema,
 	AdapterTargetSchema,
-	type SmoothedFrame,
 	type FSMAction,
+	FSMActionSchema,
 	type PointerEventOut,
+	PointerEventOutSchema,
+	type SmoothedFrame,
+	SmoothedFrameSchema,
 } from './schemas.js';
 
 // ============================================================================
@@ -136,7 +136,10 @@ export function createValguard<T>(schema: ZodSchema<T>, name?: string): Valguard
  * @param name - Optional name for error messages
  * @returns Function that returns typed data or throws
  */
-export function createStrictValguard<T>(schema: ZodSchema<T>, name?: string): (input: unknown) => T {
+export function createStrictValguard<T>(
+	schema: ZodSchema<T>,
+	name?: string,
+): (input: unknown) => T {
 	return (input: unknown): T => {
 		const result = schema.safeParse(input);
 		if (result.success) {
@@ -164,7 +167,10 @@ export const validateFSMAction = createValguard(FSMActionSchema, 'FSMAction');
 export const validatePointerEvent = createValguard(PointerEventOutSchema, 'PointerEventOut');
 
 /** Validate CameraConstraints (external → Port 0 boundary) */
-export const validateCameraConstraints = createValguard(CameraConstraintsSchema, 'CameraConstraints');
+export const validateCameraConstraints = createValguard(
+	CameraConstraintsSchema,
+	'CameraConstraints',
+);
 
 /** Validate MediaPipeConfig (external → Port 0 boundary) */
 export const validateMediaPipeConfig = createValguard(MediaPipeConfigSchema, 'MediaPipeConfig');

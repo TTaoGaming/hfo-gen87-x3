@@ -10,8 +10,8 @@
  * @source Internal HFO tooling
  */
 
-import * as fs from 'fs';
-import * as path from 'path';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import { glob } from 'glob';
 
 // Patterns to detect magic numbers
@@ -51,10 +51,7 @@ function shouldSkipFile(filePath: string): boolean {
 	return SKIP_PATTERNS.some((pattern) => pattern.test(filePath));
 }
 
-function hasProvenanceComment(
-	content: string,
-	matchIndex: number,
-): boolean {
+function hasProvenanceComment(content: string, matchIndex: number): boolean {
 	// Look backwards for JSDoc comment
 	const beforeMatch = content.substring(0, matchIndex);
 	const lines = beforeMatch.split('\n');
@@ -98,22 +95,30 @@ function checkFile(filePath: string): Violation[] {
 	const lines = content.split('\n');
 
 	for (const pattern of MAGIC_NUMBER_PATTERNS) {
-		let match;
-		// biome-ignore lint: pattern must be reset for each file
 		pattern.lastIndex = 0;
+		let match = pattern.exec(content);
 
-		while ((match = pattern.exec(content)) !== null) {
+		while (match !== null) {
 			const matchIndex = match.index;
 			const value = match[0];
 
 			// Skip if in import statement
-			if (isInImportStatement(content, matchIndex)) continue;
+			if (isInImportStatement(content, matchIndex)) {
+				match = pattern.exec(content);
+				continue;
+			}
 
 			// Skip if in comment
-			if (isInComment(content, matchIndex)) continue;
+			if (isInComment(content, matchIndex)) {
+				match = pattern.exec(content);
+				continue;
+			}
 
 			// Skip if has provenance
-			if (hasProvenanceComment(content, matchIndex)) continue;
+			if (hasProvenanceComment(content, matchIndex)) {
+				match = pattern.exec(content);
+				continue;
+			}
 
 			// Calculate line and column
 			const beforeMatch = content.substring(0, matchIndex);
@@ -131,6 +136,8 @@ function checkFile(filePath: string): Violation[] {
 				value,
 				context: contextLine.trim(),
 			});
+
+			match = pattern.exec(content);
 		}
 	}
 
@@ -158,9 +165,7 @@ async function main(): Promise<void> {
 		process.exit(0);
 	}
 
-	console.log(
-		`❌ Found ${allViolations.length} magic number(s) without provenance:\n`,
-	);
+	console.log(`❌ Found ${allViolations.length} magic number(s) without provenance:\n`);
 
 	for (const v of allViolations) {
 		console.log(`  ${v.file}:${v.line}:${v.column}`);

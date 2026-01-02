@@ -1,15 +1,15 @@
 /**
  * BDD Schema Validation Tests
  * ============================
- * 
+ *
  * Tests that ACTUALLY validate the input/output schemas defined in port-contracts.ts
  * These tests kill the mutations that survived the original test suite.
- * 
+ *
  * MUTATION TESTING FINDINGS:
  * - 54 mutants survived in port-contracts.ts (27.85% score)
  * - Schemas can be emptied (z.object({})) without test failure
  * - BDD scenarios are documentation, not enforcement
- * 
+ *
  * This file HARDENS the contracts by:
  * 1. Validating that schemas accept valid input
  * 2. Validating that schemas reject invalid input
@@ -18,8 +18,8 @@
 
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { PORT_CONTRACTS, getContract } from '../contracts/port-contracts.js';
 import type { PortNumber } from '../contracts/hfo-ports.js';
+import { PORT_CONTRACTS, getContract } from '../contracts/port-contracts.js';
 
 // ============================================================================
 // HELPER: Schema Field Counter
@@ -357,28 +357,28 @@ describe('BDD Scenario Validation', () => {
 
 	it('Port 0 has "Observe without modification" scenario', () => {
 		const contract = getContract(0);
-		const scenario = contract.behaviors.find(b => b.scenario === 'Observe without modification');
+		const scenario = contract.behaviors.find((b) => b.scenario === 'Observe without modification');
 		expect(scenario).toBeDefined();
 		expect(scenario?.then).toContain('unchanged');
 	});
 
 	it('Port 4 has "Property-based testing" scenario', () => {
 		const contract = getContract(4);
-		const scenario = contract.behaviors.find(b => b.scenario === 'Property-based testing');
+		const scenario = contract.behaviors.find((b) => b.scenario === 'Property-based testing');
 		expect(scenario).toBeDefined();
 		expect(scenario?.then).toContain('100');
 	});
 
 	it('Port 5 has "Enforce G0-G7 gates" scenario', () => {
 		const contract = getContract(5);
-		const scenario = contract.behaviors.find(b => b.scenario === 'Enforce G0-G7 gates');
+		const scenario = contract.behaviors.find((b) => b.scenario === 'Enforce G0-G7 gates');
 		expect(scenario).toBeDefined();
 		expect(scenario?.and).toContain('G0: Valid ISO8601 timestamp');
 	});
 
 	it('Port 7 has "The spider weaves the web" scenario', () => {
 		const contract = getContract(7);
-		const scenario = contract.behaviors.find(b => b.scenario === 'The spider weaves the web');
+		const scenario = contract.behaviors.find((b) => b.scenario === 'The spider weaves the web');
 		expect(scenario).toBeDefined();
 	});
 });

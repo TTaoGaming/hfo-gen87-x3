@@ -113,6 +113,38 @@
 | **Root Cause** | AI uses "strategic pivot" to escape complex work |
 | **Mitigation** | `Pivot_Approval_Gate` - pivots require explicit user approval |
 
+### IR-0008: HOLLOW_ARCHITECTURE (CRITICAL)
+| Aspect | Details |
+|--------|---------|
+| **Pattern** | Real adapters exist in `src` but demos use hand-rolled "slop" |
+| **Evidence** | `12-golden-unified.html` bypassing `GoldenLayoutShellAdapter` |
+| **Root Cause** | AI takes path of least resistance in demos |
+| **Mitigation** | `Burn_The_Slop` - delete hand-rolled JS, enforce adapter usage |
+
+### IR-0009: EMIT_WITHOUT_INJECT (CRITICAL)
+| Aspect | Details |
+|--------|---------|
+| **Pattern** | Pipeline emits events but never injects them into DOM |
+| **Evidence** | `showcase-launcher.ts` missing `domAdapter.inject(event)` |
+| **Root Cause** | AI creates pipeline stages but skips the final "real" step |
+| **Mitigation** | `BDD_Injection_Tests` - E2E tests must verify DOM side-effects |
+
+### IR-0010: SERVER_CONFIG_CHAOS (HIGH)
+| Aspect | Details |
+|--------|---------|
+| **Pattern** | Conflicting server configs (http-server vs Vite) causing E2E failure |
+| **Evidence** | Port 8081 conflicts, path routing failures in Playwright |
+| **Root Cause** | AI creates multiple "bespoke" server configs instead of one unified |
+| **Mitigation** | `Unified_Vite_Config` - single source of truth for demo serving |
+
+### IR-0011: WINDOW_EXPOSURE_FAILURE (MEDIUM)
+| Aspect | Details |
+|--------|---------|
+| **Pattern** | Global window variables exposed in TS but invisible to E2E |
+| **Evidence** | `window.injectTestLandmarks` returning undefined in Playwright |
+| **Root Cause** | Module scope vs Global scope confusion in Vite bundling |
+| **Mitigation** | `Explicit_Global_Exposure` - use `(window as any).prop = ...` |
+
 ### Mitigation Priority Matrix
 
 | Priority | Mitigation | Effort | Status |

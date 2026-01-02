@@ -17,6 +17,7 @@
  * CANNOT: modify, transform, persist, decide, emit
  */
 
+import { addJitter } from '../../hot/bronze/src/browser/index.js'; // IR-0009 FIX
 import type { SensorFrame } from '../../hot/bronze/src/contracts/schemas.js';
 import { GestureLabels, SensorFrameSchema } from '../../hot/bronze/src/contracts/schemas.js';
 
@@ -374,7 +375,7 @@ function createMockSensorFrame(timestamp: number): SensorFrame {
 		return {
 			x: Math.max(0, Math.min(1, cx + Math.cos(angle + t) * radius)),
 			y: Math.max(0, Math.min(1, cy + Math.sin(angle + t) * radius)),
-			z: Math.random() * 0.1 - 0.05,
+			z: addJitter(0, 0.05), // IR-0009 FIX: Deterministic jitter
 			visibility: 0.95,
 		};
 	});
@@ -389,7 +390,7 @@ function createMockSensorFrame(timestamp: number): SensorFrame {
 		trackingOk: true,
 		palmFacing: true,
 		label: gestures[gestureIndex],
-		confidence: 0.85 + Math.random() * 0.1,
+		confidence: addJitter(0.9, 0.05), // IR-0009 FIX: Deterministic jitter
 		indexTip: landmarks[8],
 		landmarks,
 	});

@@ -1,3 +1,4 @@
+import { OneEuroFilter } from '1eurofilter';
 /**
  * Smoother Benchmark: 1€ Filter vs Double Exponential vs Rapier Physics
  *
@@ -15,11 +16,14 @@
  * - Time-to-Impact: Can the system predict when cursor reaches target?
  * - Throughput: Frames per second processing capability
  */
-import { describe, it, expect, beforeAll } from 'vitest';
-import { OneEuroFilter } from '1eurofilter';
-import { DoubleExponentialPredictor } from './double-exponential-predictor.adapter.js';
-import { RapierPhysicsAdapter, createAdaptiveRapierAdapter, createPredictiveRapierAdapter } from './rapier-physics.adapter.js';
+import { beforeAll, describe, expect, it } from 'vitest';
 import type { SensorFrame } from '../contracts/schemas.js';
+import { DoubleExponentialPredictor } from './double-exponential-predictor.adapter.js';
+import {
+	type RapierPhysicsAdapter,
+	createAdaptiveRapierAdapter,
+	createPredictiveRapierAdapter,
+} from './rapier-physics.adapter.js';
 
 // ============================================================================
 // TEST DATA GENERATORS
@@ -32,7 +36,7 @@ function generateCircularPath(
 	frames: number,
 	radius: number,
 	noiseLevel: number,
-	frameTimeMs: number = 16,
+	frameTimeMs = 16,
 ): Array<{ x: number; y: number; ts: number }> {
 	const path: Array<{ x: number; y: number; ts: number }> = [];
 	const center = { x: 0.5, y: 0.5 };
@@ -64,7 +68,7 @@ function generateLinearPath(
 	end: { x: number; y: number },
 	frames: number,
 	noiseLevel: number,
-	frameTimeMs: number = 16,
+	frameTimeMs = 16,
 ): Array<{ x: number; y: number; ts: number }> {
 	const path: Array<{ x: number; y: number; ts: number }> = [];
 
@@ -125,7 +129,7 @@ function calculateLag(
 	smoothed: Array<{ x: number; y: number }>,
 	ideal: Array<{ x: number; y: number }>,
 ): number {
-	if (smoothed.length !== ideal.length) return NaN;
+	if (smoothed.length !== ideal.length) return Number.NaN;
 
 	let totalLag = 0;
 	for (let i = 0; i < smoothed.length; i++) {
@@ -157,7 +161,10 @@ describe('Smoother Benchmark', () => {
 			const rawJitterX = calculateJitter(path.map((p) => p.x));
 
 			// 1€ Filter
-			const oneEuro = { x: new OneEuroFilter(60, 1.0, 0.007), y: new OneEuroFilter(60, 1.0, 0.007) };
+			const oneEuro = {
+				x: new OneEuroFilter(60, 1.0, 0.007),
+				y: new OneEuroFilter(60, 1.0, 0.007),
+			};
 			const oneEuroSmoothed = path.map((p) => ({
 				x: oneEuro.x.filter(p.x, p.ts / 1000),
 				y: oneEuro.y.filter(p.y, p.ts / 1000),
@@ -182,11 +189,19 @@ describe('Smoother Benchmark', () => {
 
 			console.log('\n📊 JITTER REDUCTION (lower = smoother):');
 			console.log(`   Raw input:     ${rawJitterX.toFixed(6)}`);
-			console.log(`   1€ Filter:     ${oneEuroJitter.toFixed(6)} (${((1 - oneEuroJitter / rawJitterX) * 100).toFixed(1)}% reduction)`);
-			console.log(`   DESP:          ${despJitter.toFixed(6)} (${((1 - despJitter / rawJitterX) * 100).toFixed(1)}% reduction)`);
-			console.log(`   Rapier:        ${rapierJitter.toFixed(6)} (${((1 - rapierJitter / rawJitterX) * 100).toFixed(1)}% reduction)`);
+			console.log(
+				`   1€ Filter:     ${oneEuroJitter.toFixed(6)} (${((1 - oneEuroJitter / rawJitterX) * 100).toFixed(1)}% reduction)`,
+			);
+			console.log(
+				`   DESP:          ${despJitter.toFixed(6)} (${((1 - despJitter / rawJitterX) * 100).toFixed(1)}% reduction)`,
+			);
+			console.log(
+				`   Rapier:        ${rapierJitter.toFixed(6)} (${((1 - rapierJitter / rawJitterX) * 100).toFixed(1)}% reduction)`,
+			);
 			console.log('');
-			console.log('   ⚠️ Rapier adds physics oscillation (spring-damper) - trade-off for prediction');
+			console.log(
+				'   ⚠️ Rapier adds physics oscillation (spring-damper) - trade-off for prediction',
+			);
 
 			// 1€ and DESP should reduce jitter
 			// Rapier trades some jitter for physics-based prediction
@@ -203,7 +218,10 @@ describe('Smoother Benchmark', () => {
 			const lookAheadFrames = 3; // ~50ms at 60fps
 
 			// 1€ Filter - NO PREDICTION (baseline)
-			const oneEuro = { x: new OneEuroFilter(60, 1.0, 0.007), y: new OneEuroFilter(60, 1.0, 0.007) };
+			const oneEuro = {
+				x: new OneEuroFilter(60, 1.0, 0.007),
+				y: new OneEuroFilter(60, 1.0, 0.007),
+			};
 			let oneEuroPredError = 0;
 			let oneEuroCount = 0;
 
@@ -247,7 +265,9 @@ describe('Smoother Benchmark', () => {
 			rapierPredError /= rapierCount;
 
 			console.log('\n🎯 PREDICTION ACCURACY (lower = better):');
-			console.log(`   1€ Filter:     ${oneEuroPredError.toFixed(6)} (NO prediction, uses current pos)`);
+			console.log(
+				`   1€ Filter:     ${oneEuroPredError.toFixed(6)} (NO prediction, uses current pos)`,
+			);
 			console.log(`   DESP:          ${despPredError.toFixed(6)} (HAS prediction)`);
 			console.log(`   Rapier:        ${rapierPredError.toFixed(6)} (HAS prediction)`);
 
@@ -286,7 +306,7 @@ describe('Smoother Benchmark', () => {
 			}
 
 			console.log('\n⏱️ TIME-TO-IMPACT CAPABILITY:');
-			console.log(`   1€ Filter:     ❌ Not supported (smoothing only)`);
+			console.log('   1€ Filter:     ❌ Not supported (smoothing only)');
 			console.log(`   DESP:          ✅ ${despTTIs.length} valid TTI estimates`);
 			console.log(`   Rapier:        ✅ ${rapierTTIs.length} valid TTI estimates`);
 
@@ -302,7 +322,10 @@ describe('Smoother Benchmark', () => {
 			const path = generateCircularPath(frames, 0.3, 0.02);
 
 			// 1€ Filter
-			const oneEuro = { x: new OneEuroFilter(60, 1.0, 0.007), y: new OneEuroFilter(60, 1.0, 0.007) };
+			const oneEuro = {
+				x: new OneEuroFilter(60, 1.0, 0.007),
+				y: new OneEuroFilter(60, 1.0, 0.007),
+			};
 			const oneEuroStart = performance.now();
 			for (const point of path) {
 				oneEuro.x.filter(point.x, point.ts / 1000);
@@ -331,9 +354,15 @@ describe('Smoother Benchmark', () => {
 			const rapierFPS = frames / (rapierTime / 1000);
 
 			console.log('\n⚡ THROUGHPUT (frames/second):');
-			console.log(`   1€ Filter:     ${oneEuroFPS.toFixed(0)} fps (${oneEuroTime.toFixed(2)}ms for ${frames} frames)`);
-			console.log(`   DESP:          ${despFPS.toFixed(0)} fps (${despTime.toFixed(2)}ms for ${frames} frames)`);
-			console.log(`   Rapier:        ${rapierFPS.toFixed(0)} fps (${rapierTime.toFixed(2)}ms for ${frames} frames)`);
+			console.log(
+				`   1€ Filter:     ${oneEuroFPS.toFixed(0)} fps (${oneEuroTime.toFixed(2)}ms for ${frames} frames)`,
+			);
+			console.log(
+				`   DESP:          ${despFPS.toFixed(0)} fps (${despTime.toFixed(2)}ms for ${frames} frames)`,
+			);
+			console.log(
+				`   Rapier:        ${rapierFPS.toFixed(0)} fps (${rapierTime.toFixed(2)}ms for ${frames} frames)`,
+			);
 
 			// All should exceed 60fps (reasonable real-time performance)
 			expect(oneEuroFPS).toBeGreaterThan(60);

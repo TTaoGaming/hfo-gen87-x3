@@ -25,7 +25,7 @@
  * ```
  */
 
-import { connect, type NatsConnection, StringCodec, type Subscription } from 'nats';
+import { type NatsConnection, StringCodec, type Subscription, connect } from 'nats';
 import type { SubstratePort } from '../contracts/ports.js';
 
 export interface NatsSubstrateConfig {

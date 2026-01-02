@@ -18,14 +18,21 @@
  */
 
 import {
-	PointerEventAdapter,
 	type FSMAction,
 	InMemorySubstrateAdapter,
-	createSensorFrameFromMouse,
 	OneEuroExemplarAdapter,
+	PointerEventAdapter,
 	XStateFSMAdapter,
+	createSensorFrameFromMouse,
 } from '../../hot/bronze/src/browser/index.js';
 import type { AdapterTarget, PointerEventOut } from '../../hot/bronze/src/contracts/schemas.js';
+
+// Type-safe window extension for demo globals
+declare global {
+	interface Window {
+		simulateAction: typeof simulateAction;
+	}
+}
 
 // ============================================================================
 // REAL ADAPTER INSTANTIATION (Constraint Test Will Verify This)
@@ -108,11 +115,11 @@ function processInput(clientX: number, clientY: number): void {
 	};
 
 	const pointerEvent = pointerEmitter.emit(action, target);
-	
+
 	if (pointerEvent) {
 		state.lastEvent = pointerEvent;
 		state.eventLog.push({ event: pointerEvent, ts });
-		
+
 		// Keep only last 20 events
 		if (state.eventLog.length > 20) {
 			state.eventLog.shift();
@@ -187,13 +194,30 @@ function simulateAction(actionType: 'move' | 'down' | 'up' | 'cancel'): void {
 	let action: FSMAction;
 	switch (actionType) {
 		case 'move':
-			action = { action: 'move', state: 'ARMED', x: state.cursorPosition.x, y: state.cursorPosition.y };
+			action = {
+				action: 'move',
+				state: 'ARMED',
+				x: state.cursorPosition.x,
+				y: state.cursorPosition.y,
+			};
 			break;
 		case 'down':
-			action = { action: 'down', state: 'DOWN_COMMIT', x: state.cursorPosition.x, y: state.cursorPosition.y, button: 0 };
+			action = {
+				action: 'down',
+				state: 'DOWN_COMMIT',
+				x: state.cursorPosition.x,
+				y: state.cursorPosition.y,
+				button: 0,
+			};
 			break;
 		case 'up':
-			action = { action: 'up', state: 'ARMED', x: state.cursorPosition.x, y: state.cursorPosition.y, button: 0 };
+			action = {
+				action: 'up',
+				state: 'ARMED',
+				x: state.cursorPosition.x,
+				y: state.cursorPosition.y,
+				button: 0,
+			};
 			break;
 		case 'cancel':
 			action = { action: 'cancel', state: 'DISARMED' };
@@ -231,7 +255,9 @@ function render(): void {
 		<div class="pointer-demo">
 			<div class="current-event" style="border-color: ${state.lastEvent ? eventTypeColors[state.lastEvent.type] || '#6b7280' : '#6b7280'}">
 				<h3>Last Pointer Event</h3>
-				${state.lastEvent ? `
+				${
+					state.lastEvent
+						? `
 					<div class="event-type" style="color: ${eventTypeColors[state.lastEvent.type]}">${state.lastEvent.type}</div>
 					<div class="event-details">
 						${state.lastEvent.clientX !== undefined ? `Position: (${state.lastEvent.clientX.toFixed(0)}, ${state.lastEvent.clientY?.toFixed(0)})` : ''}
@@ -239,7 +265,9 @@ function render(): void {
 						<br>PointerId: ${state.lastEvent.pointerId}
 						<br>PointerType: ${state.lastEvent.pointerType}
 					</div>
-				` : '<div class="empty">No events yet</div>'}
+				`
+						: '<div class="empty">No events yet</div>'
+				}
 			</div>
 
 			<div class="action-buttons">
@@ -255,13 +283,21 @@ function render(): void {
 			<div class="event-log">
 				<h3>Event Stream</h3>
 				<div class="events">
-					${state.eventLog.slice(-10).reverse().map(({ event, ts }) => `
+					${
+						state.eventLog
+							.slice(-10)
+							.reverse()
+							.map(
+								({ event, ts }) => `
 						<div class="event" style="border-left-color: ${eventTypeColors[event.type]}">
 							<span class="type">${event.type}</span>
 							${event.clientX !== undefined ? `<span class="pos">(${event.clientX.toFixed(0)}, ${event.clientY?.toFixed(0)})</span>` : ''}
 							<span class="time">${ts.toFixed(0)}ms</span>
 						</div>
-					`).join('') || '<div class="empty">No events</div>'}
+					`,
+							)
+							.join('') || '<div class="empty">No events</div>'
+					}
 				</div>
 			</div>
 
@@ -281,7 +317,7 @@ function render(): void {
 // GLOBAL HANDLERS
 // ============================================================================
 
-// @ts-expect-error - Global for onclick
+// Type-safe global assignment (see declaration at top of file)
 window.simulateAction = simulateAction;
 
 // ============================================================================
@@ -362,4 +398,4 @@ if (document.readyState === 'loading') {
 	init();
 }
 
-export { pointerEmitter, fsm, smoother, bus, state };
+export { bus, fsm, pointerEmitter, smoother, state };

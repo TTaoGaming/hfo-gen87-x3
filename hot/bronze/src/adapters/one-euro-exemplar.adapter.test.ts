@@ -68,8 +68,8 @@ describe('OneEuroExemplarAdapter', () => {
 			expect(result.handId).toBe('right');
 			expect(result.trackingOk).toBe(true);
 			expect(result.position).not.toBeNull();
-			expect(result.position!.x).toBeCloseTo(0.5, 2);
-			expect(result.position!.y).toBeCloseTo(0.5, 2);
+			expect(result.position?.x).toBeCloseTo(0.5, 2);
+			expect(result.position?.y).toBeCloseTo(0.5, 2);
 		});
 
 		it('should return null position when no landmarks', () => {
@@ -105,10 +105,10 @@ describe('OneEuroExemplarAdapter', () => {
 			// All positions should be close to center after smoothing
 			results.forEach((r) => {
 				expect(r.position).not.toBeNull();
-				expect(r.position!.x).toBeGreaterThan(0.45);
-				expect(r.position!.x).toBeLessThan(0.55);
-				expect(r.position!.y).toBeGreaterThan(0.45);
-				expect(r.position!.y).toBeLessThan(0.55);
+				expect(r.position?.x).toBeGreaterThan(0.45);
+				expect(r.position?.x).toBeLessThan(0.55);
+				expect(r.position?.y).toBeGreaterThan(0.45);
+				expect(r.position?.y).toBeLessThan(0.55);
 			});
 		});
 
@@ -119,7 +119,7 @@ describe('OneEuroExemplarAdapter', () => {
 
 			expect(result.velocity).not.toBeNull();
 			// Velocity should be positive in X direction (moving right)
-			expect(result.velocity!.x).toBeGreaterThan(0);
+			expect(result.velocity?.x).toBeGreaterThan(0);
 		});
 
 		it('should calculate velocity with correct units (pixels/second)', () => {
@@ -133,7 +133,7 @@ describe('OneEuroExemplarAdapter', () => {
 			// With / dt: velocity ≈ 0.5 / 0.5 = 1.0
 			// With * dt: velocity ≈ 0.5 * 0.5 = 0.25 (WRONG)
 			// Allow some smoothing effect but velocity should be closer to 1.0 than 0.25
-			expect(result.velocity!.x).toBeGreaterThan(0.5); // Would fail if * dt
+			expect(result.velocity?.x).toBeGreaterThan(0.5); // Would fail if * dt
 		});
 
 		it('should calculate velocity correctly for Y axis too', () => {
@@ -142,7 +142,7 @@ describe('OneEuroExemplarAdapter', () => {
 			const result = adapter.smooth(createFrame(500, 0.5, 0.5)); // 0.5 sec, moved 0.5 Y
 
 			// Y velocity should be ~1.0 units/second, not 0.25
-			expect(result.velocity!.y).toBeGreaterThan(0.5);
+			expect(result.velocity?.y).toBeGreaterThan(0.5);
 		});
 	});
 
@@ -178,7 +178,7 @@ describe('OneEuroExemplarAdapter', () => {
 			const result = adapter.smooth(frame2);
 
 			// With low beta, should still be closer to original position (more lag)
-			expect(result.position!.x).toBeLessThan(0.9);
+			expect(result.position?.x).toBeLessThan(0.9);
 		});
 	});
 
@@ -212,8 +212,8 @@ describe('OneEuroExemplarAdapter', () => {
 			});
 
 			// After reset, should be very close to new position (no filter memory)
-			expect(result.position!.x).toBeCloseTo(0.9, 1);
-			expect(result.position!.y).toBeCloseTo(0.9, 1);
+			expect(result.position?.x).toBeCloseTo(0.9, 1);
+			expect(result.position?.y).toBeCloseTo(0.9, 1);
 		});
 
 		it('should reset velocity tracking', () => {
@@ -255,8 +255,8 @@ describe('OneEuroExemplarAdapter', () => {
 				landmarks: Array(21).fill({ x: 0.5, y: 0.5, z: 0, visibility: 1 }),
 			});
 
-			expect(result.velocity!.x).toBe(0);
-			expect(result.velocity!.y).toBe(0);
+			expect(result.velocity?.x).toBe(0);
+			expect(result.velocity?.y).toBe(0);
 		});
 	});
 
@@ -312,8 +312,8 @@ describe('OneEuroExemplarAdapter', () => {
 			});
 
 			// Output should NEVER be NaN - either filtered or passthrough
-			expect(Number.isNaN(result.position!.x)).toBe(false);
-			expect(Number.isNaN(result.position!.y)).toBe(false);
+			expect(Number.isNaN(result.position?.x)).toBe(false);
+			expect(Number.isNaN(result.position?.y)).toBe(false);
 		});
 
 		it('should handle edge case timestamp of zero', () => {
@@ -331,8 +331,8 @@ describe('OneEuroExemplarAdapter', () => {
 				landmarks: null,
 			});
 
-			expect(Number.isNaN(result.position!.x)).toBe(false);
-			expect(Number.isNaN(result.position!.y)).toBe(false);
+			expect(Number.isNaN(result.position?.x)).toBe(false);
+			expect(Number.isNaN(result.position?.y)).toBe(false);
 		});
 
 		it('should handle NaN in X only (OR behavior, not AND)', () => {
@@ -365,8 +365,8 @@ describe('OneEuroExemplarAdapter', () => {
 				});
 
 				// Both X and Y must NEVER be NaN
-				expect(Number.isNaN(result.position!.x)).toBe(false);
-				expect(Number.isNaN(result.position!.y)).toBe(false);
+				expect(Number.isNaN(result.position?.x)).toBe(false);
+				expect(Number.isNaN(result.position?.y)).toBe(false);
 			}
 		});
 	});
@@ -392,7 +392,7 @@ describe('OneEuroExemplarAdapter', () => {
 			});
 
 			// X should be clamped to 0, not negative
-			expect(result.position!.x).toBeGreaterThanOrEqual(0);
+			expect(result.position?.x).toBeGreaterThanOrEqual(0);
 		});
 
 		it('should clamp X position to maximum 1', () => {
@@ -415,7 +415,7 @@ describe('OneEuroExemplarAdapter', () => {
 			});
 
 			// X should be clamped to 1, not greater
-			expect(result.position!.x).toBeLessThanOrEqual(1);
+			expect(result.position?.x).toBeLessThanOrEqual(1);
 		});
 
 		it('should clamp Y position to minimum 0', () => {
@@ -432,7 +432,7 @@ describe('OneEuroExemplarAdapter', () => {
 				landmarks: null,
 			});
 
-			expect(result.position!.y).toBeGreaterThanOrEqual(0);
+			expect(result.position?.y).toBeGreaterThanOrEqual(0);
 		});
 
 		it('should clamp Y position to maximum 1', () => {
@@ -449,7 +449,7 @@ describe('OneEuroExemplarAdapter', () => {
 				landmarks: null,
 			});
 
-			expect(result.position!.y).toBeLessThanOrEqual(1);
+			expect(result.position?.y).toBeLessThanOrEqual(1);
 		});
 
 		it('should clamp passthrough X position to [0,1]', () => {
@@ -469,8 +469,8 @@ describe('OneEuroExemplarAdapter', () => {
 				landmarks: null,
 			});
 
-			expect(result.position!.x).toBeGreaterThanOrEqual(0);
-			expect(result.position!.y).toBeLessThanOrEqual(1);
+			expect(result.position?.x).toBeGreaterThanOrEqual(0);
+			expect(result.position?.y).toBeLessThanOrEqual(1);
 		});
 	});
 
@@ -541,7 +541,7 @@ describe('OneEuroExemplarAdapter', () => {
 			// The adapter with setParams(0.1, 0.0001) should have MORE lag
 			// because lower minCutoff and near-zero beta means much more smoothing
 			// So result1.position.x should be LESS than result2.position.x
-			expect(result1.position!.x).toBeLessThan(result2.position!.x);
+			expect(result1.position?.x).toBeLessThan(result2.position?.x);
 		});
 
 		it('should apply setParams to BOTH X and Y filters', () => {
@@ -581,8 +581,8 @@ describe('OneEuroExemplarAdapter', () => {
 			// With high beta, both X and Y should have responded
 			// Both should have moved from start position (0.1) toward target
 			// The key test is that BOTH x and y were updated by setParams
-			expect(result.position!.x).toBeGreaterThan(0.1); // Moved from start
-			expect(result.position!.y).toBeGreaterThan(0.1); // Both axes affected
+			expect(result.position?.x).toBeGreaterThan(0.1); // Moved from start
+			expect(result.position?.y).toBeGreaterThan(0.1); // Both axes affected
 		});
 	});
 
@@ -605,8 +605,8 @@ describe('OneEuroExemplarAdapter', () => {
 			expect(result.velocity).not.toBeNull();
 			expect(result.velocity).toHaveProperty('x');
 			expect(result.velocity).toHaveProperty('y');
-			expect(typeof result.velocity!.x).toBe('number');
-			expect(typeof result.velocity!.y).toBe('number');
+			expect(typeof result.velocity?.x).toBe('number');
+			expect(typeof result.velocity?.y).toBe('number');
 		});
 
 		it('should return zero velocity on first frame (not empty object)', () => {
@@ -624,8 +624,8 @@ describe('OneEuroExemplarAdapter', () => {
 			});
 
 			// First frame should have velocity {x: 0, y: 0}, not {}
-			expect(result.velocity!.x).toBe(0);
-			expect(result.velocity!.y).toBe(0);
+			expect(result.velocity?.x).toBe(0);
+			expect(result.velocity?.y).toBe(0);
 		});
 
 		it('passthrough should return velocity object with x and y', () => {

@@ -20,7 +20,6 @@
 import {
 	InMemorySubstrateAdapter,
 	NatsSubstrateAdapter,
-	type NatsSubstrateConfig,
 } from '../../hot/bronze/src/browser/index.js';
 import type { SubstratePort } from '../../hot/bronze/src/contracts/ports.js';
 

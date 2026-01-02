@@ -1,3 +1,4 @@
+import * as fc from 'fast-check';
 /**
  * Double Exponential Predictor Tests (LaViola DESP)
  *
@@ -8,15 +9,14 @@
  *
  * KEY TEST: Unlike 1€ filter, DESP MUST provide prediction.
  */
-import { describe, it, expect, beforeEach } from 'vitest';
-import * as fc from 'fast-check';
+import { beforeEach, describe, expect, it } from 'vitest';
+import type { SensorFrame } from '../contracts/schemas.js';
 import {
 	DoubleExponentialPredictor,
 	createDoubleExponentialPredictor,
 	createResponsivePredictor,
 	createSmoothPredictor,
 } from './double-exponential-predictor.adapter.js';
-import type { SensorFrame } from '../contracts/schemas.js';
 
 // ============================================================================
 // TEST HELPERS
@@ -85,8 +85,8 @@ describe('DoubleExponentialPredictor (LaViola DESP)', () => {
 
 			// Smoothed position should lag behind raw input
 			expect(result.position).not.toBeNull();
-			expect(result.position!.x).toBeLessThan(0.7);
-			expect(result.position!.x).toBeGreaterThan(0.5);
+			expect(result.position?.x).toBeLessThan(0.7);
+			expect(result.position?.x).toBeGreaterThan(0.5);
 		});
 
 		it('passthrough when no indexTip', () => {
@@ -118,7 +118,7 @@ describe('DoubleExponentialPredictor (LaViola DESP)', () => {
 			// Prediction MUST be ahead of smoothed position
 			expect(result.prediction).not.toBeNull();
 			expect(result.position).not.toBeNull();
-			expect(result.prediction!.x).toBeGreaterThan(result.position!.x);
+			expect(result.prediction?.x).toBeGreaterThan(result.position?.x);
 		});
 
 		it('predicts further with longer predictionMs', () => {
@@ -135,7 +135,7 @@ describe('DoubleExponentialPredictor (LaViola DESP)', () => {
 			const longResult = longPredictor.smooth(createSensorFrame(0.8, 0.5, 80));
 
 			// Longer prediction should be further ahead
-			expect(longResult.prediction!.x).toBeGreaterThan(shortResult.prediction!.x);
+			expect(longResult.prediction?.x).toBeGreaterThan(shortResult.prediction?.x);
 		});
 
 		it('clamps prediction to [0,1] by default', () => {
@@ -145,7 +145,7 @@ describe('DoubleExponentialPredictor (LaViola DESP)', () => {
 			}
 
 			const result = predictor.smooth(createSensorFrame(0.99, 0.5, 160));
-			expect(result.prediction!.x).toBeLessThanOrEqual(1);
+			expect(result.prediction?.x).toBeLessThanOrEqual(1);
 		});
 	});
 
@@ -156,7 +156,7 @@ describe('DoubleExponentialPredictor (LaViola DESP)', () => {
 			const result = predictor.smooth(createSensorFrame(0.5, 0.5, 32));
 
 			expect(result.velocity).not.toBeNull();
-			expect(result.velocity!.x).toBeGreaterThan(0);
+			expect(result.velocity?.x).toBeGreaterThan(0);
 		});
 
 		it('estimates negative velocity when moving left', () => {
@@ -165,7 +165,7 @@ describe('DoubleExponentialPredictor (LaViola DESP)', () => {
 			const result = predictor.smooth(createSensorFrame(0.5, 0.5, 32));
 
 			expect(result.velocity).not.toBeNull();
-			expect(result.velocity!.x).toBeLessThan(0);
+			expect(result.velocity?.x).toBeLessThan(0);
 		});
 	});
 
@@ -334,22 +334,27 @@ describe('Property-Based Tests', () => {
 
 	it('PROPERTY: Higher alpha = faster convergence to target', () => {
 		fc.assert(
-			fc.property(fc.float({ min: Math.fround(0.2), max: Math.fround(0.6), noNaN: true }), (baseAlpha) => {
-				const lowAlpha = new DoubleExponentialPredictor({ alpha: baseAlpha * 0.5 });
-				const highAlpha = new DoubleExponentialPredictor({ alpha: Math.min(0.9, baseAlpha * 1.5) });
+			fc.property(
+				fc.float({ min: Math.fround(0.2), max: Math.fround(0.6), noNaN: true }),
+				(baseAlpha) => {
+					const lowAlpha = new DoubleExponentialPredictor({ alpha: baseAlpha * 0.5 });
+					const highAlpha = new DoubleExponentialPredictor({
+						alpha: Math.min(0.9, baseAlpha * 1.5),
+					});
 
-				// Jump from 0.5 to 0.8
-				lowAlpha.smooth(createSensorFrame(0.5, 0.5, 0));
-				highAlpha.smooth(createSensorFrame(0.5, 0.5, 0));
+					// Jump from 0.5 to 0.8
+					lowAlpha.smooth(createSensorFrame(0.5, 0.5, 0));
+					highAlpha.smooth(createSensorFrame(0.5, 0.5, 0));
 
-				const lowResult = lowAlpha.smooth(createSensorFrame(0.8, 0.5, 16));
-				const highResult = highAlpha.smooth(createSensorFrame(0.8, 0.5, 16));
+					const lowResult = lowAlpha.smooth(createSensorFrame(0.8, 0.5, 16));
+					const highResult = highAlpha.smooth(createSensorFrame(0.8, 0.5, 16));
 
-				// Higher alpha should be closer to target
-				expect(Math.abs(highResult.position!.x - 0.8)).toBeLessThanOrEqual(
-					Math.abs(lowResult.position!.x - 0.8) + 0.001, // Tolerance for float
-				);
-			}),
+					// Higher alpha should be closer to target
+					expect(Math.abs(highResult.position?.x - 0.8)).toBeLessThanOrEqual(
+						Math.abs(lowResult.position?.x - 0.8) + 0.001, // Tolerance for float
+					);
+				},
+			),
 			{ numRuns: 100 },
 		);
 	});

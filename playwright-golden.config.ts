@@ -2,14 +2,14 @@
  * Playwright Config for Golden Master E2E Tests
  *
  * Gen87.X3 | Auto-starts Vite server, compiles TypeScript, runs tests
- * 
+ *
  * ONE COMMAND: npx playwright test --config=playwright-golden.config.ts
  */
 import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
 	testDir: './e2e',
-	testMatch: ['golden-master.spec.ts'],
+	testMatch: ['golden-master.spec.ts', 'ux-standards.spec.ts'],
 	fullyParallel: false,
 	forbidOnly: !!process.env.CI,
 	retries: 0,

@@ -20,8 +20,14 @@
 import {
 	GoldenLayoutShellAdapter,
 	InMemorySubstrateAdapter,
+	OneEuroExemplarAdapter,
+	PointerEventAdapter,
+	XStateFSMAdapter,
+	addJitter,
+	createSensorFrameFromMouse,
 } from '../../hot/bronze/src/browser/index.js';
 import type {
+	AdapterTarget,
 	LayoutState,
 	TileConfig,
 	TileType,
@@ -37,6 +43,11 @@ const shell = new GoldenLayoutShellAdapter();
 
 // Message Bus (for inter-component communication)
 const bus = new InMemorySubstrateAdapter();
+
+// IR-0012 FIX: Complete pipeline for architecture compliance
+const smoother = new OneEuroExemplarAdapter();
+const fsm = new XStateFSMAdapter();
+const pointerEmitter = new PointerEventAdapter(1, 'touch');
 
 // ============================================================================
 // STATE
@@ -98,14 +109,29 @@ function createSensorContent(container: HTMLElement): void {
 		</div>
 	`;
 
-	// Simulate sensor updates
+	// Simulate sensor updates using addJitter (IR-0009 FIX)
+	let baseX = 0.5;
+	let baseY = 0.5;
 	setInterval(() => {
 		const xEl = container.querySelector('#sensor-x');
 		const yEl = container.querySelector('#sensor-y');
 		const tsEl = container.querySelector('#sensor-ts');
-		if (xEl) xEl.textContent = Math.random().toFixed(3);
-		if (yEl) yEl.textContent = Math.random().toFixed(3);
+		// Use addJitter for controlled deterministic noise
+		baseX = Math.max(0, Math.min(1, baseX + addJitter(0, 0.02)));
+		baseY = Math.max(0, Math.min(1, baseY + addJitter(0, 0.02)));
+		if (xEl) xEl.textContent = baseX.toFixed(3);
+		if (yEl) yEl.textContent = baseY.toFixed(3);
 		if (tsEl) tsEl.textContent = Date.now().toString();
+
+		// IR-0012 FIX: Full pipeline - Sensor → Smooth → FSM → Emit
+		const sensorFrame = createSensorFrameFromMouse(baseX, baseY, performance.now());
+		const smoothed = smoother.smooth(sensorFrame);
+		const action = fsm.process(smoothed);
+		const target: AdapterTarget = {
+			id: 'gl-sensor',
+			bounds: { left: 0, top: 0, width: 300, height: 200 },
+		};
+		pointerEmitter.emit(action, target);
 	}, 100);
 }
 
@@ -175,8 +201,11 @@ function createVisualizerContent(container: HTMLElement): void {
 		ctx.stroke();
 	}
 
+	// Use addJitter for smooth data variation (IR-0009 FIX)
+	let vizValue = 0.5;
 	setInterval(() => {
-		data.push(Math.random());
+		vizValue = Math.max(0, Math.min(1, vizValue + addJitter(0, 0.08)));
+		data.push(vizValue);
 		data.shift();
 		draw();
 	}, 50);
@@ -195,10 +224,12 @@ function createLogContent(container: HTMLElement): void {
 		</div>
 	`;
 
-	// Update log periodically with simulated events
+	// Update log periodically with simulated events (IR-0009 FIX)
+	let logEventIndex = 0;
 	setInterval(() => {
 		const events = ['sensor.update', 'fsm.transition', 'layout.change', 'tile.focus'];
-		const event = events[Math.floor(Math.random() * events.length)];
+		const event = events[logEventIndex % events.length];
+		logEventIndex++;
 		logs.unshift(`[${new Date().toLocaleTimeString()}] ${event}`);
 		if (logs.length > 10) logs.pop();
 

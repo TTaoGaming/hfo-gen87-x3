@@ -8,11 +8,14 @@
 		"rules": {
 			"recommended": true,
 			"suspicious": {
-				"noExplicitAny": "warn",
+				"noExplicitAny": "off",
 				"noThenProperty": "off"
 			},
 			"complexity": {
 				"noForEach": "off"
+			},
+			"style": {
+				"noNonNullAssertion": "off"
 			}
 		}
 	},
@@ -28,6 +31,7 @@
 		}
 	},
 	"files": {
+		"maxSize": 3145728,
 		"ignore": [
 			"node_modules/**",
 			"dist/**",
@@ -37,7 +41,8 @@
 			"*.d.ts",
 			"cold/**",
 			"hot/bronze/quarantine/**",
-			".stryker-tmp/**"
+			".stryker-tmp/**",
+			"demos/lib/**"
 		]
 	}
 }

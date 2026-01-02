@@ -317,7 +317,7 @@ describe('InMemorySubstrateAdapter', () => {
 
 			for (const topic of portTopics) {
 				received.set(topic, []);
-				adapter.subscribe(topic, (data) => received.get(topic)!.push(data));
+				adapter.subscribe(topic, (data) => received.get(topic)?.push(data));
 			}
 
 			for (const topic of portTopics) {
@@ -326,7 +326,7 @@ describe('InMemorySubstrateAdapter', () => {
 
 			for (const topic of portTopics) {
 				expect(received.get(topic)).toHaveLength(1);
-				expect(received.get(topic)![0]).toEqual({ topic });
+				expect(received.get(topic)?.[0]).toEqual({ topic });
 			}
 		});
 	});

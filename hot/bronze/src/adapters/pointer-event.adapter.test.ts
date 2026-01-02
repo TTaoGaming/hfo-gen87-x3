@@ -10,10 +10,7 @@
  */
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { AdapterTarget, FSMAction } from '../contracts/schemas.js';
-import {
-    MockDOMAdapter,
-    PointerEventAdapter
-} from './pointer-event.adapter.js';
+import { MockDOMAdapter, PointerEventAdapter } from './pointer-event.adapter.js';
 
 // ============================================================================
 // TEST HELPERS
@@ -317,14 +314,30 @@ describe('MockDOMAdapter', () => {
 
 	describe('inject()', () => {
 		it('should record injected events', () => {
-			const event = { type: 'pointermove' as const, pointerId: 1, clientX: 100, clientY: 200, pointerType: 'touch' as const, isPrimary: true, pressure: 0.5 };
+			const event = {
+				type: 'pointermove' as const,
+				pointerId: 1,
+				clientX: 100,
+				clientY: 200,
+				pointerType: 'touch' as const,
+				isPrimary: true,
+				pressure: 0.5,
+			};
 			adapter.inject(event);
 			expect(adapter.getEvents()).toHaveLength(1);
 			expect(adapter.getEvents()[0]).toEqual(event);
 		});
 
 		it('should return true on successful inject', () => {
-			const event = { type: 'pointermove' as const, pointerId: 1, clientX: 100, clientY: 200, pointerType: 'touch' as const, isPrimary: true, pressure: 0.5 };
+			const event = {
+				type: 'pointermove' as const,
+				pointerId: 1,
+				clientX: 100,
+				clientY: 200,
+				pointerType: 'touch' as const,
+				isPrimary: true,
+				pressure: 0.5,
+			};
 			const result = adapter.inject(event);
 			expect(result).toBe(true);
 		});
@@ -354,7 +367,15 @@ describe('MockDOMAdapter', () => {
 
 	describe('clearEvents()', () => {
 		it('should clear recorded events', () => {
-			const event = { type: 'pointermove' as const, pointerId: 1, clientX: 100, clientY: 200, pointerType: 'touch' as const, isPrimary: true, pressure: 0.5 };
+			const event = {
+				type: 'pointermove' as const,
+				pointerId: 1,
+				clientX: 100,
+				clientY: 200,
+				pointerType: 'touch' as const,
+				isPrimary: true,
+				pressure: 0.5,
+			};
 			adapter.inject(event);
 			adapter.inject(event);
 			expect(adapter.getEvents()).toHaveLength(2);
@@ -398,7 +419,7 @@ describe('PointerEventAdapter + MockDOMAdapter Integration', () => {
 
 		const events = injector.getEvents();
 		expect(events).toHaveLength(4);
-		expect(events.map(e => e.type)).toEqual([
+		expect(events.map((e) => e.type)).toEqual([
 			'pointermove',
 			'pointerdown',
 			'pointermove',
@@ -449,10 +470,10 @@ describe('Mutation Killers - Edge Cases', () => {
 	it('should distinguish button 0 from button 1', () => {
 		const btn0: FSMAction = { action: 'down', x: 0.5, y: 0.5, button: 0 };
 		const btn1: FSMAction = { action: 'down', x: 0.5, y: 0.5, button: 1 };
-		
+
 		const r0 = adapter.emit(btn0, target);
 		const r1 = adapter.emit(btn1, target);
-		
+
 		expect(r0?.buttons).toBe(1);
 		expect(r1?.buttons).toBe(4);
 	});
@@ -460,10 +481,10 @@ describe('Mutation Killers - Edge Cases', () => {
 	it('should distinguish button 2 from button 1', () => {
 		const btn1: FSMAction = { action: 'down', x: 0.5, y: 0.5, button: 1 };
 		const btn2: FSMAction = { action: 'down', x: 0.5, y: 0.5, button: 2 };
-		
+
 		const r1 = adapter.emit(btn1, target);
 		const r2 = adapter.emit(btn2, target);
-		
+
 		expect(r1?.buttons).toBe(4);
 		expect(r2?.buttons).toBe(2);
 	});
@@ -487,7 +508,7 @@ describe('Mutation Killers - Edge Cases', () => {
 		const move = customAdapter.emit({ action: 'move', x: 0.5, y: 0.5 }, target);
 		const down = customAdapter.emit({ action: 'down', x: 0.5, y: 0.5, button: 0 }, target);
 		const up = customAdapter.emit({ action: 'up', x: 0.5, y: 0.5, button: 0 }, target);
-		
+
 		expect(move?.pointerId).toBe(42);
 		expect(down?.pointerId).toBe(42);
 		expect(up?.pointerId).toBe(42);

@@ -33,6 +33,11 @@ export {
 export type { FSMPort, SensorPort, SmootherPort } from '../contracts/ports.js';
 
 // ============================================================================
+// SENSOR ADAPTERS (Port 0 - SENSE)
+// ============================================================================
+export { MediaPipeAdapter } from '../adapters/mediapipe.adapter.js';
+
+// ============================================================================
 // SMOOTHER ADAPTERS (Port 2 - SHAPE)
 // ============================================================================
 
@@ -64,7 +69,7 @@ export { XStateFSMAdapter } from '../adapters/xstate-fsm.adapter.js';
 // ============================================================================
 // POINTER EVENT ADAPTER (Port 3 - DELIVER) - W3C PointerEvents
 // ============================================================================
-export { PointerEventAdapter } from '../adapters/pointer-event.adapter.js';
+export { DOMAdapter, PointerEventAdapter } from '../adapters/pointer-event.adapter.js';
 
 // ============================================================================
 // UI SHELL ADAPTER (Port 7 - NAVIGATE) - GoldenLayout 2.6.0
@@ -123,8 +128,8 @@ export { InMemorySubstrateAdapter } from '../adapters/in-memory-substrate.adapte
 
 // NATS (production, requires NATS server)
 export {
-	NatsSubstrateAdapter,
 	createSubstrateAdapter,
+	NatsSubstrateAdapter,
 	type NatsSubstrateConfig,
 } from '../adapters/nats-substrate.adapter.js';
 
@@ -172,19 +177,29 @@ export {
 /**
  * Create a SensorFrame from mouse/touch coordinates
  * Useful for demos without MediaPipe camera
+ *
+ * @param x - Normalized X coordinate (0-1)
+ * @param y - Normalized Y coordinate (0-1)
+ * @param timestamp - Timestamp in ms (default: performance.now())
+ * @param label - Gesture label (default: 'Pointing_Up')
+ * @param palmFacing - Palm orientation (default: true)
+ * @param confidence - Detection confidence (default: 1.0)
  */
 export function createSensorFrameFromMouse(
 	x: number,
 	y: number,
 	timestamp: number = performance.now(),
+	label: SensorFrame['label'] = 'Pointing_Up',
+	palmFacing = true,
+	confidence = 1.0,
 ): SensorFrame {
 	return {
 		ts: timestamp,
 		handId: 'right',
 		trackingOk: true,
-		palmFacing: true,
-		label: 'Pointing_Up',
-		confidence: 1.0,
+		palmFacing,
+		label,
+		confidence,
 		indexTip: { x, y, z: 0, visibility: 1.0 },
 		landmarks: null,
 	};

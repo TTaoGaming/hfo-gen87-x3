@@ -16,15 +16,15 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-    DEFAULT_CONFIG,
-    HIVE_ORDER,
-    PyrePraetorianDaemon,
-    StigmergySignalSchema,
-    VALID_TRANSITIONS,
-    createConsoleEmitter,
-    createJSONLEmitter,
-    createNATSEmitter,
-    type StigmergySignal
+	DEFAULT_CONFIG,
+	HIVE_ORDER,
+	PyrePraetorianDaemon,
+	type StigmergySignal,
+	StigmergySignalSchema,
+	VALID_TRANSITIONS,
+	createConsoleEmitter,
+	createJSONLEmitter,
+	createNATSEmitter,
 } from './pyre-praetorian-daemon.js';
 
 // ============================================================================
@@ -451,7 +451,10 @@ describe('PyrePraetorianDaemon', () => {
 		});
 
 		it('respects custom maxTimeDriftMs config', () => {
-			const customDaemon = new PyrePraetorianDaemon({ maxTimeDriftMs: 5000, validateTimestamps: true }); // 5 seconds
+			const customDaemon = new PyrePraetorianDaemon({
+				maxTimeDriftMs: 5000,
+				validateTimestamps: true,
+			}); // 5 seconds
 			const oldDate = new Date(Date.now() - 10000).toISOString(); // 10 seconds ago
 			const now = new Date();
 			const result = customDaemon.validateSignal(validSignal({ ts: oldDate }), now);
@@ -472,7 +475,9 @@ describe('PyrePraetorianDaemon', () => {
 		it('ALLOWS signals with same timestamp but same phase (heartbeat)', () => {
 			const timestamp = new Date().toISOString();
 			daemon.validateSignal(validSignal({ ts: timestamp, hive: 'H', msg: 'First H' }));
-			const result = daemon.validateSignal(validSignal({ ts: timestamp, hive: 'H', msg: 'Second H' }));
+			const result = daemon.validateSignal(
+				validSignal({ ts: timestamp, hive: 'H', msg: 'Second H' }),
+			);
 
 			expect(result.violations.filter((v) => v.type === 'BATCH_FABRICATION')).toHaveLength(0);
 		});
@@ -493,22 +498,26 @@ describe('PyrePraetorianDaemon', () => {
 			// The BATCH_FABRICATION only fires on different phases, OCTOPULSE is same phase
 			const timestamp = new Date().toISOString();
 			const octopulseMsg = JSON.stringify({ type: 'PYRE_OCTOPULSE', pulse: 1 });
-			
+
 			// Emit 8 signals at same timestamp with sequential ports, ALL SAME PHASE (V for Pyre)
 			const results = [];
 			for (let port = 0; port < 8; port++) {
-				results.push(daemon.validateSignal(validSignal({
-					ts: timestamp,
-					port,
-					hive: 'V', // All same phase - Pyre is Port 5, V phase
-					type: 'metric',
-					msg: octopulseMsg,
-				})));
+				results.push(
+					daemon.validateSignal(
+						validSignal({
+							ts: timestamp,
+							port,
+							hive: 'V', // All same phase - Pyre is Port 5, V phase
+							type: 'metric',
+							msg: octopulseMsg,
+						}),
+					),
+				);
 			}
-			
+
 			// None of the signals should trigger BATCH_FABRICATION (same phase = allowed)
-			const batchViolations = results.flatMap(r => 
-				r.violations.filter(v => v.type === 'BATCH_FABRICATION')
+			const batchViolations = results.flatMap((r) =>
+				r.violations.filter((v) => v.type === 'BATCH_FABRICATION'),
 			);
 			expect(batchViolations).toHaveLength(0);
 		});
@@ -547,7 +556,7 @@ describe('PyrePraetorianDaemon', () => {
 			// When allowExceptional=false, X is NOT a valid transition target
 			// The fix ensures X is blocked when exceptional mode is disabled
 			expect(result.valid).toBe(false);
-			expect(result.violations.some(v => v.type === 'SKIPPED_PHASE')).toBe(true);
+			expect(result.violations.some((v) => v.type === 'SKIPPED_PHASE')).toBe(true);
 		});
 	});
 
@@ -1102,7 +1111,9 @@ describe('Blackboard Reading & Watching', () => {
 	describe('git commit extraction', () => {
 		it('extracts commit hash from "commit abc123" pattern', () => {
 			const mockContent = [
-				JSON.stringify(validSignal({ hive: 'E', msg: 'EVOLVE: Git commit abc1234 - feature complete' })),
+				JSON.stringify(
+					validSignal({ hive: 'E', msg: 'EVOLVE: Git commit abc1234 - feature complete' }),
+				),
 			].join('\n');
 
 			const daemon = new PyrePraetorianDaemon({
@@ -1118,7 +1129,9 @@ describe('Blackboard Reading & Watching', () => {
 
 		it('extracts full SHA from message', () => {
 			const mockContent = [
-				JSON.stringify(validSignal({ hive: 'E', msg: 'Merged commit 1234567890abcdef1234567890abcdef12345678' })),
+				JSON.stringify(
+					validSignal({ hive: 'E', msg: 'Merged commit 1234567890abcdef1234567890abcdef12345678' }),
+				),
 			].join('\n');
 
 			const daemon = new PyrePraetorianDaemon({
@@ -1256,14 +1269,16 @@ describe('Blackboard Reading & Watching', () => {
 
 			let includeHealthReport = false;
 			const getMockContent = () => {
-				const signals = [
-					JSON.stringify(validSignal({ hive: 'H', msg: 'Hunt signal' })),
-				];
+				const signals = [JSON.stringify(validSignal({ hive: 'H', msg: 'Hunt signal' }))];
 				if (includeHealthReport) {
-					signals.push(JSON.stringify(validSignal({ 
-						hive: 'V', 
-						msg: JSON.stringify({ type: 'PYRE_HEALTH_REPORT', summary: 'test' })
-					})));
+					signals.push(
+						JSON.stringify(
+							validSignal({
+								hive: 'V',
+								msg: JSON.stringify({ type: 'PYRE_HEALTH_REPORT', summary: 'test' }),
+							}),
+						),
+					);
 				}
 				return signals.join('\n');
 			};
@@ -1303,7 +1318,7 @@ describe('Blackboard Reading & Watching', () => {
 
 			daemon.scanBlackboard();
 			const report = daemon.generateHealthReport();
-			
+
 			expect(report.gitCommits).toBeDefined();
 			expect(report.gitCommits).toHaveLength(1);
 			expect(report.gitCommits?.[0].hash).toBe('abc1234');
@@ -1324,7 +1339,7 @@ describe('Blackboard Reading & Watching', () => {
 
 			daemon.scanBlackboard();
 			const report = daemon.generateHealthReport();
-			
+
 			expect(report.blackboardSignals).toBe(3);
 		});
 	});
@@ -1343,33 +1358,35 @@ describe('Config Behavior Verification (Mutation Killers)', () => {
 			const daemon = new PyrePraetorianDaemon({ validateTimestamps: true });
 			const futureSignal = validSignal({ ts: '2099-01-01T00:00:00.000Z' });
 			const result = daemon.validateSignal(futureSignal);
-			
+
 			expect(result.valid).toBe(false);
-			expect(result.violations.some(v => v.type === 'FUTURE_TIMESTAMP')).toBe(true);
+			expect(result.violations.some((v) => v.type === 'FUTURE_TIMESTAMP')).toBe(true);
 		});
 
 		it('validateTimestamps=false SKIPS future timestamp detection', () => {
 			const daemon = new PyrePraetorianDaemon({ validateTimestamps: false });
 			const futureSignal = validSignal({ ts: '2099-01-01T00:00:00.000Z', hive: 'H' });
 			const result = daemon.validateSignal(futureSignal);
-			
+
 			// With validateTimestamps=false, future timestamp should NOT be a violation
-			expect(result.violations.some(v => v.type === 'FUTURE_TIMESTAMP')).toBe(false);
+			expect(result.violations.some((v) => v.type === 'FUTURE_TIMESTAMP')).toBe(false);
 		});
 
 		it('validateTimestamps BEHAVIOR DIFFERENCE proves config works', () => {
 			const futureSignal = validSignal({ ts: '2099-01-01T00:00:00.000Z', hive: 'H' });
-			
+
 			const enabledDaemon = new PyrePraetorianDaemon({ validateTimestamps: true });
 			const disabledDaemon = new PyrePraetorianDaemon({ validateTimestamps: false });
-			
+
 			const enabledResult = enabledDaemon.validateSignal(futureSignal);
 			const disabledResult = disabledDaemon.validateSignal(futureSignal);
-			
+
 			// These MUST be different for config to have effect
-			const enabledHasFuture = enabledResult.violations.some(v => v.type === 'FUTURE_TIMESTAMP');
-			const disabledHasFuture = disabledResult.violations.some(v => v.type === 'FUTURE_TIMESTAMP');
-			
+			const enabledHasFuture = enabledResult.violations.some((v) => v.type === 'FUTURE_TIMESTAMP');
+			const disabledHasFuture = disabledResult.violations.some(
+				(v) => v.type === 'FUTURE_TIMESTAMP',
+			);
+
 			expect(enabledHasFuture).toBe(true);
 			expect(disabledHasFuture).toBe(false);
 		});
@@ -1377,60 +1394,60 @@ describe('Config Behavior Verification (Mutation Killers)', () => {
 
 	describe('allowExceptional config', () => {
 		it('allowExceptional=true ALLOWS X phase to bypass sequence rules', () => {
-			const daemon = new PyrePraetorianDaemon({ 
+			const daemon = new PyrePraetorianDaemon({
 				allowExceptional: true,
-				validateTimestamps: false 
+				validateTimestamps: false,
 			});
-			
+
 			// Start with H
 			daemon.validateSignal(validSignal({ hive: 'H' }));
-			
+
 			// Jump to X (exceptional) - should be allowed with allowExceptional=true
 			const xResult = daemon.validateSignal(validSignal({ hive: 'X' }));
 			expect(xResult.valid).toBe(true);
-			
+
 			// Jump from X to E (skipping I, V) - should be allowed
 			const eResult = daemon.validateSignal(validSignal({ hive: 'E' }));
 			expect(eResult.valid).toBe(true);
 		});
 
 		it('allowExceptional=false BLOCKS X phase from bypassing rules', () => {
-			const daemon = new PyrePraetorianDaemon({ 
+			const daemon = new PyrePraetorianDaemon({
 				allowExceptional: false,
-				validateTimestamps: false 
+				validateTimestamps: false,
 			});
-			
+
 			// Start with H
 			daemon.validateSignal(validSignal({ hive: 'H' }));
-			
+
 			// Try to go H -> X - without allowExceptional, X follows normal rules
 			const xResult = daemon.validateSignal(validSignal({ hive: 'X' }));
-			
+
 			// X is not a valid transition from H in normal rules
 			// (VALID_TRANSITIONS['H'] = ['H', 'I'] typically)
-			expect(xResult.violations.some(v => 
-				v.type === 'SKIPPED_PHASE' || v.type === 'PHASE_INVERSION'
-			)).toBe(true);
+			expect(
+				xResult.violations.some((v) => v.type === 'SKIPPED_PHASE' || v.type === 'PHASE_INVERSION'),
+			).toBe(true);
 		});
 
 		it('allowExceptional BEHAVIOR DIFFERENCE proves config works', () => {
-			const enabledDaemon = new PyrePraetorianDaemon({ 
-				allowExceptional: true, 
-				validateTimestamps: false 
+			const enabledDaemon = new PyrePraetorianDaemon({
+				allowExceptional: true,
+				validateTimestamps: false,
 			});
-			const disabledDaemon = new PyrePraetorianDaemon({ 
-				allowExceptional: false, 
-				validateTimestamps: false 
+			const disabledDaemon = new PyrePraetorianDaemon({
+				allowExceptional: false,
+				validateTimestamps: false,
 			});
-			
+
 			// Both start with H
 			enabledDaemon.validateSignal(validSignal({ hive: 'H' }));
 			disabledDaemon.validateSignal(validSignal({ hive: 'H' }));
-			
+
 			// Both try H -> X
 			const enabledXResult = enabledDaemon.validateSignal(validSignal({ hive: 'X' }));
 			const disabledXResult = disabledDaemon.validateSignal(validSignal({ hive: 'X' }));
-			
+
 			// These MUST be different for config to have effect
 			expect(enabledXResult.valid).toBe(true); // X bypasses allowed
 			expect(disabledXResult.valid).toBe(false); // X must follow rules
@@ -1439,54 +1456,58 @@ describe('Config Behavior Verification (Mutation Killers)', () => {
 
 	describe('maxTimeDriftMs config', () => {
 		it('maxTimeDriftMs=60000 ALLOWS signals 59 seconds old', () => {
-			const daemon = new PyrePraetorianDaemon({ 
+			const daemon = new PyrePraetorianDaemon({
 				maxTimeDriftMs: 60000,
-				validateTimestamps: true 
+				validateTimestamps: true,
 			});
-			
+
 			const now = new Date();
 			const past59s = new Date(now.getTime() - 59000).toISOString();
 			const signal = validSignal({ ts: past59s, hive: 'H' });
-			
+
 			const result = daemon.validateSignal(signal, now);
-			expect(result.violations.some(v => v.type === 'TIMESTAMP_PROXIMITY')).toBe(false);
+			expect(result.violations.some((v) => v.type === 'TIMESTAMP_PROXIMITY')).toBe(false);
 		});
 
 		it('maxTimeDriftMs=60000 REJECTS signals 61 seconds old', () => {
-			const daemon = new PyrePraetorianDaemon({ 
+			const daemon = new PyrePraetorianDaemon({
 				maxTimeDriftMs: 60000,
-				validateTimestamps: true 
+				validateTimestamps: true,
 			});
-			
+
 			const now = new Date();
 			const past61s = new Date(now.getTime() - 61000).toISOString();
 			const signal = validSignal({ ts: past61s, hive: 'H' });
-			
+
 			const result = daemon.validateSignal(signal, now);
-			expect(result.violations.some(v => v.type === 'TIMESTAMP_PROXIMITY')).toBe(true);
+			expect(result.violations.some((v) => v.type === 'TIMESTAMP_PROXIMITY')).toBe(true);
 		});
 
 		it('maxTimeDriftMs BEHAVIOR DIFFERENCE proves config works', () => {
 			const now = new Date();
 			const past30s = new Date(now.getTime() - 30000).toISOString();
 			const signal = validSignal({ ts: past30s, hive: 'H' });
-			
-			const tightDaemon = new PyrePraetorianDaemon({ 
+
+			const tightDaemon = new PyrePraetorianDaemon({
 				maxTimeDriftMs: 20000, // 20 seconds - too tight
-				validateTimestamps: true 
+				validateTimestamps: true,
 			});
-			const looseDaemon = new PyrePraetorianDaemon({ 
+			const looseDaemon = new PyrePraetorianDaemon({
 				maxTimeDriftMs: 60000, // 60 seconds - ok
-				validateTimestamps: true 
+				validateTimestamps: true,
 			});
-			
+
 			const tightResult = tightDaemon.validateSignal(signal, now);
 			const looseResult = looseDaemon.validateSignal(signal, now);
-			
+
 			// These MUST be different for config to have effect
-			const tightHasProximity = tightResult.violations.some(v => v.type === 'TIMESTAMP_PROXIMITY');
-			const looseHasProximity = looseResult.violations.some(v => v.type === 'TIMESTAMP_PROXIMITY');
-			
+			const tightHasProximity = tightResult.violations.some(
+				(v) => v.type === 'TIMESTAMP_PROXIMITY',
+			);
+			const looseHasProximity = looseResult.violations.some(
+				(v) => v.type === 'TIMESTAMP_PROXIMITY',
+			);
+
 			expect(tightHasProximity).toBe(true); // 30s > 20s max drift
 			expect(looseHasProximity).toBe(false); // 30s < 60s max drift
 		});
@@ -1495,16 +1516,16 @@ describe('Config Behavior Verification (Mutation Killers)', () => {
 	describe('reportIntervalMs config', () => {
 		it('reportIntervalMs is used in periodic report generation', () => {
 			// This tests that the config value is actually stored and accessible
-			const daemon = new PyrePraetorianDaemon({ 
-				reportIntervalMs: 30000 // 30 seconds
+			const daemon = new PyrePraetorianDaemon({
+				reportIntervalMs: 30000, // 30 seconds
 			});
-			
+
 			// Start periodic reports (this uses reportIntervalMs internally)
 			daemon.startPeriodicReports();
-			
+
 			// Clean up
 			daemon.stopPeriodicReports();
-			
+
 			// The test passes if no errors - meaning reportIntervalMs was used
 			expect(true).toBe(true);
 		});
@@ -1535,23 +1556,23 @@ describe('Config Behavior Verification (Mutation Killers)', () => {
 		it('daemon with no config uses DEFAULT_CONFIG.validateTimestamps=true', () => {
 			// Create daemon with NO config (uses defaults)
 			const defaultDaemon = new PyrePraetorianDaemon();
-			
+
 			// Future timestamp should be DETECTED (because validateTimestamps defaults to true)
 			const futureSignal = validSignal({ ts: '2099-01-01T00:00:00.000Z', hive: 'H' });
 			const result = defaultDaemon.validateSignal(futureSignal);
-			
+
 			// With default validateTimestamps=true, should detect future timestamp
-			expect(result.violations.some(v => v.type === 'FUTURE_TIMESTAMP')).toBe(true);
+			expect(result.violations.some((v) => v.type === 'FUTURE_TIMESTAMP')).toBe(true);
 		});
 
 		it('daemon with no config uses DEFAULT_CONFIG.allowExceptional=true', () => {
 			// Create daemon with NO config (uses defaults)
 			const defaultDaemon = new PyrePraetorianDaemon({ validateTimestamps: false });
-			
+
 			// Start with H, then go to X
 			defaultDaemon.validateSignal(validSignal({ hive: 'H' }));
 			const xResult = defaultDaemon.validateSignal(validSignal({ hive: 'X' }));
-			
+
 			// With default allowExceptional=true, X should bypass rules
 			expect(xResult.valid).toBe(true);
 		});
@@ -1560,13 +1581,13 @@ describe('Config Behavior Verification (Mutation Killers)', () => {
 			// Create daemon with NO config (uses defaults)
 			const defaultDaemon = new PyrePraetorianDaemon();
 			const now = new Date();
-			
+
 			// Signal 59 seconds old (within 60s default)
 			const past59s = new Date(now.getTime() - 59000).toISOString();
 			const result = defaultDaemon.validateSignal(validSignal({ ts: past59s, hive: 'H' }), now);
-			
+
 			// Should NOT have proximity violation (59s < 60s default)
-			expect(result.violations.some(v => v.type === 'TIMESTAMP_PROXIMITY')).toBe(false);
+			expect(result.violations.some((v) => v.type === 'TIMESTAMP_PROXIMITY')).toBe(false);
 		});
 	});
 });
@@ -1590,7 +1611,7 @@ describe('Emitter Factories (MUTATION KILLERS)', () => {
 
 			expect(appendCalls).toHaveLength(1);
 			expect(appendCalls[0].path).toBe('test.jsonl');
-			expect(appendCalls[0].data).toBe(JSON.stringify(signal) + '\n');
+			expect(appendCalls[0].data).toBe(`${JSON.stringify(signal)}\n`);
 		});
 
 		it('uses exact filePath provided (not modified)', () => {
@@ -1618,7 +1639,9 @@ describe('Emitter Factories (MUTATION KILLERS)', () => {
 
 		it('output ends with newline character', () => {
 			let output = '';
-			const emitter = createJSONLEmitter('test.jsonl', (_, data) => { output = data; });
+			const emitter = createJSONLEmitter('test.jsonl', (_, data) => {
+				output = data;
+			});
 
 			emitter.emit(validSignal());
 
@@ -1627,7 +1650,9 @@ describe('Emitter Factories (MUTATION KILLERS)', () => {
 
 		it('output is valid JSON (minus newline)', () => {
 			let output = '';
-			const emitter = createJSONLEmitter('test.jsonl', (_, data) => { output = data; });
+			const emitter = createJSONLEmitter('test.jsonl', (_, data) => {
+				output = data;
+			});
 			const signal = validSignal({ msg: 'json test', port: 5 });
 
 			emitter.emit(signal);
@@ -1710,7 +1735,7 @@ describe('Health Report Thresholds (MUTATION KILLERS)', () => {
 	describe('DEGRADED status threshold (>5 violations)', () => {
 		it('5 violations = HEALTHY (boundary test)', () => {
 			const daemon = new PyrePraetorianDaemon({ validateTimestamps: false });
-			
+
 			// Generate exactly 5 low-severity violations
 			daemon.validateSignal(validSignal({ hive: 'H' }));
 			for (let i = 0; i < 5; i++) {
@@ -1718,7 +1743,7 @@ describe('Health Report Thresholds (MUTATION KILLERS)', () => {
 				daemon.validateSignal(validSignal({ hive: 'E' })); // H->E is LAZY_AI
 				daemon.validateSignal(validSignal({ hive: 'H' })); // Reset
 			}
-			
+
 			// Force 5 non-critical violations via batch fabrication
 			const sameTs = '2026-01-01T00:00:00.000Z';
 			daemon.validateSignal(validSignal({ hive: 'H', ts: sameTs }));
@@ -1726,25 +1751,25 @@ describe('Health Report Thresholds (MUTATION KILLERS)', () => {
 			daemon.validateSignal(validSignal({ hive: 'H', ts: sameTs }));
 			daemon.validateSignal(validSignal({ hive: 'H', ts: sameTs }));
 			daemon.validateSignal(validSignal({ hive: 'H', ts: sameTs }));
-			
+
 			// At exactly 5 violations with only HIGH severity, should be DEGRADED
 			// But we need to test the count threshold specifically
 		});
 
 		it('6 violations WITHOUT critical/high = DEGRADED', () => {
 			const daemon = new PyrePraetorianDaemon({ validateTimestamps: false });
-			
+
 			// Create many LAZY_AI violations (LOW severity)
 			for (let i = 0; i < 7; i++) {
 				daemon.validateSignal(validSignal({ hive: 'H' }));
 				daemon.validateSignal(validSignal({ hive: 'E' })); // H->E skips I,V
 			}
-			
+
 			const violations = daemon.getPeriodViolations();
 			const report = daemon.generateHealthReport();
-			
+
 			// If >5 violations total (even LOW severity), should be DEGRADED
-			if (violations.length > 5 && violations.every(v => v.severity === 'LOW')) {
+			if (violations.length > 5 && violations.every((v) => v.severity === 'LOW')) {
 				expect(report.status).toBe('DEGRADED');
 			}
 		});
@@ -1779,11 +1804,11 @@ describe('Health Report Thresholds (MUTATION KILLERS)', () => {
 	describe('uptime calculation', () => {
 		it('uptimeMs is positive and increases over time', async () => {
 			const daemon = new PyrePraetorianDaemon({ validateTimestamps: false });
-			
+
 			const report1 = daemon.generateHealthReport();
 			expect(report1.uptimeMs).toBeGreaterThanOrEqual(0);
 
-			await new Promise(r => setTimeout(r, 50));
+			await new Promise((r) => setTimeout(r, 50));
 
 			const report2 = daemon.generateHealthReport();
 			expect(report2.uptimeMs).toBeGreaterThan(report1.uptimeMs);
@@ -1792,7 +1817,7 @@ describe('Health Report Thresholds (MUTATION KILLERS)', () => {
 		it('uptimeMs is calculated as now - startTime', () => {
 			const daemon = new PyrePraetorianDaemon({ validateTimestamps: false });
 			const report = daemon.generateHealthReport();
-			
+
 			// Should be very small (just created)
 			expect(report.uptimeMs).toBeLessThan(5000);
 			expect(report.uptimeMs).toBeGreaterThanOrEqual(0);
@@ -1802,12 +1827,14 @@ describe('Health Report Thresholds (MUTATION KILLERS)', () => {
 	describe('git commits in report', () => {
 		it('gitCommits included when present', () => {
 			const daemon = new PyrePraetorianDaemon({ validateTimestamps: false });
-			
+
 			// Process signal with git commit in message
-			daemon.validateSignal(validSignal({ 
-				hive: 'H', 
-				msg: 'EVOLVE: Git commit abc1234 - test commit' 
-			}));
+			daemon.validateSignal(
+				validSignal({
+					hive: 'H',
+					msg: 'EVOLVE: Git commit abc1234 - test commit',
+				}),
+			);
 
 			const report = daemon.generateHealthReport();
 			expect(report.gitCommits).toBeDefined();
@@ -1817,7 +1844,7 @@ describe('Health Report Thresholds (MUTATION KILLERS)', () => {
 
 		it('gitCommits NOT included when empty', () => {
 			const daemon = new PyrePraetorianDaemon({ validateTimestamps: false });
-			
+
 			daemon.validateSignal(validSignal({ hive: 'H', msg: 'no commit here' }));
 
 			const report = daemon.generateHealthReport();
@@ -1826,11 +1853,13 @@ describe('Health Report Thresholds (MUTATION KILLERS)', () => {
 
 		it('extracts 7+ char commit hashes', () => {
 			const daemon = new PyrePraetorianDaemon({ validateTimestamps: false });
-			
-			daemon.validateSignal(validSignal({ 
-				hive: 'H', 
-				msg: 'commit: abcdef1234567890' 
-			}));
+
+			daemon.validateSignal(
+				validSignal({
+					hive: 'H',
+					msg: 'commit: abcdef1234567890',
+				}),
+			);
 
 			const report = daemon.generateHealthReport();
 			expect(report.gitCommits?.[0].hash).toBe('abcdef1234567890');
@@ -1839,11 +1868,13 @@ describe('Health Report Thresholds (MUTATION KILLERS)', () => {
 		it('extracts 40-char full SHA', () => {
 			const daemon = new PyrePraetorianDaemon({ validateTimestamps: false });
 			const fullSha = 'abcdef1234567890abcdef1234567890abcdef12';
-			
-			daemon.validateSignal(validSignal({ 
-				hive: 'H', 
-				msg: `pushed ${fullSha} to main` 
-			}));
+
+			daemon.validateSignal(
+				validSignal({
+					hive: 'H',
+					msg: `pushed ${fullSha} to main`,
+				}),
+			);
 
 			const report = daemon.generateHealthReport();
 			expect(report.gitCommits?.[0].hash).toBe(fullSha);
@@ -1853,7 +1884,7 @@ describe('Health Report Thresholds (MUTATION KILLERS)', () => {
 	describe('blackboardSignals in report', () => {
 		it('blackboardSignals included when signals exist', () => {
 			const daemon = new PyrePraetorianDaemon({ validateTimestamps: false });
-			
+
 			daemon.validateSignal(validSignal({ hive: 'H' }));
 			daemon.validateSignal(validSignal({ hive: 'I' }));
 
@@ -1877,13 +1908,13 @@ describe('Health Report Thresholds (MUTATION KILLERS)', () => {
 
 		it('currentPhase updates after each signal', () => {
 			const daemon = new PyrePraetorianDaemon({ validateTimestamps: false });
-			
+
 			daemon.validateSignal(validSignal({ hive: 'H' }));
 			expect(daemon.generateHealthReport().currentPhase).toBe('H');
-			
+
 			daemon.validateSignal(validSignal({ hive: 'I' }));
 			expect(daemon.generateHealthReport().currentPhase).toBe('I');
-			
+
 			daemon.validateSignal(validSignal({ hive: 'V' }));
 			expect(daemon.generateHealthReport().currentPhase).toBe('V');
 		});
@@ -1960,9 +1991,9 @@ describe('Git Commit Extraction Patterns (MUTATION KILLERS)', () => {
 
 	it('truncates long messages to 200 chars', () => {
 		const daemon = new PyrePraetorianDaemon({ validateTimestamps: false });
-		const longMsg = 'commit abc1234def ' + 'x'.repeat(300);
+		const longMsg = `commit abc1234def ${'x'.repeat(300)}`;
 		daemon.validateSignal(validSignal({ msg: longMsg }));
-		
+
 		const commit = daemon.generateHealthReport().gitCommits?.[0];
 		expect(commit?.message.length).toBeLessThanOrEqual(200);
 	});
@@ -1985,22 +2016,28 @@ describe('OCTOPULSE Pattern Detection (MUTATION KILLERS)', () => {
 		const ts = '2026-01-01T00:00:00.000Z';
 
 		// Different phases at same timestamp with type=signal (not metric)
-		daemon.validateSignal(validSignal({ 
-			hive: 'H', ts, 
-			type: 'signal', // NOT metric
-			msg: 'PYRE_OCTOPULSE', 
-			port: 0 
-		}));
-		daemon.validateSignal(validSignal({ 
-			hive: 'I', ts, // DIFFERENT phase = triggers check
-			type: 'signal', // NOT metric
-			msg: 'PYRE_OCTOPULSE', 
-			port: 1 
-		}));
+		daemon.validateSignal(
+			validSignal({
+				hive: 'H',
+				ts,
+				type: 'signal', // NOT metric
+				msg: 'PYRE_OCTOPULSE',
+				port: 0,
+			}),
+		);
+		daemon.validateSignal(
+			validSignal({
+				hive: 'I',
+				ts, // DIFFERENT phase = triggers check
+				type: 'signal', // NOT metric
+				msg: 'PYRE_OCTOPULSE',
+				port: 1,
+			}),
+		);
 
 		// Should trigger BATCH_FABRICATION since not valid OCTOPULSE (wrong type)
 		const violations = daemon.getPeriodViolations();
-		expect(violations.some(v => v.type === 'BATCH_FABRICATION')).toBe(true);
+		expect(violations.some((v) => v.type === 'BATCH_FABRICATION')).toBe(true);
 	});
 
 	it('OCTOPULSE signal must contain "PYRE_OCTOPULSE" in msg', () => {
@@ -2008,21 +2045,27 @@ describe('OCTOPULSE Pattern Detection (MUTATION KILLERS)', () => {
 		const ts = '2026-01-01T00:00:00.000Z';
 
 		// Different phases at same timestamp without OCTOPULSE keyword
-		daemon.validateSignal(validSignal({ 
-			hive: 'H', ts, 
-			type: 'metric',
-			msg: 'NOT_OCTOPULSE', // Missing PYRE_OCTOPULSE
-			port: 0 
-		}));
-		daemon.validateSignal(validSignal({ 
-			hive: 'I', ts, // DIFFERENT phase = triggers check
-			type: 'metric',
-			msg: 'NOT_OCTOPULSE',
-			port: 1 
-		}));
+		daemon.validateSignal(
+			validSignal({
+				hive: 'H',
+				ts,
+				type: 'metric',
+				msg: 'NOT_OCTOPULSE', // Missing PYRE_OCTOPULSE
+				port: 0,
+			}),
+		);
+		daemon.validateSignal(
+			validSignal({
+				hive: 'I',
+				ts, // DIFFERENT phase = triggers check
+				type: 'metric',
+				msg: 'NOT_OCTOPULSE',
+				port: 1,
+			}),
+		);
 
 		const violations = daemon.getPeriodViolations();
-		expect(violations.some(v => v.type === 'BATCH_FABRICATION')).toBe(true);
+		expect(violations.some((v) => v.type === 'BATCH_FABRICATION')).toBe(true);
 	});
 
 	it('valid OCTOPULSE with different phases at same timestamp does NOT trigger violation', () => {
@@ -2033,18 +2076,20 @@ describe('OCTOPULSE Pattern Detection (MUTATION KILLERS)', () => {
 		// This is valid OCTOPULSE - reporting from all 8 commanders
 		const phases = ['H', 'I', 'V', 'E', 'H', 'I', 'V', 'E'] as const;
 		for (let port = 0; port < 8; port++) {
-			daemon.validateSignal(validSignal({
-				hive: phases[port % 4],
-				ts,
-				type: 'metric',
-				msg: JSON.stringify({ type: 'PYRE_OCTOPULSE', port }),
-				port,
-			}));
+			daemon.validateSignal(
+				validSignal({
+					hive: phases[port % 4],
+					ts,
+					type: 'metric',
+					msg: JSON.stringify({ type: 'PYRE_OCTOPULSE', port }),
+					port,
+				}),
+			);
 		}
 
 		const violations = daemon.getPeriodViolations();
 		// Valid OCTOPULSE with different phases should NOT trigger BATCH_FABRICATION
-		expect(violations.filter(v => v.type === 'BATCH_FABRICATION')).toHaveLength(0);
+		expect(violations.filter((v) => v.type === 'BATCH_FABRICATION')).toHaveLength(0);
 	});
 
 	it('OCTOPULSE check verifies ALL matching signals have PYRE_OCTOPULSE', () => {
@@ -2052,38 +2097,46 @@ describe('OCTOPULSE Pattern Detection (MUTATION KILLERS)', () => {
 		const ts = '2026-01-01T00:00:00.000Z';
 
 		// First signal: valid OCTOPULSE
-		daemon.validateSignal(validSignal({
-			hive: 'H', ts,
-			type: 'metric',
-			msg: 'PYRE_OCTOPULSE port 0',
-			port: 0,
-		}));
+		daemon.validateSignal(
+			validSignal({
+				hive: 'H',
+				ts,
+				type: 'metric',
+				msg: 'PYRE_OCTOPULSE port 0',
+				port: 0,
+			}),
+		);
 		// Second signal: NOT OCTOPULSE (different msg)
-		daemon.validateSignal(validSignal({
-			hive: 'I', ts,  // Different phase
-			type: 'metric',
-			msg: 'Regular metric', // Missing PYRE_OCTOPULSE!
-			port: 1,
-		}));
+		daemon.validateSignal(
+			validSignal({
+				hive: 'I',
+				ts, // Different phase
+				type: 'metric',
+				msg: 'Regular metric', // Missing PYRE_OCTOPULSE!
+				port: 1,
+			}),
+		);
 
 		const violations = daemon.getPeriodViolations();
 		// Should trigger because not ALL signals have PYRE_OCTOPULSE
-		expect(violations.some(v => v.type === 'BATCH_FABRICATION')).toBe(true);
+		expect(violations.some((v) => v.type === 'BATCH_FABRICATION')).toBe(true);
 	});
 
 	it('OCTOPULSE with port outside 0-7 range is invalid', () => {
 		const daemon = new PyrePraetorianDaemon({ validateTimestamps: false });
-		
+
 		// Port 8 should fail gate validation (G7)
-		const result = daemon.validateSignal(validSignal({
-			hive: 'V',
-			type: 'metric',
-			msg: 'PYRE_OCTOPULSE port 8',
-			port: 8 as any, // Force invalid port
-		}));
+		const result = daemon.validateSignal(
+			validSignal({
+				hive: 'V',
+				type: 'metric',
+				msg: 'PYRE_OCTOPULSE port 8',
+				port: 8 as any, // Force invalid port
+			}),
+		);
 
 		// Should have REWARD_HACK violation (gate validation failure)
-		expect(result.violations.some(v => v.type === 'REWARD_HACK')).toBe(true);
+		expect(result.violations.some((v) => v.type === 'REWARD_HACK')).toBe(true);
 	});
 
 	it('same-phase signals at same timestamp do NOT trigger BATCH_FABRICATION', () => {
@@ -2097,7 +2150,7 @@ describe('OCTOPULSE Pattern Detection (MUTATION KILLERS)', () => {
 
 		const violations = daemon.getPeriodViolations();
 		// BATCH_FABRICATION only triggers for DIFFERENT phases
-		expect(violations.filter(v => v.type === 'BATCH_FABRICATION')).toHaveLength(0);
+		expect(violations.filter((v) => v.type === 'BATCH_FABRICATION')).toHaveLength(0);
 	});
 
 	it('BATCH_FABRICATION includes previousSignal when available', () => {
@@ -2108,7 +2161,7 @@ describe('OCTOPULSE Pattern Detection (MUTATION KILLERS)', () => {
 		daemon.validateSignal(validSignal({ hive: 'I', ts, msg: 'second' })); // Different phase
 
 		const violations = daemon.getPeriodViolations();
-		const batchViolation = violations.find(v => v.type === 'BATCH_FABRICATION');
+		const batchViolation = violations.find((v) => v.type === 'BATCH_FABRICATION');
 		expect(batchViolation).toBeDefined();
 		expect(batchViolation?.previousSignal).toBeDefined();
 		expect(batchViolation?.previousSignal?.msg).toBe('first');
@@ -2136,7 +2189,7 @@ describe('Periodic Reporting Conditions (MUTATION KILLERS)', () => {
 
 		// Should not emit extra reports
 		expect(emitted.length).toBe(initialCount);
-		
+
 		daemon.stopPeriodicReports();
 	});
 
@@ -2430,7 +2483,7 @@ describe('HIVE Transition Rules (MUTATION KILLERS)', () => {
 		const result = daemon.validateSignal(validSignal({ hive: 'V' }));
 
 		// Should NOT have SKIPPED_PHASE for first signal
-		expect(result.violations.filter(v => v.type === 'SKIPPED_PHASE')).toHaveLength(0);
+		expect(result.violations.filter((v) => v.type === 'SKIPPED_PHASE')).toHaveLength(0);
 	});
 
 	it('HIVE_ORDER assigns correct order values', () => {
@@ -2469,7 +2522,7 @@ describe('HIVE Transition Rules (MUTATION KILLERS)', () => {
 		daemon.validateSignal(validSignal({ hive: 'H', msg: 'first signal' }));
 		const result = daemon.validateSignal(validSignal({ hive: 'V' })); // Skip I
 
-		const violation = result.violations.find(v => v.type === 'SKIPPED_PHASE');
+		const violation = result.violations.find((v) => v.type === 'SKIPPED_PHASE');
 		expect(violation?.previousSignal).toBeDefined();
 		expect(violation?.previousSignal?.msg).toBe('first signal');
 	});
@@ -2480,7 +2533,7 @@ describe('HIVE Transition Rules (MUTATION KILLERS)', () => {
 		daemon.validateSignal(validSignal({ hive: 'H' }));
 		const result = daemon.validateSignal(validSignal({ hive: 'E' })); // H->E skips I,V
 
-		const violation = result.violations.find(v => v.type === 'SKIPPED_PHASE');
+		const violation = result.violations.find((v) => v.type === 'SKIPPED_PHASE');
 		expect(violation?.message).toContain('H→E');
 	});
 
@@ -2490,11 +2543,11 @@ describe('HIVE Transition Rules (MUTATION KILLERS)', () => {
 		daemon.validateSignal(validSignal({ hive: 'H' }));
 		const result = daemon.validateSignal(validSignal({ hive: 'X' }));
 
-		expect(result.violations.filter(v => v.type === 'SKIPPED_PHASE')).toHaveLength(0);
+		expect(result.violations.filter((v) => v.type === 'SKIPPED_PHASE')).toHaveLength(0);
 	});
 
 	it('X phase blocked when allowExceptional=false', () => {
-		const daemon = new PyrePraetorianDaemon({ 
+		const daemon = new PyrePraetorianDaemon({
 			validateTimestamps: false,
 			allowExceptional: false,
 		});
@@ -2502,9 +2555,11 @@ describe('HIVE Transition Rules (MUTATION KILLERS)', () => {
 		daemon.validateSignal(validSignal({ hive: 'H' }));
 		const result = daemon.validateSignal(validSignal({ hive: 'X' }));
 
-		expect(result.violations.some(v => 
-			v.type === 'SKIPPED_PHASE' && v.message.includes('allowExceptional=false')
-		)).toBe(true);
+		expect(
+			result.violations.some(
+				(v) => v.type === 'SKIPPED_PHASE' && v.message.includes('allowExceptional=false'),
+			),
+		).toBe(true);
 	});
 
 	it('transition FROM X allowed when allowExceptional=true', () => {
@@ -2513,7 +2568,7 @@ describe('HIVE Transition Rules (MUTATION KILLERS)', () => {
 		daemon.validateSignal(validSignal({ hive: 'X' }));
 		const result = daemon.validateSignal(validSignal({ hive: 'H' }));
 
-		expect(result.violations.filter(v => v.type === 'SKIPPED_PHASE')).toHaveLength(0);
+		expect(result.violations.filter((v) => v.type === 'SKIPPED_PHASE')).toHaveLength(0);
 	});
 });
 
@@ -2546,7 +2601,7 @@ describe('Blackboard Watching (MUTATION KILLERS)', () => {
 			const daemon = new PyrePraetorianDaemon({ validateTimestamps: false });
 			daemon.startWatchingBlackboard();
 
-			expect(warnings.some(w => w.includes('Cannot watch blackboard'))).toBe(true);
+			expect(warnings.some((w) => w.includes('Cannot watch blackboard'))).toBe(true);
 		} finally {
 			console.warn = originalWarn;
 		}

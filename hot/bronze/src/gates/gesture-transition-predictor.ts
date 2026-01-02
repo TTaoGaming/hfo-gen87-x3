@@ -208,22 +208,21 @@ export function updateGestureTransitionPredictor(
 				noneFrameCount: currentState.noneFrameCount + 1,
 			},
 		};
-	} else {
-		// Valid gesture - reset None tracking
-		return {
-			likelyNext: currentGesture,
-			confidence: 1.0,
-			msInNone: 0,
-			isDisengagement: false,
-			shouldDebounce: false,
-			state: {
-				lastValidGesture: currentGesture,
-				noneEnteredAt: null,
-				lastValidGestureTs: currentTs,
-				noneFrameCount: 0,
-			},
-		};
 	}
+	// Valid gesture - reset None tracking
+	return {
+		likelyNext: currentGesture,
+		confidence: 1.0,
+		msInNone: 0,
+		isDisengagement: false,
+		shouldDebounce: false,
+		state: {
+			lastValidGesture: currentGesture,
+			noneEnteredAt: null,
+			lastValidGestureTs: currentTs,
+			noneFrameCount: 0,
+		},
+	};
 }
 
 // ============================================================================
