@@ -111,6 +111,34 @@
 			"isBackground": true,
 			"problemMatcher": [],
 			"detail": "Watch the last 20 signals on the blackboard"
+		},
+		{
+			"label": "🌐 Demo Server (Port 8081)",
+			"type": "shell",
+			"command": "npx",
+			"args": ["http-server", ".", "-p", "8081", "--cors", "-c-1"],
+			"group": "none",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated"
+			},
+			"isBackground": true,
+			"problemMatcher": [],
+			"detail": "IR-0008 FIX: Single demo server on port 8081 serving from project root. Use with playwright-unified.config.ts"
+		},
+		{
+			"label": "🎭 E2E Tests (Unified)",
+			"type": "shell",
+			"command": "npx",
+			"args": ["playwright", "test", "--config=playwright-unified.config.ts"],
+			"group": "test",
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared"
+			},
+			"problemMatcher": [],
+			"dependsOn": ["🌐 Demo Server (Port 8081)"],
+			"detail": "Run E2E tests with unified playwright config (IR-0008 fix)"
 		}
 	]
 }
