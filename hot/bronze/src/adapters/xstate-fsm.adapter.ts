@@ -35,12 +35,12 @@ type GestureContext = {
 type GestureEvent = { type: 'FRAME'; frame: SmoothedFrame } | { type: 'DISARM' };
 
 // ============================================================================
-// FSM CONFIGURATION
+// FSM CONFIGURATION (Exported for boundary testing)
 // ============================================================================
 
-const DEFAULT_ARM_STABLE_MS = 200;
-const DEFAULT_CMD_WINDOW_MS = 500;
-const DEFAULT_MIN_CONFIDENCE = 0.7;
+export const DEFAULT_ARM_STABLE_MS = 200;
+export const DEFAULT_CMD_WINDOW_MS = 500;
+export const DEFAULT_MIN_CONFIDENCE = 0.7;
 
 // ============================================================================
 // GUARDS
