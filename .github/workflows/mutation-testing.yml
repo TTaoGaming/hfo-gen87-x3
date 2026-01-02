@@ -1,0 +1,153 @@
+name: Mutation Testing
+
+on:
+  push:
+    branches: ['**']  # ALL branches - enforcement everywhere
+    paths:
+      - 'hot/bronze/src/**/*.ts'
+      - 'stryker.config.mjs'
+      - '.github/workflows/mutation-testing.yml'
+  pull_request:
+    branches: ['**']  # ALL branches - no hiding on feature branches
+    paths:
+      - 'hot/bronze/src/**/*.ts'
+      - 'stryker.config.mjs'
+
+env:
+  CI: true
+  # Mutation score threshold - enforced by Stryker break threshold
+  MUTATION_THRESHOLD: 80
+
+jobs:
+  mutation-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+      
+      - name: Install Dependencies
+        run: npm ci
+      
+      # ═══════════════════════════════════════════════════════════════
+      # Pyre Praetorian Gate - Mutation Testing (80% threshold)
+      # ═══════════════════════════════════════════════════════════════
+      # 
+      # Why mutation testing?
+      # - Unit tests can pass but not actually verify behavior
+      # - Mutation testing proves tests CATCH bugs by introducing fake bugs
+      # - If mutant survives = test didn't catch the bug = weak test
+      #
+      # 80% threshold means:
+      # - At least 80% of introduced mutations are detected (killed)
+      # - Below 80% = tests are too weak = PR blocked
+      # ═══════════════════════════════════════════════════════════════
+      
+      - name: 'Gate: Mutation Testing (Pyre Praetorian)'
+        run: |
+          echo "🔥 PYRE PRAETORIAN - Mutation Testing Gate"
+          echo "   Threshold: $MUTATION_THRESHOLD%"
+          echo ""
+          
+          # Run Stryker with break threshold of 80
+          # Stryker will exit with code 1 if score < break threshold
+          npx stryker run \
+            --coverageAnalysis perTest \
+            --logLevel info \
+            --reporters clear-text,progress,json \
+            --thresholds.break $MUTATION_THRESHOLD
+          
+          echo ""
+          echo "✅ Mutation score meets ${MUTATION_THRESHOLD}% threshold"
+      
+      - name: Upload Mutation Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mutation-report
+          path: reports/mutation/
+          if-no-files-found: ignore
+      
+      - name: Comment PR with Mutation Score
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let score = 'N/A';
+            let status = '❓';
+            
+            try {
+              // Try to read mutation-report.json
+              const reportPath = 'reports/mutation/mutation.json';
+              if (fs.existsSync(reportPath)) {
+                const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+                score = report.mutationScore?.toFixed(2) || 'N/A';
+                status = parseFloat(score) >= 80 ? '✅' : '❌';
+              }
+            } catch (e) {
+              console.log('Could not parse mutation report:', e.message);
+            }
+            
+            const body = `## 🔥 Pyre Praetorian - Mutation Testing Report
+
+            ${status} **Mutation Score: ${score}%** (threshold: 80%)
+            
+            | Metric | Description |
+            |--------|-------------|
+            | Mutation Score | Percentage of mutants killed by tests |
+            | Threshold | Minimum required score to pass |
+            | Killed | Mutants detected by tests (good) |
+            | Survived | Mutants NOT detected (test gaps) |
+            
+            ${parseFloat(score) < 80 ? '### ❌ Action Required\nMutation score is below 80%. Add or improve tests to kill surviving mutants.' : '### ✅ Tests are strong\nMutation testing confirms tests actually verify behavior.'}
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+  # Focused mutation test for critical enforcement code
+  mutation-test-pyre:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+      
+      - name: Install Dependencies
+        run: npm ci
+      
+      - name: 'Gate: Pyre Praetorian Daemon Mutations (80%)'
+        run: |
+          echo "🔥 PYRE PRAETORIAN DAEMON - Critical Enforcement Code"
+          echo "   This is the HIVE sequence validator - must be bulletproof"
+          echo ""
+          
+          npx stryker run \
+            --mutate "hot/bronze/src/gates/pyre-praetorian-daemon.ts" \
+            --testRunner vitest \
+            --coverageAnalysis perTest \
+            --logLevel info \
+            --reporters clear-text,progress \
+            --thresholds.break 80
+          
+          echo ""
+          echo "✅ Pyre Praetorian daemon passes mutation testing"

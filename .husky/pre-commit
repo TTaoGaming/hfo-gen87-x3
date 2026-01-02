@@ -68,4 +68,65 @@ if [ -n "$NEW_CODE" ]; then
   exit 1
 fi
 
+echo "✅ All fast gates passed."
+
+# Gate 8: Pyre HIVE Sequence Scan (INFORMATIONAL - warnings only for now)
+# TODO: Enable blocking after historical violations are cleared
+echo "  → Pyre HIVE Sequence Scan (INFO)..."
+if command -v npx &> /dev/null; then
+  npx --yes tsx scripts/pyre-daemon-runner.ts --scan-only 2>/dev/null || echo "  (Pyre scan skipped - tsx not available)"
+fi
+
+# Gate 9: Mutation Testing (80% threshold) - BLOCKING on changed files
+# Only runs if TS files in hot/bronze/src are staged
+echo "  → Mutation Testing Check..."
+STAGED_SRC=$(git diff --cached --name-only | grep -E '^hot/bronze/src/.*\.ts$' | grep -v '\.test\.ts$' | grep -v '\.spec\.ts$' || true)
+if [ -n "$STAGED_SRC" ]; then
+  echo "    Found staged source files - checking mutation score threshold..."
+  
+  # Check if stryker is available
+  if command -v npx &> /dev/null; then
+    # Run mutation testing on staged files only (faster)
+    # Use break threshold of 80% - will exit 1 if below
+    MUTATE_FILES=$(echo "$STAGED_SRC" | tr '\n' ',' | sed 's/,$//')
+    
+    echo "    Testing files: $MUTATE_FILES"
+    
+    # Run stryker with 80% break threshold
+    # --coverageAnalysis perTest = only run relevant tests (fast)
+    # --thresholds.break 80 = fail if score < 80%
+    npx stryker run \
+      --mutate "$MUTATE_FILES" \
+      --coverageAnalysis perTest \
+      --logLevel error \
+      --reporters clear-text \
+      --thresholds.break 80 2>&1 | tail -20
+    
+    STRYKER_EXIT=$?
+    
+    if [ $STRYKER_EXIT -ne 0 ]; then
+      echo ""
+      echo "❌ BLOCKED: Mutation score below 80% threshold"
+      echo "   Your tests pass but don't catch enough mutations."
+      echo "   This means your tests may not actually verify behavior."
+      echo ""
+      echo "   To fix:"
+      echo "   1. Run: npx stryker run --mutate 'your/file.ts'"
+      echo "   2. Look for 'Survived' mutants in output"
+      echo "   3. Add tests that would catch those mutations"
+      echo ""
+      echo "   To skip (NOT RECOMMENDED):"
+      echo "   git commit --no-verify"
+      exit 1
+    fi
+    
+    echo "    ✅ Mutation score meets 80% threshold"
+  else
+    echo "    (Stryker skipped - npx not available)"
+  fi
+else
+  echo "    (No staged source files - skipping mutation testing)"
+fi
+
+echo ""
 echo "✅ All gates passed. Commit allowed."

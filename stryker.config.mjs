@@ -94,10 +94,12 @@ export default {
 	reporters: ['clear-text', 'progress'],
 
 	// Thresholds - what mutation score is acceptable
+	// ENFORCED: 80% minimum (break threshold)
+	// Changed from 40% to 80% per Gen87.X3 enforcement requirements
 	thresholds: {
-		high: 80, // Green badge
-		low: 60, // Yellow badge
-		break: 40, // Fail build if below this
+		high: 90, // Green badge - excellent
+		low: 80, // Yellow badge - acceptable minimum
+		break: 80, // BLOCKING: Fail build/commit if below 80%
 	},
 
 	// Single concurrency - prevents race conditions and easier to debug

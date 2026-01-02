@@ -678,7 +678,29 @@ export class PyrePraetorianDaemon {
 			return violations;
 		}
 
-		const validNextPhases = VALID_TRANSITIONS[this.lastPhase];
+		// Get valid transitions, filtering out X if exceptional is disabled
+		let validNextPhases = VALID_TRANSITIONS[this.lastPhase];
+		if (!this.config.allowExceptional) {
+			// When exceptional is disabled, X is NOT a valid target from any phase
+			validNextPhases = validNextPhases.filter(p => p !== 'X');
+			
+			// Also, transitioning TO X is not allowed
+			if (currentPhase === 'X') {
+				const lastSignal = this.signalHistory[this.signalHistory.length - 1];
+				const violation: HIVEViolation = {
+					type: 'SKIPPED_PHASE',
+					severity: 'CRITICAL',
+					message: `X (exceptional) phase not allowed when allowExceptional=false. Transition ${this.lastPhase}→X blocked.`,
+					signal,
+					timestamp: new Date().toISOString(),
+				};
+				if (lastSignal) {
+					violation.previousSignal = lastSignal;
+				}
+				violations.push(violation);
+				return violations;
+			}
+		}
 
 		// Check if transition is valid
 		if (!validNextPhases.includes(currentPhase)) {
@@ -726,29 +748,74 @@ export class PyrePraetorianDaemon {
 	// ============================================================================
 
 	/**
+	 * Check if a signal is part of a PYRE OCTOPULSE signature
+	 * OCTOPULSE = 8 signals at same timestamp, ports 0-7, type=metric, msg contains "PYRE_OCTOPULSE"
+	 * This is the Pyre Praetorian's unique heartbeat signature, NOT a violation
+	 */
+	private isPartOfOctopulse(signal: StigmergySignal, matchingSignals: StigmergySignal[]): boolean {
+		// Signal must be metric type with OCTOPULSE in message
+		if (signal.type !== 'metric' || !signal.msg.includes('PYRE_OCTOPULSE')) {
+			return false;
+		}
+		
+		// All matching signals must also be OCTOPULSE metrics
+		const allOctopulseMetrics = matchingSignals.every(
+			s => s.type === 'metric' && s.msg.includes('PYRE_OCTOPULSE')
+		);
+		if (!allOctopulseMetrics) {
+			return false;
+		}
+		
+		// Check that we're building toward a complete set of ports 0-7
+		const allSignals = [...matchingSignals, signal];
+		const ports = new Set(allSignals.map(s => s.port));
+		
+		// Valid OCTOPULSE: unique ports, all in range 0-7
+		// Can be partial (building up) or complete (all 8)
+		if (ports.size !== allSignals.length) {
+			return false; // Duplicate port = not valid OCTOPULSE
+		}
+		
+		for (const port of ports) {
+			if (port < 0 || port > 7) {
+				return false;
+			}
+		}
+		
+		return true;
+	}
+
+	/**
 	 * Detect batch fabrication (multiple signals at same timestamp)
 	 * Only triggers if timestamps match AND signals are DIFFERENT phases
-	 * (same phase repeat is allowed for heartbeats etc)
+	 * EXCEPTION: PYRE OCTOPULSE signature (8 signals, ports 0-7) is intentional
 	 */
 	private detectBatchFabrication(signal: StigmergySignal): HIVEViolation[] {
 		const violations: HIVEViolation[] = [];
 
-		// Check last 5 signals for identical timestamps with DIFFERENT phases
-		const recentSignals = this.signalHistory.slice(-5);
-		const matchingTimestamps = recentSignals.filter(
-			(s) => s.ts === signal.ts && s.hive !== signal.hive,
-		);
+		// Check last 8 signals for identical timestamps
+		const recentSignals = this.signalHistory.slice(-8);
+		const matchingTimestamps = recentSignals.filter(s => s.ts === signal.ts);
+		
+		// Check if this is part of a PYRE OCTOPULSE pattern
+		if (matchingTimestamps.length > 0 && this.isPartOfOctopulse(signal, matchingTimestamps)) {
+			// This is part of a valid PYRE OCTOPULSE - not a violation!
+			return [];
+		}
+		
+		// Check for violations (different phases at same timestamp)
+		const differentPhases = matchingTimestamps.filter(s => s.hive !== signal.hive);
 
-		if (matchingTimestamps.length > 0) {
+		if (differentPhases.length > 0) {
 			const violation: HIVEViolation = {
 				type: 'BATCH_FABRICATION',
 				severity: 'HIGH',
-				message: `Signal has identical timestamp to ${matchingTimestamps.length} recent signal(s) with different phases. Batch fabrication detected.`,
+				message: `Signal has identical timestamp to ${differentPhases.length} recent signal(s) with different phases. Batch fabrication detected.`,
 				signal,
 				timestamp: new Date().toISOString(),
 			};
-			if (matchingTimestamps[0]) {
-				violation.previousSignal = matchingTimestamps[0];
+			if (differentPhases[0]) {
+				violation.previousSignal = differentPhases[0];
 			}
 			violations.push(violation);
 		}
