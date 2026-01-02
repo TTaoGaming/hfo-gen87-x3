@@ -102,7 +102,7 @@ export class InMemorySubstrateAdapter implements SubstratePort {
 		}
 
 		// Publish to all subscribers
-		this.subjects.get(subject)!.next(data);
+		this.subjects.get(subject)?.next(data);
 	}
 
 	/**
@@ -116,9 +116,7 @@ export class InMemorySubstrateAdapter implements SubstratePort {
 	 */
 	subscribe(subject: string, callback: (data: unknown) => void): () => void {
 		if (!this._isConnected) {
-			throw new Error(
-				`InMemorySubstrateAdapter: Cannot subscribe to "${subject}" - not connected`,
-			);
+			throw new Error(`InMemorySubstrateAdapter: Cannot subscribe to "${subject}" - not connected`);
 		}
 
 		// Lazy-create subject if needed
@@ -127,7 +125,11 @@ export class InMemorySubstrateAdapter implements SubstratePort {
 		}
 
 		// Subscribe and return unsubscribe function
-		const subscription = this.subjects.get(subject)!.subscribe(callback);
+		const rxSubject = this.subjects.get(subject);
+		if (!rxSubject) {
+			throw new Error(`Subject ${subject} not found`);
+		}
+		const subscription = rxSubject.subscribe(callback);
 		return () => subscription.unsubscribe();
 	}
 

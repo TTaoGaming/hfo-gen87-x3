@@ -6,13 +6,14 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { NormalizedLandmark } from '../contracts/schemas.js';
 import {
-    calculatePalmAngle,
-    createPalmConeGate,
-    createPalmConeGateState,
-    DEFAULT_PALM_CONE_CONFIG,
-    PalmConeConfigSchema,
-    updatePalmConeGate,
-    type PalmConeConfig,
+	DEFAULT_PALM_CONE_CONFIG,
+	type PalmConeConfig,
+	PalmConeConfigSchema,
+	type PalmConeGateState,
+	calculatePalmAngle,
+	createPalmConeGate,
+	createPalmConeGateState,
+	updatePalmConeGate,
 } from './palm-cone-gate.js';
 
 // ============================================================================
@@ -77,7 +78,7 @@ function createThresholdHand(targetAngle: number): NormalizedLandmark[] {
 	const landmarks: NormalizedLandmark[] = [];
 	// Adjust Z values to create desired angle
 	const zOffset = Math.tan((targetAngle * Math.PI) / 180) * 0.1;
-	
+
 	landmarks[0] = createLandmark(0.5, 0.6, 0);
 	for (let i = 1; i < 5; i++) {
 		landmarks[i] = createLandmark(0.5 + i * 0.02, 0.5, 0);
@@ -259,7 +260,7 @@ describe('Mutation Killers: Threshold Boundaries', () => {
 		// For small angles, we can approximate with Z offset
 		const radians = (targetAngle * Math.PI) / 180;
 		const zOffset = Math.tan(radians) * 0.1;
-		
+
 		const landmarks: NormalizedLandmark[] = [];
 		landmarks[0] = createLandmark(0.5, 0.6, 0); // WRIST
 		for (let i = 1; i < 5; i++) {
@@ -296,11 +297,11 @@ describe('Mutation Killers: Threshold Boundaries', () => {
 	it('KILLS: NOT_FACING state uses armThreshold (not disarmThreshold)', () => {
 		// Start NOT facing
 		const notFacingState = { isFacing: false, lastPalmAngle: 50, lastUpdateTs: 0 };
-		
+
 		// Angle 30 is: > armThreshold(25) but < disarmThreshold(35)
 		// If NOT facing, should stay NOT facing (need to go below 25 to arm)
 		const result = updatePalmConeGate(createLandmarksForAngle(30), notFacingState, config, 100);
-		
+
 		// NOT facing + angle 30 > 25 = should stay NOT facing
 		// Mutant "if (true)" would use disarmThreshold path: 30 < 35 = facing (WRONG)
 		// Mutant "if (false)" would use armThreshold path: 30 < 25 = not facing (correct but for wrong reason)
@@ -310,11 +311,11 @@ describe('Mutation Killers: Threshold Boundaries', () => {
 	it('KILLS: FACING state uses disarmThreshold (not armThreshold)', () => {
 		// Start FACING
 		const facingState = { isFacing: true, lastPalmAngle: 20, lastUpdateTs: 0 };
-		
+
 		// Angle 30 is: > armThreshold(25) but < disarmThreshold(35)
 		// If FACING, should STAY facing (need to go above 35 to disarm)
 		const result = updatePalmConeGate(createLandmarksForAngle(30), facingState, config, 100);
-		
+
 		// FACING + angle 30 < 35 = should stay FACING
 		// Mutant "if (false)" would use armThreshold path: 30 < 25 = not facing (WRONG)
 		expect(result.isFacing).toBe(true);
@@ -323,7 +324,7 @@ describe('Mutation Killers: Threshold Boundaries', () => {
 	// === Boundary: < vs <= at armThreshold (line 212) ===
 	it('KILLS: angle well above armThreshold does NOT arm', () => {
 		const notFacingState = { isFacing: false, lastPalmAngle: 50, lastUpdateTs: 0 };
-		
+
 		// Angle 30 is above armThreshold (25), should NOT arm
 		const result = updatePalmConeGate(createLandmarksForAngle(30), notFacingState, config, 100);
 		expect(result.isFacing).toBe(false);
@@ -331,7 +332,7 @@ describe('Mutation Killers: Threshold Boundaries', () => {
 
 	it('KILLS: angle just BELOW armThreshold DOES arm', () => {
 		const notFacingState = { isFacing: false, lastPalmAngle: 50, lastUpdateTs: 0 };
-		
+
 		// Use facing hand which gives low angle (< 25)
 		const result = updatePalmConeGate(createFacingHand(), notFacingState, config, 100);
 		expect(result.isFacing).toBe(true);
@@ -340,7 +341,7 @@ describe('Mutation Killers: Threshold Boundaries', () => {
 	// === Boundary: < vs <= at disarmThreshold (line 209) ===
 	it('KILLS: angle above disarmThreshold disarms', () => {
 		const facingState = { isFacing: true, lastPalmAngle: 20, lastUpdateTs: 0 };
-		
+
 		// Use perpendicular hand which gives high angle (> 35)
 		const result = updatePalmConeGate(createPerpendicularHand(), facingState, config, 100);
 		expect(result.isFacing).toBe(false);
@@ -348,7 +349,7 @@ describe('Mutation Killers: Threshold Boundaries', () => {
 
 	it('KILLS: angle just BELOW disarmThreshold stays facing', () => {
 		const facingState = { isFacing: true, lastPalmAngle: 20, lastUpdateTs: 0 };
-		
+
 		// Angle 34 < 35 should stay facing
 		const result = updatePalmConeGate(createLandmarksForAngle(34), facingState, config, 100);
 		expect(result.isFacing).toBe(true);
@@ -356,7 +357,7 @@ describe('Mutation Killers: Threshold Boundaries', () => {
 });
 
 // ============================================================================
-// MUTATION KILLER TESTS: Hysteresis Band Behavior  
+// MUTATION KILLER TESTS: Hysteresis Band Behavior
 // ============================================================================
 
 describe('Mutation Killers: Hysteresis Band', () => {
@@ -418,11 +419,11 @@ describe('Mutation Killers: Hysteresis Band', () => {
 	it('KILLS: state transition from NOT_FACING requires angle < armThreshold', () => {
 		// This explicitly tests that the branch for !isFacing uses armThreshold
 		const state = { isFacing: false, lastPalmAngle: 50, lastUpdateTs: 0 };
-		
+
 		// Just above arm threshold - should NOT arm
 		const r1 = updatePalmConeGate(createLandmarksForAngle(26), state, config, 100);
 		expect(r1.isFacing).toBe(false);
-		
+
 		// Just below arm threshold - should arm
 		const r2 = updatePalmConeGate(createLandmarksForAngle(24), state, config, 200);
 		expect(r2.isFacing).toBe(true);
@@ -431,11 +432,11 @@ describe('Mutation Killers: Hysteresis Band', () => {
 	it('KILLS: state transition from FACING requires angle >= disarmThreshold', () => {
 		// This explicitly tests that the branch for isFacing uses disarmThreshold
 		const state = { isFacing: true, lastPalmAngle: 20, lastUpdateTs: 0 };
-		
+
 		// Just below disarm threshold - should STAY facing
 		const r1 = updatePalmConeGate(createLandmarksForAngle(34), state, config, 100);
 		expect(r1.isFacing).toBe(true);
-		
+
 		// Well above disarm threshold - should disarm
 		const r2 = updatePalmConeGate(createPerpendicularHand(), state, config, 200);
 		expect(r2.isFacing).toBe(false);
@@ -451,14 +452,14 @@ describe('Mutation Killers: calculatePalmAngle Math', () => {
 		// Test that swapping vectors or negating components changes result
 		const facing = createFacingHand();
 		const angle1 = calculatePalmAngle(facing);
-		
+
 		// Reverse wrist and index (should change cross product direction)
 		const reversed = [...facing];
 		const temp = reversed[0];
 		reversed[0] = reversed[5];
 		reversed[5] = temp;
 		const angle2 = calculatePalmAngle(reversed);
-		
+
 		// Angles should be different
 		expect(angle1).not.toBe(angle2);
 	});
@@ -473,7 +474,7 @@ describe('Mutation Killers: calculatePalmAngle Math', () => {
 		for (let i = 6; i < 17; i++) landmarks[i] = createLandmark(0.5, 0.5, 0);
 		landmarks[17] = createLandmark(0.5, 0.5, 0); // Same as wrist!
 		for (let i = 18; i < 21; i++) landmarks[i] = createLandmark(0.5, 0.5, 0);
-		
+
 		const angle = calculatePalmAngle(landmarks);
 		expect(angle).toBe(90); // Degenerate = perpendicular
 	});
@@ -488,7 +489,7 @@ describe('Mutation Killers: calculatePalmAngle Math', () => {
 		for (let i = 6; i < 17; i++) extreme[i] = createLandmark(0, 0, 0);
 		extreme[17] = createLandmark(0, 1, 0);
 		for (let i = 18; i < 21; i++) extreme[i] = createLandmark(0, 0, 0);
-		
+
 		const angle = calculatePalmAngle(extreme);
 		// Should be a valid number, not NaN
 		expect(Number.isNaN(angle)).toBe(false);
@@ -503,7 +504,7 @@ describe('Mutation Killers: calculatePalmAngle Math', () => {
 
 describe('Mutation Killers: Direct Threshold Logic', () => {
 	// These tests directly verify the branching logic to kill < vs <= mutants
-	
+
 	it('KILLS LINE 202: cancelThreshold uses >= not >', () => {
 		// Test EXACTLY at cancelThreshold boundary
 		const config: PalmConeConfig = {
@@ -511,11 +512,11 @@ describe('Mutation Killers: Direct Threshold Logic', () => {
 			disarmThreshold: 35,
 			cancelThreshold: 70,
 		};
-		
+
 		// Get any landmarks and calculate their angle
 		const landmarks = createFacingHand();
 		const actualAngle = calculatePalmAngle(landmarks);
-		
+
 		// Now create a config where cancelThreshold = actualAngle
 		// This tests >= vs > at the exact boundary
 		const configAtBoundary: PalmConeConfig = {
@@ -523,10 +524,10 @@ describe('Mutation Killers: Direct Threshold Logic', () => {
 			disarmThreshold: 35,
 			cancelThreshold: actualAngle, // EXACTLY at angle
 		};
-		
+
 		const state = createPalmConeGateState();
 		const result = updatePalmConeGate(landmarks, state, configAtBoundary, 100);
-		
+
 		// angle >= cancelThreshold should cancel (using >=)
 		// If mutated to >, would NOT cancel (angle > angle is false)
 		expect(result.shouldCancel).toBe(true);
@@ -535,22 +536,22 @@ describe('Mutation Killers: Direct Threshold Logic', () => {
 	it('KILLS LINE 209: disarmThreshold uses < not <=', () => {
 		// If facing, isFacing = palmAngle < disarmThreshold
 		// Test: angle EXACTLY at disarmThreshold
-		
+
 		// Get landmarks and their actual angle
 		const landmarks = createFacingHand();
 		const actualAngle = calculatePalmAngle(landmarks);
-		
+
 		// Create config where disarmThreshold = actualAngle
 		const configAtBoundary: PalmConeConfig = {
 			armThreshold: actualAngle - 5, // Below actual so it can be facing
-			disarmThreshold: actualAngle,   // EXACTLY at angle
+			disarmThreshold: actualAngle, // EXACTLY at angle
 			cancelThreshold: 90,
 		};
-		
+
 		// Start facing
 		const facingState = { isFacing: true, lastPalmAngle: actualAngle - 10, lastUpdateTs: 0 };
 		const result = updatePalmConeGate(landmarks, facingState, configAtBoundary, 100);
-		
+
 		// palmAngle < disarmThreshold => angle < angle is FALSE => isFacing = false
 		// If mutated to <=, angle <= angle is TRUE => isFacing = true (WRONG)
 		expect(result.isFacing).toBe(false);
@@ -559,22 +560,22 @@ describe('Mutation Killers: Direct Threshold Logic', () => {
 	it('KILLS LINE 212: armThreshold uses < not <=', () => {
 		// If not facing, isFacing = palmAngle < armThreshold
 		// Test: angle EXACTLY at armThreshold
-		
+
 		// Get landmarks and their actual angle
 		const landmarks = createFacingHand();
 		const actualAngle = calculatePalmAngle(landmarks);
-		
+
 		// Create config where armThreshold = actualAngle
 		const configAtBoundary: PalmConeConfig = {
-			armThreshold: actualAngle,      // EXACTLY at angle
+			armThreshold: actualAngle, // EXACTLY at angle
 			disarmThreshold: actualAngle + 10,
 			cancelThreshold: 90,
 		};
-		
+
 		// Start NOT facing
 		const notFacingState = { isFacing: false, lastPalmAngle: actualAngle + 20, lastUpdateTs: 0 };
 		const result = updatePalmConeGate(landmarks, notFacingState, configAtBoundary, 100);
-		
+
 		// palmAngle < armThreshold => angle < angle is FALSE => isFacing = false
 		// If mutated to <=, angle <= angle is TRUE => isFacing = true (WRONG)
 		expect(result.isFacing).toBe(false);
@@ -583,33 +584,33 @@ describe('Mutation Killers: Direct Threshold Logic', () => {
 	it('KILLS LINE 207: isFacing branch selection matters', () => {
 		// The if (currentState.isFacing) branch determines which threshold to use
 		// Use wide hysteresis band to test branch behavior
-		
+
 		// Get facing hand angle
 		const facingLandmarks = createFacingHand();
 		const facingAngle = calculatePalmAngle(facingLandmarks);
-		
+
 		// Get perpendicular hand angle
 		const perpLandmarks = createPerpendicularHand();
 		const perpAngle = calculatePalmAngle(perpLandmarks);
-		
+
 		// Create config where facing hand is in hysteresis band:
 		// armThreshold < facingAngle < disarmThreshold
 		const config: PalmConeConfig = {
-			armThreshold: facingAngle - 5,     // Below facing angle
+			armThreshold: facingAngle - 5, // Below facing angle
 			disarmThreshold: facingAngle + 20, // Well above facing angle
 			cancelThreshold: perpAngle + 10,
 		};
-		
+
 		// Test: same angle, different starting states = different outcomes
 		const facingState = { isFacing: true, lastPalmAngle: facingAngle - 10, lastUpdateTs: 0 };
 		const notFacingState = { isFacing: false, lastPalmAngle: perpAngle, lastUpdateTs: 0 };
-		
+
 		const resultFromFacing = updatePalmConeGate(facingLandmarks, facingState, config, 100);
 		const resultFromNotFacing = updatePalmConeGate(facingLandmarks, notFacingState, config, 200);
-		
+
 		// Same landmarks, but different outcomes based on previous state
 		// This kills "if (true)" or "if (false)" mutants
-		expect(resultFromFacing.isFacing).toBe(true);   // facingAngle < disarm = stays facing
+		expect(resultFromFacing.isFacing).toBe(true); // facingAngle < disarm = stays facing
 		expect(resultFromNotFacing.isFacing).toBe(false); // facingAngle > arm = stays not facing
 	});
 
@@ -620,24 +621,24 @@ describe('Mutation Killers: Direct Threshold Logic', () => {
 		const facingAngle = calculatePalmAngle(facingLandmarks);
 		const perpLandmarks = createPerpendicularHand();
 		const perpAngle = calculatePalmAngle(perpLandmarks);
-		
+
 		// Create config based on actual angles
 		const config: PalmConeConfig = {
-			armThreshold: facingAngle + 5,      // Just above facing angle
-			disarmThreshold: perpAngle - 10,    // Just below perpendicular angle  
+			armThreshold: facingAngle + 5, // Just above facing angle
+			disarmThreshold: perpAngle - 10, // Just below perpendicular angle
 			cancelThreshold: perpAngle + 10,
 		};
-		
+
 		// 1. Start not facing with perpendicular hand (high angle)
-		let state: PalmConeState = { isFacing: false, lastPalmAngle: perpAngle, lastUpdateTs: 0 };
+		let state: PalmConeGateState = { isFacing: false, lastPalmAngle: perpAngle, lastUpdateTs: 0 };
 		let result = updatePalmConeGate(perpLandmarks, state, config, 100);
 		expect(result.isFacing).toBe(false); // perpAngle > armThreshold, stays not facing
-		
+
 		// 2. Drop to facing hand (below armThreshold)
 		state = result.state;
 		result = updatePalmConeGate(facingLandmarks, state, config, 200);
 		expect(result.isFacing).toBe(true); // facingAngle < armThreshold = Arms!
-		
+
 		// 3. Go back to perpendicular (above disarmThreshold)
 		state = result.state;
 		result = updatePalmConeGate(perpLandmarks, state, config, 300);
@@ -698,10 +699,10 @@ describe('Mutation Killers: Edge Cases & Guards', () => {
 		for (let i = 0; i < 20; i++) {
 			insufficientLandmarks.push(createLandmark(0.5, 0.5, 0));
 		}
-		
+
 		const state = createPalmConeGateState();
 		const result = updatePalmConeGate(insufficientLandmarks, state, config, 100);
-		
+
 		// Should return safe defaults
 		expect(result.isFacing).toBe(false);
 		expect(result.palmAngle).toBe(180);
@@ -715,7 +716,7 @@ describe('Mutation Killers: Edge Cases & Guards', () => {
 		for (let i = 0; i < 20; i++) {
 			insufficientLandmarks.push(createLandmark(0.5, 0.5, 0));
 		}
-		
+
 		const angle = calculatePalmAngle(insufficientLandmarks);
 		expect(angle).toBe(180);
 	});
@@ -723,7 +724,7 @@ describe('Mutation Killers: Edge Cases & Guards', () => {
 	it('KILLS: updatePalmConeGate with null returns safe state with state object', () => {
 		const state = createPalmConeGateState();
 		const result = updatePalmConeGate(null as unknown as NormalizedLandmark[], state, config, 100);
-		
+
 		// Verify the returned state object has all required properties
 		expect(result.state).toBeDefined();
 		expect(typeof result.state.isFacing).toBe('boolean');
@@ -738,7 +739,7 @@ describe('Mutation Killers: Edge Cases & Guards', () => {
 		}
 		// Remove wrist (index 0)
 		landmarks[0] = undefined as unknown as NormalizedLandmark;
-		
+
 		const angle = calculatePalmAngle(landmarks);
 		expect(angle).toBe(180);
 	});
@@ -750,7 +751,7 @@ describe('Mutation Killers: Edge Cases & Guards', () => {
 		}
 		// Remove indexMCP (index 5)
 		landmarks[5] = undefined as unknown as NormalizedLandmark;
-		
+
 		const angle = calculatePalmAngle(landmarks);
 		expect(angle).toBe(180);
 	});
@@ -762,7 +763,7 @@ describe('Mutation Killers: Edge Cases & Guards', () => {
 		}
 		// Remove pinkyMCP (index 17)
 		landmarks[17] = undefined as unknown as NormalizedLandmark;
-		
+
 		const angle = calculatePalmAngle(landmarks);
 		expect(angle).toBe(180);
 	});
@@ -776,50 +777,50 @@ describe('Mutation Killers: Vector Math', () => {
 	it('KILLS: Z-component in cross product affects result', () => {
 		// The cross product uses v1.z and v2.z in multiple terms
 		// Test that changing Z values changes the palm normal direction
-		
+
 		// Base hand: palm facing camera (low Z values)
 		const baseLandmarks = createFacingHand();
 		const baseAngle = calculatePalmAngle(baseLandmarks);
-		
+
 		// Modified hand: same XY but with significant Z depth
 		const zLandmarks: NormalizedLandmark[] = [];
 		for (let i = 0; i < 21; i++) {
 			zLandmarks[i] = createLandmark(
 				baseLandmarks[i].x,
 				baseLandmarks[i].y,
-				baseLandmarks[i].z + 0.3  // Add Z depth to all points
+				baseLandmarks[i].z + 0.3, // Add Z depth to all points
 			);
 		}
 		// But change wrist Z differently to affect subtraction
 		zLandmarks[0] = createLandmark(
 			baseLandmarks[0].x,
 			baseLandmarks[0].y,
-			baseLandmarks[0].z + 0.5  // More Z offset for wrist
+			baseLandmarks[0].z + 0.5, // More Z offset for wrist
 		);
-		
+
 		const zAngle = calculatePalmAngle(zLandmarks);
-		
+
 		// The Z differences should affect the cross product terms
 		// and produce a different angle
 		expect(baseAngle).not.toBeCloseTo(zAngle, 0);
 	});
 
 	it('KILLS: magnitude calculation uses correct addition', () => {
-		// If normal.y**2 was subtracted instead of added, 
+		// If normal.y**2 was subtracted instead of added,
 		// result would be different for non-zero Y
 		const landmarks: NormalizedLandmark[] = [];
 		for (let i = 0; i < 21; i++) {
 			landmarks[i] = createLandmark(0.5, 0.5, 0);
 		}
-		
+
 		// Create geometry with significant Y component in cross product
-		landmarks[0] = createLandmark(0, 0, 0);      // WRIST
-		landmarks[5] = createLandmark(1, 0, 0);      // INDEX - along X
-		landmarks[17] = createLandmark(0, 0, 1);     // PINKY - along Z
-		
+		landmarks[0] = createLandmark(0, 0, 0); // WRIST
+		landmarks[5] = createLandmark(1, 0, 0); // INDEX - along X
+		landmarks[17] = createLandmark(0, 0, 1); // PINKY - along Z
+
 		// Cross product will have significant Y component
 		const angle = calculatePalmAngle(landmarks);
-		
+
 		// With subtraction mutation, magnitude would be sqrt(x² - y² + z²)
 		// which could give different results or NaN for large Y
 		expect(Number.isNaN(angle)).toBe(false);
@@ -833,12 +834,12 @@ describe('Mutation Killers: Vector Math', () => {
 		for (let i = 0; i < 21; i++) {
 			landmarks[i] = createLandmark(0.5, 0.5, 0);
 		}
-		
+
 		// Large-magnitude vectors
 		landmarks[0] = createLandmark(0, 0, 0);
-		landmarks[5] = createLandmark(10, 0, 0);     // 10x normal distance
-		landmarks[17] = createLandmark(0, 10, 0);    // 10x normal distance
-		
+		landmarks[5] = createLandmark(10, 0, 0); // 10x normal distance
+		landmarks[17] = createLandmark(0, 10, 0); // 10x normal distance
+
 		// Small-magnitude vectors (same ratio)
 		const smallLandmarks: NormalizedLandmark[] = [];
 		for (let i = 0; i < 21; i++) {
@@ -847,10 +848,10 @@ describe('Mutation Killers: Vector Math', () => {
 		smallLandmarks[0] = createLandmark(0, 0, 0);
 		smallLandmarks[5] = createLandmark(0.1, 0, 0);
 		smallLandmarks[17] = createLandmark(0, 0.1, 0);
-		
+
 		const angleLarge = calculatePalmAngle(landmarks);
 		const angleSmall = calculatePalmAngle(smallLandmarks);
-		
+
 		// If multiplication was used instead of division,
 		// large vectors would give huge results, small would give tiny results
 		// With correct division (normalization), angles should be similar
@@ -863,18 +864,18 @@ describe('Mutation Killers: Vector Math', () => {
 		for (let i = 0; i < 21; i++) {
 			landmarks[i] = createLandmark(0.5, 0.5, 0);
 		}
-		
+
 		// Create normal with positive and negative Y components
 		landmarks[0] = createLandmark(0, 0, 0);
 		landmarks[5] = createLandmark(1, 0, 0.5);
 		landmarks[17] = createLandmark(0, 1, 0);
-		
+
 		const angle1 = calculatePalmAngle(landmarks);
-		
+
 		// Flip Y of pinky (changes cross product Y sign)
 		landmarks[17] = createLandmark(0, -1, 0);
 		const angle2 = calculatePalmAngle(landmarks);
-		
+
 		// Angles should differ when Y component changes
 		// (this tests that Y is correctly included in dot product)
 		expect(angle1).not.toBe(angle2);
@@ -886,18 +887,18 @@ describe('Mutation Killers: Vector Math', () => {
 		for (let i = 0; i < 21; i++) {
 			landmarks[i] = createLandmark(0.5, 0.5, 0);
 		}
-		
+
 		// Create clear Z-axis aligned normal
 		landmarks[0] = createLandmark(0, 0, 0);
 		landmarks[5] = createLandmark(1, 0, 0);
 		landmarks[17] = createLandmark(0, 1, 0);
-		
+
 		// Cross product: (1,0,0) × (0,1,0) = (0,0,1) = Z-axis
 		// Dot with camera (0,0,-1) = -1
 		// acos(-1) = 180°
-		
+
 		const angle = calculatePalmAngle(landmarks);
-		
+
 		// If division was used, result would be division by -1 = different
 		// Camera axis Z is -1, so multiplying gives -Z, dividing would give -Z*-1 = Z
 		expect(angle).toBeGreaterThan(90); // Palm facing away

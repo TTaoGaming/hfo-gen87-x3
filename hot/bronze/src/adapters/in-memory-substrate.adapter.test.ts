@@ -9,9 +9,9 @@
  * @source ports.ts lines 370-400
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { InMemorySubstrateAdapter } from './in-memory-substrate.adapter.js';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { SubstratePort } from '../contracts/ports.js';
+import { InMemorySubstrateAdapter } from './in-memory-substrate.adapter.js';
 
 describe('InMemorySubstrateAdapter', () => {
 	let adapter: InMemorySubstrateAdapter;

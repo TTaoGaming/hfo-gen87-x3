@@ -11,10 +11,8 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { AdapterTarget, FSMAction } from '../contracts/schemas.js';
 import {
-	DOMAdapter,
-	MockDOMAdapter,
-	PointerEventAdapter,
-	type AdapterPort,
+    MockDOMAdapter,
+    PointerEventAdapter
 } from './pointer-event.adapter.js';
 
 // ============================================================================

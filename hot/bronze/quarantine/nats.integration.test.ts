@@ -3,12 +3,20 @@
  * =====================
  *
  * Proves NATS pub/sub is working for HFO stigmergy.
+ *
+ * QUARANTINED: Requires NATS server running.
+ * Start with: docker-compose up -d nats
+ *
+ * Set SKIP_NATS=true to skip these tests.
  */
 
 import { type NatsConnection, StringCodec, connect } from 'nats';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-describe('NATS Integration', () => {
+// Skip if NATS not available
+const SKIP_NATS = process.env.SKIP_NATS === 'true';
+
+describe.skipIf(SKIP_NATS)('NATS Integration', () => {
 	let nc: NatsConnection;
 	const sc = StringCodec();
 
@@ -17,7 +25,7 @@ describe('NATS Integration', () => {
 			nc = await connect({ servers: 'nats://localhost:4222' });
 			console.log('Connected to NATS:', nc.getServer());
 		} catch (err) {
-			console.error('NATS connection failed:', err);
+			console.error('NATS connection failed. Start with: docker-compose up -d nats');
 			throw err;
 		}
 	});

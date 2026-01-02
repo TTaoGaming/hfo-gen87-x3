@@ -1,0 +1,67 @@
+# Docker Compose for HFO Gen87.X3 Development
+# Provides NATS server for stigmergy substrate
+
+version: '3.8'
+
+services:
+  nats:
+    image: nats:2.10-alpine
+    container_name: hfo-nats
+    ports:
+      - "4222:4222"   # Client connections
+      - "8222:8222"   # HTTP monitoring
+      - "6222:6222"   # Cluster routing
+    command: 
+      - "--js"                    # Enable JetStream
+      - "--http_port=8222"        # HTTP monitoring
+      - "--name=hfo-nats"         # Server name
+    volumes:
+      - nats-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8222/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # NATS with WebSocket for browser clients (optional)
+  nats-ws:
+    image: nats:2.10-alpine
+    container_name: hfo-nats-ws
+    ports:
+      - "4223:4222"   # Client connections
+      - "8223:8222"   # HTTP monitoring  
+      - "8080:8080"   # WebSocket port
+    command:
+      - "--js"
+      - "--http_port=8222"
+      - "--name=hfo-nats-ws"
+      - "--config=/etc/nats/nats.conf"
+    volumes:
+      - ./nats.conf:/etc/nats/nats.conf:ro
+      - nats-ws-data:/data
+    restart: unless-stopped
+    profiles:
+      - websocket
+
+volumes:
+  nats-data:
+  nats-ws-data:
+
+# Usage:
+# ------
+# Start NATS (basic):
+#   docker-compose up -d nats
+#
+# Start with WebSocket support:
+#   docker-compose --profile websocket up -d
+#
+# Check status:
+#   curl http://localhost:8222/healthz
+#   curl http://localhost:8222/varz
+#
+# Stop:
+#   docker-compose down
+#
+# View logs:
+#   docker-compose logs -f nats

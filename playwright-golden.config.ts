@@ -1,26 +1,26 @@
 /**
  * Playwright Config for Golden Master E2E Tests
  *
- * Gen87.X3 | Uses existing demo server on port 8081
+ * Gen87.X3 | Auto-starts Vite server, compiles TypeScript, runs tests
+ * 
+ * ONE COMMAND: npx playwright test --config=playwright-golden.config.ts
  */
 import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
-	testDir: './e2e/golden-master',
-	testMatch: ['**/*.spec.ts'],
-	fullyParallel: true,
+	testDir: './e2e',
+	testMatch: ['golden-master.spec.ts'],
+	fullyParallel: false,
 	forbidOnly: !!process.env.CI,
-	retries: process.env.CI ? 2 : 0,
-	workers: 1, // Sequential for golden tests
-	reporter: [
-		['html', { outputFolder: 'playwright-report-golden' }],
-		['list'],
-	],
+	retries: 0,
+	workers: 1,
+	reporter: [['list']],
+	timeout: 30000,
 	use: {
-		baseURL: 'http://localhost:8081',
-		trace: 'on-first-retry',
+		baseURL: 'http://localhost:8082',
+		trace: 'off',
 		screenshot: 'only-on-failure',
-		video: 'retain-on-failure',
+		video: 'off',
 	},
 	projects: [
 		{
@@ -28,5 +28,12 @@ export default defineConfig({
 			use: { ...devices['Desktop Chrome'] },
 		},
 	],
-	// No webServer - assumes demo server is already running on 8081
+	webServer: {
+		command: 'npx vite --config demos/vite.config.ts --port 8082',
+		url: 'http://localhost:8082',
+		reuseExistingServer: true,
+		timeout: 30000,
+		stdout: 'ignore',
+		stderr: 'pipe',
+	},
 });

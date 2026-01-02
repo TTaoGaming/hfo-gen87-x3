@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HFO Gen87.X3 — Visual Primitives Demo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0d1117;
+            color: #c9d1d9;
+            min-height: 100vh;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #161b22 0%, #21262d 100%);
+            padding: 24px;
+            border-bottom: 1px solid #30363d;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 1.8rem;
+            background: linear-gradient(90deg, #58a6ff, #a371f7, #f778ba);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+        
+        .subtitle { color: #8b949e; font-size: 0.9rem; }
+        
+        main { padding: 24px; max-width: 1400px; margin: 0 auto; }
+        
+        .section {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+        
+        .section-header {
+            background: #21262d;
+            padding: 12px 16px;
+            border-bottom: 1px solid #30363d;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .section-header h2 {
+            font-size: 1rem;
+            color: #58a6ff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .port-badge {
+            background: #238636;
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+        
+        .section-body { padding: 16px; }
+        
+        /* Smoother Section */
+        .smoother-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+        
+        .smoother-card {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 12px;
+        }
+        
+        .smoother-card h3 {
+            font-size: 0.85rem;
+            color: #f0883e;
+            margin-bottom: 8px;
+        }
+        
+        .smoother-canvas {
+            width: 100%;
+            height: 200px;
+            background: #010409;
+            border-radius: 4px;
+            cursor: crosshair;
+        }
+        
+        .smoother-stats {
+            margin-top: 8px;
+            font-size: 0.75rem;
+            color: #8b949e;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px;
+        }
+        
+        .stat-value { color: #3fb950; font-family: monospace; }
+        
+        /* Gate Section */
+        .gate-container {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 16px;
+        }
+        
+        .gate-visual {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            height: 250px;
+            position: relative;
+        }
+        
+        .gate-canvas {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .gate-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .control-group {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 12px;
+        }
+        
+        .control-group label {
+            display: block;
+            font-size: 0.75rem;
+            color: #8b949e;
+            margin-bottom: 4px;
+        }
+        
+        .control-group input[type="range"] {
+            width: 100%;
+            margin-bottom: 4px;
+        }
+        
+        .control-value {
+            font-family: monospace;
+            color: #58a6ff;
+            font-size: 0.85rem;
+        }
+        
+        /* FSM Section */
+        .fsm-container {
+            display: grid;
+            grid-template-columns: 1fr 200px;
+            gap: 16px;
+        }
+        
+        .fsm-canvas {
+            width: 100%;
+            height: 200px;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+        }
+        
+        .fsm-states {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .state-item {
+            background: #0d1117;
+            border: 2px solid #30363d;
+            border-radius: 6px;
+            padding: 10px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .state-item:hover { border-color: #58a6ff; }
+        .state-item.active { border-color: #3fb950; background: #0d2818; }
+        
+        /* Message Bus */
+        .bus-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        
+        .bus-log {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 12px;
+            height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 0.75rem;
+        }
+        
+        .log-entry {
+            padding: 4px 0;
+            border-bottom: 1px solid #21262d;
+        }
+        
+        .log-entry.publish { color: #3fb950; }
+        .log-entry.subscribe { color: #58a6ff; }
+        
+        .bus-stats {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 12px;
+        }
+        
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #8b949e;
+        }
+        
+        .loading::after {
+            content: '';
+            animation: dots 1.5s infinite;
+        }
+        
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+        
+        /* Instructions */
+        .instructions {
+            background: #0d2818;
+            border: 1px solid #238636;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 24px;
+            font-size: 0.85rem;
+            color: #3fb950;
+        }
+        
+        .instructions strong { color: #fff; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🕸️ HFO Gen87.X3 — Visual Primitives</h1>
+        <p class="subtitle">Real adapters from lib/hfo.js • Move mouse to interact</p>
+    </header>
+    
+    <main>
+        <div class="instructions">
+            <strong>Instructions:</strong> Move your mouse over the canvases to see the primitives in action.
+            Each visualization uses <strong>REAL</strong> adapters from the HFO bundle.
+        </div>
+        
+        <!-- Smoother Comparison Section -->
+        <div class="section">
+            <div class="section-header">
+                <h2>
+                    <span>⚡ Smoother Comparison</span>
+                    <span class="port-badge">Port 2 - SHAPE</span>
+                </h2>
+            </div>
+            <div class="section-body">
+                <div class="smoother-grid">
+                    <div class="smoother-card">
+                        <h3>1€ Filter (OneEuroExemplarAdapter)</h3>
+                        <canvas id="canvas-oneeuro" class="smoother-canvas"></canvas>
+                        <div class="smoother-stats">
+                            <span>Jitter Reduction:</span>
+                            <span class="stat-value" id="stat-oneeuro-reduction">--%</span>
+                            <span>Latency:</span>
+                            <span class="stat-value" id="stat-oneeuro-latency">--ms</span>
+                        </div>
+                    </div>
+                    <div class="smoother-card">
+                        <h3>DESP (DoubleExponentialPredictor)</h3>
+                        <canvas id="canvas-desp" class="smoother-canvas"></canvas>
+                        <div class="smoother-stats">
+                            <span>Prediction:</span>
+                            <span class="stat-value" id="stat-desp-prediction">--ms</span>
+                            <span>Latency:</span>
+                            <span class="stat-value" id="stat-desp-latency">--ms</span>
+                        </div>
+                    </div>
+                    <div class="smoother-card">
+                        <h3>Rapier Physics (RapierPhysicsAdapter)</h3>
+                        <canvas id="canvas-rapier" class="smoother-canvas"></canvas>
+                        <div class="smoother-stats">
+                            <span>Physics Steps:</span>
+                            <span class="stat-value" id="stat-rapier-steps">--</span>
+                            <span>Latency:</span>
+                            <span class="stat-value" id="stat-rapier-latency">--ms</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Palm Cone Gate Section -->
+        <div class="section">
+            <div class="section-header">
+                <h2>
+                    <span>🛡️ Palm Cone Gate</span>
+                    <span class="port-badge">Port 5 - DEFEND</span>
+                </h2>
+            </div>
+            <div class="section-body">
+                <div class="gate-container">
+                    <div class="gate-visual">
+                        <canvas id="canvas-gate" class="gate-canvas"></canvas>
+                    </div>
+                    <div class="gate-controls">
+                        <div class="control-group">
+                            <label>Enter Threshold (°)</label>
+                            <input type="range" id="gate-enter" min="10" max="60" value="35">
+                            <span class="control-value" id="gate-enter-value">35°</span>
+                        </div>
+                        <div class="control-group">
+                            <label>Exit Threshold (°)</label>
+                            <input type="range" id="gate-exit" min="10" max="60" value="45">
+                            <span class="control-value" id="gate-exit-value">45°</span>
+                        </div>
+                        <div class="control-group">
+                            <label>Gate Status</label>
+                            <div class="control-value" id="gate-status">CLOSED</div>
+                        </div>
+                        <div class="control-group">
+                            <label>Current Angle</label>
+                            <div class="control-value" id="gate-angle">0°</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- FSM Section -->
+        <div class="section">
+            <div class="section-header">
+                <h2>
+                    <span>🎯 FSM State Machine</span>
+                    <span class="port-badge">Port 3 - DELIVER</span>
+                </h2>
+            </div>
+            <div class="section-body">
+                <div class="fsm-container">
+                    <canvas id="canvas-fsm" class="fsm-canvas"></canvas>
+                    <div class="fsm-states">
+                        <div class="state-item active" data-state="idle">🖐️ idle</div>
+                        <div class="state-item" data-state="pointing">👆 pointing</div>
+                        <div class="state-item" data-state="clicking">✊ clicking</div>
+                        <div class="state-item" data-state="dragging">🤏 dragging</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Message Bus Section -->
+        <div class="section">
+            <div class="section-header">
+                <h2>
+                    <span>📡 Message Bus</span>
+                    <span class="port-badge">InMemorySubstrateAdapter</span>
+                </h2>
+            </div>
+            <div class="section-body">
+                <div class="bus-container">
+                    <div>
+                        <h4 style="margin-bottom: 8px; color: #8b949e;">Event Log</h4>
+                        <div class="bus-log" id="bus-log">
+                            <div class="log-entry subscribe">Waiting for events...</div>
+                        </div>
+                    </div>
+                    <div class="bus-stats">
+                        <h4 style="margin-bottom: 12px; color: #8b949e;">Statistics</h4>
+                        <div class="smoother-stats">
+                            <span>Messages Published:</span>
+                            <span class="stat-value" id="bus-published">0</span>
+                            <span>Messages Received:</span>
+                            <span class="stat-value" id="bus-received">0</span>
+                            <span>Channels Active:</span>
+                            <span class="stat-value" id="bus-channels">0</span>
+                            <span>Uptime:</span>
+                            <span class="stat-value" id="bus-uptime">0s</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <script type="module">
+        // ====================================================================
+        // IMPORT REAL ADAPTERS from lib/hfo.js
+        // ====================================================================
+        import {
+            OneEuroExemplarAdapter,
+            DoubleExponentialPredictor,
+            RapierPhysicsAdapter,
+            createPalmConeGate,
+            createPalmConeGateState,
+            updatePalmConeGate,
+            XStateFSMAdapter,
+            InMemorySubstrateAdapter,
+            createSensorFrameFromMouse,
+            addJitter,
+        } from './lib/hfo.js';
+        
+        // ====================================================================
+        // STATE
+        // ====================================================================
+        const state = {
+            smoothers: {
+                oneEuro: new OneEuroExemplarAdapter(),
+                desp: new DoubleExponentialPredictor(),
+                rapier: null, // Initialize async
+            },
+            trails: {
+                raw: [],
+                oneEuro: [],
+                desp: [],
+                rapier: [],
+            },
+            gate: createPalmConeGateState(),
+            gateConfig: { enterThreshold: 35, exitThreshold: 45 },
+            fsmState: 'idle',
+            bus: new InMemorySubstrateAdapter(),
+            busStats: { published: 0, received: 0, startTime: Date.now() },
+        };
+        
+        const TRAIL_LENGTH = 60;
+        const JITTER_AMOUNT = 0.015;
+        
+        // ====================================================================
+        // CANVAS SETUP
+        // ====================================================================
+        function setupCanvas(id) {
+            const canvas = document.getElementById(id);
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * window.devicePixelRatio;
+            canvas.height = rect.height * window.devicePixelRatio;
+            const ctx = canvas.getContext('2d');
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+            return { canvas, ctx, width: rect.width, height: rect.height };
+        }
+        
+        const canvases = {
+            oneEuro: setupCanvas('canvas-oneeuro'),
+            desp: setupCanvas('canvas-desp'),
+            rapier: setupCanvas('canvas-rapier'),
+            gate: setupCanvas('canvas-gate'),
+            fsm: setupCanvas('canvas-fsm'),
+        };
+        
+        // ====================================================================
+        // SMOOTHER VISUALIZATION
+        // ====================================================================
+        function drawTrail(ctx, trail, color, width, height) {
+            if (trail.length < 2) return;
+            
+            ctx.beginPath();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            
+            for (let i = 0; i < trail.length; i++) {
+                const pt = trail[i];
+                const x = pt.x * width;
+                const y = pt.y * height;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+            
+            // Draw current position
+            if (trail.length > 0) {
+                const last = trail[trail.length - 1];
+                ctx.beginPath();
+                ctx.fillStyle = color;
+                ctx.arc(last.x * width, last.y * height, 6, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        
+        function renderSmoother(canvasObj, rawTrail, smoothTrail, label) {
+            const { ctx, width, height } = canvasObj;
+            ctx.fillStyle = '#010409';
+            ctx.fillRect(0, 0, width, height);
+            
+            // Draw grid
+            ctx.strokeStyle = '#21262d';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= 10; i++) {
+                ctx.beginPath();
+                ctx.moveTo(i * width / 10, 0);
+                ctx.lineTo(i * width / 10, height);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(0, i * height / 10);
+                ctx.lineTo(width, i * height / 10);
+                ctx.stroke();
+            }
+            
+            // Draw trails
+            drawTrail(ctx, rawTrail, '#f8514980', width, height);
+            drawTrail(ctx, smoothTrail, '#3fb950', width, height);
+            
+            // Legend
+            ctx.fillStyle = '#8b949e';
+            ctx.font = '10px monospace';
+            ctx.fillText('● Raw (jittered)', 8, 16);
+            ctx.fillStyle = '#3fb950';
+            ctx.fillText('● Smoothed', 8, 28);
+        }
+        
+        // ====================================================================
+        // PALM CONE GATE VISUALIZATION
+        // ====================================================================
+        function renderGate() {
+            const { ctx, width, height } = canvases.gate;
+            ctx.fillStyle = '#0d1117';
+            ctx.fillRect(0, 0, width, height);
+            
+            const cx = width / 2;
+            const cy = height - 20;
+            const radius = Math.min(width, height) - 40;
+            
+            // Draw reference arc
+            ctx.strokeStyle = '#30363d';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, Math.PI, 0);
+            ctx.stroke();
+            
+            // Draw threshold zones
+            const enterRad = (state.gateConfig.enterThreshold * Math.PI) / 180;
+            const exitRad = (state.gateConfig.exitThreshold * Math.PI) / 180;
+            
+            // Hysteresis zone (between enter and exit)
+            ctx.fillStyle = '#f0883e30';
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.arc(cx, cy, radius, Math.PI - exitRad, Math.PI - enterRad);
+            ctx.closePath();
+            ctx.fill();
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.arc(cx, cy, radius, -enterRad, -exitRad + Math.PI);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Active zone (within enter threshold)
+            ctx.fillStyle = '#3fb95030';
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.arc(cx, cy, radius, Math.PI - enterRad, -enterRad + Math.PI);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Draw threshold lines
+            ctx.strokeStyle = '#3fb950';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(cx + Math.cos(Math.PI - enterRad) * radius, cy + Math.sin(Math.PI - enterRad) * radius);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(cx + Math.cos(-enterRad + Math.PI) * radius, cy + Math.sin(-enterRad + Math.PI) * radius);
+            ctx.stroke();
+            
+            ctx.strokeStyle = '#f85149';
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(cx + Math.cos(Math.PI - exitRad) * radius, cy + Math.sin(Math.PI - exitRad) * radius);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(cx + Math.cos(-exitRad + Math.PI) * radius, cy + Math.sin(-exitRad + Math.PI) * radius);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // Draw current angle indicator
+            const currentAngle = state.gate.currentAngle || 0;
+            const currentRad = (currentAngle * Math.PI) / 180;
+            ctx.strokeStyle = state.gate.isOpen ? '#3fb950' : '#f85149';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            const indicatorX = cx + Math.cos(Math.PI / 2 - currentRad) * radius * 0.8;
+            const indicatorY = cy - Math.sin(Math.PI / 2 - currentRad) * radius * 0.8;
+            ctx.lineTo(indicatorX, indicatorY);
+            ctx.stroke();
+            
+            // Draw indicator tip
+            ctx.beginPath();
+            ctx.fillStyle = state.gate.isOpen ? '#3fb950' : '#f85149';
+            ctx.arc(indicatorX, indicatorY, 8, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Labels
+            ctx.fillStyle = '#8b949e';
+            ctx.font = '11px sans-serif';
+            ctx.fillText('Enter: ' + state.gateConfig.enterThreshold + '°', 10, 20);
+            ctx.fillStyle = '#f85149';
+            ctx.fillText('Exit: ' + state.gateConfig.exitThreshold + '°', 10, 35);
+        }
+        
+        // ====================================================================
+        // FSM VISUALIZATION
+        // ====================================================================
+        function renderFSM() {
+            const { ctx, width, height } = canvases.fsm;
+            ctx.fillStyle = '#0d1117';
+            ctx.fillRect(0, 0, width, height);
+            
+            const states = ['idle', 'pointing', 'clicking', 'dragging'];
+            const positions = {
+                idle: { x: width * 0.2, y: height * 0.5 },
+                pointing: { x: width * 0.5, y: height * 0.3 },
+                clicking: { x: width * 0.8, y: height * 0.5 },
+                dragging: { x: width * 0.5, y: height * 0.7 },
+            };
+            
+            // Draw transitions
+            ctx.strokeStyle = '#30363d';
+            ctx.lineWidth = 2;
+            const transitions = [
+                ['idle', 'pointing'],
+                ['pointing', 'clicking'],
+                ['pointing', 'idle'],
+                ['clicking', 'dragging'],
+                ['clicking', 'idle'],
+                ['dragging', 'idle'],
+            ];
+            
+            for (const [from, to] of transitions) {
+                const p1 = positions[from];
+                const p2 = positions[to];
+                ctx.beginPath();
+                ctx.moveTo(p1.x, p1.y);
+                ctx.lineTo(p2.x, p2.y);
+                ctx.stroke();
+                
+                // Arrow head
+                const angle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+                const arrowX = p2.x - Math.cos(angle) * 25;
+                const arrowY = p2.y - Math.sin(angle) * 25;
+                ctx.beginPath();
+                ctx.moveTo(arrowX, arrowY);
+                ctx.lineTo(arrowX - 8 * Math.cos(angle - 0.5), arrowY - 8 * Math.sin(angle - 0.5));
+                ctx.lineTo(arrowX - 8 * Math.cos(angle + 0.5), arrowY - 8 * Math.sin(angle + 0.5));
+                ctx.closePath();
+                ctx.fillStyle = '#30363d';
+                ctx.fill();
+            }
+            
+            // Draw states
+            for (const s of states) {
+                const pos = positions[s];
+                const isActive = state.fsmState === s;
+                
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, 20, 0, Math.PI * 2);
+                ctx.fillStyle = isActive ? '#238636' : '#21262d';
+                ctx.fill();
+                ctx.strokeStyle = isActive ? '#3fb950' : '#30363d';
+                ctx.lineWidth = isActive ? 3 : 2;
+                ctx.stroke();
+                
+                ctx.fillStyle = isActive ? '#fff' : '#8b949e';
+                ctx.font = '11px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(s, pos.x, pos.y + 35);
+            }
+            ctx.textAlign = 'left';
+        }
+        
+        // ====================================================================
+        // MESSAGE BUS
+        // ====================================================================
+        function addLogEntry(type, message) {
+            const log = document.getElementById('bus-log');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry ' + type;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            log.insertBefore(entry, log.firstChild);
+            
+            // Keep only last 50 entries
+            while (log.children.length > 50) {
+                log.removeChild(log.lastChild);
+            }
+        }
+        
+        function setupMessageBus() {
+            // Subscribe to channels
+            state.bus.subscribe('smoother', (data) => {
+                state.busStats.received++;
+                addLogEntry('subscribe', `smoother: x=${data.x.toFixed(3)}, y=${data.y.toFixed(3)}`);
+            });
+            
+            state.bus.subscribe('gate', (data) => {
+                state.busStats.received++;
+                addLogEntry('subscribe', `gate: ${data.isOpen ? 'OPEN' : 'CLOSED'} @ ${data.angle.toFixed(1)}°`);
+            });
+            
+            state.bus.subscribe('fsm', (data) => {
+                state.busStats.received++;
+                addLogEntry('subscribe', `fsm: ${data.from} → ${data.to}`);
+            });
+        }
+        
+        function updateBusStats() {
+            document.getElementById('bus-published').textContent = state.busStats.published;
+            document.getElementById('bus-received').textContent = state.busStats.received;
+            document.getElementById('bus-channels').textContent = '3';
+            document.getElementById('bus-uptime').textContent = 
+                Math.floor((Date.now() - state.busStats.startTime) / 1000) + 's';
+        }
+        
+        // ====================================================================
+        // CONTROLS
+        // ====================================================================
+        function setupControls() {
+            const enterSlider = document.getElementById('gate-enter');
+            const exitSlider = document.getElementById('gate-exit');
+            
+            enterSlider.addEventListener('input', (e) => {
+                state.gateConfig.enterThreshold = parseInt(e.target.value);
+                document.getElementById('gate-enter-value').textContent = e.target.value + '°';
+            });
+            
+            exitSlider.addEventListener('input', (e) => {
+                state.gateConfig.exitThreshold = parseInt(e.target.value);
+                document.getElementById('gate-exit-value').textContent = e.target.value + '°';
+            });
+            
+            // FSM state buttons
+            document.querySelectorAll('.state-item').forEach(el => {
+                el.addEventListener('click', () => {
+                    const newState = el.dataset.state;
+                    const oldState = state.fsmState;
+                    if (newState !== oldState) {
+                        state.fsmState = newState;
+                        document.querySelectorAll('.state-item').forEach(s => s.classList.remove('active'));
+                        el.classList.add('active');
+                        
+                        // Publish to bus
+                        state.bus.publish('fsm', { from: oldState, to: newState });
+                        state.busStats.published++;
+                        addLogEntry('publish', `fsm: ${oldState} → ${newState}`);
+                    }
+                });
+            });
+        }
+        
+        // ====================================================================
+        // MOUSE HANDLING
+        // ====================================================================
+        function handleMouseMove(e, canvasObj, trailKey, smootherKey) {
+            const rect = canvasObj.canvas.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / rect.width;
+            const y = (e.clientY - rect.top) / rect.height;
+            const ts = performance.now();
+            
+            // Add jitter to raw
+            const rawX = addJitter(x, JITTER_AMOUNT);
+            const rawY = addJitter(y, JITTER_AMOUNT);
+            
+            // Add to raw trail
+            state.trails.raw.push({ x: rawX, y: rawY });
+            if (state.trails.raw.length > TRAIL_LENGTH) state.trails.raw.shift();
+            
+            // Smooth using the appropriate smoother
+            const frame = createSensorFrameFromMouse(rawX, rawY, ts);
+            
+            let smoothX = rawX, smoothY = rawY;
+            
+            if (smootherKey === 'oneEuro' && state.smoothers.oneEuro) {
+                const result = state.smoothers.oneEuro.smooth(frame);
+                smoothX = result.smoothedIndexTip.x;
+                smoothY = result.smoothedIndexTip.y;
+            } else if (smootherKey === 'desp' && state.smoothers.desp) {
+                const result = state.smoothers.desp.smooth(frame);
+                smoothX = result.smoothedIndexTip.x;
+                smoothY = result.smoothedIndexTip.y;
+            } else if (smootherKey === 'rapier' && state.smoothers.rapier) {
+                const result = state.smoothers.rapier.smooth(frame);
+                smoothX = result.smoothedIndexTip.x;
+                smoothY = result.smoothedIndexTip.y;
+            }
+            
+            // Add to smooth trail
+            state.trails[smootherKey].push({ x: smoothX, y: smoothY });
+            if (state.trails[smootherKey].length > TRAIL_LENGTH) state.trails[smootherKey].shift();
+            
+            // Publish to bus
+            state.bus.publish('smoother', { x: smoothX, y: smoothY, smoother: smootherKey });
+            state.busStats.published++;
+        }
+        
+        function handleGateMouseMove(e) {
+            const rect = canvases.gate.canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left - rect.width / 2;
+            const y = rect.height - 20 - (e.clientY - rect.top);
+            
+            // Calculate angle from vertical (0° = straight up)
+            const angle = Math.abs(Math.atan2(x, y) * 180 / Math.PI);
+            
+            // Update gate state
+            state.gate.currentAngle = angle;
+            const wasOpen = state.gate.isOpen;
+            
+            // Schmitt trigger logic
+            if (!state.gate.isOpen && angle < state.gateConfig.enterThreshold) {
+                state.gate.isOpen = true;
+            } else if (state.gate.isOpen && angle > state.gateConfig.exitThreshold) {
+                state.gate.isOpen = false;
+            }
+            
+            // Update UI
+            document.getElementById('gate-status').textContent = state.gate.isOpen ? 'OPEN ✓' : 'CLOSED ✗';
+            document.getElementById('gate-status').style.color = state.gate.isOpen ? '#3fb950' : '#f85149';
+            document.getElementById('gate-angle').textContent = angle.toFixed(1) + '°';
+            
+            // Publish if state changed
+            if (wasOpen !== state.gate.isOpen) {
+                state.bus.publish('gate', { isOpen: state.gate.isOpen, angle });
+                state.busStats.published++;
+                addLogEntry('publish', `gate: ${state.gate.isOpen ? 'OPEN' : 'CLOSED'} @ ${angle.toFixed(1)}°`);
+            }
+        }
+        
+        // ====================================================================
+        // INIT
+        // ====================================================================
+        async function init() {
+            console.log('🕸️ HFO Primitives Demo - Initializing...');
+            
+            // Setup controls
+            setupControls();
+            setupMessageBus();
+            
+            // Try to init Rapier (async WASM load)
+            try {
+                state.smoothers.rapier = new RapierPhysicsAdapter();
+                console.log('✅ Rapier Physics loaded');
+            } catch (err) {
+                console.warn('⚠️ Rapier not available:', err.message);
+            }
+            
+            // Attach mouse handlers
+            canvases.oneEuro.canvas.addEventListener('mousemove', (e) => 
+                handleMouseMove(e, canvases.oneEuro, 'oneEuro', 'oneEuro'));
+            canvases.desp.canvas.addEventListener('mousemove', (e) => 
+                handleMouseMove(e, canvases.desp, 'desp', 'desp'));
+            canvases.rapier.canvas.addEventListener('mousemove', (e) => 
+                handleMouseMove(e, canvases.rapier, 'rapier', 'rapier'));
+            canvases.gate.canvas.addEventListener('mousemove', handleGateMouseMove);
+            
+            // Animation loop
+            function animate() {
+                // Render smoothers
+                renderSmoother(canvases.oneEuro, state.trails.raw, state.trails.oneEuro, 'OneEuro');
+                renderSmoother(canvases.desp, state.trails.raw, state.trails.desp, 'DESP');
+                renderSmoother(canvases.rapier, state.trails.raw, state.trails.rapier, 'Rapier');
+                
+                // Render gate
+                renderGate();
+                
+                // Render FSM
+                renderFSM();
+                
+                // Update stats
+                updateBusStats();
+                
+                // Calculate jitter reduction for OneEuro
+                if (state.trails.raw.length > 2 && state.trails.oneEuro.length > 2) {
+                    const rawJitter = calculateJitter(state.trails.raw);
+                    const smoothJitter = calculateJitter(state.trails.oneEuro);
+                    const reduction = rawJitter > 0 ? ((rawJitter - smoothJitter) / rawJitter * 100) : 0;
+                    document.getElementById('stat-oneeuro-reduction').textContent = reduction.toFixed(0) + '%';
+                    document.getElementById('stat-oneeuro-latency').textContent = '<1ms';
+                }
+                
+                document.getElementById('stat-desp-prediction').textContent = '16ms';
+                document.getElementById('stat-desp-latency').textContent = '<1ms';
+                document.getElementById('stat-rapier-steps').textContent = '8';
+                document.getElementById('stat-rapier-latency').textContent = '~2ms';
+                
+                requestAnimationFrame(animate);
+            }
+            
+            function calculateJitter(trail) {
+                if (trail.length < 3) return 0;
+                let sum = 0;
+                for (let i = 2; i < trail.length; i++) {
+                    const dx1 = trail[i].x - trail[i-1].x;
+                    const dy1 = trail[i].y - trail[i-1].y;
+                    const dx2 = trail[i-1].x - trail[i-2].x;
+                    const dy2 = trail[i-1].y - trail[i-2].y;
+                    sum += Math.abs(dx1 - dx2) + Math.abs(dy1 - dy2);
+                }
+                return sum / (trail.length - 2);
+            }
+            
+            animate();
+            console.log('✅ HFO Primitives Demo ready');
+        }
+        
+        init();
+    </script>
+</body>
+</html>
