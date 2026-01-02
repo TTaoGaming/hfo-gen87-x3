@@ -1,4 +1,4 @@
-import { defineConfig, devices } from '@playwright/test';
+/**\n * @deprecated Use playwright-unified.config.ts instead\n * \n * WARNING: This config references stale sandbox/ paths that no longer exist.\n * The webServer entries for sandbox/demo-golden and sandbox/demo-real are broken.\n * See config/playwright/README.md for guidance.\n */\nimport { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
 	testDir: './',

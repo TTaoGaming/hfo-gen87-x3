@@ -1,3 +1,8 @@
+/**
+ * @deprecated Use playwright-unified.config.ts instead
+ * This config is for a specific test that could use unified config.
+ * See config/playwright/README.md for guidance.
+ */
 import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({

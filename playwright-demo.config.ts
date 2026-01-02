@@ -1,3 +1,8 @@
+/**
+ * @deprecated Use playwright-unified.config.ts instead
+ * This config references stale paths and non-standard ports.
+ * See config/playwright/README.md for guidance.
+ */
 import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({

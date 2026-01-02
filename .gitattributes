@@ -1,0 +1,48 @@
+# Git Attributes for HFO Gen87.X3
+# Protection rules for medallion architecture
+
+# ============================================================================
+# GOLD TIER - Binary merge (prevents accidental merges)
+# ============================================================================
+hot/gold/** merge=binary
+MANIFEST.md merge=binary
+AGENTS.md merge=binary
+
+# ============================================================================
+# SILVER TIER - Require review
+# ============================================================================
+hot/silver/** linguist-documentation
+
+# ============================================================================
+# ARCHIVES - Read-only (linguist marks as generated)
+# ============================================================================
+cold/** linguist-generated
+demos/archive/** linguist-generated
+
+# ============================================================================
+# LARGE FILES (warn on diff)
+# ============================================================================
+demos/lib/hfo.js binary
+*.wasm binary
+
+# ============================================================================
+# CONFIGURATION FILES - Track carefully
+# ============================================================================
+package.json merge=npm
+package-lock.json merge=npm
+*.config.ts linguist-language=TypeScript
+*.config.mjs linguist-language=JavaScript
+
+# ============================================================================
+# SIGNALS / DATA - Mark as generated
+# ============================================================================
+obsidianblackboard.jsonl linguist-generated
+*.jsonl linguist-generated
+
+# ============================================================================
+# SCREENSHOTS / REPORTS - Mark as generated
+# ============================================================================
+playwright-report/** linguist-generated
+.playwright-mcp/screenshots/** linguist-generated
+screenshots/** linguist-generated
+test-results/** linguist-generated

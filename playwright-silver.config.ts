@@ -1,6 +1,10 @@
 /**
+ * @deprecated Use playwright-unified.config.ts instead
+ * Silver layer tests moved to e2e/ folder.
+ * See config/playwright/README.md for guidance.
+ * 
+ * Original description:
  * Playwright Configuration for HFO Silver Demo
- *
  * Gen87.X3 | Silver Layer E2E Testing
  */
 import { defineConfig, devices } from '@playwright/test';

@@ -235,7 +235,8 @@ test.describe('Golden Master Visual Tests', () => {
 
 test.describe('Showcase Launcher (GoldenLayout Shell)', () => {
   test('launcher page loads with GoldenLayoutShellAdapter tiles', async ({ page }) => {
-    await page.goto(`${BASE_URL}/demos/showcase-launcher.html`);
+    // Note: Vite serves from demos/ root, so path is /showcase-launcher.html not /demos/
+    await page.goto(`${BASE_URL}/showcase-launcher.html`);
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(2000); // Wait for shell initialization
     
@@ -249,7 +250,7 @@ test.describe('Showcase Launcher (GoldenLayout Shell)', () => {
   });
 
   test('showcase panels render content', async ({ page }) => {
-    await page.goto(`${BASE_URL}/demos/showcase-launcher.html`);
+    await page.goto(`${BASE_URL}/showcase-launcher.html`);
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(2000);
     

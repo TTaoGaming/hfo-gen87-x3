@@ -1,3 +1,8 @@
+/**
+ * @deprecated Use playwright-unified.config.ts instead
+ * This config uses non-standard port 8088.
+ * See config/playwright/README.md for guidance.
+ */
 import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
