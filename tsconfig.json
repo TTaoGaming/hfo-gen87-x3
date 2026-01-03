@@ -21,6 +21,6 @@
 		"noImplicitReturns": true,
 		"noUncheckedIndexedAccess": true
 	},
-	"include": ["hot/bronze/src/**/*.ts"],
+	"include": ["hot/bronze/src/**/*.ts", "cold/silver/primitives/**/*.ts"],
 	"exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"]
 }

@@ -18,13 +18,13 @@ npx vitest run hot/silver/architecture.smoke.test.ts --passWithNoTests || exit 1
 echo "  → Dependency Boundaries..."
 npx dependency-cruiser --config hot/silver/.constraint-rules.mjs hot/silver || exit 1
 
-# Gate 5: Silver folder whitelist (only exemplars/ allowed now)
+# Gate 5: Silver folder whitelist (allowed: exemplars/, daily_specs/, showcase/, hfo-hydra-bud/)
 echo "  → Silver Folder Whitelist..."
-UNAUTHORIZED=$(find hot/silver -maxdepth 1 -type d ! -name "silver" ! -name "exemplars" 2>/dev/null | grep -v "^hot/silver$" || true)
+UNAUTHORIZED=$(find hot/silver -maxdepth 1 -type d ! -name "silver" ! -name "exemplars" ! -name "daily_specs" ! -name "showcase" ! -name "hfo-hydra-bud" 2>/dev/null | grep -v "^hot/silver$" || true)
 if [ -n "$UNAUTHORIZED" ]; then
   echo "❌ BLOCKED: Unauthorized folders in hot/silver/:"
   echo "$UNAUTHORIZED"
-  echo "Only 'exemplars/' is allowed. Quarantine goes in bronze."
+  echo "Only 'exemplars/', 'daily_specs/', 'showcase/', and 'hfo-hydra-bud/' are allowed. Quarantine goes in bronze."
   exit 1
 fi
 

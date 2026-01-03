@@ -19,7 +19,7 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import type { PortNumber } from '../contracts/hfo-ports.js';
-import { PORT_CONTRACTS, getContract } from '../contracts/port-contracts.js';
+import { getContract } from '../contracts/port-contracts.js';
 
 // ============================================================================
 // HELPER: Schema Field Counter
@@ -347,10 +347,11 @@ describe('BDD Scenario Validation', () => {
 		for (let port = 0; port < 8; port++) {
 			const contract = getContract(port as PortNumber);
 			for (const behavior of contract.behaviors) {
-				expect(behavior.scenario).toBeTruthy();
-				expect(behavior.given).toBeTruthy();
-				expect(behavior.when).toBeTruthy();
-				expect(behavior.then).toBeTruthy();
+				expect(typeof behavior.scenario).toBe('string');
+				expect(typeof behavior.given).toBe('string');
+				expect(typeof behavior.when).toBe('string');
+				expect(typeof behavior.then).toBe('string');
+				expect(behavior.scenario.length).toBeGreaterThan(0);
 			}
 		}
 	});

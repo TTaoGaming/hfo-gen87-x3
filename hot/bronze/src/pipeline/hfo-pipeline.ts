@@ -15,11 +15,7 @@
  */
 
 import { z } from 'zod';
-import {
-	OneEuroSmoother,
-	type Point2D,
-	type SmoothedPoint,
-} from '../../quarantine/one-euro-smoother.js';
+import { OneEuroPrimitive } from '../../../../cold/silver/primitives/one-euro.js';
 import { type TraceContext, createTraceContext, propagateTrace } from '../shared/trace-context.js';
 
 // ============================================================================
@@ -164,15 +160,15 @@ export class FuseAdapter implements Port1Fuse {
  * @citation Casiez et al. CHI 2012 - default params from paper
  */
 export class ShapeSmootherAdapter implements Port2Shape {
-	private smoother: OneEuroSmoother;
+	private smoother: OneEuroPrimitive;
 
 	constructor(config?: { freq?: number; beta?: number; minCutoff?: number }) {
-		this.smoother = new OneEuroSmoother({
+		this.smoother = new OneEuroPrimitive({
 			// Stryker disable next-line all: ?? vs && gives same result for undefined (both use default)
-			freq: config?.freq ?? 60,
+			frequency: config?.freq ?? 60,
 			// @source https://gery.casiez.net/1euro/ - Paper says start at 0, tune up
 			// Stryker disable next-line all: ?? vs && gives same result for undefined (both use default)
-			beta: config?.beta ?? 0.0, // Casiez default: 0.0 (no speed adaptation initially)
+			beta: config?.beta ?? 0.007, // Casiez default: 0.007
 			// @source https://gery.casiez.net/1euro/ - Paper default 1.0 Hz
 			minCutoff: config?.minCutoff ?? 1.0,
 		});
@@ -184,22 +180,21 @@ export class ShapeSmootherAdapter implements Port2Shape {
 
 		const landmark = input.payload.landmark;
 
-		// Apply REAL 1€ filter
-		const point: Point2D = {
-			x: landmark.x,
-			y: landmark.y,
-			timestamp: landmark.timestamp,
-		};
+		// Apply REAL 1€ filter (Pure Primitive)
+		const smoothed = this.smoother.filter(landmark.x, landmark.y, landmark.timestamp);
 
-		const smoothed: SmoothedPoint = this.smoother.smooth(point);
+		// Calculate jitter (distance between raw and smoothed)
+		const dx = landmark.x - smoothed.position.x;
+		const dy = landmark.y - smoothed.position.y;
+		const jitter = Math.sqrt(dx * dx + dy * dy);
 
 		return {
 			_port: 2,
 			_verb: 'SHAPE',
 			_ts: new Date().toISOString(),
 			raw: { x: landmark.x, y: landmark.y },
-			smooth: { x: smoothed.smoothedX, y: smoothed.smoothedY },
-			jitter: smoothed.jitter,
+			smooth: { x: smoothed.position.x, y: smoothed.position.y },
+			jitter: jitter,
 		};
 	}
 
@@ -411,4 +406,8 @@ export function validatePipelineFrame(
 
 // Re-export test utilities from separate module (for backward compatibility)
 // In production, import from './test-utils.js' directly
-export { calculateJitterReduction, calculateTotalJitter, generateNoisyPath } from './test-utils.js';
+export {
+	calculateJitterReduction,
+	calculateTotalJitter,
+	generateNoisyPath,
+} from './quarantine/test-utils.slop.js';

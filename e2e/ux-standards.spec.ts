@@ -131,7 +131,8 @@ test.describe('Showcase Launcher UX Standards', () => {
 				getComputedStyle(el).getPropertyValue('--bg-primary') ||
 				getComputedStyle(el).backgroundColor,
 		);
-		expect(bgColor).toBeTruthy();
+		expect(typeof bgColor).toBe('string');
+		expect(bgColor.length).toBeGreaterThan(0);
 	});
 });
 

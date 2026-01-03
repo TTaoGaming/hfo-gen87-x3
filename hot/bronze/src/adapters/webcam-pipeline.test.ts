@@ -18,9 +18,9 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import type { SensorFrame } from '../contracts/schemas.js';
 import { FSMActionSchema, SensorFrameSchema } from '../contracts/schemas.js';
-import { MockSensorAdapter } from './mediapipe.adapter.js';
 import { OneEuroExemplarAdapter } from './one-euro-exemplar.adapter.js';
 import { PointerEventAdapter } from './pointer-event.adapter.js';
+import { SimulatedSensorAdapter } from './quarantine/mock-sensor.adapter.js';
 import { XStateFSMAdapter } from './xstate-fsm.adapter.js';
 
 // W3C Pointer Events Level 3 Schema (extension)
@@ -49,9 +49,9 @@ const PointerEventLevel3Schema = z.object({
 });
 
 describe('Webcam → W3C Pointer Level 3 Pipeline', () => {
-	describe('SensorFrame from MockSensorAdapter', () => {
+	describe('SensorFrame from SimulatedSensorAdapter', () => {
 		it('should produce valid SensorFrame from mock sensor', async () => {
-			const sensor = new MockSensorAdapter();
+			const sensor = new SimulatedSensorAdapter();
 			await sensor.initialize();
 
 			const mockFrames: SensorFrame[] = [
@@ -87,7 +87,7 @@ describe('Webcam → W3C Pointer Level 3 Pipeline', () => {
 	describe('Full Pipeline: Sensor → Smooth → FSM → Pointer', () => {
 		it('should process sensor frame through complete pipeline', async () => {
 			// Setup adapters
-			const sensor = new MockSensorAdapter();
+			const sensor = new SimulatedSensorAdapter();
 			const smoother = new OneEuroExemplarAdapter();
 			const fsm = new XStateFSMAdapter();
 			const pointerEmitter = new PointerEventAdapter(1, 'touch');
@@ -168,7 +168,7 @@ describe('Webcam → W3C Pointer Level 3 Pipeline', () => {
 
 		it('should propagate palm angle to W3C Level 3 tilt properties', async () => {
 			// This test WILL FAIL until we implement Level 3 support
-			const sensor = new MockSensorAdapter();
+			const sensor = new SimulatedSensorAdapter();
 			const smoother = new OneEuroExemplarAdapter();
 			const fsm = new XStateFSMAdapter();
 			const pointerEmitter = new PointerEventAdapter(1, 'touch');
@@ -368,16 +368,16 @@ describe('Webcam → W3C Pointer Level 3 Pipeline', () => {
 });
 
 describe('Architecture Constraint: Webcam Pipeline', () => {
-	it('should use MockSensorAdapter as SensorPort implementation', () => {
-		const sensor = new MockSensorAdapter();
-		// MockSensorAdapter should have sense() method
+	it('should use SimulatedSensorAdapter as SensorPort implementation', () => {
+		const sensor = new SimulatedSensorAdapter();
+		// SimulatedSensorAdapter should have sense() method
 		expect(typeof sensor.sense).toBe('function');
 		expect(typeof sensor.initialize).toBe('function');
 		expect(typeof sensor.dispose).toBe('function');
 	});
 
 	it('should have isReady property on sensor', async () => {
-		const sensor = new MockSensorAdapter();
+		const sensor = new SimulatedSensorAdapter();
 		expect(sensor.isReady).toBe(false);
 		await sensor.initialize();
 		expect(sensor.isReady).toBe(true);

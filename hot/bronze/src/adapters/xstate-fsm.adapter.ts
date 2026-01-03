@@ -470,6 +470,8 @@ export class XStateFSMAdapter implements FSMPort {
 	): FSMAction {
 		const position = context.lastPosition ?? { x: 0.5, y: 0.5 };
 		const previousState = this.previousState;
+		const velocity = currentFrame.velocity ?? undefined;
+		const prediction = currentFrame.prediction ?? undefined;
 
 		// State transition matrix
 		if (newState === 'DISARMED') {
@@ -487,31 +489,80 @@ export class XStateFSMAdapter implements FSMPort {
 		if (newState === 'ARMED') {
 			// If coming from DOWN state, emit up
 			if (previousState === 'DOWN_COMMIT') {
-				return { action: 'up', state: newState, x: position.x, y: position.y, button: 0 };
+				return {
+					action: 'up',
+					state: newState,
+					x: position.x,
+					y: position.y,
+					button: 0,
+					velocity,
+				};
 			}
 			if (previousState === 'DOWN_NAV') {
-				return { action: 'up', state: newState, x: position.x, y: position.y, button: 1 };
+				return {
+					action: 'up',
+					state: newState,
+					x: position.x,
+					y: position.y,
+					button: 1,
+					velocity,
+				};
 			}
 			// Normal move
-			return { action: 'move', state: newState, x: position.x, y: position.y };
+			return {
+				action: 'move',
+				state: newState,
+				x: position.x,
+				y: position.y,
+				velocity,
+				prediction,
+			};
 		}
 
 		if (newState === 'DOWN_COMMIT') {
 			// If just entered, emit down
 			if (previousState === 'ARMED') {
-				return { action: 'down', state: newState, x: position.x, y: position.y, button: 0 };
+				return {
+					action: 'down',
+					state: newState,
+					x: position.x,
+					y: position.y,
+					button: 0,
+					velocity,
+				};
 			}
 			// Continuing drag, emit move
-			return { action: 'move', state: newState, x: position.x, y: position.y };
+			return {
+				action: 'move',
+				state: newState,
+				x: position.x,
+				y: position.y,
+				velocity,
+				prediction,
+			};
 		}
 
 		if (newState === 'DOWN_NAV') {
 			// If just entered, emit down
 			if (previousState === 'ARMED') {
-				return { action: 'down', state: newState, x: position.x, y: position.y, button: 1 };
+				return {
+					action: 'down',
+					state: newState,
+					x: position.x,
+					y: position.y,
+					button: 1,
+					velocity,
+				};
 			}
 			// Continuing drag, emit move
-			return { action: 'move', state: newState, x: position.x, y: position.y };
+			return {
+				action: 'move',
+				state: newState,
+				x: position.x,
+				y: position.y,
+				velocity,
+				prediction,
+			};
 		}
 
 		if (newState === 'ZOOM') {

@@ -1,7 +1,7 @@
 import { join } from 'node:path';
 import * as esbuild from 'esbuild';
 
-const entryPoint = join(process.cwd(), 'hot/bronze/src/browser/index.ts');
+const entryPoint = join(process.cwd(), 'hot/silver/exemplars/browser/index.ts');
 const outfile = join(process.cwd(), 'demos/dist/hfo.bundle.js');
 
 async function build() {

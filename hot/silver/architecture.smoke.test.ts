@@ -8,7 +8,6 @@
  */
 
 import * as fs from 'node:fs';
-import * as path from 'node:path';
 import { glob } from 'glob';
 import { beforeAll, describe, expect, it } from 'vitest';
 
@@ -128,8 +127,8 @@ describe('Architecture Smoke Tests', () => {
 				const hasAdapterImport = /import.*Adapter.*from/.test(content);
 
 				if (hasAdapterImport) {
-					// Should have `new SomethingAdapter(` somewhere
-					const hasInstantiation = /new\s+\w+Adapter\s*\(/.test(content);
+					// Should have `new SomethingAdapter(` or `new SomethingFactory(` or `new SomethingComposer(` somewhere
+					const hasInstantiation = /new\s+\w+(Adapter|Factory|Composer)\s*\(/.test(content);
 
 					expect(
 						hasInstantiation,
@@ -158,7 +157,10 @@ describe('Bronze Infrastructure Integrity', () => {
 
 		for (const file of bronzeFiles) {
 			const content = fs.readFileSync(file, 'utf-8');
-			const importsSilver = /from\s+['"].*silver.*['"]/.test(content);
+			// Only forbid imports from hot/silver (exemplars/demos)
+			// cold/silver (primitives) is allowed for bronze adapters
+			const importsSilver =
+				/from\s+['"].*silver.*['"]/.test(content) && !content.includes('cold/silver');
 
 			expect(
 				importsSilver,

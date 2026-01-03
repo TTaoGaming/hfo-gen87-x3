@@ -1,3 +1,9 @@
+import { GoldenLayout, type LayoutConfig } from 'golden-layout';
+import {
+	addTileToTree,
+	removeTileFromTree,
+	splitTileInTree,
+} from '../../../../cold/silver/primitives/layout-tree.js';
 /**
  * GoldenLayout Shell Adapter
  *
@@ -53,24 +59,12 @@ interface TileState {
  *
  * Implements UIShellPort using Golden Layout 2.x for browser-based tiling.
  * Manages component lifecycle, layout serialization, and event subscriptions.
- *
- * ## Usage
- * ```typescript
- * const adapter = new GoldenLayoutShellAdapter();
- * adapter.registerComponent('dom', (container, config) => {
- *   const el = document.createElement('div');
- *   container.appendChild(el);
- *   return el;
- * });
- * await adapter.initialize(containerEl, { shell: 'golden' });
- * adapter.addTile({ id: 'main', type: 'dom', title: 'Main' });
- * ```
  */
 export class GoldenLayoutShellAdapter implements UIShellPort {
 	// Private state
 	private initialized = false;
-	private rootContainer: HTMLElement | null = null;
 	private _config: UIShellConfig | null = null;
+	private gl: GoldenLayout | null = null;
 
 	/** Get current configuration (for hot-swapping and inspection) */
 	get config(): UIShellConfig | null {
@@ -103,6 +97,30 @@ export class GoldenLayoutShellAdapter implements UIShellPort {
 	 */
 	registerComponent(type: TileType, factory: ComponentFactory): void {
 		this.componentRegistry.set(type, factory);
+		if (this.gl) {
+			this.registerWithGL(type, factory);
+		}
+	}
+
+	private registerWithGL(type: TileType, factory: ComponentFactory): void {
+		if (!this.gl) return;
+		this.gl.registerComponentFactoryFunction(type, (container, itemConfig) => {
+			const tileId = (itemConfig as any)?.componentState?.tileId;
+			if (!tileId) return;
+
+			const tileState = this.tiles.get(tileId);
+			if (!tileState) return;
+
+			const el = factory(container.element, tileState.config.config || {});
+			tileState.container = container.element;
+			if (el) {
+				tileState.element = el;
+			}
+
+			// Add data attributes for E2E testing
+			container.element.dataset.tileId = tileId;
+			container.element.dataset.tileType = type;
+		});
 	}
 
 	// ============================================================================
@@ -114,16 +132,27 @@ export class GoldenLayoutShellAdapter implements UIShellPort {
 	 * @throws If already initialized or config is invalid
 	 */
 	async initialize(container: HTMLElement, config: UIShellConfig): Promise<void> {
-		// Validate config
 		const validatedConfig = UIShellConfigSchema.parse(config);
 
-		// Check for double initialization
 		if (this.initialized) {
 			throw new Error('GoldenLayoutShellAdapter: Already initialized. Call dispose() first.');
 		}
 
-		this.rootContainer = container;
 		this._config = validatedConfig;
+
+		// Initialize GoldenLayout
+		this.gl = new GoldenLayout(container);
+
+		// Register all existing components
+		for (const [type, factory] of this.componentRegistry) {
+			this.registerWithGL(type, factory);
+		}
+
+		// Handle GL events
+		this.gl.on('stateChanged', () => {
+			this.emitLayoutChange();
+		});
+
 		this.initialized = true;
 
 		// Apply initial layout if provided
@@ -134,7 +163,6 @@ export class GoldenLayoutShellAdapter implements UIShellPort {
 
 	/**
 	 * Get the target element/canvas for a tile
-	 * Used to wire up AdapterPort for each tile
 	 */
 	getTileTarget(tileId: string): AdapterTarget | null {
 		const tileState = this.tiles.get(tileId);
@@ -142,7 +170,6 @@ export class GoldenLayoutShellAdapter implements UIShellPort {
 			return null;
 		}
 
-		// Get container bounds
 		const rect = tileState.container.getBoundingClientRect();
 
 		return {
@@ -157,119 +184,99 @@ export class GoldenLayoutShellAdapter implements UIShellPort {
 		};
 	}
 
-	/**
-	 * Get all tile IDs
-	 */
 	getTileIds(): string[] {
 		return Array.from(this.tiles.keys());
 	}
 
-	/**
-	 * Add a new tile
-	 * @throws If tile config is invalid or ID already exists
-	 */
 	addTile(config: TileConfig): void {
-		// Validate config
 		const validatedConfig = TileConfigSchema.parse(config);
 
-		// Check for duplicate
 		if (this.tiles.has(validatedConfig.id)) {
 			throw new Error(
 				`GoldenLayoutShellAdapter: Tile already exists with ID "${validatedConfig.id}"`,
 			);
 		}
 
-		// Create tile container
-		const tileContainer = this.createTileContainer(validatedConfig);
-
-		// Store tile state
 		this.tiles.set(validatedConfig.id, {
 			config: validatedConfig,
-			container: tileContainer,
+			container: null,
 			element: null,
 		});
 
-		// Update arrangement to include new tile
-		this.updateArrangementWithNewTile(validatedConfig.id);
+		if (this.gl) {
+			this.gl.addComponent(
+				validatedConfig.type,
+				{ tileId: validatedConfig.id },
+				validatedConfig.title,
+			);
+		}
 
-		// Emit layout change
+		this.arrangement = addTileToTree(this.arrangement, validatedConfig.id);
 		this.emitLayoutChange();
 	}
 
-	/**
-	 * Remove a tile
-	 * @throws If tile not found
-	 */
 	removeTile(tileId: string): void {
 		const tileState = this.tiles.get(tileId);
 		if (!tileState) {
 			throw new Error(`GoldenLayoutShellAdapter: Tile not found with ID "${tileId}"`);
 		}
 
-		// Remove from DOM
-		if (tileState.container?.parentElement) {
-			tileState.container.remove();
+		if (this.gl) {
+			const item = this.gl.findFirstComponentItemById(tileId);
+			if (item) {
+				item.remove();
+			}
 		}
 
-		// Remove from tracking
 		this.tiles.delete(tileId);
-
-		// Update arrangement
-		this.arrangement = this.removeTileFromArrangement(this.arrangement, tileId);
-
-		// Emit layout change
+		this.arrangement = removeTileFromTree(this.arrangement, tileId);
 		this.emitLayoutChange();
 	}
 
-	/**
-	 * Split a tile in the given direction
-	 * @throws If source tile not found or new tile config invalid
-	 */
 	splitTile(tileId: string, direction: 'horizontal' | 'vertical', newTile: TileConfig): void {
-		// Validate source exists
 		if (!this.tiles.has(tileId)) {
 			throw new Error(`GoldenLayoutShellAdapter: Tile not found with ID "${tileId}"`);
 		}
 
-		// Validate new tile
 		const validatedNewTile = TileConfigSchema.parse(newTile);
-
-		// Check for duplicate
 		if (this.tiles.has(validatedNewTile.id)) {
 			throw new Error(
 				`GoldenLayoutShellAdapter: Tile already exists with ID "${validatedNewTile.id}"`,
 			);
 		}
 
-		// Create new tile container
-		const newContainer = this.createTileContainer(validatedNewTile);
 		this.tiles.set(validatedNewTile.id, {
 			config: validatedNewTile,
-			container: newContainer,
+			container: null,
 			element: null,
 		});
 
-		// Map direction: horizontal → row, vertical → column
-		const layoutDirection = direction === 'horizontal' ? 'row' : 'column';
+		if (this.gl) {
+			const sourceItem = this.gl.findFirstComponentItemById(tileId);
+			if (sourceItem?.parent) {
+				const newItemConfig = {
+					type: 'component',
+					componentType: validatedNewTile.type,
+					componentState: { tileId: validatedNewTile.id },
+					title: validatedNewTile.title || validatedNewTile.id,
+					id: validatedNewTile.id,
+				};
+				(sourceItem.parent as any).addItem(newItemConfig);
+			}
+		}
 
-		// Update arrangement to split
-		this.arrangement = this.splitInArrangement(
+		const layoutDirection = direction === 'horizontal' ? 'row' : 'column';
+		this.arrangement = splitTileInTree(
 			this.arrangement,
 			tileId,
 			validatedNewTile.id,
 			layoutDirection,
 		);
-
-		// Emit layout change
 		this.emitLayoutChange();
 	}
 
-	/**
-	 * Get current layout state (for serialization)
-	 */
 	getLayout(): LayoutState {
 		const tiles = Array.from(this.tiles.values()).map((s) => s.config);
-
 		return {
 			tiles,
 			arrangement: this.arrangement,
@@ -277,18 +284,10 @@ export class GoldenLayoutShellAdapter implements UIShellPort {
 		};
 	}
 
-	/**
-	 * Set layout state (for deserialization)
-	 * @throws If layout is invalid
-	 */
 	setLayout(state: LayoutState): void {
 		this.setLayoutInternal(state, true);
 	}
 
-	/**
-	 * Subscribe to layout changes
-	 * @returns Unsubscribe function
-	 */
 	onLayoutChange(callback: (layout: LayoutState) => void): () => void {
 		this.layoutChangeCallbacks.add(callback);
 		return () => {
@@ -296,10 +295,6 @@ export class GoldenLayoutShellAdapter implements UIShellPort {
 		};
 	}
 
-	/**
-	 * Subscribe to tile focus changes
-	 * @returns Unsubscribe function
-	 */
 	onTileFocus(callback: (tileId: string) => void): () => void {
 		this.tileFocusCallbacks.add(callback);
 		return () => {
@@ -307,37 +302,19 @@ export class GoldenLayoutShellAdapter implements UIShellPort {
 		};
 	}
 
-	/**
-	 * Dispose resources
-	 */
 	dispose(): void {
-		// Clear all tiles
-		for (const [_id, state] of this.tiles) {
-			if (state.container?.parentElement) {
-				state.container.remove();
-			}
+		if (this.gl) {
+			this.gl.destroy();
+			this.gl = null;
 		}
 		this.tiles.clear();
-
-		// Clear callbacks
 		this.layoutChangeCallbacks.clear();
 		this.tileFocusCallbacks.clear();
-
-		// Reset state
 		this.arrangement = '';
-		this.rootContainer = null;
 		this._config = null;
 		this.initialized = false;
 	}
 
-	// ============================================================================
-	// PUBLIC HELPERS (for testing)
-	// ============================================================================
-
-	/**
-	 * Programmatically focus a tile (emits focus event)
-	 * Used for testing and external focus management
-	 */
 	focusTile(tileId: string): void {
 		if (this.tiles.has(tileId)) {
 			this.emitTileFocus(tileId);
@@ -348,158 +325,54 @@ export class GoldenLayoutShellAdapter implements UIShellPort {
 	// PRIVATE METHODS
 	// ============================================================================
 
-	/**
-	 * Internal setLayout implementation
-	 */
 	private setLayoutInternal(state: LayoutState, clearExisting: boolean): void {
-		// Validate
 		const validated = LayoutStateSchema.parse(state);
 
-		// Clear existing tiles if requested
 		if (clearExisting) {
-			for (const [_id, tileState] of this.tiles) {
-				if (tileState.container?.parentElement) {
-					tileState.container.remove();
-				}
-			}
 			this.tiles.clear();
 		}
 
-		// Create tiles
 		for (const tileConfig of validated.tiles) {
 			if (!this.tiles.has(tileConfig.id)) {
-				const container = this.createTileContainer(tileConfig);
 				this.tiles.set(tileConfig.id, {
 					config: tileConfig,
-					container,
+					container: null,
 					element: null,
 				});
 			}
 		}
 
-		// Set arrangement
 		this.arrangement = validated.arrangement;
 
-		// Emit change (only if this is a user-triggered setLayout, not initial)
+		if (this.gl && this.arrangement) {
+			const glConfig: LayoutConfig = {
+				root: this.convertNodeToGL(this.arrangement),
+			};
+			this.gl.loadLayout(glConfig);
+		}
+
 		if (clearExisting) {
 			this.emitLayoutChange();
 		}
 	}
 
-	/**
-	 * Create a tile container element and invoke component factory
-	 */
-	private createTileContainer(config: TileConfig): HTMLElement {
-		const container = document.createElement('div');
-		container.dataset.tileId = config.id;
-		container.dataset.tileType = config.type;
-		container.className = 'gl-tile-container';
-
-		// Add title if present
-		if (config.title) {
-			container.dataset.tileTitle = config.title;
-		}
-
-		// Append to root if available
-		if (this.rootContainer) {
-			this.rootContainer.appendChild(container);
-		}
-
-		// Invoke factory if registered
-		const factory = this.componentRegistry.get(config.type);
-		if (factory) {
-			factory(container, config.config);
-		} else {
-			// Default placeholder for unregistered types
-			const placeholder = document.createElement('div');
-			placeholder.className = 'gl-tile-placeholder';
-			placeholder.textContent = `${config.type}: ${config.title ?? config.id}`;
-			container.appendChild(placeholder);
-		}
-
-		// Wire up focus event
-		container.addEventListener('click', () => {
-			this.emitTileFocus(config.id);
-		});
-
-		return container;
-	}
-
-	/**
-	 * Update arrangement to include a new tile (adds to root)
-	 */
-	private updateArrangementWithNewTile(tileId: string): void {
-		if (this.arrangement === '' || this.tiles.size === 1) {
-			// First tile becomes root
-			this.arrangement = tileId;
-		} else {
-			// Wrap existing arrangement with new tile in row
-			this.arrangement = {
-				direction: 'row',
-				first: this.arrangement,
-				second: tileId,
-				splitPercentage: 50,
+	private convertNodeToGL(node: LayoutNode): any {
+		if (typeof node === 'string') {
+			const tile = this.tiles.get(node);
+			return {
+				type: 'component',
+				componentType: tile?.config.type || 'dom',
+				componentState: { tileId: node },
+				title: tile?.config.title || node,
+				id: node,
 			};
 		}
-	}
-
-	/**
-	 * Remove a tile from arrangement tree
-	 */
-	private removeTileFromArrangement(node: LayoutNode, tileId: string): LayoutNode {
-		if (typeof node === 'string') {
-			// Leaf node
-			return node === tileId ? '' : node;
-		}
-
-		// Branch node
-		const first = this.removeTileFromArrangement(node.first, tileId);
-		const second = this.removeTileFromArrangement(node.second, tileId);
-
-		// If one side is empty, return the other
-		if (first === '') return second;
-		if (second === '') return first;
-
 		return {
-			...node,
-			first,
-			second,
+			type: node.direction,
+			content: [this.convertNodeToGL(node.first), this.convertNodeToGL(node.second)],
 		};
 	}
 
-	/**
-	 * Split a tile in the arrangement tree
-	 */
-	private splitInArrangement(
-		node: LayoutNode,
-		sourceTileId: string,
-		newTileId: string,
-		direction: 'row' | 'column',
-	): LayoutNode {
-		if (typeof node === 'string') {
-			if (node === sourceTileId) {
-				// Found the tile to split
-				return {
-					direction,
-					first: sourceTileId,
-					second: newTileId,
-					splitPercentage: 50,
-				};
-			}
-			return node;
-		}
-
-		// Recurse into branches
-		return {
-			...node,
-			first: this.splitInArrangement(node.first, sourceTileId, newTileId, direction),
-			second: this.splitInArrangement(node.second, sourceTileId, newTileId, direction),
-		};
-	}
-
-	/**
-	 * Emit layout change event to all subscribers
-	 */
 	private emitLayoutChange(): void {
 		const layout = this.getLayout();
 		for (const callback of this.layoutChangeCallbacks) {
@@ -507,9 +380,6 @@ export class GoldenLayoutShellAdapter implements UIShellPort {
 		}
 	}
 
-	/**
-	 * Emit tile focus event to all subscribers
-	 */
 	private emitTileFocus(tileId: string): void {
 		for (const callback of this.tileFocusCallbacks) {
 			callback(tileId);

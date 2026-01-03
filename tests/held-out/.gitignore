@@ -1,0 +1,4 @@
+# Held-out tests - AI should never see these
+tests/held-out/*.test.ts
+tests/held-out/*.spec.ts
+!tests/held-out/README.md

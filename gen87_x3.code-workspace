@@ -97,7 +97,8 @@
 		// ═══════════════════════════════════════════════════════════════
 		"terminal.integrated.defaultProfile.windows": "PowerShell",
 		"terminal.integrated.cwd": "${workspaceFolder}",
-		"liveServer.settings.multiRootWorkspaceName": "hfo_gen87_x3"
+		"liveServer.settings.multiRootWorkspaceName": "hfo_gen87_x3",
+		"chat.agent.maxRequests": 1000
 	},
 	"extensions": {
 		"recommendations": [

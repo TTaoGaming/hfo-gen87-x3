@@ -10,7 +10,8 @@
  */
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { AdapterTarget, FSMAction } from '../contracts/schemas.js';
-import { MockDOMAdapter, PointerEventAdapter } from './pointer-event.adapter.js';
+import { PointerEventAdapter } from './pointer-event.adapter.js';
+import { MockDOMAdapter } from './quarantine/mock-dom.adapter.js';
 
 // ============================================================================
 // TEST HELPERS
@@ -139,6 +140,18 @@ describe('PointerEventAdapter', () => {
 				isPrimary: true,
 			});
 		});
+
+		it('should calculate dynamic pressure based on velocity', () => {
+			const moveAction: FSMAction = {
+				action: 'move',
+				x: 0.5,
+				y: 0.5,
+				velocity: { x: 2, y: 0 },
+			};
+			const result = adapter.emit(moveAction, target);
+			// pressure = 0.5 + 2 * 0.05 = 0.6
+			expect(result?.pressure).toBeCloseTo(0.6);
+		});
 	});
 
 	describe('emit() - action:down', () => {
@@ -172,7 +185,7 @@ describe('PointerEventAdapter', () => {
 		it('should include pressure for pointerdown', () => {
 			const downAction: FSMAction = { action: 'down', x: 0.5, y: 0.5, button: 0 };
 			const result = adapter.emit(downAction, target);
-			expect(result?.pressure).toBe(0.5);
+			expect(result?.pressure).toBe(0.7);
 		});
 
 		// MUTATION KILLER: isPrimary must be true for primary pointer

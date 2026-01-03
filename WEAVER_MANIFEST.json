@@ -1,0 +1,146 @@
+{
+	"$schema": "./schemas/weaver-manifest.schema.json",
+	"version": "1.0.0",
+	"description": "Web Weaver Orchestrator - Adapter Quality Gate Manifest",
+	"thresholds": {
+		"unitTestsPass": true,
+		"mutationScore": 60,
+		"propertyTests": 5
+	},
+	"statuses": {
+		"BRONZE": "In development, not quality-gated",
+		"TESTING": "Quality gates running",
+		"SILVER_READY": "All gates passed, ready for promotion",
+		"SILVER": "Promoted to Silver package"
+	},
+	"adapters": {
+		"one-euro": {
+			"name": "OneEuroExemplarAdapter",
+			"port": "SmootherPort",
+			"source": "hot/bronze/src/adapters/one-euro-exemplar.adapter.ts",
+			"tests": "hot/bronze/src/adapters/one-euro-exemplar.adapter.test.ts",
+			"status": "SILVER_READY",
+			"gates": {
+				"unitTests": { "pass": 13, "fail": 0, "checked": "2026-01-01" },
+				"mutation": { "score": 70.37, "killed": 19, "survived": 8, "checked": "2026-01-01" }
+			},
+			"npmPackage": "1eurofilter@1.2.2",
+			"description": "1€ filter smoothing for noisy input signals"
+		},
+		"rapier-physics": {
+			"name": "RapierPhysicsAdapter",
+			"port": "SmootherPort",
+			"source": "hot/bronze/src/adapters/rapier-physics.adapter.ts",
+			"tests": "hot/bronze/src/adapters/rapier-physics.adapter.test.ts",
+			"status": "SILVER_READY",
+			"gates": {
+				"unitTests": { "pass": 48, "fail": 0, "checked": "2026-01-01" },
+				"mutation": { "score": 68.7, "killed": 57, "survived": 26, "checked": "2026-01-01" }
+			},
+			"npmPackage": "@dimforge/rapier2d-compat@0.19.3",
+			"description": "Physics-based smoothing with spring-damper dynamics"
+		},
+		"w3c-pointer-fsm": {
+			"name": "W3CPointerFSM",
+			"port": "FSMPort",
+			"source": "hot/silver/src/fsm/w3c-pointer-fsm.ts",
+			"tests": "hot/silver/src/fsm/w3c-pointer-fsm.test.ts",
+			"status": "SILVER_READY",
+			"gates": {
+				"unitTests": { "pass": 26, "fail": 0, "checked": "2026-01-01" },
+				"mutation": { "score": 64.0, "killed": 32, "survived": 18, "checked": "2026-01-01" }
+			},
+			"npmPackage": "xstate@5.25.0",
+			"description": "W3C-compliant pointer event FSM with XState v5"
+		},
+		"vacuole-envelope": {
+			"name": "VacuoleEnvelope",
+			"port": "ContractPort",
+			"source": "hot/bronze/src/contracts/vacuole-envelope.ts",
+			"tests": "hot/bronze/src/contracts/vacuole-envelope.contract.test.ts",
+			"status": "SILVER_READY",
+			"gates": {
+				"unitTests": { "pass": 56, "fail": 0, "checked": "2026-01-01" },
+				"mutation": { "score": 92.1, "killed": 58, "survived": 4, "checked": "2026-01-01" }
+			},
+			"npmPackage": "zod@3.25.76",
+			"description": "CloudEvents 1.0 envelope with W3C Trace Context"
+		},
+		"xstate-fsm": {
+			"name": "XStateFSMAdapter",
+			"port": "FSMPort",
+			"source": "hot/bronze/src/adapters/xstate-fsm.adapter.ts",
+			"tests": "hot/bronze/src/adapters/xstate-fsm.adapter.test.ts",
+			"status": "BRONZE",
+			"gates": {
+				"unitTests": { "pass": 22, "fail": 0, "checked": "2026-01-01" },
+				"mutation": {
+					"score": 0,
+					"killed": 0,
+					"survived": 0,
+					"checked": null,
+					"error": "Stryker blocked"
+				}
+			},
+			"npmPackage": "xstate@5.25.0",
+			"description": "Generic XState v5 FSM adapter for port interface"
+		},
+		"golden-layout-shell": {
+			"name": "GoldenLayoutShellAdapter",
+			"port": "UIShellPort",
+			"source": "hot/bronze/src/adapters/golden-layout-shell.adapter.ts",
+			"tests": "hot/bronze/src/adapters/golden-layout-shell.adapter.test.ts",
+			"status": "BRONZE",
+			"gates": {
+				"unitTests": { "pass": 39, "fail": 0, "checked": "2026-01-01" },
+				"mutation": { "score": 0, "killed": 0, "survived": 0, "checked": null }
+			},
+			"npmPackage": "golden-layout@2.6.0",
+			"description": "Tiling window manager shell with component registry"
+		},
+		"port-factory": {
+			"name": "HFOPortFactory",
+			"port": "FactoryPort",
+			"source": "hot/bronze/src/adapters/port-factory.ts",
+			"tests": "hot/bronze/src/adapters/port-factory.test.ts",
+			"status": "BRONZE",
+			"gates": {
+				"unitTests": { "pass": 34, "fail": 0, "checked": "2026-01-01" },
+				"mutation": { "score": 0, "killed": 0, "survived": 0, "checked": null }
+			},
+			"npmPackage": null,
+			"description": "Factory for creating all HFO port types with DI"
+		},
+		"tile-composer": {
+			"name": "TileComposer",
+			"port": "ComposerPort",
+			"source": "hot/bronze/src/adapters/tile-composer.ts",
+			"tests": "hot/bronze/src/adapters/tile-composer.test.ts",
+			"status": "BRONZE",
+			"gates": {
+				"unitTests": { "pass": 23, "fail": 0, "todo": 4, "checked": "2026-01-01" },
+				"mutation": { "score": 0, "killed": 0, "survived": 0, "checked": null }
+			},
+			"npmPackage": null,
+			"description": "Wires per-tile pipelines with GoldenLayout integration"
+		}
+	},
+	"promotionQueue": [
+		{
+			"adapter": "port-factory",
+			"priority": "HIGH",
+			"reason": "Creates ALL ports - critical for composition"
+		},
+		{
+			"adapter": "tile-composer",
+			"priority": "HIGH",
+			"reason": "Wires ALL pipelines - critical for composition"
+		},
+		{
+			"adapter": "golden-layout-shell",
+			"priority": "MEDIUM",
+			"reason": "UI shell for app structure"
+		},
+		{ "adapter": "xstate-fsm", "priority": "LOW", "reason": "Blocked by Stryker issue" }
+	]
+}

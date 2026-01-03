@@ -42,6 +42,16 @@ export class PointerEventAdapter implements EmitterPort {
 		const clientX = 'x' in action ? target.bounds.left + action.x * target.bounds.width : 0;
 		const clientY = 'y' in action ? target.bounds.top + action.y * target.bounds.height : 0;
 
+		// Calculate dynamic pressure based on velocity if available
+		// Principle: Higher velocity = lower pressure (light touch), Lower velocity = higher pressure (deliberate)
+		// Or vice versa? Usually, fast movement might imply less pressure.
+		// Let's use a simple mapping: pressure = 0.5 + clamp(velocity_mag * 0.1, -0.4, 0.4)
+		let pressure = 0.5;
+		if ('velocity' in action && action.velocity) {
+			const mag = Math.sqrt(action.velocity.x ** 2 + action.velocity.y ** 2);
+			pressure = Math.max(0.1, Math.min(0.9, 0.5 + mag * 0.05));
+		}
+
 		let event: PointerEventOut;
 
 		switch (action.action) {
@@ -52,7 +62,7 @@ export class PointerEventAdapter implements EmitterPort {
 					clientX,
 					clientY,
 					pointerType: this.pointerType,
-					pressure: 0.5,
+					pressure,
 					isPrimary: true,
 				};
 				break;
@@ -66,7 +76,7 @@ export class PointerEventAdapter implements EmitterPort {
 					pointerType: this.pointerType,
 					button: action.button,
 					buttons: action.button === 0 ? 1 : action.button === 1 ? 4 : 2,
-					pressure: 0.5,
+					pressure: 0.7, // Slightly higher on down
 					isPrimary: true,
 				};
 				break;
@@ -160,7 +170,7 @@ export class DOMAdapter implements AdapterPort {
 		}
 
 		// Pointer events
-		return new PointerEvent(event.type, {
+		const init: PointerEventInit = {
 			bubbles: true,
 			cancelable: true,
 			composed: true,
@@ -175,7 +185,19 @@ export class DOMAdapter implements AdapterPort {
 			pressure: 'pressure' in event ? event.pressure : 0.5,
 			width: 20,
 			height: 20,
-		});
+		};
+
+		if ('tangentialPressure' in event && event.tangentialPressure !== undefined)
+			init.tangentialPressure = event.tangentialPressure;
+		if ('tiltX' in event && event.tiltX !== undefined) init.tiltX = event.tiltX;
+		if ('tiltY' in event && event.tiltY !== undefined) init.tiltY = event.tiltY;
+		if ('twist' in event && event.twist !== undefined) init.twist = event.twist;
+		if ('altitudeAngle' in event && event.altitudeAngle !== undefined)
+			init.altitudeAngle = event.altitudeAngle;
+		if ('azimuthAngle' in event && event.azimuthAngle !== undefined)
+			init.azimuthAngle = event.azimuthAngle;
+
+		return new PointerEvent(event.type, init);
 	}
 
 	getBounds(): AdapterTarget['bounds'] {
@@ -213,49 +235,5 @@ export class DOMAdapter implements AdapterPort {
 		} catch {
 			return this._hasCapture;
 		}
-	}
-}
-
-/**
- * Mock adapter for testing - implements same interface for test doubles
- */
-export class MockDOMAdapter implements AdapterPort {
-	private events: PointerEventOut[] = [];
-	private _hasCapture = false;
-	private readonly bounds: AdapterTarget['bounds'];
-
-	constructor(bounds: AdapterTarget['bounds'] = { width: 800, height: 600, left: 0, top: 0 }) {
-		this.bounds = bounds;
-	}
-
-	inject(event: PointerEventOut): boolean {
-		this.events.push(event);
-		return true;
-	}
-
-	getBounds(): AdapterTarget['bounds'] {
-		return this.bounds;
-	}
-
-	setCapture(): void {
-		this._hasCapture = true;
-	}
-
-	releaseCapture(): void {
-		this._hasCapture = false;
-	}
-
-	hasCapture(): boolean {
-		return this._hasCapture;
-	}
-
-	/** Get recorded events for testing */
-	getEvents(): PointerEventOut[] {
-		return [...this.events];
-	}
-
-	/** Clear recorded events */
-	clearEvents(): void {
-		this.events = [];
 	}
 }

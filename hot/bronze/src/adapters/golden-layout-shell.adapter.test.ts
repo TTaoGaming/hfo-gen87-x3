@@ -170,8 +170,8 @@ describe('GoldenLayoutShellAdapter', () => {
 			adapter.registerComponent('iframe', factory);
 			adapter.registerComponent('canvas', factory);
 
-			// No error means success
-			expect(true).toBe(true);
+			// Verify we can still get tile IDs (registry doesn't break state)
+			expect(adapter.getTileIds()).toBeDefined();
 		});
 
 		it('uses registered factory when creating tiles', async () => {
@@ -526,8 +526,7 @@ describe('GoldenLayoutShellAdapter', () => {
 			adapter.dispose();
 			adapter.dispose();
 
-			// No error = success
-			expect(true).toBe(true);
+			expect(adapter.getTileIds()).toHaveLength(0);
 		});
 
 		it('unsubscribes all listeners', async () => {

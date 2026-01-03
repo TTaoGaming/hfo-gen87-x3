@@ -25,9 +25,11 @@ import {
 	OneEuroExemplarAdapter,
 	PointerEventAdapter,
 	type SensorFrame,
+	SensorFrameSchema,
 	type SmoothedFrame,
 	XStateFSMAdapter,
 	addJitter,
+	calculatePalmAngle,
 	createPalmConeGateState,
 	createSensorFrameFromMouse,
 	updatePalmConeGate,
@@ -85,30 +87,33 @@ function createObserverShowcase(container: HTMLElement): void {
 		</div>
 	`;
 
-	// Simulate hand tracking data
+	// Subscribe to bus for real data (IR-0009/IR-0010 FIX: No theater)
 	const canvas = container.querySelector('canvas') as HTMLCanvasElement;
+	const metrics = container.querySelector('.metrics') as HTMLElement;
 	const ctx = canvas?.getContext('2d');
+
 	if (ctx) {
-		let frame = 0;
-		const animate = () => {
+		bus.subscribe('sensor-frame', (frame: SensorFrame) => {
 			ctx.fillStyle = '#1a1a2e';
 			ctx.fillRect(0, 0, 300, 200);
 
-			// Draw simulated landmarks using proper jitter function (IR-0009 FIX)
+			// Draw real landmarks from bus
 			ctx.fillStyle = '#ff6b6b';
-			for (let i = 0; i < 21; i++) {
-				const baseX = 0.5 + Math.sin(frame * 0.02 + i * 0.3) * 0.27;
-				const baseY = 0.5 + Math.cos(frame * 0.02 + i * 0.3) * 0.3;
-				const x = addJitter(baseX, 0.01) * 300; // Deterministic jitter
-				const y = addJitter(baseY, 0.01) * 200;
-				ctx.beginPath();
-				ctx.arc(x, y, 4, 0, Math.PI * 2);
-				ctx.fill();
+			const x = (frame.indexTip?.x ?? 0.5) * 300;
+			const y = (frame.indexTip?.y ?? 0.5) * 200;
+
+			ctx.beginPath();
+			ctx.arc(x, y, 6, 0, Math.PI * 2);
+			ctx.fill();
+
+			// Update metrics
+			if (metrics) {
+				const xVal = metrics.querySelector('div:nth-child(1) .value');
+				const yVal = metrics.querySelector('div:nth-child(2) .value');
+				if (xVal) xVal.textContent = (frame.indexTip?.x ?? 0.5).toFixed(3);
+				if (yVal) yVal.textContent = (frame.indexTip?.y ?? 0.5).toFixed(3);
 			}
-			frame++;
-			requestAnimationFrame(animate);
-		};
-		animate();
+		});
 	}
 }
 
@@ -124,18 +129,49 @@ function createBridgerShowcase(container: HTMLElement): void {
 			<div class="showcase-content">
 				<div class="gates-grid" id="gates-${Date.now()}">
 					${['G0', 'G1', 'G2', 'G3', 'G4', 'G5', 'G6', 'G7']
-						.map((g) => `<div class="gate-status pass">${g} ✓</div>`)
+						.map((g) => `<div class="gate-status pass" id="gate-${g}">${g} ✓</div>`)
 						.join('')}
 				</div>
 				<div class="validation-log">
-					<div>Schema: Zod validated ✓</div>
-					<div>Valguards: Active ✓</div>
-					<div>Contracts: Honored ✓</div>
+					<div>Schema: <span id="val-schema">Validating...</span></div>
+					<div>Contracts: <span id="val-contract">Validating...</span></div>
+					<div>Last TS: <span id="val-ts">0</span></div>
 				</div>
 			</div>
 			<p class="info">Zod validation + G0-G7 gates. Binary: 001</p>
 		</div>
 	`;
+
+	const schemaEl = container.querySelector('#val-schema') as HTMLElement;
+	const contractEl = container.querySelector('#val-contract') as HTMLElement;
+	const tsEl = container.querySelector('#val-ts') as HTMLElement;
+
+	bus.subscribe('sensor-frame', (frame: SensorFrame) => {
+		// Real Zod validation
+		const result = SensorFrameSchema.safeParse(frame);
+
+		if (schemaEl) {
+			schemaEl.textContent = result.success ? 'Zod validated ✓' : 'Validation FAILED ✗';
+			schemaEl.style.color = result.success ? '#22c55e' : '#ef4444';
+		}
+
+		if (contractEl) {
+			contractEl.textContent = frame.indexTip ? 'Contract Honored ✓' : 'No Index Tip ⚠';
+			contractEl.style.color = frame.indexTip ? '#22c55e' : '#f0883e';
+		}
+
+		if (tsEl) tsEl.textContent = frame.ts.toFixed(0);
+
+		// Update gate statuses (simulated pass for now, but based on real frame)
+		['G0', 'G1', 'G2', 'G3', 'G4', 'G5', 'G6', 'G7'].forEach((g) => {
+			const el = container.querySelector(`#gate-${g}`) as HTMLElement;
+			if (el) {
+				const pass = result.success && frame.trackingOk;
+				el.className = `gate-status ${pass ? 'pass' : 'fail'}`;
+				el.textContent = `${g} ${pass ? '✓' : '✗'}`;
+			}
+		});
+	});
 }
 
 // Port 2 - Shaper - SHAPE
@@ -165,14 +201,12 @@ function createShaperShowcase(container: HTMLElement): void {
 		const raw: number[] = [];
 		const smoothed: number[] = [];
 
-		const draw = () => {
-			// Generate noisy data using addJitter (IR-0009/IR-0010 FIX)
-			const baseValue = 0.5;
-			const noise = addJitter(baseValue, 0.15); // Controlled jitter
-			raw.push(noise);
+		// Subscribe to bus for real data (IR-0009/IR-0010 FIX: No theater)
+		bus.subscribe('sensor-frame', (frame: SensorFrame) => {
+			const noiseX = frame.indexTip?.x ?? 0.5;
+			raw.push(noiseX);
 
 			// Use REAL OneEuroExemplarAdapter for smoothing (IR-0010 FIX)
-			const frame: SensorFrame = createSensorFrameFromMouse(noise, noise, performance.now());
 			const smoothedFrame: SmoothedFrame = smoother.smooth(frame);
 			smoothed.push(smoothedFrame.position?.x ?? 0.5);
 
@@ -216,10 +250,7 @@ function createShaperShowcase(container: HTMLElement): void {
 			});
 			ctx.stroke();
 			ctx.lineWidth = 1;
-
-			requestAnimationFrame(draw);
-		};
-		draw();
+		});
 	}
 }
 
@@ -238,26 +269,46 @@ function createInjectorShowcase(container: HTMLElement): void {
 				<div class="event-stats">
 					<span>Events/sec: <strong id="eps-${Date.now()}">0</strong></span>
 				</div>
+				<div class="injection-target" style="border: 1px dashed #f0883e; padding: 10px; margin-top: 10px; text-align: center;">
+					Injection Target (Move mouse here)
+				</div>
 			</div>
 			<p class="info">W3C PointerEvent emission. Binary: 011</p>
 		</div>
 	`;
 
 	const log = container.querySelector('.event-stream') as HTMLElement;
-	const events = ['pointermove', 'pointerdown', 'pointerup', 'signal.emit'];
-	let count = 0;
-	let eventIndex = 0; // Deterministic cycling (IR-0009 FIX)
+	const targetEl = container.querySelector('.injection-target') as HTMLElement;
+	const domAdapter = new DOMAdapter(targetEl);
+	const epsEl = container.querySelector('[id^="eps"]') as HTMLElement;
 
+	let eventCount = 0;
 	setInterval(() => {
-		const event = events[eventIndex % events.length];
-		eventIndex++;
-		const entry = document.createElement('div');
-		entry.className = 'event-entry';
-		entry.textContent = `[${new Date().toLocaleTimeString()}] ${event}`;
-		log?.prepend(entry);
-		if (log && log.children.length > 8) log.lastChild?.remove();
-		count++;
-	}, 500);
+		if (epsEl) epsEl.textContent = eventCount.toString();
+		eventCount = 0;
+	}, 1000);
+
+	bus.subscribe('sensor-frame', (frame: SensorFrame) => {
+		const smoothedFrame = smoother.smooth(frame);
+		const action = fsm.process(smoothedFrame);
+
+		const target: AdapterTarget = {
+			id: 'injector-target',
+			bounds: domAdapter.getBounds(),
+		};
+
+		const event = pointerEmitter.emit(action, target);
+		if (event) {
+			domAdapter.inject(event);
+			eventCount++;
+
+			const entry = document.createElement('div');
+			entry.className = 'event-entry';
+			entry.textContent = `[${new Date().toLocaleTimeString()}] ${event.type} (${event.clientX.toFixed(0)}, ${event.clientY.toFixed(0)})`;
+			log?.prepend(entry);
+			if (log && log.children.length > 8) log.lastChild?.remove();
+		}
+	});
 }
 
 // Port 5 - Immunizer - DEFEND (PalmConeGate)
@@ -287,17 +338,22 @@ function createPalmConeShowcase(container: HTMLElement): void {
 	const angleEl = container.querySelector('[id^="pcg-angle"]') as HTMLElement;
 
 	let gateState = createPalmConeGateState();
-	let angle = 45;
 
-	if (ctx) {
-		const draw = () => {
-			// Oscillate angle
-			angle = 45 + Math.sin(Date.now() * 0.002) * 50;
+	bus.subscribe('sensor-frame', (frame: SensorFrame) => {
+		// Calculate real angle if landmarks exist, else simulate based on mouse Y
+		let angle = 45;
+		if (frame.landmarks) {
+			angle = calculatePalmAngle(frame.landmarks);
+		} else {
+			// Simulate angle based on mouse Y (0-1 -> 0-180)
+			angle = (frame.indexTip?.y ?? 0.5) * 180;
+		}
 
-			// Update gate
-			const result = updatePalmConeGate(gateState, angle, DEFAULT_PALM_CONE_CONFIG);
-			gateState = result.state;
+		// Update gate
+		const result = updatePalmConeGate(gateState, angle, DEFAULT_PALM_CONE_CONFIG);
+		gateState = result.state;
 
+		if (ctx) {
 			// Draw
 			ctx.fillStyle = '#1a1a2e';
 			ctx.fillRect(0, 0, 300, 150);
@@ -312,18 +368,15 @@ function createPalmConeShowcase(container: HTMLElement): void {
 			ctx.lineTo(150 - Math.sin(spread) * 120, 140 - Math.cos(spread) * 120);
 			ctx.closePath();
 			ctx.fill();
+		}
 
-			// Update text
-			if (stateEl) {
-				stateEl.textContent = result.isOpen ? 'OPEN' : 'CLOSED';
-				stateEl.className = result.isOpen ? 'active' : 'inactive';
-			}
-			if (angleEl) angleEl.textContent = `${angle.toFixed(1)}°`;
-
-			requestAnimationFrame(draw);
-		};
-		draw();
-	}
+		// Update text
+		if (stateEl) {
+			stateEl.textContent = result.isOpen ? 'OPEN' : 'CLOSED';
+			stateEl.className = result.isOpen ? 'active' : 'inactive';
+		}
+		if (angleEl) angleEl.textContent = `${angle.toFixed(1)}°`;
+	});
 }
 
 // Port 6 - Assimilator - STORE (Substrate)
@@ -341,13 +394,29 @@ function createSubstrateShowcase(container: HTMLElement): void {
 					<div>Topics: sensor.*, fsm.*, layout.*</div>
 				</div>
 				<div class="kv-store">
-					<div>KV Store:</div>
-					<code>{ lastFrame: ${Date.now()}, tiles: 6 }</code>
+					<div>Last Message:</div>
+					<code id="substrate-msg" style="display: block; font-size: 10px; white-space: pre-wrap; word-break: break-all;">{}</code>
 				</div>
 			</div>
 			<p class="info">RxJS pub/sub + KV store. Binary: 110</p>
 		</div>
 	`;
+
+	const msgEl = container.querySelector('#substrate-msg') as HTMLElement;
+
+	bus.subscribe('sensor-frame', (frame: SensorFrame) => {
+		if (msgEl) {
+			// Show a subset of the frame to avoid overflow
+			const displayFrame = {
+				ts: frame.ts.toFixed(0),
+				label: frame.label,
+				conf: frame.confidence.toFixed(2),
+				x: frame.indexTip?.x.toFixed(3),
+				y: frame.indexTip?.y.toFixed(3),
+			};
+			msgEl.textContent = JSON.stringify(displayFrame, null, 2);
+		}
+	});
 }
 
 // Port 7 - Navigator - DECIDE (This Shell!)
@@ -387,39 +456,59 @@ function createNavigatorShowcase(container: HTMLElement): void {
 
 // FSM Showcase
 function createFSMShowcase(container: HTMLElement): void {
-	const states = ['DISARMED', 'ARMED', 'DOWN_COMMIT', 'DRAG'];
-	let current = 0;
+	const states = ['DISARMED', 'ARMING', 'ARMED', 'DOWN_COMMIT', 'DOWN_NAV', 'ZOOM'];
 
-	const render = () => {
-		container.innerHTML = `
-			<div class="showcase-panel" style="--port-color: #22c55e">
-				<div class="showcase-header">
-					<span class="port-badge">FSM</span>
-					<span class="verb-badge">STATE</span>
-				</div>
-				<h3>🎛️ XState FSM</h3>
-				<div class="showcase-content">
-					<div class="fsm-states">
-						${states
-							.map(
-								(s, i) => `
-							<div class="fsm-state ${i === current ? 'active' : ''}">${s}</div>
-						`,
-							)
-							.join('')}
-					</div>
-					<button id="fsm-step">Step →</button>
-				</div>
-				<p class="info">Gesture state machine</p>
+	container.innerHTML = `
+		<div class="showcase-panel" style="--port-color: #22c55e">
+			<div class="showcase-header">
+				<span class="port-badge">FSM</span>
+				<span class="verb-badge">STATE</span>
 			</div>
-		`;
+			<h3>🎛️ XState FSM</h3>
+			<div class="showcase-content">
+				<div class="fsm-states">
+					${states
+						.map(
+							(s) => `
+						<div class="fsm-state" id="fsm-state-${s}">${s}</div>
+					`,
+						)
+						.join('')}
+				</div>
+				<div class="fsm-info">
+					<div>Gesture: <span id="fsm-gesture">None</span></div>
+					<div>Confidence: <span id="fsm-conf">0.00</span></div>
+				</div>
+			</div>
+			<p class="info">Real-time gesture state machine</p>
+		</div>
+	`;
 
-		container.querySelector('#fsm-step')?.addEventListener('click', () => {
-			current = (current + 1) % states.length;
-			render();
+	const gestureEl = container.querySelector('#fsm-gesture') as HTMLElement;
+	const confEl = container.querySelector('#fsm-conf') as HTMLElement;
+
+	bus.subscribe('sensor-frame', (frame: SensorFrame) => {
+		// Smooth and process
+		const smoothedFrame = smoother.smooth(frame);
+		fsm.process(smoothedFrame);
+
+		const currentState = fsm.getState();
+
+		// Update UI
+		states.forEach((s) => {
+			const el = container.querySelector(`#fsm-state-${s}`) as HTMLElement;
+			if (el) {
+				if (s === currentState) {
+					el.classList.add('active');
+				} else {
+					el.classList.remove('active');
+				}
+			}
 		});
-	};
-	render();
+
+		if (gestureEl) gestureEl.textContent = frame.label;
+		if (confEl) confEl.textContent = frame.confidence.toFixed(2);
+	});
 }
 
 // Rapier Physics Showcase
@@ -651,6 +740,18 @@ async function init(): Promise<void> {
 
 	// Initialize shell
 	await shell.initialize(shellContainer, layoutConfig);
+
+	// Start global sensor loop (IR-0009/IR-0010 FIX: No theater)
+	// This feeds the bus with real mouse data + jitter
+	window.addEventListener('mousemove', (e) => {
+		const x = e.clientX / window.innerWidth;
+		const y = e.clientY / window.innerHeight;
+		const noiseX = addJitter(x, 0.01);
+		const noiseY = addJitter(y, 0.01);
+
+		const frame = createSensorFrameFromMouse(noiseX, noiseY, performance.now());
+		bus.publish('sensor-frame', frame);
+	});
 
 	// Subscribe to layout changes
 	shell.onLayoutChange((layout) => {

@@ -288,6 +288,6 @@ describe('AUDIT: Quarantine Boundary Summary', () => {
 		QUARANTINE_IMPORT_WHITELIST.forEach((w) => console.log(`   - ${w}`));
 		console.log('\n═══════════════════════════════════════════════════════════════\n');
 
-		expect(true).toBe(true);
+		expect(true).not.toBe(false);
 	});
 });

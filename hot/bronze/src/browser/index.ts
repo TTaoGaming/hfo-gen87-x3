@@ -10,6 +10,16 @@
  */
 
 // ============================================================================
+// 8-PORT ARCHITECTURE (The Obsidian Hourglass)
+// ============================================================================
+export { MirrorMagusShaper } from '../adapters/mirror-magus-shaper.adapter.js';
+export { PyrePraetorianImmunizer } from '../adapters/pyre-praetorian-immunizer.adapter.js';
+export { SporeStormInjector } from '../adapters/spore-storm-injector.adapter.js';
+export { WebWeaverBridger } from '../adapters/web-weaver-bridger.adapter.js';
+export * from '../contracts/eight-ports.js';
+export { SpiderSovereignOrchestrator } from '../pipeline/spider-sovereign.js';
+
+// ============================================================================
 // CONTRACTS (Schemas & Types)
 // ============================================================================
 export {
@@ -31,6 +41,24 @@ export {
 } from '../contracts/schemas.js';
 
 export type { FSMPort, SensorPort, SmootherPort } from '../contracts/ports.js';
+
+// ============================================================================
+// PIPELINE & ORCHESTRATION (Gen87.X3 Canonical)
+// ============================================================================
+export * from '../adapters/factories.js';
+export { DOMTargetRouterAdapter } from '../adapters/target-router.adapter.js';
+export {
+	AdapterRegistry,
+	EmitterRegistry,
+	FSMRegistry,
+	OverlayRegistry,
+	PredictorRegistry,
+	SensorRegistry,
+	SmootherRegistry,
+	TargetRegistry,
+} from '../contracts/adapter-factory.js';
+export { HFO_W3C_Pointer_Orchestrator } from '../pipeline/hfo_w3c_pointer_orchestrator.js';
+export { W3CGestureComposer } from '../pipeline/w3c-gesture-composer.js';
 
 // ============================================================================
 // SENSOR ADAPTERS (Port 0 - SENSE)
@@ -108,16 +136,6 @@ export {
 	type GestureTransitionPrediction,
 	type GestureTransitionState,
 } from '../gates/gesture-transition-predictor.js';
-
-// ============================================================================
-// PIPELINE (Real Data Flow)
-// ============================================================================
-export {
-	FuseAdapter,
-	HFOPipeline,
-	SenseAdapter,
-	ShapeSmootherAdapter,
-} from '../pipeline/hfo-pipeline.js';
 
 // ============================================================================
 // SUBSTRATE (Message Bus Adapters)

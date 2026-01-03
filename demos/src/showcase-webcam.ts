@@ -20,10 +20,8 @@
  * @verb SENSE→SHAPE→DELIVER→DEFEND
  */
 
-import {
-	MediaPipeAdapter,
-	MockSensorAdapter,
-} from '../../hot/bronze/src/adapters/mediapipe.adapter.js';
+import { MediaPipeAdapter } from '../../hot/bronze/src/adapters/mediapipe.adapter.js';
+import { SimulatedSensorAdapter } from '../../hot/bronze/src/adapters/quarantine/mock-sensor.adapter.js';
 import {
 	DOMAdapter,
 	OneEuroExemplarAdapter,
@@ -102,7 +100,7 @@ const state: PipelineState = {
 // ============================================================================
 
 // Port 0: SENSE - MediaPipe sensor
-let sensor: MediaPipeAdapter | MockSensorAdapter;
+let sensor: MediaPipeAdapter | SimulatedSensorAdapter;
 
 // Port 2: SHAPE - 1€ Filter smoother
 const smoother = new OneEuroExemplarAdapter();
@@ -137,7 +135,7 @@ function injectTestLandmarks(frames: SensorFrame[]): void {
 	state.testFrameQueue = [...frames];
 	CONFIG.useMockSensor = true;
 
-	if (sensor instanceof MockSensorAdapter) {
+	if (sensor instanceof SimulatedSensorAdapter) {
 		sensor.loadMockFrames(frames);
 	}
 }
@@ -654,8 +652,8 @@ async function initializePipeline(): Promise<void> {
 	try {
 		// Create sensor (real or mock)
 		if (CONFIG.useMockSensor) {
-			sensor = new MockSensorAdapter();
-			// Using MockSensorAdapter for testing
+			sensor = new SimulatedSensorAdapter();
+			// Using SimulatedSensorAdapter for testing
 		} else {
 			sensor = new MediaPipeAdapter(CONFIG.modelPath, CONFIG.wasmPath);
 			// Using real MediaPipeAdapter

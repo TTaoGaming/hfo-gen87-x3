@@ -1,0 +1,34 @@
+{
+	"$schema": "https://raw.githubusercontent.com/stryker-mutator/stryker-js/master/packages/core/schema/stryker-schema.json",
+	"packageManager": "npm",
+	"reporters": ["html", "progress", "clear-text", "json"],
+	"testRunner": "vitest",
+	"vitest": {
+		"configFile": "vitest.config.ts"
+	},
+	"mutate": [
+		"cold/silver/primitives/**/*.ts",
+		"!cold/silver/primitives/**/*.test.ts",
+		"!cold/silver/primitives/**/*.spec.ts"
+	],
+	"checkers": ["typescript"],
+	"tsconfigFile": "tsconfig.json",
+	"coverageAnalysis": "perTest",
+	"thresholds": {
+		"high": 80,
+		"low": 60,
+		"break": 50
+	},
+	"concurrency": 4,
+	"disableTypeChecks": "{cold,hot,src}/**/*.ts",
+	"tempDirName": ".stryker-tmp",
+	"htmlReporter": {
+		"fileName": "reports/mutation/mutation-report.html"
+	},
+	"jsonReporter": {
+		"fileName": "reports/mutation/mutation-report.json"
+	},
+	"timeoutMS": 30000,
+	"timeoutFactor": 2.5,
+	"_comment_gen87": "Gen87.X3 Mutation Testing Gate - Primitives in cold/silver MUST achieve ≥80% mutation kill rate. This config targets isolated, pure algorithmic primitives extracted from adapters for mutation testing. Run with: npx stryker run"
+}

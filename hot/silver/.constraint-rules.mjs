@@ -26,6 +26,11 @@ export default {
 					'^hot/bronze/src/adapters',
 					'^hot/bronze/src/contracts',
 					'^hot/bronze/src/ports',
+					'^hot/bronze/src/shared',
+					'^hot/bronze/src/constants',
+					'^hot/bronze/src/gates',
+					'^hot/bronze/src/pipeline',
+					'^cold/silver/primitives',
 					'^node_modules',
 					// Allow relative imports within exemplars for composition
 					'^\\.\\.',

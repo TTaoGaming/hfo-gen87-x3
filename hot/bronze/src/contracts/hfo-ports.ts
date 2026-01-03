@@ -51,7 +51,10 @@ export type Commander =
 // PORT METADATA SCHEMA
 // ============================================================================
 
-/** Zod schema for port metadata */
+/**
+ * Zod schema for port metadata
+ * @source https://github.com/TTaoGaming/hfo-gen87-x3/blob/main/hot/bronze/src/contracts/hfo-ports.ts
+ */
 export const HFOPortMetadataSchema = z.object({
 	portNumber: z.union([
 		z.literal(0),

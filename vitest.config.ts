@@ -17,17 +17,22 @@ export default defineConfig({
 	test: {
 		globals: true,
 		environment: 'node',
-		include: [
-			'src/**/*.{test,spec}.{ts,tsx}',
-			'sandbox/src/**/*.{test,spec}.{ts,tsx}',
-			'hot/**/*.{test,spec}.{ts,tsx}',
-		],
+		include: process.env.VITEST_SEGMENT
+			? [process.env.VITEST_SEGMENT]
+			: [
+					'src/**/*.{test,spec}.{ts,tsx}',
+					'sandbox/src/**/*.{test,spec}.{ts,tsx}',
+					'hot/**/*.{test,spec}.{ts,tsx}',
+					'cold/silver/**/*.{test,spec}.{ts,tsx}',
+				],
 		exclude: [
 			'**/node_modules/**',
 			'**/dist/**',
 			'**/e2e/**',
 			'**/_stale_tests/**',
 			'**/_archived/**',
+			'**/cold/bronze/**', // Archived code - don't run tests
+			'**/.stryker-tmp/**', // Stryker sandbox - don't run tests
 		],
 
 		// Define test projects (buckets) for targeted execution

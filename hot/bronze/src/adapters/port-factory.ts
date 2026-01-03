@@ -36,6 +36,7 @@ import { GoldenLayoutShellAdapter } from './golden-layout-shell.adapter.js';
 import { MediaPipeAdapter } from './mediapipe.adapter.js';
 import { OneEuroExemplarAdapter } from './one-euro-exemplar.adapter.js';
 import { PointerEventAdapter } from './pointer-event.adapter.js';
+import { NullOverlayAdapter } from './quarantine/stub-overlay.adapter.js';
 import { RapierPhysicsAdapter } from './rapier-physics.adapter.js';
 import { XStateFSMAdapter } from './xstate-fsm.adapter.js';
 
@@ -330,58 +331,6 @@ export class RawHTMLShellAdapter implements UIShellPort {
 }
 
 // ============================================================================
-// STUB OVERLAY ADAPTER
-// ============================================================================
-
-/**
- * StubOverlayAdapter - Placeholder until Canvas2D/Pixi overlay implemented
- */
-class StubOverlayAdapter implements OverlayPort {
-	private config: OverlayConfig | null = null;
-	private container: HTMLElement | null = null;
-
-	async initialize(container: HTMLElement): Promise<void> {
-		this.container = container;
-	}
-
-	setCursor(
-		_raw: { x: number; y: number } | null,
-		_smoothed: { x: number; y: number } | null,
-		_predicted: { x: number; y: number } | null,
-		_state: import('../contracts/schemas.js').CursorState,
-	): void {
-		// Stub - no-op
-	}
-
-	setLandmarks(_landmarks: import('../contracts/schemas.js').NormalizedLandmark[] | null): void {
-		// Stub - no-op
-	}
-
-	setVisible(_visible: boolean): void {
-		// Stub - no-op
-	}
-
-	setConfig(config: Partial<OverlayConfig>): void {
-		this.config = { ...this.config, ...config } as OverlayConfig;
-	}
-
-	getBounds(): { width: number; height: number } {
-		if (this.container) {
-			return {
-				width: this.container.clientWidth,
-				height: this.container.clientHeight,
-			};
-		}
-		return { width: 0, height: 0 };
-	}
-
-	dispose(): void {
-		this.container = null;
-		this.config = null;
-	}
-}
-
-// ============================================================================
 // HFO PORT FACTORY
 // ============================================================================
 
@@ -512,10 +461,10 @@ export class HFOPortFactory implements PortFactory {
 	}
 
 	/**
-	 * Create an OverlayPort (Stub until Canvas2D/Pixi implemented)
+	 * Create an OverlayPort (Null until Canvas2D/Pixi implemented)
 	 */
 	createOverlay(_config: OverlayConfig): OverlayPort {
-		return new StubOverlayAdapter();
+		return new NullOverlayAdapter();
 	}
 
 	/**

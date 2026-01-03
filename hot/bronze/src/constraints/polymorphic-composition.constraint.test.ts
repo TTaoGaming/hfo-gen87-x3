@@ -422,6 +422,7 @@ describe('CONSTRAINT: PortFactory Wiring', () => {
 // They have real assertions - when unskipped, they MUST pass.
 // ============================================================================
 
+// @reason: Awaiting GoldenLayout fix for full E2E composition testing
 describe.skip('CONSTRAINT: End-to-End Polymorphic Composition [BLOCKED: Awaiting GoldenLayout fix]', () => {
 	it('MediaPipe → 1€ Filter → XState FSM → GoldenLayout COMPOSES', async () => {
 		// This is the constraint the user asked about:

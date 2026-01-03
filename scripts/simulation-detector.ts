@@ -47,7 +47,7 @@ const SIMULATION_PATTERNS: SimulationPattern[] = [
 	{
 		name: 'HARDCODED_COORDINATES',
 		pattern: /(?:x|y)\s*[:=]\s*(?:0\.\d+|150|100|200|300)\s*[+\-*]/,
-		severity: 'HIGH',
+		severity: 'CRITICAL',
 		violation: 'IR-0006',
 		description: 'Hardcoded coordinate arithmetic instead of SensorFrame',
 		fix: 'Process data through SmootherPort.smooth(SensorFrame) pipeline',
@@ -93,7 +93,7 @@ const SIMULATION_PATTERNS: SimulationPattern[] = [
 	{
 		name: 'ORPHAN_RAF_ANIMATION',
 		pattern: /requestAnimationFrame\s*\(\s*(?:animate|draw|render|loop)\s*\)/,
-		severity: 'MEDIUM',
+		severity: 'CRITICAL',
 		violation: 'IR-0008',
 		description: 'Animation loop may not be connected to real adapter pipeline',
 		fix: 'Ensure animation consumes SmoothedFrame from adapter pipeline',

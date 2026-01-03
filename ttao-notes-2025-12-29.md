@@ -295,3 +295,11 @@ Camera → MediaPipeAdapter.sense()
        → W3C PointerEvent
        → GoldenLayoutShellAdapter displays tiles
 ---
+finish what you are doing but we need to emit to obsidian blackboard these violation patterns, is there any convergence on the violations? it seems to be similar patterns of errors manifesting in different ways but it's all very similar. in my mind the word that comes to mind is, the path of least resistance, it's easier to make a test green than to actually fix the code
+---
+ok help me add these in and help me find the slop in my code. in fact most of my code i am not sure if it's set up correctly, can we extract out the useful primitives into cold\silver. I want to be able to isolate and test and mutation test each primitive. I am almost sure my golden layout is not enforced, my adapters are not enforced
+---
+i want you to help me create a canonical production ready pipeline called HFO_W3C_Pointer_Orchestrator in snake case is fine. the idea is that I have 1 orchestrator that can help me compose the primitives on teh fly. the idea is that with golden layout and strict schema I should be able to swap golden layout window X for window Y and have it work. I am compositing the w3c gesture input layer, the pointer consumer should be hot swappable like a OS
+---
+ok, so create a hot\silver exemplar showcase. I want to see golden layout and be ready for me to swap in my primitives the idea is that with the goldenlayout js I should have a IDE like setup that I can compose and use like a mini OS and later we'll just use a full JS OS but right now I like golden layout. we should be polymorphic adapters so later switching should be trivial. if there is friction in swapping primitives that's a architectural code smell
+---

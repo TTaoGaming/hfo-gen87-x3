@@ -101,17 +101,6 @@ class SimpleMovingAverage {
 const maSmoother = new SimpleMovingAverage(5);
 
 // ============================================================================
-// FSM STATES (W3C Trace Context Demo)
-// ============================================================================
-
-type FSMState = 'DISARMED' | 'ARMING' | 'ARMED' | 'DOWN_COMMIT' | 'DOWN_NAV' | 'ZOOM';
-
-interface FSMContext {
-	state: FSMState;
-	trace: TraceContext;
-}
-
-// ============================================================================
 // DEMO STATE
 // ============================================================================
 
@@ -120,7 +109,9 @@ interface DemoState {
 	euroHistory: Array<{ x: number; y: number }>;
 	despHistory: Array<{ x: number; y: number }>;
 	maHistory: Array<{ x: number; y: number }>;
-	fsm: FSMContext;
+	fsm: {
+		trace: TraceContext;
+	};
 	transitionCount: number;
 }
 
@@ -130,7 +121,6 @@ const state: DemoState = {
 	despHistory: [],
 	maHistory: [],
 	fsm: {
-		state: 'DISARMED',
 		trace: createTraceContext(),
 	},
 	transitionCount: 0,
@@ -308,11 +298,11 @@ function createDemoUI(): void {
       </div>
       <div class="trace-display" id="traceDisplay">Loading trace context...</div>
       <div class="controls">
-        <button id="btnArm">ARM</button>
-        <button id="btnClick">CLICK</button>
-        <button id="btnPan">PAN</button>
-        <button id="btnDisarm">DISARM</button>
-        <button id="btnReset">RESET</button>
+        <button id="btnDisarm">FORCE DISARM</button>
+        <button id="btnReset">RESET ALL</button>
+        <span style="font-size: 0.7rem; color: #8b949e; margin-left: 10px; align-self: center;">
+          FSM is automatic (driven by sensor data)
+        </span>
       </div>
     </div>
   `;
@@ -405,19 +395,20 @@ function calculateJitter(history: Array<{ x: number; y: number }>): number {
 // FSM LOGIC
 // ============================================================================
 
-function transitionFSM(newState: FSMState): void {
-	if (state.fsm.state !== newState) {
-		state.fsm.state = newState;
-		state.fsm.trace = propagateTrace(state.fsm.trace);
-		state.transitionCount++;
-		updateFSMDisplay();
-	}
-}
+let lastFSMState = '';
 
 function updateFSMDisplay(): void {
+	const currentState = fsm.getState();
+
+	if (lastFSMState !== currentState) {
+		lastFSMState = currentState;
+		state.fsm.trace = propagateTrace(state.fsm.trace);
+		state.transitionCount++;
+	}
+
 	// Update state badges
 	document.querySelectorAll('.fsm-state').forEach((el) => el.classList.remove('active'));
-	document.getElementById(`fsm-${state.fsm.state}`)?.classList.add('active');
+	document.getElementById(`fsm-${currentState}`)?.classList.add('active');
 
 	// Update trace display
 	const traceEl = document.getElementById('traceDisplay');
@@ -492,30 +483,17 @@ export function startPort2Demo(): void {
 	createDemoUI();
 	updateFSMDisplay();
 
-	// FSM button handlers
-	document.getElementById('btnArm')?.addEventListener('click', () => {
-		if (state.fsm.state === 'DISARMED') transitionFSM('ARMING');
-		else if (state.fsm.state === 'ARMING') transitionFSM('ARMED');
-	});
-
-	document.getElementById('btnClick')?.addEventListener('click', () => {
-		if (state.fsm.state === 'ARMED') transitionFSM('DOWN_COMMIT');
-		else if (state.fsm.state === 'DOWN_COMMIT') transitionFSM('ARMED');
-	});
-
-	document.getElementById('btnPan')?.addEventListener('click', () => {
-		if (state.fsm.state === 'ARMED') transitionFSM('DOWN_NAV');
-		else if (state.fsm.state === 'DOWN_NAV') transitionFSM('ARMED');
-	});
-
+	// FSM button handlers (IR-0009/IR-0010 FIX: No theater)
 	document.getElementById('btnDisarm')?.addEventListener('click', () => {
-		transitionFSM('DISARMED');
+		fsm.disarm();
+		updateFSMDisplay();
 	});
 
 	document.getElementById('btnReset')?.addEventListener('click', () => {
 		state.fsm.trace = createTraceContext();
 		state.transitionCount = 0;
-		transitionFSM('DISARMED');
+		fsm.disarm();
+		updateFSMDisplay();
 		oneEuroSmoother.reset();
 		despSmoother.reset();
 		maSmoother.reset();
@@ -537,6 +515,7 @@ export function startPort2Demo(): void {
 	// Animation loop
 	function loop(): void {
 		processFrame(mouseX, mouseY);
+		updateFSMDisplay();
 		requestAnimationFrame(loop);
 	}
 

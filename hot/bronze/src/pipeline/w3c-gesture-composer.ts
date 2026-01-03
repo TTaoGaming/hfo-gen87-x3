@@ -38,7 +38,6 @@ import type { AdapterTarget, SmoothedFrame } from '../contracts/schemas.js';
 import {
 	PIPELINE_EVENT_TYPES,
 	PIPELINE_NATS_SUBJECTS,
-	type Traceparent,
 	type VacuoleEnvelope,
 	propagateVacuole,
 	wrapInVacuole,
@@ -52,19 +51,19 @@ export interface ComposerConfig {
 	/** HFO generation (87+) */
 	gen: number;
 	/** Enable NATS routing (distributed mode) */
-	enableNATS?: boolean;
+	enableNATS?: boolean | undefined;
 	/** NATS server URL */
-	natsUrl?: string;
+	natsUrl?: string | undefined;
 	/** Enable vacuole envelopes (default: true) */
-	enableEnvelopes?: boolean;
+	enableEnvelopes?: boolean | undefined;
 	/** Enable prediction stage (default: true) */
-	enablePrediction?: boolean;
+	enablePrediction?: boolean | undefined;
 	/** Viewport dimensions for coordinate mapping */
 	viewport: { width: number; height: number };
 	/** Target element for pointer dispatch */
-	targetElement?: HTMLElement;
+	targetElement?: HTMLElement | undefined;
 	/** Overlay container (optional) */
-	overlayContainer?: HTMLElement;
+	overlayContainer?: HTMLElement | undefined;
 }
 
 // ============================================================================
@@ -120,13 +119,13 @@ export class W3CGestureComposer {
 
 	// Last envelopes (for debugging)
 	private lastEnvelopes: {
-		sense?: SenseEnvelope;
-		smooth?: SmoothEnvelope;
-		predict?: PredictEnvelope;
-		fsm?: FSMEnvelope;
-		emit?: EmitEnvelope;
-		target?: TargetEnvelope;
-		ui?: UIEnvelope;
+		sense?: SenseEnvelope | undefined;
+		smooth?: SmoothEnvelope | undefined;
+		predict?: PredictEnvelope | undefined;
+		fsm?: FSMEnvelope | undefined;
+		emit?: EmitEnvelope | undefined;
+		target?: TargetEnvelope | undefined;
+		ui?: UIEnvelope | undefined;
 	} = {};
 
 	// Stage callbacks
@@ -193,7 +192,6 @@ export class W3CGestureComposer {
 		}
 
 		const startTime = performance.now();
-		let currentTrace: Traceparent | undefined;
 
 		try {
 			// ================================================================
@@ -215,7 +213,6 @@ export class W3CGestureComposer {
 				: null;
 
 			this.lastEnvelopes.sense = senseEnvelope ?? undefined;
-			currentTrace = senseEnvelope?.traceparent;
 			this.notifyStageComplete('sense', senseEnvelope);
 
 			// ================================================================
@@ -245,7 +242,7 @@ export class W3CGestureComposer {
 				this.stats.stageLatencies.predict = performance.now() - predictStart;
 
 				predictEnvelope =
-					this.config.enableEnvelopes && smoothEnvelope
+					this.config.enableEnvelopes && smoothEnvelope && predictedFrame
 						? propagateVacuole(smoothEnvelope, predictedFrame, 3, 2)
 						: null;
 

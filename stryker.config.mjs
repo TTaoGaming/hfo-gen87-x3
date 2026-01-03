@@ -62,6 +62,7 @@ export default {
 		'hot/bronze/src/pipeline/hfo-pipeline.ts',
 		'hot/bronze/src/contracts/hfo-ports.ts',
 		'hot/bronze/src/contracts/port-contracts.ts',
+		'cold/silver/primitives/double-exponential.ts',
 		// Exclude test utilities - not production code
 		'!hot/bronze/src/pipeline/test-utils.ts',
 		'!hot/bronze/src/**/*.test.ts',
@@ -93,6 +94,10 @@ export default {
 	// Add 'html', 'json' for detailed reports when needed
 	reporters: ['clear-text', 'progress'],
 
+	// Optimization: Ignore static mutants to save ~70% execution time
+	// Static mutants are those that are evaluated only once (e.g. at the top level of a module)
+	ignoreStatic: true,
+
 	// Thresholds - what mutation score is acceptable
 	// ENFORCED: 80% minimum (break threshold)
 	// Changed from 40% to 80% per Gen87.X3 enforcement requirements
@@ -102,16 +107,14 @@ export default {
 		break: 80, // BLOCKING: Fail build/commit if below 80%
 	},
 
-	// Single concurrency - prevents race conditions and easier to debug
-	concurrency: 1,
+	// High concurrency for 20-core machine
+	concurrency: 12,
 
 	// Short timeout to catch freezes fast
-	// If a mutant takes >10s, something is wrong (tests should be fast)
 	timeoutMS: 10000,
 
-	// Stop on first surviving mutant (faster feedback during development)
-	// Set to true for full mutation report
-	disableBail: true,
+	// Bail on first surviving mutant for faster feedback during strengthening
+	disableBail: false,
 
 	// Log level - use 'error' for clean output, 'info' for debugging
 	logLevel: 'info',

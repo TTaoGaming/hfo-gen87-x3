@@ -54,16 +54,14 @@ test.describe('E2E Pipeline Variant B', () => {
 
 		// Check console logs for initialization
 		const logs = (page as any)._consoleLogs;
-		expect(logs.some((log: string) => log.includes('HFO E2E Pipeline Loaded'))).toBeTruthy();
-		expect(
-			logs.some((log: string) => log.includes('OneEuroExemplarAdapter initialized')),
-		).toBeTruthy();
-		expect(
-			logs.some((log: string) => log.includes('RapierPhysicsAdapter initialized')),
-		).toBeTruthy();
-		expect(
-			logs.some((log: string) => log.includes('DoubleExponentialPredictor initialized')),
-		).toBeTruthy();
+		expect(logs.some((log: string) => log.includes('HFO E2E Pipeline Loaded'))).toBe(true);
+		expect(logs.some((log: string) => log.includes('OneEuroExemplarAdapter initialized'))).toBe(
+			true,
+		);
+		expect(logs.some((log: string) => log.includes('RapierPhysicsAdapter initialized'))).toBe(true);
+		expect(logs.some((log: string) => log.includes('DoubleExponentialPredictor initialized'))).toBe(
+			true,
+		);
 
 		// No JS errors (except favicon 404 which is acceptable)
 		const errors = (page as any)._jsErrors;

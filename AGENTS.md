@@ -40,6 +40,8 @@
 4. **TESTS before CODE**: Write failing tests (RED) before implementation (GREEN)
 5. **CITE SOURCES**: When using exemplars, cite generation and filename
 6. **VALIDATE CLAIMS**: If you say "tests passing," show the terminal output
+7. **TARGETED MUTATION**: Use `VITEST_SEGMENT` to limit tests during mutation runs.
+   - Example: `$env:VITEST_SEGMENT='path/to/file.test.ts'; npx stryker run --mutate path/to/file.ts`
 
 ### 🔐 PROOF-OF-WORK REQUIREMENTS
 
@@ -120,6 +122,7 @@
 | **Evidence** | `12-golden-unified.html` bypassing `GoldenLayoutShellAdapter` |
 | **Root Cause** | AI takes path of least resistance in demos |
 | **Mitigation** | `Burn_The_Slop` - delete hand-rolled JS, enforce adapter usage |
+| **Status** | ✅ FIXED: `12-golden-unified.html` archived. `LayoutTree` extracted. |
 
 ### IR-0009: EMIT_WITHOUT_INJECT (CRITICAL)
 | Aspect | Details |
@@ -145,6 +148,14 @@
 | **Root Cause** | Module scope vs Global scope confusion in Vite bundling |
 | **Mitigation** | `Explicit_Global_Exposure` - use `(window as any).prop = ...` |
 
+### IR-0012: BLOATED_MUTATION_RUNS (CRITICAL)
+| Aspect | Details |
+|--------|---------|
+| **Pattern** | Running entire test suite (300+ tests) for single file mutation |
+| **Evidence** | 2-hour mutation runs reported by user |
+| **Root Cause** | Broad `include` patterns in `vitest.config.ts` during Stryker dry run |
+| **Mitigation** | `Targeted_Mutation_Testing` - use `VITEST_SEGMENT` env var |
+
 ### Mitigation Priority Matrix
 
 | Priority | Mitigation | Effort | Status |
@@ -153,6 +164,7 @@
 | **P0** | PreCommit_TypeSafety_Gate | 1hr | PENDING |
 | **P1** | PreCommit_Adapter_Import_Gate | 2hr | PENDING |
 | **P1** | Timestamp_Proximity_Gate_G0Plus | 1hr | PENDING |
+| **P0** | Targeted_Mutation_Testing | 1hr | ✅ FIXED |
 | **P2** | ToDo_Deadline_Enforcement | 1hr | PENDING |
 | **P2** | Pivot_Approval_Gate | 1hr | PENDING |
 

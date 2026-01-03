@@ -152,6 +152,18 @@ export const FSMActionSchema = z.discriminatedUnion('action', [
 		state: z.enum(FSMStates),
 		x: z.number(),
 		y: z.number(),
+		velocity: z
+			.object({
+				x: z.number(),
+				y: z.number(),
+			})
+			.nullish(),
+		prediction: z
+			.object({
+				x: z.number(),
+				y: z.number(),
+			})
+			.nullish(),
 	}),
 	z.object({
 		action: z.literal('down'),
@@ -159,6 +171,12 @@ export const FSMActionSchema = z.discriminatedUnion('action', [
 		x: z.number(),
 		y: z.number(),
 		button: z.union([z.literal(0), z.literal(1)]),
+		velocity: z
+			.object({
+				x: z.number(),
+				y: z.number(),
+			})
+			.nullish(),
 	}),
 	z.object({
 		action: z.literal('up'),
@@ -166,6 +184,12 @@ export const FSMActionSchema = z.discriminatedUnion('action', [
 		x: z.number(),
 		y: z.number(),
 		button: z.union([z.literal(0), z.literal(1)]),
+		velocity: z
+			.object({
+				x: z.number(),
+				y: z.number(),
+			})
+			.nullish(),
 	}),
 	z.object({
 		action: z.literal('cancel'),
@@ -194,6 +218,20 @@ export const PointerEventOutSchema = z.discriminatedUnion('type', [
 		clientY: z.number(),
 		pointerType: z.enum(['mouse', 'pen', 'touch']),
 		pressure: z.number().min(0).max(1),
+		tangentialPressure: z.number().min(-1).max(1).optional(),
+		tiltX: z.number().min(-90).max(90).optional(),
+		tiltY: z.number().min(-90).max(90).optional(),
+		twist: z.number().min(0).max(359).optional(),
+		altitudeAngle: z
+			.number()
+			.min(0)
+			.max(Math.PI / 2)
+			.optional(),
+		azimuthAngle: z
+			.number()
+			.min(0)
+			.max(Math.PI * 2)
+			.optional(),
 		isPrimary: z.boolean(),
 	}),
 	z.object({
@@ -205,6 +243,20 @@ export const PointerEventOutSchema = z.discriminatedUnion('type', [
 		button: z.number().int().min(0).max(2),
 		buttons: z.number().int().nonnegative(),
 		pressure: z.number().min(0).max(1),
+		tangentialPressure: z.number().min(-1).max(1).optional(),
+		tiltX: z.number().min(-90).max(90).optional(),
+		tiltY: z.number().min(-90).max(90).optional(),
+		twist: z.number().min(0).max(359).optional(),
+		altitudeAngle: z
+			.number()
+			.min(0)
+			.max(Math.PI / 2)
+			.optional(),
+		azimuthAngle: z
+			.number()
+			.min(0)
+			.max(Math.PI * 2)
+			.optional(),
 		isPrimary: z.boolean(),
 	}),
 	z.object({
@@ -216,6 +268,20 @@ export const PointerEventOutSchema = z.discriminatedUnion('type', [
 		button: z.number().int().min(0).max(2),
 		buttons: z.number().int().nonnegative(),
 		pressure: z.number().min(0).max(1),
+		tangentialPressure: z.number().min(-1).max(1).optional(),
+		tiltX: z.number().min(-90).max(90).optional(),
+		tiltY: z.number().min(-90).max(90).optional(),
+		twist: z.number().min(0).max(359).optional(),
+		altitudeAngle: z
+			.number()
+			.min(0)
+			.max(Math.PI / 2)
+			.optional(),
+		azimuthAngle: z
+			.number()
+			.min(0)
+			.max(Math.PI * 2)
+			.optional(),
 		isPrimary: z.boolean(),
 	}),
 	z.object({
