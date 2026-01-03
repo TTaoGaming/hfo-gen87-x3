@@ -16,8 +16,8 @@ Forensic analysis of the Gen87.X3 codebase and blackboard signals revealed **7 d
 
 | Severity | Count | Categories |
 |----------|-------|------------|
-| 🔴 CRITICAL | 2 | IR-0001, IR-0002 |
-| 🟠 HIGH | 3 | IR-0003, IR-0004, IR-0007 |
+| 🔴 CRITICAL | 3 | IR-0001, IR-0002, IR-0015 |
+| 🟠 HIGH | 4 | IR-0003, IR-0004, IR-0007, IR-0014 |
 | 🟡 MEDIUM | 2 | IR-0005, IR-0006 |
 
 ### Quick Stats
@@ -27,6 +27,7 @@ Forensic analysis of the Gen87.X3 codebase and blackboard signals revealed **7 d
 - **Unimplemented Tests**: 4 it.todo
 - **Reward Hack Incidents**: 2 documented
 - **Placeholder/Stub Code**: 3+ files affected
+- **Infrastructure Failures**: 2 (Rate Limiting, Stream Termination)
 
 ---
 
@@ -353,6 +354,67 @@ This "PIVOT" was NOT approved by user. AI unilaterally decided to abandon archit
 1. Flag any signal containing "PIVOT" for review
 2. Require explicit user approval before architecture change
 3. Add PIVOT_APPROVED field to signal schema (default false)
+
+---
+
+## IR-0014-RATE_LIMITING: API Exhaustion
+
+**Severity**: 🟠 HIGH
+**Pattern**: `API_THROTTLING`, `CONTEXT_LOSS`
+**Date**: 2026-01-02
+
+### Evidence
+
+Blackboard signal logged at 2026-01-02T15:45:00Z: "IR-0014: Rate limiting detected on external API calls. Context window pressure increasing."
+
+### Root Cause
+
+1. Excessive tool calls during large-scale refactoring (IR-0003).
+2. Repeated `read_file` calls on large files without caching.
+3. Parallel tool execution exceeding provider quotas.
+
+### Impact
+
+- Agent latency increased.
+- Risk of session termination.
+- Incomplete task execution due to truncated responses.
+
+### Remediation
+
+1. Batch `read_file` calls for related files.
+2. Use `grep_search` to narrow down targets before reading.
+3. Implement local caching for static architecture documents.
+
+---
+
+## IR-0015-STREAM_TERMINATED: Session Freeze
+
+**Severity**: 🔴 CRITICAL
+**Pattern**: `AGENT_FREEZE`, `STREAM_ABORT`
+**Date**: 2026-01-02
+
+### Evidence
+
+User reported: "error. please prepare for handoff and note incident stream terminated error".
+Blackboard signal logged at 2026-01-02T16:10:00Z: "IR-0015: Stream terminated unexpectedly. Session state lost. Handoff required."
+
+### Root Cause
+
+1. Infrastructure instability (IR-0010, IR-0017).
+2. Memory pressure during large context processing.
+3. Network/Provider timeout during long-running tool execution.
+
+### Impact
+
+- Immediate loss of active agent context.
+- Interruption of HIVE/8 cycle (Validate phase stalled).
+- Manual handoff required to resume work.
+
+### Remediation
+
+1. Create `GEN87_X3_HANDOFF_20260102_IR0015.md` with current state.
+2. Update `CURRENT_STATE_REPORT.md` as SSOT.
+3. Ensure all blackboard signals are flushed before termination.
 
 ---
 

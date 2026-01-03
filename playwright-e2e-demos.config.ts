@@ -14,7 +14,7 @@ export default defineConfig({
 	use: {
 		trace: 'on-first-retry',
 		screenshot: 'only-on-failure',
-		baseURL: 'http://127.0.0.1:8088',
+		baseURL: 'http://127.0.0.1:8081',
 	},
 	snapshotDir: './e2e/__snapshots__',
 	projects: [
@@ -24,8 +24,8 @@ export default defineConfig({
 		},
 	],
 	webServer: {
-		command: 'npx http-server demos -p 8088 -c-1 --cors',
-		url: 'http://127.0.0.1:8088/index.html',
+		command: 'npx http-server demos -p 8081 -c-1 --cors',
+		url: 'http://127.0.0.1:8081/index.html',
 		reuseExistingServer: true,
 		timeout: 30000,
 	},

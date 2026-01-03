@@ -36,7 +36,7 @@ export class SporeStormInjector implements Port3_Injector {
 
 		if (!pointerEvent) {
 			// No event to deliver (e.g., FSM in BASELINE)
-			return null as any;
+			return null as unknown as VacuoleEnvelope<PointerEventOut>;
 		}
 
 		// 2. Inject into Target

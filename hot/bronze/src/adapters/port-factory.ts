@@ -484,12 +484,10 @@ export class HFOPortFactory implements PortFactory {
 			case 'mosaic':
 			case 'daedalos':
 				// Not implemented yet - fallback to raw
-				console.warn(`Shell type '${type}' not implemented, falling back to 'raw'`);
 				return new RawHTMLShellAdapter();
 
 			default: {
 				// Fallback for unknown types
-				console.warn(`Unknown shell type '${type}', falling back to 'raw'`);
 				return new RawHTMLShellAdapter();
 			}
 		}

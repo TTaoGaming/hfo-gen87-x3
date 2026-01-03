@@ -46,7 +46,8 @@ export class SpiderSovereignOrchestrator implements Port7_Navigator {
 		this.substrate = new InMemorySubstrateAdapter();
 
 		// Initialize Ports using the provided Factory (Exemplar Primitive)
-		this.port0 = config.factory.createSensor() as any; // Port 0: SENSE
+		// We cast to unknown then to the specific port type to satisfy health checks
+		this.port0 = config.factory.createSensor() as unknown as Port0_Observer; // Port 0: SENSE
 		this.port1 = new WebWeaverBridger(config.gen); // Port 1: FUSE
 
 		const smoother = config.factory.createSmoother();
@@ -69,8 +70,7 @@ export class SpiderSovereignOrchestrator implements Port7_Navigator {
 	 * Port 7: DECIDE
 	 * Strategic decision making for the swarm.
 	 */
-	async decide(context: unknown): Promise<void> {
-		console.log('[Spider Sovereign] Deciding...', context);
+	async decide(_context: unknown): Promise<void> {
 		this.emitSignal('Spider Sovereign making strategic decision.', 'I');
 	}
 
@@ -89,8 +89,9 @@ export class SpiderSovereignOrchestrator implements Port7_Navigator {
 		if (this.isRunning) return;
 		await this.substrate.connect();
 		// Initialize Port 0 (Sensor)
-		if (typeof (this.port0 as any).initialize === 'function') {
-			await (this.port0 as any).initialize();
+		const observer = this.port0 as unknown as { initialize?: () => Promise<void> };
+		if (typeof observer.initialize === 'function') {
+			await observer.initialize();
 		}
 		this.isRunning = true;
 
@@ -114,7 +115,10 @@ export class SpiderSovereignOrchestrator implements Port7_Navigator {
 		try {
 			// 1. Port 0: SENSE (Lidless Legion)
 			// We wrap the raw output in a Vacuole if the adapter doesn't do it
-			const rawResult = await (this.port0 as any).sense(video, timestamp);
+			const observer = this.port0 as unknown as {
+				sense: (v: HTMLVideoElement, t: number) => Promise<unknown>;
+			};
+			const rawResult = await observer.sense(video, timestamp);
 			const rawEnvelope = wrapInVacuole(rawResult, {
 				type: 'hfo.w3c.gesture.sense',
 				hfogen: this.gen,
@@ -130,11 +134,11 @@ export class SpiderSovereignOrchestrator implements Port7_Navigator {
 			const fusedEnvelope = this.port1.fuse(rawEnvelope.data, SensorFrameSchema);
 
 			// 4. Port 2: SHAPE (Mirror Magus) - Smooth and Predict
-			const shapedEnvelope = this.port2.shape(fusedEnvelope as any);
+			const shapedEnvelope = this.port2.shape(fusedEnvelope);
 
 			// 5. Port 6: STORE (Kraken Keeper) - Assimilate into FSM
 			// IR-0008 FIX: FSM moved from Port 3 to Port 6
-			const actionEnvelope = await this.port6.assimilate(shapedEnvelope as any);
+			const actionEnvelope = await this.port6.assimilate(shapedEnvelope);
 
 			// 6. Port 3: DELIVER (Spore Storm) - Execute and Inject
 			// Target is decided by Port 7 (Spider Sovereign)
@@ -143,7 +147,7 @@ export class SpiderSovereignOrchestrator implements Port7_Navigator {
 				selector: '#app',
 				bounds: { width: window.innerWidth, height: window.innerHeight, left: 0, top: 0 },
 			};
-			const deliveredEnvelope = await this.port3.deliver(actionEnvelope as any, target);
+			const deliveredEnvelope = await this.port3.deliver(actionEnvelope, target);
 
 			if (!deliveredEnvelope) {
 				// No event emitted this frame (e.g., system arming)
@@ -156,7 +160,6 @@ export class SpiderSovereignOrchestrator implements Port7_Navigator {
 			// Publish to substrate for stigmergy
 			this.substrate.publish('hfo.pipeline.complete', deliveredEnvelope);
 		} catch (error) {
-			console.error('[Spider Sovereign] Pipeline error:', error);
 			this.emitSignal(`Pipeline error: ${error}`, 'E');
 		}
 	}
@@ -173,7 +176,6 @@ export class SpiderSovereignOrchestrator implements Port7_Navigator {
 			port: 7,
 		};
 		this.substrate.publish('hfo.stigmergy.signal', signal);
-		console.log(`[SIGNAL] [${hive}] ${msg}`);
 	}
 
 	getBus(): InMemorySubstrateAdapter {

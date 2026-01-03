@@ -41,8 +41,8 @@ export class DOMTargetRouterAdapter implements TargetRouterPort {
 		// Find the closest registered target
 		// In a real OS, we'd check if the element is inside a Golden Layout panel
 		for (const target of this.targets.values()) {
-			if (target.type === 'dom' && (target as any).selector) {
-				const targetEl = document.querySelector((target as any).selector);
+			if (target.type === 'dom' && target.selector) {
+				const targetEl = document.querySelector(target.selector);
 				if (targetEl?.contains(element)) {
 					return target;
 				}
@@ -56,8 +56,8 @@ export class DOMTargetRouterAdapter implements TargetRouterPort {
 	 * Route an event to a target
 	 */
 	async route(event: any, target: TargetDefinition): Promise<void> {
-		if (target.type === 'dom' && (target as any).selector) {
-			const element = document.querySelector((target as any).selector);
+		if (target.type === 'dom' && target.selector) {
+			const element = document.querySelector(target.selector);
 			if (element) {
 				// Dispatch a real DOM event
 				const domEvent = new CustomEvent('hfo-pointer', { detail: event });
@@ -65,7 +65,6 @@ export class DOMTargetRouterAdapter implements TargetRouterPort {
 			}
 		} else if (target.type === 'nats') {
 			// In a real system, we'd publish to NATS here
-			console.log(`[TargetRouter] Routing to NATS: ${target.id}`, event);
 		}
 	}
 }

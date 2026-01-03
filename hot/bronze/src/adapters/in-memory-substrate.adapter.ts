@@ -33,7 +33,7 @@ import type { SubstratePort } from '../contracts/ports.js';
  * const bus = new InMemorySubstrateAdapter();
  * await bus.connect();
  *
- * bus.subscribe('sensor.frame', (frame) => console.log(frame));
+ * bus.subscribe('sensor.frame', (frame) => { // handle frame });
  * await bus.publish('sensor.frame', { x: 100, y: 200 });
  *
  * await bus.disconnect();

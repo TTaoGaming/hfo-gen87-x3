@@ -187,8 +187,19 @@ describe('GoldenLayoutShellAdapter', () => {
 
 			await adapter.initialize(container, config);
 
-			// Factory should be called during tile creation
-			expect(factory).toHaveBeenCalled();
+			// Wait for ResizeObserver to fire
+			await new Promise((resolve) => setTimeout(resolve, 50));
+
+			// Force GL to render
+			(adapter as any).gl.updateRootSize();
+
+			// Wait for GL to render using vi.waitFor
+			await vi.waitFor(
+				() => {
+					expect(factory).toHaveBeenCalled();
+				},
+				{ timeout: 1000, interval: 50 },
+			);
 		});
 
 		it('provides default factory for unregistered types', async () => {
@@ -253,12 +264,26 @@ describe('GoldenLayoutShellAdapter', () => {
 		});
 
 		describe('getTileTarget()', () => {
-			it('returns AdapterTarget for existing tile', () => {
+			it('returns AdapterTarget for existing tile', async () => {
 				const tile = createTileConfig({ id: 'target-tile' });
 				adapter.addTile(tile);
 
+				// Wait for ResizeObserver to fire
+				await new Promise((resolve) => setTimeout(resolve, 50));
+
+				// Force GL to render
+				(adapter as any).gl.updateRootSize();
+
+				// Wait for GL to render and target to be available
+				await vi.waitFor(
+					() => {
+						const target = adapter.getTileTarget('target-tile');
+						expect(target).not.toBeNull();
+					},
+					{ timeout: 1000, interval: 50 },
+				);
+
 				const target = adapter.getTileTarget('target-tile');
-				expect(target).not.toBeNull();
 				expect(target?.type).toBe('element');
 				expect(target?.selector).toContain('target-tile');
 				expect(target?.bounds).toBeDefined();

@@ -50,6 +50,7 @@
 | "Tests pass" | Terminal output showing `X passing` |
 | "Build succeeds" | `npx tsc --noEmit` output |
 | "Mutation score X%" | Stryker summary table |
+| "Performance Budget" | `RED_REGNANT_PROPERTY_RUNS` used in tests |
 | "Created file X" | `ls` or `Get-ChildItem` showing file exists |
 | "Signal emitted" | `Get-Content blackboard.jsonl \| Select-Last 1` |
 
@@ -155,6 +156,22 @@
 | **Evidence** | 2-hour mutation runs reported by user |
 | **Root Cause** | Broad `include` patterns in `vitest.config.ts` during Stryker dry run |
 | **Mitigation** | `Targeted_Mutation_Testing` - use `VITEST_SEGMENT` env var |
+
+### IR-0014: RATE_LIMITING (HIGH)
+| Aspect | Details |
+|--------|---------|
+| **Pattern** | API throttling during large refactors |
+| **Evidence** | Logged in blackboard 2026-01-02T15:45:00Z |
+| **Root Cause** | Excessive tool calls/parallelism |
+| **Mitigation** | Batch reads, use grep before read |
+
+### IR-0015: STREAM_TERMINATED (CRITICAL)
+| Aspect | Details |
+|--------|---------|
+| **Pattern** | Unexpected session freeze/termination |
+| **Evidence** | User report + blackboard signal 2026-01-02T16:10:00Z |
+| **Root Cause** | Infrastructure instability, memory pressure |
+| **Mitigation** | Mandatory handoff docs, SSOT state reports |
 
 ### Mitigation Priority Matrix
 
@@ -352,8 +369,7 @@ Port N = Binary(N) = Trigram[N] = Element[N] = Commander[N] = JADC2[N] = Stigmer
 | **Secret** | "The Red Queen runs to stand still" | Evolution pressure |
 | **CAN** | `read`, `validate`, `invoke` | |
 | **CANNOT** | `persist`, `decide`, `emit_output`, `modify` | |
-| **Persona** | Property-based chaos monkey, mutation tester | |
-
+| **Persona** | Property-based chaos monkey, mutation tester | || **Authority** | **Test Budget**: Enforces `RED_REGNANT_PROPERTY_RUNS` to ensure fast TDD cycles. |
 ---
 
 ### @5 — Immunizer — Pyre Praetorian

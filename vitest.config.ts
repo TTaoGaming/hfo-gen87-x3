@@ -25,6 +25,7 @@ export default defineConfig({
 					'hot/**/*.{test,spec}.{ts,tsx}',
 					'cold/silver/**/*.{test,spec}.{ts,tsx}',
 				],
+		setupFiles: ['./vitest.setup.ts'],
 		exclude: [
 			'**/node_modules/**',
 			'**/dist/**',

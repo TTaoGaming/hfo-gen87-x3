@@ -17,7 +17,7 @@ export default defineConfig({
 	reporter: [['list']],
 	timeout: 30000,
 	use: {
-		baseURL: 'http://localhost:8082',
+		baseURL: 'http://localhost:8081',
 		trace: 'off',
 		screenshot: 'only-on-failure',
 		video: 'off',
@@ -29,8 +29,8 @@ export default defineConfig({
 		},
 	],
 	webServer: {
-		command: 'npx vite --config demos/vite.config.ts --port 8082',
-		url: 'http://localhost:8082',
+		command: 'npx vite --config demos/vite.config.ts --port 8081',
+		url: 'http://localhost:8081',
 		reuseExistingServer: true,
 		timeout: 30000,
 		stdout: 'ignore',

@@ -19,7 +19,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Vite dev server - required for TypeScript compilation
-const BASE_URL = 'http://localhost:8082';
+const BASE_URL = 'http://localhost:8081';
 
 // Demo configurations with expected elements
 // NOTE: Paths are relative to Vite root (demos/), not project root

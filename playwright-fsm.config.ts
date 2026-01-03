@@ -14,7 +14,7 @@ export default defineConfig({
 	use: {
 		trace: 'on-first-retry',
 		screenshot: 'only-on-failure',
-		baseURL: 'http://127.0.0.1:3333',
+		baseURL: 'http://127.0.0.1:8081',
 	},
 	projects: [
 		{
@@ -23,8 +23,8 @@ export default defineConfig({
 		},
 	],
 	webServer: {
-		command: 'npx serve demos -l 3333',
-		url: 'http://127.0.0.1:3333/09-fsm-showcase.html',
+		command: 'npx serve demos -l 8081',
+		url: 'http://127.0.0.1:8081/09-fsm-showcase.html',
 		reuseExistingServer: true,
 		timeout: 10000,
 	},

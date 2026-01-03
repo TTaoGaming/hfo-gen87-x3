@@ -1,5 +1,6 @@
 import * as fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
+import { RED_REGNANT_PROPERTY_RUNS } from '../../../hot/bronze/quarantine/shared/test-budget.js';
 import type { LayoutNode } from './layout-tree.js';
 import {
     addTileToTree,
@@ -204,6 +205,7 @@ describe('Layout Tree Primitives', () => {
 
 					return newCount === initialCount - 1;
 				}),
+				{ numRuns: RED_REGNANT_PROPERTY_RUNS },
 			);
 		});
 
@@ -221,6 +223,7 @@ describe('Layout Tree Primitives', () => {
 
 					return newCount === initialCount + 1;
 				}),
+				{ numRuns: RED_REGNANT_PROPERTY_RUNS },
 			);
 		});
 
@@ -234,6 +237,7 @@ describe('Layout Tree Primitives', () => {
 					const newTree = removeTileFromTree(tree, targetId);
 					return !findTileInTree(newTree, targetId);
 				}),
+				{ numRuns: RED_REGNANT_PROPERTY_RUNS },
 			);
 		});
 
@@ -248,6 +252,7 @@ describe('Layout Tree Primitives', () => {
 					const newTree = splitTileInTree(tree, targetId, newId, 'row');
 					return findTileInTree(newTree, targetId) && findTileInTree(newTree, newId);
 				}),
+				{ numRuns: RED_REGNANT_PROPERTY_RUNS },
 			);
 		});
 	});

@@ -5,7 +5,7 @@
  */
 import { expect, test } from '@playwright/test';
 
-const BASE_URL = 'http://localhost:8082';
+const BASE_URL = 'http://localhost:8081';
 
 const DEMOS = [
 	{ name: 'index', path: '/', description: 'Demo Index' },

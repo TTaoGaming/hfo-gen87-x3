@@ -9,6 +9,7 @@
 
 import * as fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
+import { RED_REGNANT_PROPERTY_RUNS } from '../../quarantine/shared/test-budget.js';
 import {
 	createDeterministicTrace,
 	createTraceContext,
@@ -59,7 +60,7 @@ describe('trace-context', () => {
 					const ctx = createTraceContext();
 					return validateTraceparent(ctx.traceparent);
 				}),
-				{ numRuns: 100 },
+				{ numRuns: RED_REGNANT_PROPERTY_RUNS },
 			);
 		});
 	});
@@ -97,7 +98,7 @@ describe('trace-context', () => {
 					const child = propagateTrace(parent);
 					return extractTraceId(child.traceparent) === extractTraceId(parent.traceparent);
 				}),
-				{ numRuns: 100 },
+				{ numRuns: RED_REGNANT_PROPERTY_RUNS },
 			);
 		});
 	});
@@ -188,7 +189,7 @@ describe('trace-context', () => {
 					const trace = createDeterministicTrace(seed);
 					return validateTraceparent(trace.traceparent);
 				}),
-				{ numRuns: 100 },
+				{ numRuns: RED_REGNANT_PROPERTY_RUNS },
 			);
 		});
 	});

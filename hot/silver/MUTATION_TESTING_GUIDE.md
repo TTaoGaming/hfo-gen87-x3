@@ -1,4 +1,4 @@
-# 🔬 Mutation Testing Guide
+12345# 🔬 Mutation Testing Guide
 
 > **Purpose**: Prove tests catch real bugs, not just cosmetic compliance
 > **Tool**: Stryker Mutator (https://stryker-mutator.io/)

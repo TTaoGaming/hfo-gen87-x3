@@ -161,6 +161,71 @@ TTV is not just "gestures"; it is the virtualization of the **entire toolchain**
 - [ ] **Task 2**: Implement `signal-gates.ts` for G0-G7 validation.
 - [ ] **Task 3**: Create first 5 Held-Out tests for `one-euro.ts`.
 - [ ] **Task 4**: Update `AGENTS.md` with the "Real Architecture" protocol.
+
+---
+
+## 7.5 SDK & Composition Layer Roadmap (2026-01-03)
+
+> **Blocker Identified**: TTao stuck repairing "theater code" because using adapters is HARDER than bypassing them.
+> **Solution**: SDK/MCP Server makes correct architecture EASIER than ad-hoc wiring.
+
+### 7.5.1 FSM SNAPLOCK Gap Analysis
+
+Current FSM (`cold/silver/primitives/gesture-fsm.ts`) is MISSING:
+
+| Missing State | Purpose | W3C Event |
+|---------------|---------|-----------|
+| **SNAPLOCK** | Freeze cursor on tracking loss | — |
+| **None Transition** | Handle MediaPipe `Open_Palm→None→Pointing_Up` | — |
+| **Palm Angle** | Threshold-based arming (≤30°), not boolean | — |
+| **Magnetic Recovery** | Resume after tracking loss within 3s | — |
+
+### 7.5.2 SDK Priority Stack
+
+| Priority | Component | Purpose | Impact |
+|----------|-----------|---------|--------|
+| **P0** | Fix FSM with SNAPLOCK, palm angles | Reliable cursor | Unblocks all downstream |
+| **P1** | HFO SDK Fluent Builder | Prove polymorphism | Stops theater code |
+| **P2** | E2E Test: DOM→Puter swap | Force real adapter usage | Proves architecture |
+| **P3** | HFO MCP Server | Enable AI swarm composition | Tool Virtualization |
+| **P4** | NATS instead of InMemory | Production substrate | Scale |
+
+### 7.5.3 SDK Design (Target)
+
+```typescript
+// Goal: ONE LINE to create pipeline, ONE LINE to swap target
+const pipeline = HFO.gesture()
+  .sensor('mediapipe')
+  .smoother('one-euro', { minCutoff: 1.0, beta: 0.007 })
+  .predictor('rapier')
+  .fsm('xstate')
+  .emit('w3c-pointer')
+  .target('dom')  // ← SWAP to 'puter', 'daedalos', 'emulator'
+  .build();
+
+// Hot-swap target at runtime
+pipeline.retarget('puter');
+```
+
+### 7.5.4 MCP Server Tools (Future)
+
+| Tool | Purpose |
+|------|---------|
+| `hfo_compose_pipeline` | Create pipeline from JSON config |
+| `hfo_swap_stage` | Hot-swap any adapter |
+| `hfo_get_fsm_state` | Query current state machine |
+| `hfo_inject_pointer` | Push W3C PointerEvent to target |
+| `hfo_list_adapters` | Show available adapters per stage |
+
+### 7.5.5 Distance to Total Tool Virtualization
+
+| Layer | Progress | Status |
+|-------|----------|--------|
+| Primitives | 70% | ⚠️ FSM needs SNAPLOCK, palm angles |
+| Adapters | 60% | ⚠️ Theater code risk |
+| SDK/Composition | 20% | ❌ **BLOCKER** |
+| MCP Server | 0% | Not started |
+| Tool Virtualization | 20% | W3C exists, not wired to targets |
 3. **Failure**: If held-out tests fail, AI's work is REJECTED
 4. **Learning**: AI never learns what the held-out tests check
 

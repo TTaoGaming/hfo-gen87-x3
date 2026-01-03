@@ -17,6 +17,7 @@ import * as fc from 'fast-check';
  */
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
+import { RED_REGNANT_PROPERTY_RUNS } from '../../quarantine/shared/test-budget.js';
 
 // ============================================================================
 // CONSTRAINT 1: Port Interface Contracts
@@ -127,7 +128,7 @@ describe('CONSTRAINT: Port Interface Compliance', () => {
 
 					return oneEuroValid.success && rapierValid.success;
 				}),
-				{ numRuns: 100 },
+				{ numRuns: RED_REGNANT_PROPERTY_RUNS },
 			);
 		});
 	});
@@ -287,7 +288,7 @@ describe('CONSTRAINT: Pipeline Data Flow', () => {
 					);
 				},
 			),
-			{ numRuns: 100 },
+			{ numRuns: RED_REGNANT_PROPERTY_RUNS },
 		);
 	});
 });

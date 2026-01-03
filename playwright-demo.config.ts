@@ -14,7 +14,7 @@ export default defineConfig({
 	use: {
 		trace: 'on-first-retry',
 		screenshot: 'only-on-failure',
-		baseURL: 'http://127.0.0.1:9095',
+		baseURL: 'http://127.0.0.1:8081',
 	},
 	projects: [
 		{
@@ -23,8 +23,8 @@ export default defineConfig({
 		},
 	],
 	webServer: {
-		command: 'npx http-server sandbox/demos/main -p 9095 -c-1 --cors',
-		url: 'http://127.0.0.1:9095/index.html',
+		command: 'npx http-server sandbox/demos/main -p 8081 -c-1 --cors',
+		url: 'http://127.0.0.1:8081/index.html',
 		reuseExistingServer: true,
 		timeout: 30000,
 	},

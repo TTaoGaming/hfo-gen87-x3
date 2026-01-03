@@ -9,6 +9,7 @@
 
 import * as fc from 'fast-check';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { RED_REGNANT_PROPERTY_RUNS } from '../../../hot/bronze/quarantine/shared/test-budget.js';
 import {
     calculateTTI,
     clamp,
@@ -224,7 +225,7 @@ describe('PROPERTY: clamp invariants', () => {
 					return result >= min && result <= max;
 				},
 			),
-			{ numRuns: 100 },
+			{ numRuns: RED_REGNANT_PROPERTY_RUNS },
 		);
 	});
 });

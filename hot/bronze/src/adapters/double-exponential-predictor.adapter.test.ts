@@ -10,6 +10,7 @@ import * as fc from 'fast-check';
  * KEY TEST: Unlike 1€ filter, DESP MUST provide prediction.
  */
 import { beforeEach, describe, expect, it } from 'vitest';
+import { RED_REGNANT_PROPERTY_RUNS } from '../../quarantine/shared/test-budget.js';
 import type { SensorFrame } from '../contracts/schemas.js';
 import {
 	DoubleExponentialPredictor,
@@ -299,7 +300,7 @@ describe('Property-Based Tests', () => {
 					expect(result.handId).toBe('right');
 				},
 			),
-			{ numRuns: 100 },
+			{ numRuns: RED_REGNANT_PROPERTY_RUNS },
 		);
 	});
 
@@ -328,7 +329,7 @@ describe('Property-Based Tests', () => {
 					}
 				},
 			),
-			{ numRuns: 100 },
+			{ numRuns: RED_REGNANT_PROPERTY_RUNS },
 		);
 	});
 
@@ -355,7 +356,7 @@ describe('Property-Based Tests', () => {
 					);
 				},
 			),
-			{ numRuns: 100 },
+			{ numRuns: RED_REGNANT_PROPERTY_RUNS },
 		);
 	});
 });

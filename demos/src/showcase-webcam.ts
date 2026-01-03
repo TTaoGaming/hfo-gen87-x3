@@ -35,6 +35,13 @@ import type {
 	SmoothedFrame,
 } from '../../hot/bronze/src/contracts/schemas.js';
 
+declare global {
+	interface Window {
+		injectTestLandmarks: (frames: SensorFrame[]) => void;
+		playbackLandmarks: (frames: SensorFrame[]) => void;
+	}
+}
+
 // ============================================================================
 // CONFIGURATION
 // ============================================================================
@@ -152,7 +159,7 @@ function playbackLandmarks(frames: SensorFrame[]): void {
 	}
 }
 
-// Expose injection points globally for E2E tests
+// Expose injection points globally for E2E tests (IR-0011 FIX)
 if (typeof window !== 'undefined') {
 	window.injectTestLandmarks = injectTestLandmarks;
 	window.playbackLandmarks = playbackLandmarks;

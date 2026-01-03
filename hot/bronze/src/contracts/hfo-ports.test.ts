@@ -10,6 +10,7 @@
 
 import * as fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
+import { RED_REGNANT_PROPERTY_RUNS } from '../../quarantine/shared/test-budget.js';
 
 import {
 	type HIVEPhase,
@@ -67,7 +68,7 @@ describe('Galois Lattice Properties', () => {
 				const pair = getAntiDiagonalPair(port);
 				return port + pair === 7;
 			}),
-			{ numRuns: 100 },
+			{ numRuns: RED_REGNANT_PROPERTY_RUNS },
 		);
 	});
 
@@ -99,7 +100,7 @@ describe('Galois Lattice Properties', () => {
 				const colVerb = getVerb(col);
 				return question.includes(rowVerb) && question.includes(colVerb);
 			}),
-			{ numRuns: 100 },
+			{ numRuns: RED_REGNANT_PROPERTY_RUNS },
 		);
 	});
 });
@@ -252,7 +253,7 @@ describe('Commander Invariants (100+ iterations)', () => {
 				const matches = mantra.match(regex);
 				return matches !== null && matches.length >= 2;
 			}),
-			{ numRuns: 100 },
+			{ numRuns: RED_REGNANT_PROPERTY_RUNS },
 		);
 	});
 
@@ -262,7 +263,7 @@ describe('Commander Invariants (100+ iterations)', () => {
 				const contract = PORT_CONTRACTS[port];
 				return contract.capabilities.length > 0;
 			}),
-			{ numRuns: 100 },
+			{ numRuns: RED_REGNANT_PROPERTY_RUNS },
 		);
 	});
 
@@ -272,7 +273,7 @@ describe('Commander Invariants (100+ iterations)', () => {
 				const contract = PORT_CONTRACTS[port];
 				return contract.prohibitions.length > 0;
 			}),
-			{ numRuns: 100 },
+			{ numRuns: RED_REGNANT_PROPERTY_RUNS },
 		);
 	});
 
@@ -288,7 +289,7 @@ describe('Commander Invariants (100+ iterations)', () => {
 				}
 				return true;
 			}),
-			{ numRuns: 100 },
+			{ numRuns: RED_REGNANT_PROPERTY_RUNS },
 		);
 	});
 });

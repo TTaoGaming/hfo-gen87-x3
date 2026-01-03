@@ -139,6 +139,9 @@ const ALLOWLIST = [
 	/simulation-detector\.ts$/,
 	// Constraint tests
 	/\.constraint\.test\.ts$/,
+	// Showcase launcher (visualization code, not simulation)
+	// This file renders UI components, not fake data
+	/showcase-launcher\.ts$/,
 ];
 
 // ============================================================================

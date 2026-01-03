@@ -2,7 +2,7 @@
 
 > **Gen**: 87.X3 | **Status**: GOLD | **Updated**: 2026-01-01T17:30:00Z  
 > **Consolidated from**: DRAFT_TTV_GALOIS_MANIFOLD_v3, DRAFT_TTV_SWARM_ORCHESTRATION v1/v2  
-> **SSOT Location**: `hot/gold/HFO_ARCHITECTURE_SSOT_20260101.md`
+> **SSOT Location**: `cold/gold/HFO_ARCHITECTURE_SSOT_20260101.md`
 
 ---
 

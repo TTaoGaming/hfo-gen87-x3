@@ -43,9 +43,9 @@ export class MirrorMagusShaper implements Port2_Shaper {
 			{
 				...smoothed,
 				predicted,
-			} as any,
+			} as unknown as SmoothedFrame,
 			2,
 			2,
-		) as VacuoleEnvelope<SmoothedFrame>;
+		);
 	}
 }

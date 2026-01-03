@@ -27,7 +27,7 @@ test.describe('Pipeline Demo Freeze Diagnosis', () => {
 		});
 
 		// Navigate to the demo
-		await page.goto('http://localhost:5173/demos/11-e2e-pipeline-variant-b.html');
+		await page.goto('/demos/11-e2e-pipeline-variant-b.html');
 
 		// Wait for loading to complete
 		await page.waitForFunction(
@@ -116,7 +116,7 @@ test.describe('Pipeline Demo Freeze Diagnosis', () => {
 			consoleLog.push(`[${msg.type()}] ${msg.text()}`);
 		});
 
-		await page.goto('http://localhost:5173/demos/11-e2e-pipeline-variant-b.html');
+		await page.goto('/demos/11-e2e-pipeline-variant-b.html');
 
 		// Wait for loading
 		await page.waitForFunction(
@@ -142,7 +142,7 @@ test.describe('Pipeline Demo Freeze Diagnosis', () => {
 	});
 
 	test('measure FSM responsiveness', async ({ page }) => {
-		await page.goto('http://localhost:5173/demos/11-e2e-pipeline-variant-b.html');
+		await page.goto('/demos/11-e2e-pipeline-variant-b.html');
 
 		await page.waitForFunction(
 			() => {

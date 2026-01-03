@@ -18,7 +18,7 @@ export default defineConfig({
 	reporter: [['html', { outputFolder: 'playwright-report/silver' }], ['list']],
 
 	use: {
-		baseURL: 'http://localhost:5173',
+		baseURL: 'http://localhost:8081',
 		trace: 'on-first-retry',
 		screenshot: 'only-on-failure',
 		video: 'retain-on-failure',
@@ -41,8 +41,8 @@ export default defineConfig({
 
 	/* Web server for Silver demo - uses Vite */
 	webServer: {
-		command: 'npx vite hot/silver/demo --port 5173',
-		url: 'http://localhost:5173',
+		command: 'npx vite hot/silver/demo --port 8081',
+		url: 'http://localhost:8081',
 		reuseExistingServer: !process.env.CI,
 		timeout: 30000,
 	},

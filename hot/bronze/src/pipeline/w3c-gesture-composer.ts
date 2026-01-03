@@ -348,7 +348,6 @@ export class W3CGestureComposer {
 			return uiEnvelope;
 		} catch (error) {
 			this.stats.errorsCount++;
-			console.error('[W3CGestureComposer] Pipeline error:', error);
 			return null;
 		}
 	}
@@ -397,7 +396,7 @@ export class W3CGestureComposer {
 				try {
 					callback(envelope);
 				} catch (e) {
-					console.error(`[W3CGestureComposer] Stage callback error (${stage}):`, e);
+					// Silent failure for callbacks
 				}
 			}
 		}

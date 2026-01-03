@@ -9,6 +9,7 @@ import * as fc from 'fast-check';
  * - Port 1 validation utilities (valguards, registry, composition)
  */
 import { describe, expect, it } from 'vitest';
+import { RED_REGNANT_PROPERTY_RUNS } from '../../quarantine/shared/test-budget.js';
 
 // Port 0 imports
 import {
@@ -175,7 +176,7 @@ describe('Port 0: Lidless Legion (SENSE)', () => {
 						return NormalizedLandmarkSchema.safeParse(landmark).success;
 					},
 				),
-				{ numRuns: 100 },
+				{ numRuns: RED_REGNANT_PROPERTY_RUNS },
 			);
 		});
 	});

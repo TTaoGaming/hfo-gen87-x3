@@ -48,6 +48,12 @@ const shell = new GoldenLayoutShellAdapter();
 const bus = new InMemorySubstrateAdapter();
 const smoother = new OneEuroExemplarAdapter(); // Real 1€ filter for smoothing
 
+declare global {
+	interface Window {
+		injectTestLandmarks: (frames: SensorFrame[]) => void;
+	}
+}
+
 // IR-0012 FIX: Complete pipeline - add FSM and Emitter
 const fsm = new XStateFSMAdapter();
 const pointerEmitter = new PointerEventAdapter(1, 'touch');
@@ -656,6 +662,26 @@ const SHOWCASES: ShowcaseInfo[] = [
 // ============================================================================
 // INITIALIZATION
 // ============================================================================
+
+// ============================================================================
+// IR-0013 FIX: TEST INJECTION POINTS FOR GOLDEN FIXTURE PLAYBACK
+// ============================================================================
+
+/**
+ * Inject test landmark frames for golden fixture playback.
+ * Used by E2E tests to verify pipeline through the shell.
+ */
+function injectTestLandmarks(frames: SensorFrame[]): void {
+	console.log(`[Launcher] Injecting ${frames.length} test frames`);
+	frames.forEach((frame) => {
+		bus.publish('sensor-frame', frame);
+	});
+}
+
+// Expose injection points globally for E2E tests (IR-0011 FIX)
+if (typeof window !== 'undefined') {
+	window.injectTestLandmarks = injectTestLandmarks;
+}
 
 async function init(): Promise<void> {
 	// Use the pre-existing container from HTML (with GoldenLayout CSS already loaded)

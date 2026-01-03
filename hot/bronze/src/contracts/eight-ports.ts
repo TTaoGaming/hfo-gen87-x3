@@ -65,7 +65,8 @@ export interface Port3_Injector {
 // PORT 4: DISRUPTOR (TEST) - Red Regnant
 // Validation through Disruption & Property Testing
 // ============================================================================
-export interface Port4_Disruptor {
+import type { RedRegnantPort } from '../../quarantine/contracts/port-4-red-regnant.js';
+export interface Port4_Disruptor extends RedRegnantPort {
 	/**
 	 * Test the integrity of a payload through mutation or property-based checks
 	 */

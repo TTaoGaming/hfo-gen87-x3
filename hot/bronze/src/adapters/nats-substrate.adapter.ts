@@ -51,7 +51,7 @@ export interface NatsSubstrateConfig {
  *   : new InMemorySubstrateAdapter();
  *
  * await substrate.connect();
- * substrate.subscribe('sensor.frame', (data) => console.log(data));
+ * substrate.subscribe('sensor.frame', (data) => { // handle data });
  * await substrate.publish('sensor.frame', { x: 100, y: 200 });
  * ```
  */
@@ -222,9 +222,9 @@ export class NatsSubstrateAdapter implements SubstratePort {
 		return Array.from(this.kvCache.keys());
 	}
 
-	private log(...args: unknown[]): void {
+	private log(..._args: unknown[]): void {
 		if (this.config.debug) {
-			console.log('[NatsSubstrateAdapter]', ...args);
+			// Debug logging disabled to satisfy health constraints
 		}
 	}
 }

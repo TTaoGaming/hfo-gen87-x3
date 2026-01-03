@@ -1,5 +1,5 @@
 {
-	"timestamp": "2026-01-03T00:23:37.408Z",
+	"timestamp": "2026-01-03T02:44:17.620Z",
 	"totalStubs": 5,
 	"byFile": {
 		"infrastructure-usage.constraint.test.ts": 1,
@@ -20,25 +20,25 @@
 		},
 		{
 			"file": "polymorphic-composition.constraint.test.ts",
-			"line": 426,
+			"line": 427,
 			"content": "describe.skip('CONSTRAINT: End-to-End Polymorphic Composition [BLOCKED: Awaiting GoldenLayout fix]',",
 			"pattern": "skip"
 		},
 		{
 			"file": "polymorphic-composition.constraint.test.ts",
-			"line": 431,
+			"line": 432,
 			"content": "throw new Error('Not implemented - unblock when GoldenLayout is real');",
 			"pattern": "throw-not-impl"
 		},
 		{
 			"file": "polymorphic-composition.constraint.test.ts",
-			"line": 436,
+			"line": 437,
 			"content": "throw new Error('Not implemented - unblock when hot-swap is ready');",
 			"pattern": "throw-not-impl"
 		},
 		{
 			"file": "polymorphic-composition.constraint.test.ts",
-			"line": 441,
+			"line": 442,
 			"content": "throw new Error('Not implemented - unblock when multi-tile is ready');",
 			"pattern": "throw-not-impl"
 		}
